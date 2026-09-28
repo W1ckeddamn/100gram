@@ -56,52 +56,50 @@ ReadMe history:
 * 2023th [9.33](README_old_9.33.md).
 * 2026 pre-graher3 [12.92-old](README-pre-12.92.md).
 
-### Latest release
+### Latest release (12.10.5)
 
-It's [HERE](https://github.com/nikitasius/Telegraher/releases/latest) on this GITHUB
+**100gram 12.10.5 (Build 7105010)** — based on upstream [DrKLO/Telegram 12.10.5](https://github.com/DrKLO/Telegram).
 
-Actual graher is simplified, also it's acutually not FOSS. Maybe we'll make it foss + add more features.
+> 📘 **Полная техническая документация и руководство по передаче проекта**: [HANDOVER.md](HANDOVER.md)
 
-* DISABLED ADS
-    * funny moment i found a code for video ads. Will it be like on TV?
-* EVERY element have `save to downloads`/`save to gallery`
-* _almost_ DISABLED REMOTE DELETIONS (have to do some homework here)
-* FULL ACCESS in "restrict saving content" chats
-* FULL ACCESS in secret chats (GREEN ONES!)
-* KEEP CACHED chats while banned in
-* DISABLED emulator detections gives you LEGIT phone
-* No SIM force TG send you code by mail/session/via SMS to avoid you sending the SMS (sometimes TG wanna force people to
-  TYPE email and TYPE the CODE and SEND the SMS - thats bad behaviour and it happens on vanilla also)
-* Removed trackers, google vision/login, it still contain some google libs like for FCM (need more cleaning but i doubt
-  it will be 100% foss/floss/dentalfloss)
-* Scramble PIN layout to make your PIN undetectable for CCTV footages (PLEASE USE IT!)
-* PIN size can be between 4 and 16 digits you decice (and as vanilla it support raw passwords)
-* Fingerprint/FaceID are disabled, so pigs won't use your hands/face to unlock graher
-* Added Monet theme for android 12+ by @soyelmismo (github)
-* Added the duress code to trigger KABOOM on your client (read more about duress
-  idea [here](https://grapheneos.org/features#duress) on grapheneos website)
-* Pin retry time reduced to 3 seconds, after 10 fails KABOOM
-* Brand unlimited multiacc
-* You can login with same phone multiple times in same app (tg won't ask for a code, just 2FA if you have it)
-* New flow for TTL medias in green and private chats to make nudes last forever
-* Hi, i'm Vanilla telegram using vanilla keys, vanilla fingerpring & package 💅
+#### ✨ Новые возможности 100gram:
+* **🚀 Network Boost (Сетевой ускоритель)**: параллельное скачивание и выгрузка до 8 потоков MTProto, встроенный мониторинг скорости и пинг-тест DC.
+* **🎥 Advanced Camera & Video Notes Engine**:
+  * Поддержка движков: **Jetpack CameraX**, **Camera2**, **Camera1 Legacy** и системного Telegram.
+  * **⬛ Квадратные видеосообщения («Квадратные кружочки»)**: запись и отображение с аккуратным скруглением (16dp).
+  * **🌫️ Отключение размытия фона**: переписка остается видимой и читаемой во время записи кружка.
+  * **🎚️ Ступенчатый битрейт**: 750 Кбит/с, 1.2 Мбит/с, 2.0 Мбит/с, 3.0 Мбит/с Ultra.
+  * **📐 Поддержка старых сенсоров**: переключение соотношения 16:9 vs 4:3, разрешение 240p/360p/480p/720p.
+  * **60 FPS** и ультраширокоугольный объектив (0.6x).
+* **🗄️ Сейф медиа (Media Vault)**:
+  * Фоновый архиватор медиа из 100% чатов (включая архивные папки).
+  * Авторотация по сроку (TTL) и квоте диска с защитой избранных чатов.
+  * Чистый интерфейс с поиском, чипами-фильтрами и контекстными действиями.
+* **🎭 Режим стримера**:
+  * Защита окна `FLAG_SECURE` (полное затемнение в OBS, Discord, захвате экрана, блокировка скриншотов).
+  * Мгновенное маскирование текста сообщений на `••••••••••`.
+  * Маскирование профиля в шапке настроек (фейковое имя, скрытые номера и юзернеймы).
+* **👻 Режим невидимки (Ghost Mode)**: нечиталка сообщений, анонимный просмотр Stories, скрытие статуса набора текста.
+* **🤖 Правила автоматизации (Automation Engine)**: фильтры по ключевым словам/медиа с автосохранением в Избранное/Галерею и пересылкой.
+* **🛰️ Keep-Alive Foreground Service**: защита от убийства фоновых процессов системой.
 
-### TODO
+---
 
-* ~~Duress code~~ (remote duress remain)
-* ~~TTL images~~
-* device spoofing
-* media quality boost
+### Сборка (Build)
 
-### BUILD
+Требования: **JDK 17**, **Android SDK 35**, **NDK 26.1.10909125**, **CMake 3.22.1**.
 
-**If you're a dev**
+* **Отладочная сборка (Debug APK)**:
+  ```powershell
+  .\gradlew.bat :TMessagesProj_AppStandalone:assembleAfatDebug -x lint -x test --daemon
+  ```
+  Выходной файл: `TMessagesProj_AppStandalone/build/outputs/apk/afat/debug/app.apk`
 
-1) You know what to do
-2) Don't ask me bruh/sis/whatever
-3) Or run `gradle :TMessagesProj_AppStandalone:assembleStandalone` OR click in your IDE
-   `TMessagesProj_AppStandalone -> assembleStandalone`
-4) It will assemble for you APK and sign w/ default keys
+* **Релизная сборка (Release APK)**:
+  ```powershell
+  .\gradlew.bat :TMessagesProj_AppStandalone:assembleAfatRelease -x lint -x test --daemon
+  ```
+  Выходной файл: `TMessagesProj_AppStandalone/build/outputs/apk/afat/release/app.apk`
 
 **If you're a donut**
 
