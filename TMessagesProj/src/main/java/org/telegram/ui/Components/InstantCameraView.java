@@ -312,7 +312,11 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
         cameraContainer.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
-                outline.setOval(0, 0, textureViewSize, textureViewSize);
+                if (HundredGramConfig.cameraRoundSquare) {
+                    outline.setRoundRect(0, 0, textureViewSize, textureViewSize, AndroidUtilities.dp(16));
+                } else {
+                    outline.setOval(0, 0, textureViewSize, textureViewSize);
+                }
             }
         });
         cameraContainer.setClipToOutline(true);
@@ -464,7 +468,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 if (needDrawFlickerStub) {
                     flickerDrawable.setParentWidth(textureViewSize);
                     AndroidUtilities.rectTmp.set(0, 0, textureViewSize, textureViewSize);
-                    float rad = AndroidUtilities.rectTmp.width() / 2f;
+                    float rad = HundredGramConfig.cameraRoundSquare ? AndroidUtilities.dp(16) : (AndroidUtilities.rectTmp.width() / 2f);
                     canvas.drawRoundRect(AndroidUtilities.rectTmp, rad, rad, blackoutPaint);
                     AndroidUtilities.rectTmp.inset(dp(1), dp(1));
                     flickerDrawable.draw(canvas, AndroidUtilities.rectTmp, rad, null);
@@ -2454,15 +2458,20 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
 
             started = true;
             int resolution = HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : MessagesController.getInstance(currentAccount).roundVideoSize;
-            int bitrate = MessagesController.getInstance(currentAccount).roundVideoBitrate * 1024;
-            if (bitrate <= 0) {
-                bitrate = (int) (1000 * 1024 * 1.5f);
-            }
-            if (HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps) {
-                bitrate = (int) (bitrate * 1.5f);
-            }
-            if (HundredGramConfig.cameraRoundHighBitrate) {
-                bitrate = (int) (bitrate * 1.5f);
+            int bitrate;
+            if (HundredGramConfig.cameraRoundBitrate > 0) {
+                bitrate = HundredGramConfig.cameraRoundBitrate * 1024;
+            } else {
+                bitrate = MessagesController.getInstance(currentAccount).roundVideoBitrate * 1024;
+                if (bitrate <= 0) {
+                    bitrate = (int) (1000 * 1024 * 1.5f);
+                }
+                if (HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps) {
+                    bitrate = (int) (bitrate * 1.5f);
+                }
+                if (HundredGramConfig.cameraRoundHighBitrate) {
+                    bitrate = (int) (bitrate * 1.5f);
+                }
             }
             AndroidUtilities.runOnUIThread(() -> {
                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.stopAllHeavyOperations, 512);

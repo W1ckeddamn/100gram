@@ -8690,7 +8690,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                                 photoImage.setAllowDecodeSingleFrame(true);
                                 boolean autoDownload = false;
                                 if (MessageObject.isRoundVideoDocument(document)) {
-                                    photoImage.setRoundRadius(AndroidUtilities.roundMessageSize / 2);
+                                    photoImage.setRoundRadius(HundredGramConfig.cameraRoundSquare ? AndroidUtilities.dp(16) : (AndroidUtilities.roundMessageSize / 2));
                                     canChangeRadius = false;
                                     autoDownload = DownloadController.getInstance(currentAccount).canDownloadMedia(currentMessageObject);
                                 } else if (MessageObject.isGifDocument(document, messageObject.hasValidGroupId())) {
@@ -9980,7 +9980,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                         if (drawBackground) {
                             h = 0;
                         }
-                        photoImage.setRoundRadius(w / 2);
+                        photoImage.setRoundRadius(HundredGramConfig.cameraRoundSquare ? AndroidUtilities.dp(16) : (w / 2));
                         canChangeRadius = false;
                     } else if (messageObject.needDrawBluredPreview() && !messageObject.hasExtendedMediaPreview()) {
                         if (AndroidUtilities.isTablet()) {

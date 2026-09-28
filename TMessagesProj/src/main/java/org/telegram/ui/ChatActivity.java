@@ -46583,8 +46583,12 @@ public class ChatActivity extends BaseFragment implements
             onBottomItemsVisibilityChanged();
         } else if (id == ANIMATOR_ID_ROUND_MESSAGE_CAMERA_VISIBILITY) {
             if (roundVideoRecordBackground != null) {
-                roundVideoRecordBackground.setAlpha(factor);
-                roundVideoRecordBackground.setVisibility(factor > 0 ? View.VISIBLE : View.INVISIBLE);
+                if (HundredGramConfig.cameraRoundDisableBlur) {
+                    roundVideoRecordBackground.setVisibility(View.GONE);
+                } else {
+                    roundVideoRecordBackground.setAlpha(factor);
+                    roundVideoRecordBackground.setVisibility(factor > 0 ? View.VISIBLE : View.INVISIBLE);
+                }
             }
             // checkUi_BlurHeight();
         } else if (id == ANIMATOR_ID_POLL_ADD_ANSWER_VISIBILITY) {

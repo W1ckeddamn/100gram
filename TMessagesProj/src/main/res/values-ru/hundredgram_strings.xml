@@ -522,6 +522,9 @@
     <string name="CameraAutoTune">Автоподбор профиля</string>
     <string name="CameraAutoTuneDone">Применен оптимальный профиль для вашего устройства</string>
 
+    <string name="CameraEngineCamera2">Camera2 API (Форсировать)</string>
+    <string name="CameraEngineCamera1Legacy">Camera1 Legacy (Старая камера)</string>
+
     <!-- Round Video Messages (Кружочки) -->
     <string name="RoundVideoHeader">Видеосообщения (Кружочки)</string>
     <string name="RoundCameraStart">Начальная камера для кружочков</string>
@@ -531,11 +534,24 @@
     <string name="RoundCameraMenu">📋 Меню выбора при записи</string>
     <string name="RoundCameraLast">🔄 Последняя использованная</string>
     <string name="RoundCameraMenuPrompt">С какой камеры начать запись?</string>
+    <string name="RoundVideoSquare">Квадратный формат («Квадратные кружочки»)</string>
+    <string name="RoundVideoSquareInfo">Записывать и отображать видеосообщения в современном квадратном формате со скругленными углами</string>
+    <string name="RoundVideoDisableBlur">Отключение размытия фона</string>
+    <string name="RoundVideoDisableBlurInfo">Отключает затемнение и размытие экрана чата во время записи видеосообщения</string>
     <string name="RoundVideoResolution">Разрешение кружочка</string>
     <string name="RoundVideoFps">60 FPS для кружочков</string>
     <string name="RoundVideoFpsInfo">Максимальная плавность записи видеосообщений</string>
+    <string name="RoundVideoBitrateAuto">Авто (Telegram)</string>
+    <string name="RoundVideoBitrate750">750 Кбит/с (Экономичный)</string>
+    <string name="RoundVideoBitrate1200">1.2 Мбит/с (Стандартный)</string>
+    <string name="RoundVideoBitrate2000">2.0 Мбит/с (Высокий HD)</string>
+    <string name="RoundVideoBitrate3000">3.0 Мбит/с (Ультра качество)</string>
     <string name="RoundVideoHighBitrate">Повышенный битрейт</string>
     <string name="RoundVideoHighBitrateInfo">Увеличивает битрейт в 1.5–2 раза для максимальной четкости и детализации</string>
+    <string name="RoundVideoSensorRatio">Формат сенсора камеры</string>
+    <string name="RoundVideoSensorRatioInfo">16:9 для широкого угла, 4:3 для устранения искажений на старых смартфонах и планшетах</string>
+    <string name="RoundVideoSensorRatio16to9">16:9 (Широкоформатный)</string>
+    <string name="RoundVideoSensorRatio4to3">4:3 (Классический)</string>
     <string name="RoundVideoCodec">Видеокодек</string>
     <string name="RoundVideoCodecH264">H.264 (AVC — совместим со всеми)</string>
     <string name="RoundVideoCodecH265">H.265 (HEVC — максимальное сжатие и четкость)</string>

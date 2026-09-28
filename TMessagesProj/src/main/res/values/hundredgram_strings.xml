@@ -521,6 +521,9 @@
     <string name="CameraAutoTune">Auto-tune profile</string>
     <string name="CameraAutoTuneDone">Applied optimal profile for your device</string>
 
+    <string name="CameraEngineCamera2">Camera2 API (Force)</string>
+    <string name="CameraEngineCamera1Legacy">Camera1 Legacy (Older devices)</string>
+
     <!-- Round Video Messages (Кружочки) -->
     <string name="RoundVideoHeader">Round Video Messages</string>
     <string name="RoundCameraStart">Starting camera for round video</string>
@@ -530,11 +533,24 @@
     <string name="RoundCameraMenu">📋 Menu upon recording</string>
     <string name="RoundCameraLast">🔄 Last used</string>
     <string name="RoundCameraMenuPrompt">Which camera to record with?</string>
+    <string name="RoundVideoSquare">Square Format ("Square Video Notes")</string>
+    <string name="RoundVideoSquareInfo">Record and view video messages in modern square format with rounded corners</string>
+    <string name="RoundVideoDisableBlur">Disable Background Blur</string>
+    <string name="RoundVideoDisableBlurInfo">Disables background dimming and blur in chat while recording video messages</string>
     <string name="RoundVideoResolution">Round video resolution</string>
     <string name="RoundVideoFps">60 FPS for round videos</string>
     <string name="RoundVideoFpsInfo">Maximum smoothness for round video notes</string>
+    <string name="RoundVideoBitrateAuto">Auto (Telegram default)</string>
+    <string name="RoundVideoBitrate750">750 Kbps (Economy)</string>
+    <string name="RoundVideoBitrate1200">1.2 Mbps (Standard)</string>
+    <string name="RoundVideoBitrate2000">2.0 Mbps (High HD)</string>
+    <string name="RoundVideoBitrate3000">3.0 Mbps (Ultra Quality)</string>
     <string name="RoundVideoHighBitrate">High Bitrate</string>
     <string name="RoundVideoHighBitrateInfo">Increases bitrate 1.5–2x for maximum crispness and detail</string>
+    <string name="RoundVideoSensorRatio">Camera Sensor Aspect Ratio</string>
+    <string name="RoundVideoSensorRatioInfo">16:9 for wide angle, 4:3 to fix distortion on older devices and tablets</string>
+    <string name="RoundVideoSensorRatio16to9">16:9 (Widescreen)</string>
+    <string name="RoundVideoSensorRatio4to3">4:3 (Classic)</string>
     <string name="RoundVideoCodec">Video Codec</string>
     <string name="RoundVideoCodecH264">H.264 (AVC — universally compatible)</string>
     <string name="RoundVideoCodecH265">H.265 (HEVC — high efficiency &amp; quality)</string>

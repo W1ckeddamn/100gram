@@ -264,4 +264,54 @@
     <string name="RemindTodayAt">\'Отправить сегодня в\' HH:mm</string>
     <string name="RemindDayAt">\'Отправить\' d MMM \'в\' HH:mm</string>
     <string name="RemindDayYearAt">\'Напомнить\' d MMM yyyy \'в\' HH:mm</string>
+
+    <string name="ArticleTableBordered">С границами</string>
+    <string name="ArticleTableCompact">Компактно</string>
+    <string name="ArticleHighlightCells">Выделять ячейки</string>
+
+    <string name="RichEditorCreateLinkButton">Создать кнопку-ссылку</string>
+    <string name="RichEditorEditLinkButton">Изменить кнопку-ссылку</string>
+    <string name="RichEditorCreateCopyButton">Создать кнопку копирования</string>
+    <string name="RichEditorEditCopyButton">Изменить кнопку копирования</string>
+    <string name="RichEditorCreateProfileButton">Создать кнопку профиля</string>
+    <string name="RichEditorEditProfileButton">Изменить кнопку профиля</string>
+    <string name="RichEditorButtonText">Текст кнопки</string>
+    <string name="RichEditorButtonURL">Ссылка кнопки</string>
+    <string name="RichEditorButtonCopyText">Текст для копирования</string>
+    <string name="RichEditorChangeUser">Сменить пользователя</string>
+    <string name="RichEditorUserProfile">Профиль пользователя</string>
+    <string name="RichEditorButton">Кнопка</string>
+    <string name="RichEditorAddButton">Добавить кнопку</string>
+
+    <string name="WelcomeMessage">Приветственное сообщение</string>
+    <string name="WelcomeMessageOff">Откл.</string>
+    <string name="WelcomeMessageEmptyTitle">Создать приветственное\nсообщение</string>
+    <string name="WelcomeMessageEmptySubtitle">Автоматически приветствуйте новых\nучастников при вступлении.</string>
+    <string name="WelcomeMessageHint">Новые участники увидят это сообщение\nпри вступлении</string>
+    <string name="WelcomeMessageHint2">Нажмите, чтобы удалить</string>
+    <string name="WelcomeMessageEnter">Добавить сообщение</string>
+    <string name="WelcomeMessagesLimit_one">Достигнут лимит в %d сообщение.</string>
+    <string name="WelcomeMessagesLimit_other">Достигнут лимит в %d сообщений.</string>
+    <string name="WelcomeMessageRevert">Вернуть</string>
+    <string name="WelcomeMessageRevertInfo">восстанавливает сообщение\nк исходному виду</string>
+
+    <string name="RoundVideoSettings">Видеосообщения</string>
+    <string name="RoundVideoGeneral">Запись</string>
+    <string name="RoundVideoUseNewRecorder">Использовать Camera2 рекордер</string>
+    <string name="RoundVideoOutputResolution">Выходное разрешение</string>
+    <string name="RoundVideoCameraResolution">Разрешение камеры</string>
+    <string name="RoundVideoCameraResolutionHigh">Высокое</string>
+    <string name="RoundVideoCameraResolutionMedium">Среднее</string>
+    <string name="RoundVideoCameraResolutionLow">Низкое</string>
+    <string name="RoundVideoFrameRate">Частота кадров</string>
+    <string name="RoundVideoBitrate">Битрейт видео</string>
+    <string name="RoundVideoGeneralInfo">60 FPS используется, только если поддерживается обеими камерами.</string>
+    <string name="RoundVideoComposition">Оформление</string>
+    <string name="RoundVideoCompositionEnabled">Круглое оформление</string>
+    <string name="RoundVideoCompositionInfo">Отключите, чтобы записывать обычное квадратное видеосообщение без круглой маски и блюра фона.</string>
+
+    <string name="ArticleAICreate">Создать с помощью ИИ</string>
+    <string name="ArticleAIPrompt">Напишите запрос...</string>
+    <string name="ArticleAIGenerate">Сгенерировать</string>
+    <string name="ArticleAIAddToPage">Добавить на страницу</string>
 </resources>

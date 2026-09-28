@@ -44,6 +44,10 @@ public class HundredGramCameraActivity extends BaseFragment {
     private static final int ITEM_ROUND_FPS = 12;
     private static final int ITEM_ROUND_HIGH_BITRATE = 13;
     private static final int ITEM_ROUND_CODEC = 14;
+    private static final int ITEM_ROUND_SQUARE = 15;
+    private static final int ITEM_ROUND_DISABLE_BLUR = 16;
+    private static final int ITEM_ROUND_BITRATE = 17;
+    private static final int ITEM_ROUND_SENSOR_RATIO = 18;
 
     private UniversalRecyclerView listView;
     private CameraXUtils.CameraReport cameraReport;
@@ -175,11 +179,23 @@ public class HundredGramCameraActivity extends BaseFragment {
 
         // Camera Engine Selector
         items.add(UItem.asHeader(LocaleController.getString("CameraEngineChoose", R.string.CameraEngineChoose)));
-        String engineName = HundredGramConfig.cameraEngine == HundredGramConfig.CAMERA_ENGINE_CAMERAX
-                ? LocaleController.getString("CameraEngineCameraX", R.string.CameraEngineCameraX)
-                : LocaleController.getString("CameraEngineSystem", R.string.CameraEngineSystem);
+        String engineName;
+        switch (HundredGramConfig.cameraEngine) {
+            case HundredGramConfig.CAMERA_ENGINE_CAMERAX:
+                engineName = LocaleController.getString("CameraEngineCameraX", R.string.CameraEngineCameraX);
+                break;
+            case HundredGramConfig.CAMERA_ENGINE_CAMERA2:
+                engineName = LocaleController.getString("CameraEngineCamera2", R.string.CameraEngineCamera2);
+                break;
+            case HundredGramConfig.CAMERA_ENGINE_CAMERA1_LEGACY:
+                engineName = LocaleController.getString("CameraEngineCamera1Legacy", R.string.CameraEngineCamera1Legacy);
+                break;
+            default:
+                engineName = LocaleController.getString("CameraEngineSystem", R.string.CameraEngineSystem);
+                break;
+        }
         items.add(UItem.asButton(ITEM_CAMERA_ENGINE, LocaleController.getString("CameraEngineChoose", R.string.CameraEngineChoose), engineName));
-        items.add(UItem.asShadow("Jetpack CameraX обеспечивает расширенные возможности зума, 60 FPS и широкоугольной съемки"));
+        items.add(UItem.asShadow("Jetpack CameraX обеспечивает расширенные возможности зума, 60 FPS и широкоугольной съемки. Camera2 и Camera1 Legacy для старых смартфонов."));
 
         // CameraX Settings Section
         if (HundredGramConfig.cameraEngine == HundredGramConfig.CAMERA_ENGINE_CAMERAX) {
@@ -257,10 +273,33 @@ public class HundredGramCameraActivity extends BaseFragment {
         items.add(UItem.asButton(ITEM_ROUND_START_CAMERA, LocaleController.getString("RoundCameraStart", R.string.RoundCameraStart), startCamName));
         items.add(UItem.asShadow("Выбор объектива для начала записи: фронталка, задняя, быстрое меню выбора перед записью или последняя использованная"));
 
+        // Square Video Notes
+        items.add(UItem.asCheck(ITEM_ROUND_SQUARE, LocaleController.getString("RoundVideoSquare", R.string.RoundVideoSquare))
+                .setChecked(HundredGramConfig.cameraRoundSquare));
+        items.add(UItem.asShadow(LocaleController.getString("RoundVideoSquareInfo", R.string.RoundVideoSquareInfo)));
+
+        // Disable Background Blur
+        items.add(UItem.asCheck(ITEM_ROUND_DISABLE_BLUR, LocaleController.getString("RoundVideoDisableBlur", R.string.RoundVideoDisableBlur))
+                .setChecked(HundredGramConfig.cameraRoundDisableBlur));
+        items.add(UItem.asShadow(LocaleController.getString("RoundVideoDisableBlurInfo", R.string.RoundVideoDisableBlurInfo)));
+
+        // Bitrate Selector
+        String bitrateName;
+        switch (HundredGramConfig.cameraRoundBitrate) {
+            case 750: bitrateName = LocaleController.getString("RoundVideoBitrate750", R.string.RoundVideoBitrate750); break;
+            case 1200: bitrateName = LocaleController.getString("RoundVideoBitrate1200", R.string.RoundVideoBitrate1200); break;
+            case 2000: bitrateName = LocaleController.getString("RoundVideoBitrate2000", R.string.RoundVideoBitrate2000); break;
+            case 3000: bitrateName = LocaleController.getString("RoundVideoBitrate3000", R.string.RoundVideoBitrate3000); break;
+            default: bitrateName = LocaleController.getString("RoundVideoBitrateAuto", R.string.RoundVideoBitrateAuto); break;
+        }
+        items.add(UItem.asButton(ITEM_ROUND_BITRATE, LocaleController.getString("RoundVideoBitrate", R.string.RoundVideoBitrate), bitrateName));
+        items.add(UItem.asShadow(LocaleController.getString("RoundVideoHighBitrateInfo", R.string.RoundVideoHighBitrateInfo)));
+
         String resName;
         switch (HundredGramConfig.cameraRoundResolution) {
             case 720: resName = "720p HD"; break;
             case 480: resName = "480p"; break;
+            case 240: resName = "240p (Эконом)"; break;
             default: resName = "360p (Telegram)"; break;
         }
         items.add(UItem.asButton(ITEM_ROUND_RESOLUTION, LocaleController.getString("RoundVideoResolution", R.string.RoundVideoResolution), resName));
@@ -269,9 +308,12 @@ public class HundredGramCameraActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps));
         items.add(UItem.asShadow(LocaleController.getString("RoundVideoFpsInfo", R.string.RoundVideoFpsInfo)));
 
-        items.add(UItem.asCheck(ITEM_ROUND_HIGH_BITRATE, LocaleController.getString("RoundVideoHighBitrate", R.string.RoundVideoHighBitrate))
-                .setChecked(HundredGramConfig.cameraRoundHighBitrate));
-        items.add(UItem.asShadow(LocaleController.getString("RoundVideoHighBitrateInfo", R.string.RoundVideoHighBitrateInfo)));
+        // Sensor Aspect Ratio (16:9 vs 4:3) for older devices
+        String ratioName = HundredGramConfig.cameraRoundSensor16to9
+                ? LocaleController.getString("RoundVideoSensorRatio16to9", R.string.RoundVideoSensorRatio16to9)
+                : LocaleController.getString("RoundVideoSensorRatio4to3", R.string.RoundVideoSensorRatio4to3);
+        items.add(UItem.asButton(ITEM_ROUND_SENSOR_RATIO, LocaleController.getString("RoundVideoSensorRatio", R.string.RoundVideoSensorRatio), ratioName));
+        items.add(UItem.asShadow(LocaleController.getString("RoundVideoSensorRatioInfo", R.string.RoundVideoSensorRatioInfo)));
 
         String codecName = HundredGramConfig.cameraRoundCodec == 1 ? "H.265 (HEVC)" : "H.264 (AVC)";
         items.add(UItem.asButton(ITEM_ROUND_CODEC, LocaleController.getString("RoundVideoCodec", R.string.RoundVideoCodec), codecName));
@@ -329,6 +371,20 @@ public class HundredGramCameraActivity extends BaseFragment {
                 HundredGramConfig.toggleCameraRoundHighBitrate();
                 item.setChecked(HundredGramConfig.cameraRoundHighBitrate);
                 break;
+            case ITEM_ROUND_SQUARE:
+                HundredGramConfig.toggleCameraRoundSquare();
+                item.setChecked(HundredGramConfig.cameraRoundSquare);
+                break;
+            case ITEM_ROUND_DISABLE_BLUR:
+                HundredGramConfig.toggleCameraRoundDisableBlur();
+                item.setChecked(HundredGramConfig.cameraRoundDisableBlur);
+                break;
+            case ITEM_ROUND_BITRATE:
+                showRoundBitrateDialog();
+                break;
+            case ITEM_ROUND_SENSOR_RATIO:
+                showRoundSensorRatioDialog();
+                break;
             case ITEM_ROUND_CODEC:
                 showRoundCodecDialog();
                 break;
@@ -338,7 +394,9 @@ public class HundredGramCameraActivity extends BaseFragment {
     private void showCameraEngineDialog() {
         CharSequence[] options = new CharSequence[]{
                 LocaleController.getString("CameraEngineSystem", R.string.CameraEngineSystem),
-                LocaleController.getString("CameraEngineCameraX", R.string.CameraEngineCameraX)
+                LocaleController.getString("CameraEngineCameraX", R.string.CameraEngineCameraX),
+                LocaleController.getString("CameraEngineCamera2", R.string.CameraEngineCamera2),
+                LocaleController.getString("CameraEngineCamera1Legacy", R.string.CameraEngineCamera1Legacy)
         };
         new AlertDialog.Builder(getParentActivity())
                 .setTitle(LocaleController.getString("CameraEngineChoose", R.string.CameraEngineChoose))
@@ -462,12 +520,60 @@ public class HundredGramCameraActivity extends BaseFragment {
     }
 
     private void showRoundResolutionDialog() {
-        CharSequence[] options = new CharSequence[]{"360p (Стандарт)", "480p (Четкое)", "720p HD (Высокое качество)"};
+        CharSequence[] options = new CharSequence[]{"240p (Эконом / Слабые устройства)", "360p (Стандарт Telegram)", "480p (Четкое)", "720p HD (Высокое качество)"};
         new AlertDialog.Builder(getParentActivity())
                 .setTitle(LocaleController.getString("RoundVideoResolution", R.string.RoundVideoResolution))
                 .setItems(options, (dialog, which) -> {
-                    int res = which == 2 ? 720 : (which == 1 ? 480 : 360);
+                    int res = which == 0 ? 240 : (which == 3 ? 720 : (which == 2 ? 480 : 360));
                     HundredGramConfig.setCameraRoundResolution(res);
+                    if (listView != null && listView.adapter != null) {
+                        listView.adapter.update(true);
+                    }
+                })
+                .setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null)
+                .show();
+    }
+
+    private void showRoundBitrateDialog() {
+        CharSequence[] options = new CharSequence[]{
+                LocaleController.getString("RoundVideoBitrateAuto", R.string.RoundVideoBitrateAuto),
+                LocaleController.getString("RoundVideoBitrate750", R.string.RoundVideoBitrate750),
+                LocaleController.getString("RoundVideoBitrate1200", R.string.RoundVideoBitrate1200),
+                LocaleController.getString("RoundVideoBitrate2000", R.string.RoundVideoBitrate2000),
+                LocaleController.getString("RoundVideoBitrate3000", R.string.RoundVideoBitrate3000)
+        };
+        new AlertDialog.Builder(getParentActivity())
+                .setTitle(LocaleController.getString("RoundVideoBitrate", R.string.RoundVideoBitrate))
+                .setItems(options, (dialog, which) -> {
+                    int b;
+                    switch (which) {
+                        case 1: b = 750; break;
+                        case 2: b = 1200; break;
+                        case 3: b = 2000; break;
+                        case 4: b = 3000; break;
+                        default: b = 0; break;
+                    }
+                    HundredGramConfig.setCameraRoundBitrate(b);
+                    if (listView != null && listView.adapter != null) {
+                        listView.adapter.update(true);
+                    }
+                })
+                .setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null)
+                .show();
+    }
+
+    private void showRoundSensorRatioDialog() {
+        CharSequence[] options = new CharSequence[]{
+                LocaleController.getString("RoundVideoSensorRatio16to9", R.string.RoundVideoSensorRatio16to9),
+                LocaleController.getString("RoundVideoSensorRatio4to3", R.string.RoundVideoSensorRatio4to3)
+        };
+        new AlertDialog.Builder(getParentActivity())
+                .setTitle(LocaleController.getString("RoundVideoSensorRatio", R.string.RoundVideoSensorRatio))
+                .setItems(options, (dialog, which) -> {
+                    boolean is16to9 = (which == 0);
+                    if (HundredGramConfig.cameraRoundSensor16to9 != is16to9) {
+                        HundredGramConfig.toggleCameraRoundSensor16to9();
+                    }
                     if (listView != null && listView.adapter != null) {
                         listView.adapter.update(true);
                     }

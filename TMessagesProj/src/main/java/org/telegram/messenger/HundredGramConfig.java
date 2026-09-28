@@ -81,6 +81,8 @@ public class HundredGramConfig {
     // Camera & Camera Engine
     public static final int CAMERA_ENGINE_SYSTEM = 0;
     public static final int CAMERA_ENGINE_CAMERAX = 1;
+    public static final int CAMERA_ENGINE_CAMERA2 = 2;
+    public static final int CAMERA_ENGINE_CAMERA1_LEGACY = 3;
     public static int cameraEngine = CAMERA_ENGINE_CAMERAX;
     public static boolean cameraXEnabled = true;
     public static boolean cameraX60Fps = true;
@@ -102,10 +104,14 @@ public class HundredGramConfig {
 
     public static int cameraRoundStartCamera = CAMERA_ROUND_START_FRONT;
     public static boolean cameraRoundLastUsedFront = true;
-    public static int cameraRoundResolution = 360; // 360, 480, 720
+    public static int cameraRoundResolution = 360; // 240, 360, 480, 720
     public static int cameraRoundFps = 60; // 30, 60
     public static boolean cameraRoundHighBitrate = true;
+    public static int cameraRoundBitrate; // 0 = Auto, 750, 1200, 2000, 3000
     public static int cameraRoundCodec = 0; // 0 = H.264, 1 = H.265 (HEVC)
+    public static boolean cameraRoundSquare; // Square format for round video notes
+    public static boolean cameraRoundDisableBlur; // Disable background dimming/blur during recording
+    public static boolean cameraRoundSensor16to9 = true; // 16:9 vs 4:3 sensor for legacy devices
 
     // Media Vault & Archiver
     public static boolean backgroundArchiverEnabled;
@@ -241,7 +247,12 @@ public class HundredGramConfig {
 
             // Camera Engine & CameraX
             cameraEngine = preferences.getInt("cameraEngine", CAMERA_ENGINE_CAMERAX);
-            cameraXEnabled = preferences.getBoolean("cameraXEnabled", true);
+            cameraXEnabled = (cameraEngine == CAMERA_ENGINE_CAMERAX);
+            if (cameraEngine == CAMERA_ENGINE_CAMERA2) {
+                SharedConfig.useCamera2Force = Boolean.TRUE;
+            } else if (cameraEngine == CAMERA_ENGINE_CAMERA1_LEGACY) {
+                SharedConfig.useCamera2Force = Boolean.FALSE;
+            }
             cameraX60Fps = preferences.getBoolean("cameraX60Fps", true);
             cameraXZoomSlider = preferences.getBoolean("cameraXZoomSlider", true);
             cameraXWideAngle = preferences.getBoolean("cameraXWideAngle", false);
@@ -259,7 +270,12 @@ public class HundredGramConfig {
             cameraRoundResolution = preferences.getInt("cameraRoundResolution", 360);
             cameraRoundFps = preferences.getInt("cameraRoundFps", 60);
             cameraRoundHighBitrate = preferences.getBoolean("cameraRoundHighBitrate", true);
+            cameraRoundBitrate = preferences.getInt("cameraRoundBitrate", 0);
             cameraRoundCodec = preferences.getInt("cameraRoundCodec", 0);
+            cameraRoundSquare = preferences.getBoolean("cameraRoundSquare", false);
+            cameraRoundDisableBlur = preferences.getBoolean("cameraRoundDisableBlur", false);
+            cameraRoundSensor16to9 = preferences.getBoolean("cameraRoundSensor16to9", true);
+            SharedConfig.roundCamera16to9 = cameraRoundSensor16to9;
 
             // Media Vault & Archiver
             backgroundArchiverEnabled = preferences.getBoolean("backgroundArchiverEnabled", true);
@@ -511,8 +527,23 @@ public class HundredGramConfig {
     public static void setCameraEngine(int engine) {
         cameraEngine = engine;
         cameraXEnabled = (engine == CAMERA_ENGINE_CAMERAX);
+        if (engine == CAMERA_ENGINE_CAMERA2) {
+            SharedConfig.useCamera2Force = Boolean.TRUE;
+        } else if (engine == CAMERA_ENGINE_CAMERA1_LEGACY) {
+            SharedConfig.useCamera2Force = Boolean.FALSE;
+        } else if (engine == CAMERA_ENGINE_SYSTEM) {
+            SharedConfig.useCamera2Force = null;
+        }
         saveInt("cameraEngine", cameraEngine);
         save("cameraXEnabled", cameraXEnabled);
+        try {
+            if (ApplicationLoader.applicationContext != null) {
+                ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("useCamera2Force_2", SharedConfig.useCamera2Force != null && SharedConfig.useCamera2Force)
+                        .apply();
+            }
+        } catch (Exception ignored) {}
     }
 
     public static void toggleCameraPerformanceMode() {
@@ -575,6 +606,30 @@ public class HundredGramConfig {
     public static void toggleCameraRoundHighBitrate() {
         cameraRoundHighBitrate = !cameraRoundHighBitrate;
         save("cameraRoundHighBitrate", cameraRoundHighBitrate);
+    }
+
+    public static void setCameraRoundBitrate(int bitrate) {
+        cameraRoundBitrate = bitrate;
+        saveInt("cameraRoundBitrate", cameraRoundBitrate);
+    }
+
+    public static void toggleCameraRoundSquare() {
+        cameraRoundSquare = !cameraRoundSquare;
+        save("cameraRoundSquare", cameraRoundSquare);
+    }
+
+    public static void toggleCameraRoundDisableBlur() {
+        cameraRoundDisableBlur = !cameraRoundDisableBlur;
+        save("cameraRoundDisableBlur", cameraRoundDisableBlur);
+    }
+
+    public static void toggleCameraRoundSensor16to9() {
+        cameraRoundSensor16to9 = !cameraRoundSensor16to9;
+        SharedConfig.roundCamera16to9 = cameraRoundSensor16to9;
+        save("cameraRoundSensor16to9", cameraRoundSensor16to9);
+        try {
+            MessagesController.getGlobalMainSettings().edit().putBoolean("roundCamera16to9", cameraRoundSensor16to9).apply();
+        } catch (Exception ignored) {}
     }
 
     public static void setCameraRoundCodec(int codec) {
