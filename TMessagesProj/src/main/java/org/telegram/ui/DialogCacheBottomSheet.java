@@ -16,6 +16,7 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
+import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
@@ -103,7 +104,7 @@ public class DialogCacheBottomSheet extends BottomSheetWithRecyclerListView {
         return false;
     }
 
-    public DialogCacheBottomSheet(CacheControlActivity baseFragment, CacheControlActivity.DialogFileEntities entities, CacheModel cacheModel, Delegate delegate) {
+    public DialogCacheBottomSheet(BaseFragment baseFragment, CacheControlActivity.DialogFileEntities entities, CacheModel cacheModel, Delegate delegate) {
         super(baseFragment, false, false, !cacheModel.isEmpty(), null);
         this.cacheDelegate = delegate;
         this.entities = entities;

@@ -91,7 +91,7 @@ public class TranslateController extends BaseController {
     }
 
     public boolean isFeatureAvailable() {
-        return isChatTranslateEnabled() && UserConfig.getInstance(currentAccount).isPremium();
+        return isChatTranslateEnabled() && (UserConfig.getInstance(currentAccount).isPremium() || HundredGramConfig.unlockChatTranslation);
     }
 
     public boolean isFeatureAvailable(long dialogId) {
@@ -101,6 +101,7 @@ public class TranslateController extends BaseController {
         final TLRPC.Chat chat = getMessagesController().getChat(-dialogId);
         return (
             UserConfig.getInstance(currentAccount).isPremium() ||
+            HundredGramConfig.unlockChatTranslation ||
             chat != null && chat.autotranslation
         );
     }
@@ -224,6 +225,12 @@ public class TranslateController extends BaseController {
     }
 
     public boolean isTranslatingDialog(long dialogId) {
+        int override = HundredGramConfig.getChatOverride(dialogId, "auto_translate");
+        if (override == HundredGramConfig.OVERRIDE_ENABLED) {
+            return isFeatureAvailable(dialogId);
+        } else if (override == HundredGramConfig.OVERRIDE_DISABLED) {
+            return false;
+        }
         return isFeatureAvailable(dialogId) && translatingDialogs.get(dialogId, isChatAutoTranslated(dialogId));
     }
 
@@ -1735,7 +1742,7 @@ public class TranslateController extends BaseController {
     }
 
     private boolean isLanguageRestricted(String lng) {
-        if (getUserConfig().isPremium()) {
+        if (getUserConfig().isPremium() || HundredGramConfig.unlockChatTranslation) {
             return RestrictedLanguagesSelectActivity.getRestrictedLanguages().contains(lng);
         }
         try {

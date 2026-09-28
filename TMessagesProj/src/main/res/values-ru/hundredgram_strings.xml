@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Message Details & Actions -->
+    <string name="Details">Подробности</string>
+    <string name="Date">Дата</string>
+    <string name="EditedDate">Дата изменения</string>
+    <string name="ForwardedDate">Дата пересылки</string>
+    <string name="FileSize">Размер файла</string>
+    <string name="FileName">Имя файла</string>
+    <string name="FilePath">Путь к файлу</string>
+    <string name="Resolution">Разрешение</string>
+    <string name="Bitrate">Битрейт</string>
+    <string name="MimeType">Тип медиа</string>
+    <string name="Datacenter">Дата-центр</string>
+    <string name="PhotoCopied">Фото скопировано в буфер обмена</string>
+    <string name="CopyPhoto">Копировать фото</string>
+    <string name="SaveToSavedMessages">В Избранное</string>
+
+    <!-- Double Tap -->
+    <string name="DoubleTapActionIncoming">Двойное нажатие (входящие)</string>
+    <string name="DoubleTapActionOutgoing">Двойное нажатие (исходящие)</string>
+    <string name="DoubleTapReaction">Быстрая реакция</string>
+    <string name="DoubleTapReply">Ответить</string>
+    <string name="DoubleTapCopy">Копировать текст</string>
+    <string name="DoubleTapForward">Переслать</string>
+    <string name="DoubleTapEdit">Редактировать</string>
+    <string name="DoubleTapSave">В Избранное</string>
+    <string name="DoubleTapDelete">Удалить</string>
+    <string name="DoubleTapNone">Отключено</string>
+
+    <!-- Context Menu Options -->
+    <string name="ShowSaveMessageButton">Кнопка «В Избранное» в меню</string>
+    <string name="ShowDetailsButton">Кнопка «Подробности» в меню</string>
+    <string name="ShowCopyPhotoButton">Кнопка «Копировать фото» в меню</string>
+    <string name="ShowEditHistoryButton">Кнопка «История изменений» в меню</string>
+    <string name="MessageEditHistory">История изменений</string>
+    <string name="MessageOriginalVersion">Исходная версия</string>
+    <string name="MessageCurrentVersion">Текущая версия</string>
+    <string name="MessageEditedVersion">Редакция %1$d</string>
+    <string name="MessageIsDeleted">Сообщение удалено</string>
+    <string name="MessageDeletedBadge">Удалено</string>
+    <string name="MessageNotEdited">Сообщение не редактировалось</string>
+    <string name="MessageEditsEmpty">История изменений для этого сообщения пуста</string>
+    <string name="MessageEditHistoryHint">История изменений сохраняется локально, включая удалённые сообщения</string>
+    <string name="CopyVersionText">Скопировать текст</string>
+    <string name="NoCaption">Без подписи</string>
+    <string name="EmptyMessage">Пустое сообщение</string>
+
+    <!-- Privacy -->
+    <string name="UsernameHidden">Скрыт</string>
+    <string name="HundredGramHideOtherPhoneNumbers">Скрывать чужие номера телефонов</string>
+    <string name="HundredGramHideOtherPhoneNumbersInfo">Скрывает номера телефонов других пользователей в их профилях и заголовках чатов</string>
+    <string name="HundredGramHideUsername">Скрыть свой юзернейм</string>
+    <string name="HundredGramHideUsernameInfo">Маскирует ваш юзернейм в настройках и профиле</string>
+    <string name="HundredGramHideOtherUsernames">Скрывать чужие юзернеймы</string>
+    <string name="HundredGramHideOtherUsernamesInfo">Маскирует юзернеймы других пользователей и каналов в их профилях</string>
+    <string name="RevealPhone">Показать номер</string>
+    <string name="RevealUsername">Показать юзернейм</string>
+    <string name="RevealPhoneTitle">Показать номер?</string>
+    <string name="RevealPhoneMessage">Вы уверены, что хотите показать номер телефона?</string>
+    <string name="RevealUsernameTitle">Показать юзернейм?</string>
+    <string name="RevealUsernameMessage">Вы уверены, что хотите показать юзернейм?</string>
+    <string name="Reveal">Показать</string>
+
+    <!-- Media Vault & Archiver -->
+    <string name="HundredGramVaultHeader">Архиватор и сохранение файлов</string>
+    <string name="HundredGramBackgroundArchiver">Фоновая синхронизация сообщений</string>
+    <string name="HundredGramBackgroundArchiverInfo">Загружает сообщения даже из заглушенных каналов и групп в фоне</string>
+    <string name="HundredGramMediaVault">Превентивная автозагрузка медиа</string>
+    <string name="HundredGramMediaVaultInfo">Автоматически скачивает файлы до того, как автор успеет их удалить</string>
+    <string name="HundredGramMediaVaultLimit">Максимальный размер файла</string>
+    <string name="HundredGramMediaVaultScope">Где сохранять медиа</string>
+    <string name="HundredGramMediaVaultScopePrivate">Только личные чаты</string>
+    <string name="HundredGramMediaVaultScopeGroups">Личные чаты и группы</string>
+    <string name="HundredGramMediaVaultScopeAll">Все чаты (включая каналы)</string>
+    <string name="HundredGramMediaVaultOnlyWifi">Сохранять только по Wi-Fi</string>
+    <string name="HundredGramMediaVaultOnlyWifiInfo">Экономит мобильный трафик, загружая медиа только при подключении к Wi-Fi</string>
+
+    <!-- Activity Tracker & Online -->
+    <string name="HundredGramTrackerHeader">Мониторинг активности и онлайна</string>
+    <string name="HundredGramTrackOnlineStatus">Логировать заходы в сеть</string>
+    <string name="HundredGramTrackOnlineStatusInfo">Фиксирует точное время активности пользователей со скрытым статусом («был(а) недавно»)</string>
+    <string name="HundredGramNotifyUserOnline">Уведомлять при входе в сеть</string>
+    <string name="HundredGramNotifyUserOnlineInfo">Показывает уведомление, когда отслеживаемый контакт заходит в сеть</string>
+    <string name="UserActivityLog">Журнал активности</string>
+    <string name="UserActivityLastSeen">замечен(а) в %1$s</string>
+    <string name="UserActivityTotalToday">Сегодня в сети: %1$s</string>
+    <string name="UserActivitySessionsCount">Заходов за сегодня: %1$d</string>
+    <string name="UserActivityEmpty">Заходов в сеть пока не зафиксировано</string>
+    <string name="UserActivityClear">Очистить журнал</string>
+    <string name="UserActivityClearConfirm">Очистить историю активности для этого пользователя?</string>
+    <string name="UserOnlineNow">%1$s сейчас в сети!</string>
+    <string name="ActivityHistory">История активности</string>
+    <string name="EnableNotifyUserOnline">Уведомлять при входе в сеть</string>
+    <string name="DisableNotifyUserOnline">Не уведомлять о сети</string>
+    <string name="NotifyOnlineEnabledForUser">Уведомления о сети для %1$s включены</string>
+    <string name="NotifyOnlineDisabledForUser">Уведомления о сети для %1$s отключены</string>
+    <string name="ActivityTriggerOnline">В сети</string>
+    <string name="ActivityTriggerTyping">Печатает...</string>
+    <string name="ActivityTriggerMessage">Сообщение</string>
+
+    <!-- Chat Media Vault & Exceptions -->
+    <string name="HundredGramChatVaultMenu">Автосохранение медиа</string>
+    <string name="HundredGramChatVaultTitle">Автосохранение медиа в чате</string>
+    <string name="HundredGramVaultModeHeader">Режим сохранения для чата</string>
+    <string name="HundredGramVaultModeDefault">По умолчанию (из общих настроек)</string>
+    <string name="HundredGramVaultModeAlways">Всегда сохранять в этом чате</string>
+    <string name="HundredGramVaultModeNever">Не сохранять (исключить этот чат)</string>
+    <string name="HundredGramVaultTypesHeader">Что сохранять</string>
+    <string name="HundredGramVaultPhotos">Фотографии</string>
+    <string name="HundredGramVaultVideos">Видеозаписи</string>
+    <string name="HundredGramVaultVoicesRounds">Голосовые и кружочки</string>
+    <string name="HundredGramVaultDocuments">Файлы и документы</string>
+    <string name="HundredGramVaultLimitHeader">Лимит размера файла для этого чата</string>
+    <string name="HundredGramVaultResetDefault">Сбросить настройки для этого чата</string>
+    <string name="HundredGramVaultResetConfirm">Сбросить настройки сохранения для этого чата к значениям по умолчанию?</string>
+    <string name="HundredGramVaultExceptions">Исключения для чатов</string>
+    <string name="HundredGramVaultExceptionsInfo">Персональные правила автосохранения медиа для отдельных чатов</string>
+    <string name="HundredGramVaultNoExceptions">Нет</string>
+    <string name="HundredGramVaultAddException">Добавить исключение</string>
+    <string name="HundredGramVaultExceptionsEmpty">У вас пока нет персональных настроек для чатов</string>
+    <string name="HundredGramVaultSizeDefault">По умолчанию (%1$d МБ)</string>
+    <string name="HundredGramVaultSizeUnlimited">Без ограничений</string>
+    <string name="HundredGramVaultSaved">Настройки для чата сохранены</string>
+    <string name="HundredGramVaultDeleted">Исключение удалено</string>
+    <string name="HundredGramVaultDeleteConfirm">Удалить исключение для чата «%1$s»?</string>
+
+    <!-- Sub-settings Categories -->
+    <string name="HundredGramCategoryVault">Архиватор и медиа</string>
+    <string name="HundredGramCategoryVaultSub">Автосохранение медиа, исключения, очистка архива</string>
+    <string name="HundredGramCategoryTracker">Мониторинг активности</string>
+    <string name="HundredGramCategoryTrackerSub">Скрытый онлайн, сессии пользователей, уведомления</string>
+    <string name="HundredGramCategoryPrivacy">Конфиденциальность и профиль</string>
+    <string name="HundredGramCategoryPrivacySub">Скрытие номеров телефонов, юзернеймов, ID и DC</string>
+    <string name="HundredGramCategoryInterface">Интерфейс и чаты</string>
+    <string name="HundredGramCategoryInterfaceSub">Относительное время, папка архива, клавиатура</string>
+    <string name="HundredGramCategoryCamera">Камера и кружки</string>
+    <string name="HundredGramCategoryCameraSub">CameraX, съемка в 60 FPS, слайдер зума</string>
+    <string name="HundredGramCategoryActions">Действия и меню</string>
+    <string name="HundredGramCategoryActionsSub">Двойное нажатие, кнопки контекстного меню</string>
+
+    <!-- Clear Vault -->
+    <string name="HundredGramVaultClearHeader">Очистка архива</string>
+    <string name="HundredGramVaultClearChat">Очистить офлайн архив чата</string>
+    <string name="HundredGramVaultClearChatInfo">Удаляет все превентивно сохраненные медиафайлы этого чата с устройства</string>
+    <string name="HundredGramVaultClearChatConfirm">Удалить все сохраненные медиафайлы этого чата из памяти устройства?</string>
+    <string name="HundredGramVaultClearedChat">Офлайн архив чата очищен (освобождено %1$s)</string>
+    <string name="HundredGramVaultClearAll">Очистить весь офлайн архив</string>
+    <string name="HundredGramVaultClearAllInfo">Удаляет сохраненные медиафайлы всех чатов, освобождая память устройства</string>
+    <string name="HundredGramVaultClearAllConfirm">Удалить все превентивно сохраненные медиафайлы всех чатов с устройства?</string>
+    <string name="HundredGramVaultClearedAll">Весь офлайн архив очищен (освобождено %1$s)</string>
+
+    <!-- Deleted Messages Highlight -->
+    <string name="DeletedMessage">удалено</string>
+    <string name="HundredGramHighlightDeleted">Полупрозрачность удаленных сообщений</string>
+    <string name="HundredGramHighlightDeletedInfo">Отображает удаленные сообщения и медиа полупрозрачными (призрачный режим), выделяя их как сохраненные копии</string>
+
+    <!-- Media Quality & Extera Features -->
+    <string name="HundredGramCategoryMediaQuality">Качество медиа и загрузка</string>
+    <string name="HundredGramCategoryMediaQualitySub">4K фото, видео без сжатия, ускоритель скачивания</string>
+    <string name="AlwaysHighQualityPhotos">Всегда отправлять фото в HD</string>
+    <string name="AlwaysHighQualityPhotosInfo">Автоматически включает высокое качество (HD) для всех выбираемых и отправляемых фото</string>
+    <string name="PhotoMaxResolution">Максимальное разрешение фото</string>
+    <string name="PhotoMaxResolutionInfo">Максимальный размер фото по длинной стороне при отправке</string>
+    <string name="PhotoMaxRes1280">1280px (Стандартное)</string>
+    <string name="PhotoMaxRes2560">2560px (HD)</string>
+    <string name="PhotoMaxRes3840">3840px (Ultra HD 4K)</string>
+    <string name="SendVideoAsDocument">Отправлять видео без сжатия</string>
+    <string name="SendVideoAsDocumentInfo">Отправляет оригинальное видео как документ (файл) без перекодирования кодеком и потери fps</string>
+    <string name="BoostDownloadSpeed">Ускоритель загрузки (Parallel Chunks)</string>
+    <string name="BoostDownloadSpeedInfo">Увеличивает количество параллельных потоков скачивания чанков до 8 для максимальной скорости скачивания видео и файлов</string>
+    <string name="ConfirmCalls">Подтверждение перед звонком</string>
+    <string name="ConfirmCallsInfo">Показывает диалоговое окно подтверждения перед началом голосового или видеовызова (защита от случайных звонков)</string>
+    <string name="ConfirmCallUser">Позвонить %1$s?</string>
+    <string name="ConfirmVideoCallUser">Видеозвонок пользователю %1$s?</string>
+    <string name="ConfirmCall">Позвонить</string>
+    <string name="GoToFirstMessage">К первому сообщению</string>
+    <string name="CleanUrls">Очистка ссылок от трекеров</string>
+    <string name="CleanUrlsInfo">Автоматически удаляет параметры отслеживания (utm_*, fbclid, gclid, si, igshid и др.) при копировании ссылок</string>
+
+    <!-- Ghost Mode -->
+    <string name="HundredGramCategoryGhost">Режим невидимки</string>
+    <string name="HundredGramCategoryGhostSub">Скрытое чтение сообщений, анонимные истории, скрытие набора текста</string>
+    <string name="GhostReadMessages">Нечиталка сообщений</string>
+    <string name="GhostReadMessagesInfo">Сообщения остаются непрочитанными для собеседника (одна галочка), пока вы читаете чат</string>
+    <string name="GhostReadOnReply">Отмечать прочитанным при ответе</string>
+    <string name="GhostReadOnReplyInfo">Диалог помечается прочитанным на сервере, когда вы отправляете своё сообщение в этот чат</string>
+    <string name="GhostReadMediaContents">Скрывать прослушивание голосовых</string>
+    <string name="GhostReadMediaContentsInfo">Не отправляет отчёт о прослушивании голосовых сообщений и кружков (зелёная точка остаётся у собеседника)</string>
+    <string name="GhostShowMarkAsRead">Пункт «Прочитать» в меню сообщения</string>
+    <string name="GhostShowMarkAsReadInfo">Добавляет пункт в контекстное меню для ручной отметки сообщений прочитанными до выбранного</string>
+    <string name="GhostMarkAsRead">Отметить прочитанным</string>
+    <string name="GhostMarkedAsRead">Сообщения отмечены прочитанными</string>
+    <string name="GhostTyping">Скрывать статус набора текста</string>
+    <string name="GhostTypingInfo">Собеседник не видит, когда вы печатаете текст, записываете голос или кружок</string>
+    <string name="GhostStoriesMode">Режим просмотра историй</string>
+    <string name="GhostStoriesModeInfo">Позволяет смотреть Stories пользователей и каналов анонимно</string>
+    <string name="GhostStoriesOff">Обычный (как в Telegram)</string>
+    <string name="GhostStoriesAlways">Всегда скрытно (анонимно)</string>
+    <string name="GhostStoriesPrompt">Спрашивать перед открытием</string>
+    <string name="GhostStoriesPromptTitle">Просмотр истории</string>
+    <string name="GhostStoriesPromptMessage">Как вы хотите открыть эту историю?</string>
+    <string name="GhostStoriesPromptNormal">Обычный просмотр</string>
+    <string name="GhostStoriesPromptGhost">Смотреть скрытно (Анонимно)</string>
+    <string name="GhostStoriesPromptRemember">Запомнить мой выбор</string>
+    <string name="UnlockStorySaving">Сохранение историй в галерею</string>
+    <string name="UnlockStorySavingInfo">Разрешает скачивать чужие Stories в галерею без подписки Telegram Premium</string>
+    <string name="GhostStoriesBadge">Скрытно</string>
+
+    <!-- Auto check delete for all -->
+    <string name="AutoCheckDeleteForAll">Удалять для всех / у двоих</string>
+    <string name="AutoCheckDeleteForAllInfo">Автоматически включает галочку «Удалить для всех» и «Также удалить для собеседника» в окне удаления сообщений и чатов</string>
+
+    <!-- Ghost Online & Read Date -->
+    <string name="GhostOnline">Скрытный онлайн (Ghost Online)</string>
+    <string name="GhostOnlineInfo">Не отправляет статус «в сети» при открытии приложения и чтении чатов. Собеседники увидят вас онлайн только в момент отправки сообщений.</string>
+    <string name="GhostHideReadDate">Скрывать точное время прочтения</string>
+    <string name="GhostHideReadDateInfo">Скрывает отображение точного времени прочтения сообщений в личных чатах (функция Telegram Premium)</string>
+
+    <!-- Silent send by default -->
+    <string name="SilentSendByDefault">Отправка без звука по умолчанию</string>
+    <string name="SilentSendByDefaultInfo">Все исходящие сообщения отправляются без звукового сигнала у получателя. Удерживайте кнопку отправки, чтобы отправить со звуком.</string>
+    <string name="SendWithSound">Отправить со звуком</string>
+
+    <!-- Confirm send stickers and gifs -->
+    <string name="ConfirmSendStickers">Подтверждать отправку стикеров</string>
+    <string name="ConfirmSendStickersInfo">Показывает окно подтверждения перед отправкой стикера, предотвращая случайные нажатия</string>
+    <string name="ConfirmSendGifs">Подтверждать отправку GIF</string>
+    <string name="ConfirmSendGifsInfo">Показывает окно подтверждения перед отправкой анимации GIF</string>
+    <string name="ConfirmSendStickerTitle">Отправить стикер?</string>
+    <string name="ConfirmSendGifTitle">Отправить GIF?</string>
+    <string name="ConfirmSendPrompt">Вы уверены, что хотите отправить это сообщение в чат?</string>
+
+    <!-- Forward without author -->
+    <string name="ForwardWithoutAuthor">Переслать без автора</string>
+    <string name="ShowForwardWithoutAuthorButton">Кнопка «Без автора» в меню</string>
+    <string name="ShowForwardWithoutAuthorButtonInfo">Отображает пункт «Переслать без автора» в контекстном меню сообщений</string>
+    <string name="AlwaysForwardWithoutAuthor">Всегда пересылать без автора</string>
+    <string name="AlwaysForwardWithoutAuthorInfo">Автоматически удаляет имя первоначального отправителя и ссылку на источник при пересылке сообщений</string>
+
+    <!-- Unlock Chat Translation -->
+    <string name="UnlockChatTranslation">Автоперевод чатов без Premium</string>
+    <string name="UnlockChatTranslationInfo">Разблокирует верхнюю панель автоперевода для перевода целых чатов и каналов в реальном времени</string>
+
+    <!-- Clear Chat Cache -->
+    <string name="ClearChatCache">Очистить кэш этого чата</string>
+    <string name="ClearChatCacheConfirm">Очистить кэшированные медиафайлы (%1$s) этого чата?</string>
+    <string name="ClearChatCacheDone">Кэш чата очищен (освобождено %1$s)</string>
+    <string name="ClearChatCacheEmpty">В этом чате нет кэшированных файлов</string>
+
+    <!-- Vault Viewer -->
+    <string name="VaultBrowseFiles">Просмотр файлов архива</string>
+    <string name="VaultBrowseFilesInfo">Просмотр, управление и очистка всех медиафайлов, сохранённых в архиве по всем чатам</string>
+    <string name="VaultIncludeArchivedChats">Включать чаты из архива Telegram</string>
+    <string name="VaultIncludeArchivedChatsInfo">Автоматически сохранять медиа в сейф из чатов, находящихся в папке «Архив»</string>
+    <string name="VaultTitle">Архив медиа</string>
+    <string name="VaultFilterAll">Все чаты</string>
+    <string name="VaultFilterArchived">Архивные чаты</string>
+    <string name="VaultFilterPrivate">Личные чаты</string>
+    <string name="VaultFilterGroupsChannels">Группы и каналы</string>
+    <string name="VaultFilesCount">%1$d файлов · %2$s</string>
+    <string name="VaultNoFiles">В архиве нет сохранённых файлов</string>
+
+    <!-- Keep-Alive Service -->
+    <string name="KeepAliveServiceTitle">Служба поддержания соединения</string>
+    <string name="KeepAliveServiceRunning">Фоновое соединение активно · Архив работает</string>
+    <string name="KeepAliveForegroundService">Служба переднего плана (Keep-Alive)</string>
+    <string name="KeepAliveForegroundServiceInfo">Защищает 100gram от выгрузки системой Android из оперативной памяти и поддерживает постоянный сокет MTProto для круглосуточного сохранения удалённых сообщений и архивации</string>
+    <string name="BatteryOptimization">Контроль активности батареи</string>
+    <string name="BatteryOptimizationInfo">Нажмите для открытия настроек питания системы и выбора режима «Без ограничений» (предотвращает заморозку сети при выключенном экране)</string>
+
+    <!-- Per-Chat Individual Overrides -->
+    <string name="HundredGramChatSettingsTitle">Настройки чата (100gram)</string>
+    <string name="HundredGramChatSettingsSub">Индивидуальные настройки для этого диалога</string>
+    <string name="HundredGramChatOverrideDefault">По умолчанию</string>
+    <string name="HundredGramChatOverrideDefaultOn">По умолчанию (Включено глобально)</string>
+    <string name="HundredGramChatOverrideDefaultOff">По умолчанию (Выключено глобально)</string>
+    <string name="HundredGramChatOverrideEnabled">Всегда включено</string>
+    <string name="HundredGramChatOverrideDisabled">Всегда выключено</string>
+    <string name="HundredGramChatOverrideGhostRead">Нечиталка сообщений (Ghost Read)</string>
+    <string name="HundredGramChatOverrideGhostReadInfo">Не отправлять отметку о прочтении в этом чате</string>
+    <string name="HundredGramChatOverrideGhostTyping">Скрытие набора текста (Ghost Typing)</string>
+    <string name="HundredGramChatOverrideGhostTypingInfo">Скрывать статус набора текста и записи в этом чате</string>
+    <string name="HundredGramChatOverrideHidePhone">Скрытие номера телефона</string>
+    <string name="HundredGramChatOverrideHidePhoneInfo">Маскировать номер телефона в этом чате и профиле</string>
+    <string name="HundredGramChatOverrideAntiDelete">Защита от удаления (Anti-Delete)</string>
+    <string name="HundredGramChatOverrideAntiDeleteInfo">Сохранять удаляемые собеседником сообщения в этом чате</string>
+    <string name="HundredGramChatOverrideSilentSend">Отправка без звука по умолчанию</string>
+    <string name="HundredGramChatOverrideSilentSendInfo">Все исходящие сообщения отправляются без звукового оповещения у получателя</string>
+    <string name="HundredGramChatOverrideAutoTranslate">Автоперевод переписки</string>
+    <string name="HundredGramChatOverrideAutoTranslateInfo">Автоматически переводить входящие сообщения в этом чате</string>
+    <string name="HundredGramChatOverrideAutoArchive">Фоновая архивация</string>
+    <string name="HundredGramChatOverrideAutoArchiveInfo">Предзагружать сообщения и медиа службой Keep-Alive</string>
+    <string name="HundredGramChatOverridePhotoQuality">Качество отправки фото</string>
+    <string name="HundredGramChatOverrideVideoDoc">Отправка видео как файл</string>
+    <string name="HundredGramChatOverrideVideoDocInfo">Отправлять видео без компрессии и перекодирования</string>
+    <string name="HundredGramChatOverrideCacheLimit">Лимит кэша этого чата</string>
+    <string name="HundredGramChatOverrideNoLimit">Без ограничений</string>
+    <string name="HundredGramChatOverrideReset">Сбросить настройки для этого чата</string>
+    <string name="HundredGramChatOverrideResetConfirm">Сбросить все индивидуальные настройки этого чата к значениям по умолчанию?</string>
+    <string name="HundredGramChatOverrideResetDone">Настройки чата сброшены к значениям по умолчанию</string>
+    <string name="HundredGramChatOverrideSectionGhost">Режим невидимки и приватность</string>
+    <string name="HundredGramChatOverrideSectionMessaging">Сообщения и отправка</string>
+    <string name="HundredGramChatOverrideSectionMedia">Качество медиа</string>
+    <string name="HundredGramChatOverrideSectionVault">Хранилище медиа и архив</string>
+    <string name="HundredGramChatOverrideMute">Заглушить уведомления</string>
+    <string name="HundredGramChatVaultMode">Режим сохранения в хранилище</string>
+    <string name="HundredGramChatVaultMaxSize">Максимальный размер файла хранилища</string>
+
+    <!-- Streamer Mode & Privacy Disguise -->
+    <string name="HundredGramCategoryStreamer">Режим стримера и маскировка</string>
+    <string name="HundredGramCategoryStreamerSub">Защита при трансляциях, Privacy Blur, камуфляж приложения</string>
+    <string name="StreamerMode">Режим стримера (Streamer Mode)</string>
+    <string name="StreamerModeInfo">Скрывает чувствительные данные для защиты от утечек при показе экрана и стримах</string>
+    <string name="StreamerFakeName">Отображаемый псевдоним</string>
+    <string name="StreamerFakeNameInfo">Заменяет реальное имя аккаунта в интерфейсе</string>
+    <string name="StreamerHidePhones">Скрывать все номера телефонов</string>
+    <string name="StreamerHidePhonesInfo">Маскирует номер телефона вашего аккаунта и собеседников</string>
+    <string name="StreamerHideUsernames">Маскировать юзернеймы</string>
+    <string name="StreamerHideUsernamesInfo">Заменяет имена пользователей символами маскировки</string>
+    <string name="StreamerHideAvatars">Скрывать аватарки</string>
+    <string name="StreamerHideAvatarsInfo">Заменяет фотографии профилей на нейтральные заглушки</string>
+    <string name="StreamerHideDialogMessages">Скрывать текст сообщений в чатах</string>
+    <string name="StreamerHideDialogMessagesInfo">Маскирует последнее сообщение в списке диалогов</string>
+    <string name="StreamerHideIdDc">Скрывать ID и DC</string>
+    <string name="StreamerHideIdDcInfo">Скрывает строки Telegram ID и датацентра в профилях</string>
+    <string name="StreamerHideNotificationPreview">Безопасные уведомления</string>
+    <string name="StreamerHideNotificationPreviewInfo">В пушах пишется только «Новое сообщение» без имени и текста</string>
+    <string name="StreamerHideOtherAccounts">Скрывать другие аккаунты</string>
+    <string name="StreamerHideOtherAccountsInfo">Прячет список дополнительных аккаунтов в боковом меню</string>
+    <string name="StreamerPreventAccidentalCalls">Защита от звонков</string>
+    <string name="StreamerPreventAccidentalCallsInfo">Запрашивает подтверждение перед совершением аудио- и видеозвонков</string>
+    <string name="StreamerCallConfirm">Активен Режим стримера. Вы действительно хотите позвонить %1$s?</string>
+    <string name="StreamerModeEnabledBulletin">Режим стримера включён</string>
+    <string name="StreamerModeDisabledBulletin">Режим стримера выключен</string>
+    <string name="StreamerModeQuickToggle">Режим стримера</string>
+
+    <!-- Privacy Blur & Tap-to-Reveal -->
+    <string name="PrivacyBlurSection">Размытие и приватность</string>
+    <string name="PrivacyBlurDialogMessages">Маскировать превью сообщений в чатах</string>
+    <string name="PrivacyBlurDialogMessagesInfo">Скрывает текст последнего сообщения в общем списке чатов</string>
+    <string name="RevealPhoneConfirmTitle">Показать номер телефона?</string>
+    <string name="RevealPhoneConfirmMessage">Вы уверены, что хотите раскрыть скрытый номер телефона?</string>
+    <string name="RevealUsernameConfirmTitle">Показать юзернейм?</string>
+    <string name="RevealUsernameConfirmMessage">Вы уверены, что хотите раскрыть скрытое имя пользователя?</string>
+    <string name="RevealButton">Показать</string>
+
+    <!-- App Disguise (Camouflage) -->
+    <string name="AppDisguiseSection">Камуфляж приложения (App Disguise)</string>
+    <string name="AppDisguiseInfo">Смена иконки и названия приложения на рабочем столе Android без переустановки</string>
+    <string name="AppDisguiseDefault">100gram (По умолчанию)</string>
+    <string name="AppDisguiseCalculator">Калькулятор</string>
+    <string name="AppDisguiseNotes">Заметки</string>
+    <string name="AppDisguiseClock">Часы</string>
+    <string name="StreamerPreventAccidentalDelete">Защита от случайного удаления</string>
+    <string name="StreamerPreventAccidentalDeleteInfo">Требует повторного подтверждения перед удалением любого чата</string>
+    <string name="PrivacyBlurAvatars">Скрывать аватарки в списке чатов</string>
+    <string name="PrivacyBlurAvatarsInfo">Отображает нейтральные значки с инициалами вместо личных фото</string>
+    <string name="AppDisguiseIcon">Иконка и название приложения</string>
+    <string name="AppDisguiseApplied">Иконка приложения изменена на «%1$s»</string>
+
+    <!-- Stage 3: Interface, Navigation & Avatar History -->
+    <string name="HideSimilarChannels">Скрывать «Похожие каналы»</string>
+    <string name="HideSimilarChannelsInfo">Скрывает блок рекомендаций каналов при просмотре и подписке</string>
+    <string name="HideStoriesBar">Скрывать панель Stories</string>
+    <string name="HideStoriesBarInfo">Скрывает верхнюю полосу историй над списком чатов</string>
+    <string name="ShowSecondsInTime">Секунды во времени сообщений</string>
+    <string name="ShowSecondsInTimeInfo">Отображает точное время сообщений с секундами (ЧЧ:мм:сс)</string>
+    <string name="ConfirmLeaveChat">Подтверждение выхода из чата</string>
+    <string name="ConfirmLeaveChatInfo">Запрашивает подтверждение перед выходом из групп и отпиской от каналов</string>
+    <string name="ConfirmLeaveChatPrompt">Вы действительно хотите покинуть «%1$s»?</string>
+    <string name="AvatarHistory">История аватарок</string>
+    <string name="AvatarHistoryInfo">Локально сохраняет все предыдущие фотографии профилей пользователей и каналов</string>
+    <string name="AvatarHistoryTitle">История аватарок</string>
+    <string name="AvatarHistoryCount">История аватарок (%1$d)</string>
+    <string name="AvatarHistoryEmpty">История аватарок пока пуста</string>
+    <string name="AvatarHistorySaveGallery">Сохранить в галерею</string>
+    <string name="AvatarHistorySaved">Фотография сохранена в галерею</string>
+    <string name="AvatarHistoryRecordedAt">Замечено: %1$s</string>
+
+    <!-- Stage 4: Developer Mode & Chat Export -->
+    <string name="DevCategory">Инструменты разработчика и Экспорт</string>
+    <string name="DeveloperMode">Режим разработчика</string>
+    <string name="DeveloperModeInfo">Включает продвинутые инструменты: копирование как Markdown, инспектор JSON, форматирование</string>
+    <string name="CopyAsMarkdown">Копировать как Markdown</string>
+    <string name="CopyAsMarkdownDone">Скопировано как Markdown</string>
+    <string name="PrettyJson">Просмотр JSON</string>
+    <string name="PrettyJsonTitle">Инспектор JSON</string>
+    <string name="PrettyJsonCopyFormatted">Копировать с отступами</string>
+    <string name="PrettyJsonMinify">Минифицировать</string>
+    <string name="PrettyJsonCopied">JSON скопирован в буфер обмена</string>
+    <string name="PrettyJsonInvalid">Не является корректным JSON</string>
+    <string name="PrettyJsonIndent">Отступ: %1$d пробела</string>
+    <string name="DevCopyCodeButton">Кнопка копирования для всех блоков кода</string>
+    <string name="DevCopyCodeButtonInfo">Всегда отображать кнопку «Копировать код» для блоков кода любой длины</string>
+
+    <string name="ChatExport">Экспорт чата</string>
+    <string name="ChatExportTitle">Экспорт истории переписки</string>
+    <string name="ChatExportFormat">Формат экспорта</string>
+    <string name="ChatExportRange">Объём экспорта</string>
+    <string name="ChatExportRangeAll">Вся история</string>
+    <string name="ChatExportRange100">Последние 100 сообщений</string>
+    <string name="ChatExportRange500">Последние 500 сообщений</string>
+    <string name="ChatExportRange1000">Последние 1 000 сообщений</string>
+    <string name="ChatExportIncludeDeleted">Включать удалённые сообщения (Anti-Delete)</string>
+    <string name="ChatExportIncludeEdits">Включать историю изменений (все версии)</string>
+    <string name="ChatExportIncludeMediaLinks">Включать данные и имена медиафайлов</string>
+    <string name="ChatExportStart">Начать экспорт</string>
+    <string name="ChatExportProgress">Экспорт сообщений (%1$d)...</string>
+    <string name="ChatExportSuccess">Чат успешно экспортирован (%1$d сообщений)</string>
+    <string name="ChatExportOpen">Открыть файл</string>
+    <string name="ChatExportShare">Поделиться файлом</string>
+    <string name="ChatExportEmpty">Нет сообщений для экспорта в выбранном диапазоне</string>
+    <string name="ChatExportError">Ошибка при экспорте чата: %1$s</string>
+
+    <!-- Stage 5: Vault Auto-Rotation, Automation Engine, Swipes -->
+    <string name="VaultTtl">Срок хранения файлов архива</string>
+    <string name="VaultTtlInfo">Автоматически удалять сохранённые в архив медиафайлы старше указанного срока</string>
+    <string name="VaultTtlForever">Хранить всегда</string>
+    <string name="VaultTtl7Days">7 дней</string>
+    <string name="VaultTtl30Days">30 дней</string>
+    <string name="VaultTtl60Days">60 дней</string>
+    <string name="VaultTtl90Days">90 дней</string>
+    <string name="VaultMaxSize">Квота размера архива</string>
+    <string name="VaultMaxSizeInfo">Максимальный объём памяти для архива медиа. При превышении удаляются самые старые файлы</string>
+    <string name="VaultMaxSizeUnlimited">Без лимита</string>
+    <string name="VaultMaxSize2Gb">2 ГБ</string>
+    <string name="VaultMaxSize5Gb">5 GB</string>
+    <string name="VaultMaxSize10Gb">10 ГБ</string>
+    <string name="VaultMaxSize20Gb">20 ГБ</string>
+    <string name="VaultCleanExpiredNow">Очистить устаревшие файлы</string>
+    <string name="VaultCleanExpiredDone">Очищено %1$s устаревших файлов</string>
+    <string name="VaultCleanNoExpired">Устаревших файлов не найдено</string>
+    <string name="VaultNeverExpireChat">Защита от авто-ротации</string>
+    <string name="VaultNeverExpireChatInfo">Файлы этого чата защищены от авто-ротации и лимитов размера</string>
+
+    <string name="AutomationCategory">Автоматизация и правила</string>
+    <string name="AutomationTitle">Правила автоматизации</string>
+    <string name="AutomationSubtitle">Автоматические действия при входящих сообщениях</string>
+    <string name="AutomationAddRule">Добавить правило</string>
+    <string name="AutomationEditRule">Редактировать правило</string>
+    <string name="AutomationRuleName">Название правила</string>
+    <string name="AutomationRuleChat">Исходный чат</string>
+    <string name="AutomationRuleChatAny">Любой чат</string>
+    <string name="AutomationRuleKeyword">Ключевое слово или фраза</string>
+    <string name="AutomationRuleMediaType">Тип вложения</string>
+    <string name="AutomationMediaAny">Любое сообщение</string>
+    <string name="AutomationMediaPhoto">Только фото</string>
+    <string name="AutomationMediaVideo">Только видео</string>
+    <string name="AutomationMediaDocument">Только документы</string>
+    <string name="AutomationMediaVoice">Голосовые и видеосообщения</string>
+    <string name="AutomationActionSaved">Копировать в «Избранное»</string>
+    <string name="AutomationActionMarkRead">Пометить прочитанным</string>
+    <string name="AutomationActionGallery">Сохранять в галерею смартфона</string>
+    <string name="AutomationActionForward">Пересылать в другой чат</string>
+    <string name="AutomationActionNotify">Приоритетное уведомление и звук</string>
+    <string name="AutomationNoRules">Нет правил автоматизации\nНажмите +, чтобы создать первое правило</string>
+    <string name="AutomationDeleteConfirm">Удалить правило «%1$s»?</string>
+    <string name="AutomationTriggered">Сработало правило «%1$s»</string>
+
+    <string name="ChatSwipeActionTitle">Действие свайпа чата</string>
+
+    <!-- Stage 6: Shortcuts, Streamer FLAG_SECURE, Online Alerts -->
+    <string name="ShortcutGhostMode">Режим невидимки</string>
+    <string name="ShortcutStreamerMode">Режим стримера</string>
+    <string name="ShortcutVault">Сейф медиа</string>
+    <string name="StreamerBlockScreenshots">Запретить скриншоты и запись</string>
+    <string name="StreamerBlockScreenshotsInfo">Делает экран полностью черным в OBS, Discord и при записи экрана Android, а также блокирует системные скриншоты</string>
+    <string name="HundredGramNotifyAllContactsOnline">Уведомлять обо всех контактах</string>
+    <string name="HundredGramNotifyAllContactsOnlineInfo">Присылать уведомление при появлении в сети любого сохраненного контакта, а не только выбранных</string>
+    <string name="HundredGramTrackedUsersList">Отслеживаемые контакты</string>
+    <string name="HundredGramTrackedUsersCount">%1$d конт.</string>
+    <string name="HundredGramTrackedUsersEmpty">Список отслеживаемых контактов пуст</string>
+    <string name="HundredGramOnlineNotificationChannel">Уведомления о входе в сеть</string>
+
+    <!-- Network Boost -->
+    <string name="NetworkBoostTitle">Ускоритель сети (Network Boost)</string>
+    <string name="NetworkBoostSub">Параллельные загрузки и отдача MTProto</string>
+    <string name="NetworkBoostDownloadSpeed">Увеличение скорости загрузки</string>
+    <string name="NetworkBoostDownloadOff">Откл.</string>
+    <string name="NetworkBoostDownloadFast">Быстро</string>
+    <string name="NetworkBoostDownloadUltra">Ультра</string>
+    <string name="NetworkBoostAuto">Автоматический режим сети</string>
+    <string name="NetworkBoostAutoInfo">Ультра на Wi-Fi, Быстро на 4G/LTE, Стандарт на медленных соединениях</string>
+    <string name="NetworkBoostUpload">Увеличение скорости отправки</string>
+    <string name="NetworkBoostUploadInfo">Увеличивает число параллельных потоков выгрузки файлов на серверы Telegram</string>
+    <string name="NetworkBoostUploadAdaptive">Адаптивно по размеру файла</string>
+    <string name="NetworkBoostUploadAdaptiveInfo">Стандарт для файлов &lt;10 МБ, Быстро для 10–100 МБ, Ультра для &gt;100 МБ</string>
+    <string name="NetworkBoostLiveStats">Мониторинг сети</string>
+    <string name="NetworkBoostDownloadRate">Загрузка</string>
+    <string name="NetworkBoostUploadRate">Отправка</string>
+    <string name="NetworkBoostActiveThreads">Активных потоков</string>
+    <string name="NetworkBoostSpeedTest">Тест скорости</string>
+    <string name="NetworkBoostSpeedTesting">Тестирование скорости...</string>
+    <string name="NetworkBoostSpeedTestResult">Пинг: %1$d мс · Рекомендуемый режим: %2$s</string>
+
+    <!-- Camera Engine & CameraX -->
+    <string name="CameraEngineTitle">Продвинутая камера (Camera Engine)</string>
+    <string name="CameraEngineSub">Настройки CameraX, 60 FPS, 4K и кружочки</string>
+    <string name="CameraEngineChoose">Тип движка камеры</string>
+    <string name="CameraEngineSystem">Системная камера (Camera / Camera2)</string>
+    <string name="CameraEngineCameraX">CameraX (Современный движок Jetpack)</string>
+    <string name="CameraPerformanceMode">Производительный режим</string>
+    <string name="CameraPerformanceModeInfo">Снижает разрешение до 1080p, FPS до 30 и отключает HDR для защиты смартфона от перегрева и экономии аккумулятора</string>
+    <string name="CameraQuality">Качество видео</string>
+    <string name="CameraFps">Частота кадров (FPS)</string>
+    <string name="CameraFpsAuto">Авто</string>
+    <string name="CameraFps60">60 FPS (Плавное видео)</string>
+    <string name="CameraFps30">30 FPS (Стандарт)</string>
+    <string name="CameraFps24">24 FPS (Кинематографичный)</string>
+    <string name="CameraStabilization">Стабилизация видео (OIS / EIS)</string>
+    <string name="CameraStabilizationInfo">Аппаратное сглаживание тряски при съемке видео</string>
+    <string name="CameraHdr">HDR видеосъемка</string>
+    <string name="CameraHdrAuto">Авто</string>
+    <string name="CameraHdrOn">Всегда включено</string>
+    <string name="CameraHdrOff">Выключено</string>
+    <string name="CameraDefaultLens">Камера по умолчанию</string>
+    <string name="CameraDefaultLensBack">Основная (задняя)</string>
+    <string name="CameraDefaultLensFront">Фронтальная (селфи)</string>
+    <string name="CameraDefaultLensLast">Последняя использованная</string>
+    <string name="CameraDiagnostics">Возможности устройства</string>
+    <string name="CameraAutoTune">Автоподбор профиля</string>
+    <string name="CameraAutoTuneDone">Применен оптимальный профиль для вашего устройства</string>
+
+    <!-- Round Video Messages (Кружочки) -->
+    <string name="RoundVideoHeader">Видеосообщения (Кружочки)</string>
+    <string name="RoundCameraStart">Начальная камера для кружочков</string>
+    <string name="RoundCameraFront">🤳 Фронтальная камера</string>
+    <string name="RoundCameraBack">📷 Задняя (основная) камера</string>
+    <string name="RoundCameraWide">🔍 Ультраширокоугольная (0.6x)</string>
+    <string name="RoundCameraMenu">📋 Меню выбора при записи</string>
+    <string name="RoundCameraLast">🔄 Последняя использованная</string>
+    <string name="RoundCameraMenuPrompt">С какой камеры начать запись?</string>
+    <string name="RoundVideoResolution">Разрешение кружочка</string>
+    <string name="RoundVideoFps">60 FPS для кружочков</string>
+    <string name="RoundVideoFpsInfo">Максимальная плавность записи видеосообщений</string>
+    <string name="RoundVideoHighBitrate">Повышенный битрейт</string>
+    <string name="RoundVideoHighBitrateInfo">Увеличивает битрейт в 1.5–2 раза для максимальной четкости и детализации</string>
+    <string name="RoundVideoCodec">Видеокодек</string>
+    <string name="RoundVideoCodecH264">H.264 (AVC — совместим со всеми)</string>
+    <string name="RoundVideoCodecH265">H.265 (HEVC — максимальное сжатие и четкость)</string>
+</resources>

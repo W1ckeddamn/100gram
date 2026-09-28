@@ -116,6 +116,7 @@ import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.FlagSecureReason;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
@@ -12034,14 +12035,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             Activity activity = AndroidUtilities.findActivity(getContext());
             Window window = activity == null ? null : activity.getWindow();
             if (window != null) {
-                flagSecure = new FlagSecureReason(window, () ->
-                    currentMessageObject != null && currentMessageObject.messageOwner != null && (
-                        currentMessageObject.type == MessageObject.TYPE_PAID_MEDIA && (groupMedia == null || !groupMedia.hidden) ||
-                        currentMessageObject.messageOwner.noforwards ||
-                        currentMessageObject.isVoiceOnce() ||
-                        currentMessageObject.hasRevealedExtendedMedia()
-                    )
-                );
+                flagSecure = new FlagSecureReason(window, () -> false);
                 if (attachedToWindow) {
                     flagSecure.attach();
                 }
@@ -18390,7 +18384,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         if (messageObject.scheduled || messageObject.messageOwner.edit_hide) {
             edited = false;
         } else if (currentPosition == null || currentMessagesGroup == null || currentMessagesGroup.messages.isEmpty()) {
-            edited = (messageObject.messageOwner.flags & TLRPC.MESSAGE_FLAG_EDITED) != 0 || messageObject.isEditing();
+            edited = messageObject.isEdited() || messageObject.isEditing();
             deleted = messageObject.messageOwner.isDeleted;
         } else {
             edited = false;
@@ -18399,7 +18393,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 for (int a = 0, size = currentMessagesGroup.messages.size(); a < size; a++) {
                     MessageObject object = currentMessagesGroup.messages.get(a);
                     deleted = object.messageOwner.isDeleted;
-                    if ((object.messageOwner.flags & TLRPC.MESSAGE_FLAG_EDITED) != 0 || object.isEditing()) {
+                    if (object.isEdited() || object.isEditing()) {
                         edited = true;
                         break;
                     }
@@ -18414,10 +18408,12 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             timeString = LocaleController.formatSmallDateChat(currentMessageObject.realDate) + ", " + LocaleController.getInstance().getFormatterDay().format((long) (currentMessageObject.realDate) * 1000);
         } else if (currentMessageObject.isRepostPreview) {
             timeString = LocaleController.formatSmallDateChat(messageObject.messageOwner.date) + ", " + LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000);
-        } else if (edited||deleted) {
+        } else if (deleted) {
+            timeString = "🗑 " + getString(R.string.DeletedMessage) + " " + LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000);
+        } else if (edited) {
             timeString = AppGlobalConfig.getInstance(currentAccount).messagePrimaryEditedDate.get() ?
                 LocaleController.formatPmEditedDate(currentMessagesGroup != null ? currentMessagesGroup.getMaxEditDate() : messageObject.messageOwner.edit_date) :
-                    ((deleted ? getString(R.string.DeletedMessage) : getString(R.string.EditedMessage)) + " " + LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
+                (getString(R.string.EditedMessage) + " " + LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
         } else if (currentMessageObject.isSaved && currentMessageObject.messageOwner.fwd_from != null && (currentMessageObject.messageOwner.fwd_from.date != 0 || currentMessageObject.messageOwner.fwd_from.saved_date != 0)) {
             int date = currentMessageObject.messageOwner.fwd_from.saved_date;
             if (date == 0) {
@@ -20071,6 +20067,11 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         if (sponosoredAlpha != 255) {
             restoreToSponosoredAlpha = canvas.saveLayerAlpha(0, 0, getMeasuredWidth(), getMeasuredHeight(), sponosoredAlpha);
         }
+        int restoreToDeletedAlpha = -1;
+        final boolean isDeletedMessage = deleted || (currentMessageObject != null && currentMessageObject.messageOwner != null && currentMessageObject.messageOwner.isDeleted);
+        if (isDeletedMessage && HundredGramConfig.highlightDeletedMessages) {
+            restoreToDeletedAlpha = canvas.saveLayerAlpha(0, 0, getMeasuredWidth(), getMeasuredHeight(), (int) (255 * HundredGramConfig.deletedMessagesAlpha), Canvas.ALL_SAVE_FLAG);
+        }
 
         setupTextColors();
 
@@ -20270,6 +20271,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             drawOutboundsContent(canvas);
         }
         updateSelectionTextPosition();
+
+        if (restoreToDeletedAlpha != -1) {
+            canvas.restoreToCount(restoreToDeletedAlpha);
+        }
 
         if (restoreToSponosoredAlpha != -1) {
             canvas.restoreToCount(restoreToSponosoredAlpha);
@@ -20502,6 +20507,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         }
 
         int restoreCount = canvas.getSaveCount();
+        final boolean isDeletedMessage = deleted || (currentMessageObject != null && currentMessageObject.messageOwner != null && currentMessageObject.messageOwner.isDeleted);
+        if (fromParent && isDeletedMessage && HundredGramConfig.highlightDeletedMessages) {
+            canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), (int) (255 * HundredGramConfig.deletedMessagesAlpha), Canvas.ALL_SAVE_FLAG);
+        }
         if (transitionYOffsetForDrawables != 0) {
             canvas.save();
             canvas.translate(0, transitionYOffsetForDrawables);

@@ -73,6 +73,9 @@ public class LocaleController {
 
     private volatile FastDateFormat formatterDay;
     public FastDateFormat getFormatterDay() {
+        if (HundredGramConfig.showSecondsInTime) {
+            return getFormatterDayWithSeconds();
+        }
         if (formatterDay == null) {
             synchronized (this) {
                 if (formatterDay == null) {
@@ -1431,6 +1434,9 @@ public class LocaleController {
     }
 
     private String getStringInternal(String key, String fallback, int fallbackRes, int res) {
+        if ("AppName".equals(key) || "AppNameBeta".equals(key)) {
+            return "100gram";
+        }
         String value = BuildVars.USE_CLOUD_STRINGS ? localeValues.get(key) : null;
         if (value == null) {
             if (BuildVars.USE_CLOUD_STRINGS && fallback != null) {
@@ -1669,7 +1675,18 @@ public class LocaleController {
 
     public static String formatString(String key, String fallback, int res, int fallbackRes, Object... args) {
         try {
-            String value = BuildVars.USE_CLOUD_STRINGS ? getInstance().localeValues.get(key) : null;
+            if ("AppName".equals(key) || "AppNameBeta".equals(key)) {
+                return "100gram";
+            }
+            String value = null;
+            if ("TelegramVersion".equals(key)) {
+                try {
+                    value = ApplicationLoader.applicationContext.getString(R.string.TelegramVersion);
+                } catch (Exception ignored) {}
+            }
+            if (value == null) {
+                value = BuildVars.USE_CLOUD_STRINGS ? getInstance().localeValues.get(key) : null;
+            }
             if (value == null) {
                 if (BuildVars.USE_CLOUD_STRINGS && fallback != null) {
                     value = getInstance().localeValues.get(fallback);
@@ -1718,7 +1735,18 @@ public class LocaleController {
 
     public static CharSequence formatSpannable(String key, String fallback, int res, int fallbackRes, Object... args) {
         try {
-            String value = BuildVars.USE_CLOUD_STRINGS ? getInstance().localeValues.get(key) : null;
+            if ("AppName".equals(key) || "AppNameBeta".equals(key)) {
+                return "100gram";
+            }
+            String value = null;
+            if ("TelegramVersion".equals(key)) {
+                try {
+                    value = ApplicationLoader.applicationContext.getString(R.string.TelegramVersion);
+                } catch (Exception ignored) {}
+            }
+            if (value == null) {
+                value = BuildVars.USE_CLOUD_STRINGS ? getInstance().localeValues.get(key) : null;
+            }
             if (value == null) {
                 if (BuildVars.USE_CLOUD_STRINGS && fallback != null) {
                     value = getInstance().localeValues.get(fallback);
@@ -2693,6 +2721,12 @@ public class LocaleController {
             int dateYear = rightNow.get(Calendar.YEAR);
             int dateHour = rightNow.get(Calendar.HOUR_OF_DAY);
 
+            if (HundredGramConfig.relativeLastSeen) {
+                long diff = (System.currentTimeMillis() - date) / 1000;
+                if (diff >= 0 && diff < 24 * 3600) {
+                    return LocaleController.formatString(R.string.LastSeenFormatted, formatRelativeDate(diff));
+                }
+            }
             if (dateDay == day && year == dateYear) {
                 return LocaleController.formatString(R.string.LastSeenFormatted, LocaleController.formatString("TodayAtFormatted", R.string.TodayAtFormatted, getInstance().getFormatterDay().format(new Date(date))));
                 /*int diff = (int) (ConnectionsManager.getInstance().getCurrentTime() - date) / 60;
@@ -2940,6 +2974,13 @@ public class LocaleController {
     }
 
     public static String formatShortNumber(int number, int[] rounded) {
+        if (HundredGramConfig.disableNumberRounding) {
+            StringBuilder stringBuilder = new StringBuilder(String.format(Locale.US, "%d", number));
+            for (int n = stringBuilder.length() - 3; n > 0; n -= 3) {
+                stringBuilder.insert(n, ',');
+            }
+            return stringBuilder.toString();
+        }
         StringBuilder K = new StringBuilder();
         int lastDec = 0;
         int KCount = 0;

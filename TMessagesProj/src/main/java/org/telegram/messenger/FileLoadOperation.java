@@ -286,10 +286,10 @@ public class FileLoadOperation {
     }
 
     private void updateParams() {
-        if ((preloadPrefixSize > 0 || MessagesController.getInstance(currentAccount).getfileExperimentalParams) && !forceSmallChunk) {
-            downloadChunkSizeBig = 1024 * 512;
-            maxDownloadRequests = 8;
-            maxDownloadRequestsBig = 8;
+        if (!forceSmallChunk) {
+            downloadChunkSizeBig = HundredGramConfig.getDownloadChunkSize(totalBytesCount);
+            maxDownloadRequests = HundredGramConfig.getDownloadParallelRequests(totalBytesCount);
+            maxDownloadRequestsBig = maxDownloadRequests;
         } else {
             downloadChunkSizeBig = 1024 * 128;
             maxDownloadRequests = 4;
@@ -1943,6 +1943,7 @@ public class FileLoadOperation {
                     }
                     FileChannel channel = fileOutputStream.getChannel();
                     channel.write(bytes.buffer);
+                    HundredGramConfig.trackBytes(false, currentBytesSize);
                     addPart(notLoadedBytesRanges, requestInfo.offset, requestInfo.offset + currentBytesSize, true);
                     if (BuildVars.LOGS_ENABLED && FULL_LOGS) {
                         FileLog.d(fileName + " add part " + requestInfo.offset + " " + (requestInfo.offset + currentBytesSize));

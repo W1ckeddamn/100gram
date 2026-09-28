@@ -564,6 +564,10 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 					showNotification(getTitle(), getRoundAvatarBitmap(this, currentAccount, chat));
 				});
 			}
+		} else {
+			Utilities.globalQueue.postRunnable(() -> {
+				showNotification();
+			});
 		}
 		unmutedByHold = !micMute && hold;
 		if (convertingVoip != null) {
@@ -4005,6 +4009,11 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
             builder.setOngoing(true);
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			Intent muteIntent = new Intent(this, VoIPActionsReceiver.class);
+			muteIntent.setAction(getPackageName() + ".TOGGLE_MUTE");
+			PendingIntent mutePendingIntent = PendingIntent.getBroadcast(this, 1, muteIntent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+			builder.addAction(isMicMute() ? R.drawable.voicechat_muted : R.drawable.voicechat_active, isMicMute() ? LocaleController.getString(R.string.VoipUnmute) : LocaleController.getString(R.string.VoipMute), mutePendingIntent);
+
 			Intent endIntent = new Intent(this, VoIPActionsReceiver.class);
 			endIntent.setAction(getPackageName() + ".END_CALL");
 			if (isConference()) {
@@ -5598,6 +5607,9 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 			declineIncomingCall(DISCARD_REASON_LINE_BUSY, null);
 		} else if ((getPackageName() + ".ANSWER_CALL").equals(intent.getAction())) {
 			acceptIncomingCallFromNotification();
+		} else if ((getPackageName() + ".TOGGLE_MUTE").equals(intent.getAction())) {
+			setMicMute(!isMicMute(), false, true);
+			showNotification();
 		}
 	}
 

@@ -121,7 +121,8 @@ public class FileUploadOperation {
             if (BuildVars.LOGS_ENABLED) {
                 FileLog.d("start upload on slow network = " + slowNetwork);
             }
-            for (int a = 0, count = (slowNetwork ? initialRequestsSlowNetworkCount : initialRequestsCount); a < count; a++) {
+            int boostCount = slowNetwork ? initialRequestsSlowNetworkCount : HundredGramConfig.getUploadParallelRequests(totalFileSize);
+            for (int a = 0, count = Math.min(maxRequestsCount > 0 ? maxRequestsCount : 8, boostCount); a < count; a++) {
                 startUploadRequest();
             }
         });
@@ -158,7 +159,8 @@ public class FileUploadOperation {
                 cachedResults.clear();
 
                 operationGuid++;
-                for (int a = 0, count = (slowNetwork ? initialRequestsSlowNetworkCount : initialRequestsCount); a < count; a++) {
+                int boostCount2 = slowNetwork ? initialRequestsSlowNetworkCount : HundredGramConfig.getUploadParallelRequests(totalFileSize);
+                for (int a = 0, count = Math.min(maxRequestsCount > 0 ? maxRequestsCount : 8, boostCount2); a < count; a++) {
                     startUploadRequest();
                 }
             }
@@ -317,7 +319,8 @@ public class FileUploadOperation {
                     }
                     uploadChunkSize = chunkSize;
                 }
-                maxRequestsCount = Math.max(1, (slowNetwork ? maxUploadingSlowNetworkKBytes : maxUploadingKBytes) / uploadChunkSize);
+                int maxUploading = slowNetwork ? maxUploadingSlowNetworkKBytes : HundredGramConfig.getUploadMaxKBytes(totalFileSize);
+                maxRequestsCount = Math.max(1, maxUploading / uploadChunkSize);
 
                 if (isEncrypted) {
                     freeRequestIvs = new ArrayList<>(maxRequestsCount);
@@ -578,6 +581,7 @@ public class FileUploadOperation {
                     return;
                 }
                 uploadedBytesCount += currentRequestBytes;
+                HundredGramConfig.trackBytes(true, currentRequestBytes);
                 long size;
                 if (estimatedSize != 0) {
                     size = Math.max(availableSize, estimatedSize);

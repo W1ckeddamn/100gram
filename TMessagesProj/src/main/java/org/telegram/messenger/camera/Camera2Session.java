@@ -33,6 +33,7 @@ import androidx.annotation.RequiresApi;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
@@ -71,8 +72,10 @@ public class Camera2Session {
     private final CameraCaptureSession.StateCallback captureStateCallback;
     private CaptureRequest.Builder captureRequestBuilder;
     private Rect sensorSize;
+    private float minZoom = 1f;
     private float maxZoom = 1f;
     private float currentZoom = 1f;
+    private boolean hasZoomRatio = false;
 
     private final Size previewSize;
 
@@ -111,12 +114,56 @@ public class Camera2Session {
                             bestSize = size;
                         }
                     }
-                } else {
-
                 }
             }
         } catch (Exception e) {
             FileLog.e(e);
+        }
+
+        if (!front) {
+            try {
+                boolean primaryHasWide = false;
+                if (cameraId != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    CameraCharacteristics primaryChars = cameraManager.getCameraCharacteristics(cameraId);
+                    if (primaryChars != null) {
+                        Range<Float> r = primaryChars.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE);
+                        if (r != null && r.getLower() != null && r.getLower() < 1.0f) {
+                            primaryHasWide = true;
+                        }
+                    }
+                }
+
+                if (!primaryHasWide && HundredGramConfig.cameraXWideAngle) {
+                    String[] cameraIds = cameraManager.getCameraIdList();
+                    String wideId = null;
+                    Size wideSize = null;
+                    float lowestAngle = Float.MAX_VALUE;
+                    for (String id : cameraIds) {
+                        CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(id);
+                        if (characteristics == null) continue;
+                        Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
+                        if (facing == null || facing != CameraCharacteristics.LENS_FACING_BACK) continue;
+                        float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+                        if (focalLengths != null && focalLengths.length > 0 && focalLengths[0] < 3.0f && focalLengths[0] < lowestAngle) {
+                            StreamConfigurationMap confMap = (StreamConfigurationMap) characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                            if (confMap != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                Size size = chooseOptimalSize(confMap.getOutputSizes(SurfaceTexture.class), viewWidth, viewHeight, false);
+                                if (size != null) {
+                                    lowestAngle = focalLengths[0];
+                                    wideId = id;
+                                    wideSize = size;
+                                }
+                            }
+                        }
+                    }
+                    if (wideId != null && wideSize != null) {
+                        cameraId = wideId;
+                        bestSize = wideSize;
+                    }
+                }
+            } catch (Throwable t) {
+                FileLog.e(t);
+            }
         }
 
         if (cameraId == null || bestSize == null) {
@@ -194,8 +241,24 @@ public class Camera2Session {
         try {
             cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId);
             sensorSize = cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
-            final Float value = cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
-            maxZoom = (value == null || value < 1f) ? 1f : value;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Range<Float> zoomRange = cameraCharacteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE);
+                if (zoomRange != null && zoomRange.getLower() != null && zoomRange.getUpper() != null) {
+                    minZoom = zoomRange.getLower();
+                    maxZoom = zoomRange.getUpper();
+                    hasZoomRatio = true;
+                }
+            }
+            if (!hasZoomRatio) {
+                final Float value = cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+                maxZoom = (value == null || value < 1f) ? 1f : value;
+                minZoom = 1f;
+            }
+            if (!isFront && HundredGramConfig.cameraXWideAngle && minZoom < 1.0f) {
+                currentZoom = minZoom;
+            } else {
+                currentZoom = 1f;
+            }
             cameraManager.openCamera(cameraId, cameraStateCallback, handler);
         } catch (Exception e) {
             FileLog.e(e);
@@ -343,9 +406,9 @@ public class Camera2Session {
     private final Rect cropRegion = new Rect();
     public void setZoom(float value) {
         if (!isInitiated()) return;
-        if (captureRequestBuilder == null || cameraDevice == null || sensorSize == null) return;
+        if (captureRequestBuilder == null || cameraDevice == null) return;
 
-        currentZoom = Utilities.clamp(value, maxZoom, 1f);
+        currentZoom = Utilities.clamp(value, maxZoom, minZoom);
         updateCaptureRequest();
 
         try {
@@ -375,8 +438,7 @@ public class Camera2Session {
     }
 
     public float getMinZoom() {
-        // TODO: support wide zoom camera switching
-        return 1f;
+        return minZoom;
     }
 
     public int getPreviewWidth() {
@@ -490,21 +552,27 @@ public class Camera2Session {
             captureRequestBuilder.set(CaptureRequest.FLASH_MODE, flashing ? (recordingVideo ? CaptureRequest.FLASH_MODE_TORCH : CaptureRequest.FLASH_MODE_SINGLE) : CaptureRequest.FLASH_MODE_OFF);
 
             if (recordingVideo) {
-                captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, new Range<Integer>(30, 60));
+                captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, new Range<Integer>(HundredGramConfig.cameraX60Fps ? 60 : 30, 60));
                 captureRequestBuilder.set(CaptureRequest.CONTROL_CAPTURE_INTENT, CaptureRequest.CONTROL_CAPTURE_INTENT_VIDEO_RECORD);
             }
 
-            if (sensorSize != null && Math.abs(currentZoom - 1f) >= 0.01f) {
+            if (hasZoomRatio && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                captureRequestBuilder.set(CaptureRequest.CONTROL_ZOOM_RATIO, currentZoom);
+            } else if (sensorSize != null && Math.abs(currentZoom - 1f) >= 0.01f) {
                 final int centerX = sensorSize.width() / 2;
                 final int centerY = sensorSize.height() / 2;
-                final int deltaX = (int) ((0.5f * sensorSize.width()) / currentZoom);
-                final int deltaY = (int) ((0.5f * sensorSize.height()) / currentZoom);
+                final float effectiveZoom = Math.max(1f, currentZoom);
+                final int deltaX = (int) ((0.5f * sensorSize.width()) / effectiveZoom);
+                final int deltaY = (int) ((0.5f * sensorSize.height()) / effectiveZoom);
                 cropRegion.set(
                         centerX - deltaX,
                         centerY - deltaY,
                         centerX + deltaX,
                         centerY + deltaY
                 );
+                captureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, cropRegion);
+            } else if (sensorSize != null) {
+                cropRegion.set(0, 0, sensorSize.width(), sensorSize.height());
                 captureRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, cropRegion);
             }
 

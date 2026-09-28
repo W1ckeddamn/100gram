@@ -210,6 +210,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     @Override
     public boolean onFragmentCreate() {
         getNotificationCenter().addObserver(this, NotificationCenter.updateInterfaces);
+        getNotificationCenter().addObserver(this, NotificationCenter.mainUserInfoChanged);
         getNotificationCenter().addObserver(this, NotificationCenter.starBalanceUpdated);
         getNotificationCenter().addObserver(this, NotificationCenter.newSuggestionsAvailable);
 
@@ -503,8 +504,18 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         super.onFragmentDestroy();
 
         getNotificationCenter().removeObserver(this, NotificationCenter.updateInterfaces);
+        getNotificationCenter().removeObserver(this, NotificationCenter.mainUserInfoChanged);
         getNotificationCenter().removeObserver(this, NotificationCenter.starBalanceUpdated);
         getNotificationCenter().removeObserver(this, NotificationCenter.newSuggestionsAvailable);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        setInfo();
+        if (listView != null && listView.adapter != null) {
+            listView.adapter.update(false);
+        }
     }
 
     @Override
@@ -514,8 +525,11 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             if (listView != null) {
                 listView.adapter.update(true);
             }
-        } else if (id == NotificationCenter.updateInterfaces) {
+        } else if (id == NotificationCenter.updateInterfaces || id == NotificationCenter.mainUserInfoChanged) {
             setInfo();
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
         } else if (id == NotificationCenter.newSuggestionsAvailable) {
             if (listView != null) {
                 listView.adapter.update(true);
@@ -532,15 +546,31 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         if (avatarUploadingRequest != -1) return;
 
         avatarDrawable.setInfo(user);
-        avatarView.setForUserOrChat(user, avatarDrawable);
-        titleView.setText(UserObject.getUserName(user));
+        if (org.telegram.messenger.HundredGramConfig.isStreamerHideAvatars()) {
+            avatarView.setImageDrawable(avatarDrawable);
+        } else {
+            avatarView.setForUserOrChat(user, avatarDrawable);
+        }
+        if (org.telegram.messenger.HundredGramConfig.isStreamerMode()) {
+            titleView.setText(org.telegram.messenger.HundredGramConfig.streamerFakeName);
+        } else {
+            titleView.setText(UserObject.getUserName(user));
+        }
         final StringBuilder sb = new StringBuilder();
         if (user != null) {
-            sb.append(PhoneFormat.getInstance().format("+" + user.phone));
+            if (org.telegram.messenger.HundredGramConfig.hidePhoneNumber || (org.telegram.messenger.HundredGramConfig.isStreamerMode() && org.telegram.messenger.HundredGramConfig.streamerHidePhoneNumbers)) {
+                sb.append(LocaleController.getString(R.string.PhoneHidden));
+            } else {
+                sb.append(PhoneFormat.getInstance().format("+" + user.phone));
+            }
         }
         final String username = UserObject.getPublicUsername(user);
         if (username != null) {
-            sb.append(" • @").append(username);
+            if (org.telegram.messenger.HundredGramConfig.hideUsername || (org.telegram.messenger.HundredGramConfig.isStreamerMode() && org.telegram.messenger.HundredGramConfig.streamerHideUsernames)) {
+                sb.append(" • @").append(LocaleController.getString(R.string.UsernameHidden));
+            } else {
+                sb.append(" • @").append(username);
+            }
         }
         subtitleView.setText(sb);
 
@@ -653,8 +683,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             ));
             items.add(UItem.asShadow(null));
         } else if (suggestions.contains("VALIDATE_PHONE_NUMBER") && getUserConfig().getCurrentUser() != null) {
+            String phoneStr = org.telegram.messenger.HundredGramConfig.hidePhoneNumber ? LocaleController.getString(R.string.PhoneHidden) : PhoneFormat.getInstance().format("+" + getUserConfig().getCurrentUser().phone);
             items.add(SuggestionCell.Factory.of(
-                formatString(R.string.CheckPhoneNumber, PhoneFormat.getInstance().format("+" + getUserConfig().getCurrentUser().phone)),
+                formatString(R.string.CheckPhoneNumber, phoneStr),
                 replaceSingleTag(getString(R.string.CheckPhoneNumberInfo), () -> {
                     Browser.openUrl(getContext(), getString(R.string.CheckPhoneNumberLearnMoreUrl));
                 }),
@@ -680,7 +711,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
-        if (accountNumbers.size() > 0) {
+        if (accountNumbers.size() > 0 && !org.telegram.messenger.HundredGramConfig.isStreamerHideOtherAccounts()) {
             items.add(UItem.asHeader(getString(R.string.SettingsAccounts)));
             for (int i = 0; i < accountNumbers.size(); ++i) {
                 items.add(AccountCell.Factory.of(i, accountNumbers.get(i)));
@@ -688,6 +719,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
+        items.add(SettingCell.Factory.of(100, IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom, R.drawable.settings_features, "Настройки 100gram", "Кастомизация, камера, приватность"));
+        items.add(UItem.asShadow(null));
         items.add(SettingCell.Factory.of(1, IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom, R.drawable.settings_account, getString(R.string.SettingsAccount), getString(R.string.SettingsAccountInfo)));
         items.add(SettingCell.Factory.of(2, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.settings_chat, getString(R.string.SettingsChat), getString(R.string.SettingsChatInfo)));
         items.add(SettingCell.Factory.of(3, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.settings_privacy, getString(R.string.SettingsPrivacySecurity), getString(R.string.SettingsPrivacySecurityInfo)));
@@ -809,6 +842,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             return;
         }
         switch (item.id) {
+            case 100:
+                presentSettingFragment(new HundredGramSettingsActivity());
+                break;
             case 1:
                 presentSettingFragment(new UserInfoActivity());
                 break;
@@ -1049,8 +1085,16 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
 
             avatarDrawable.setInfo(account, user);
             avatarView.getImageReceiver().setCurrentAccount(account);
-            avatarView.setForUserOrChat(user, avatarDrawable);
-            textView.setText(UserObject.getUserName(user));
+            if (org.telegram.messenger.HundredGramConfig.isStreamerHideAvatars()) {
+                avatarView.setImageDrawable(avatarDrawable);
+            } else {
+                avatarView.setForUserOrChat(user, avatarDrawable);
+            }
+            if (org.telegram.messenger.HundredGramConfig.isStreamerMode() && account == UserConfig.selectedAccount) {
+                textView.setText(org.telegram.messenger.HundredGramConfig.streamerFakeName);
+            } else {
+                textView.setText(UserObject.getUserName(user));
+            }
 
             botDrawable.setCurrentAccount(account);
             emojiStatusDrawable.setCurrentAccount(account);

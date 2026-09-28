@@ -87,6 +87,8 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.VideoEditedInfo;
+import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.camera.camerax.SlideControlView;
 import org.telegram.messenger.camera.Camera2Session;
 import org.telegram.messenger.camera.CameraController;
 import org.telegram.messenger.camera.CameraInfo;
@@ -188,6 +190,8 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
     private Camera2Session[] camera2Sessions = new Camera2Session[2];
     private Camera2Session camera2SessionCurrent;
     private boolean needDrawFlickerStub;
+    private SlideControlView zoomSlider;
+    private float cameraZoom;
 
     private boolean isCameraSessionInitiated() {
         if (useCamera2) {
@@ -382,6 +386,49 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
             valueAnimator.start();
         });
 
+        switchCameraButton.setOnLongClickListener(v -> {
+            if (!cameraReady || !isCameraSessionInitiated() || cameraThread == null || isFrontface) {
+                return false;
+            }
+            if (useCamera2 && camera2SessionCurrent != null) {
+                float min = camera2SessionCurrent.getMinZoom();
+                if (min < 1.0f) {
+                    HundredGramConfig.toggleCameraXWideAngle();
+                    float targetZoom = (camera2SessionCurrent.getZoom() <= 1.05f && camera2SessionCurrent.getZoom() > min + 0.05f) ? min : 1.0f;
+                    camera2SessionCurrent.setZoom(targetZoom);
+                    if (zoomSlider != null) {
+                        zoomSlider.setSliderValue(targetZoom <= min + 0.05f ? 0.0f : 0.25f, true);
+                    }
+                    try {
+                        switchCameraButton.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+                    } catch (Throwable ignore) {}
+                    return true;
+                } else {
+                    HundredGramConfig.toggleCameraXWideAngle();
+                    try {
+                        switchCameraButton.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP);
+                    } catch (Throwable ignore) {}
+                    if (camera2SessionCurrent != null) {
+                        camera2SessionCurrent.destroy(false);
+                        camera2SessionCurrent = null;
+                        camera2Sessions[1] = null;
+                    }
+                    camera2SessionCurrent = camera2Sessions[1] = Camera2Session.create(false, MessagesController.getInstance(UserConfig.selectedAccount).roundVideoSize, MessagesController.getInstance(UserConfig.selectedAccount).roundVideoSize);
+                    if (camera2SessionCurrent != null) {
+                        camera2SessionCurrent.setRecordingVideo(true);
+                        previewSize[0] = new Size(camera2SessionCurrent.getPreviewWidth(), camera2SessionCurrent.getPreviewHeight());
+                        cameraThread.setCurrentSession(camera2SessionCurrent);
+                        updateZoomSliderPosition();
+                    }
+                    initCamera();
+                    cameraReady = false;
+                    cameraThread.reinitForNewCamera();
+                    return true;
+                }
+            }
+            return false;
+        });
+
         flashButton = new FlashViews.ImageViewInvertable(context);
         flashButton.setScaleType(ImageView.ScaleType.CENTER);
         buttonsLayout.addView(flashButton, LayoutHelper.createLinear(44, 44));
@@ -427,8 +474,59 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
         };
         addView(textureOverlayView, new LayoutParams(AndroidUtilities.roundPlayingMessageSize, AndroidUtilities.roundPlayingMessageSize, Gravity.CENTER));
 
+        zoomSlider = new SlideControlView(context, SlideControlView.SLIDER_MODE_ZOOM);
+        zoomSlider.setVisibility(View.GONE);
+        zoomSlider.setAlpha(0.0f);
+        addView(zoomSlider, LayoutHelper.createFrame(220, 44, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 0, 0, 76));
+        zoomSlider.setDelegate(zoom -> {
+            cameraZoom = zoom;
+            if (useCamera2) {
+                if (camera2SessionCurrent != null) {
+                    float min = camera2SessionCurrent.getMinZoom();
+                    float max = camera2SessionCurrent.getMaxZoom();
+                    float targetZoom;
+                    if (min < 1.0f) {
+                        if (zoom < 0.25f) {
+                            targetZoom = min + (zoom / 0.25f) * (1.0f - min);
+                        } else {
+                            targetZoom = 1.0f + ((zoom - 0.25f) / 0.75f) * (max - 1.0f);
+                        }
+                    } else {
+                        targetZoom = min + zoom * (max - min);
+                    }
+                    camera2SessionCurrent.setZoom(targetZoom);
+                }
+            } else {
+                if (cameraSession != null) {
+                    cameraSession.setZoom(zoom);
+                }
+            }
+        });
+
         setVisibilityFromPause = false;
         setVisibility(INVISIBLE);
+    }
+
+    private void updateZoomSliderPosition() {
+        if (zoomSlider == null) return;
+        float initialSlider = 0.0f;
+        if (useCamera2 && camera2SessionCurrent != null) {
+            float min = camera2SessionCurrent.getMinZoom();
+            if (min < 1.0f) {
+                if (!isFrontface && HundredGramConfig.cameraXWideAngle) {
+                    initialSlider = 0.0f;
+                    camera2SessionCurrent.setZoom(min);
+                } else {
+                    initialSlider = 0.25f;
+                    camera2SessionCurrent.setZoom(1.0f);
+                }
+            } else {
+                initialSlider = 0.0f;
+                camera2SessionCurrent.setZoom(1.0f);
+            }
+        }
+        cameraZoom = initialSlider;
+        zoomSlider.setSliderValue(initialSlider, false);
     }
 
     public void setButtonsBackground(BlurredBackgroundDrawableViewFactory factory, BlurredBackgroundColorProvider colorProvider) {
@@ -700,6 +798,13 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
         return !recording;
     }
 
+    public void showCameraWithLens(boolean front, boolean wideAngle) {
+        isFrontface = front;
+        HundredGramConfig.cameraXWideAngle = wideAngle;
+        HundredGramConfig.setCameraRoundLastUsedFront(front);
+        showCamera(false);
+    }
+
     public void showCamera(boolean fromPaused) {
         if (textureView != null) {
             return;
@@ -730,12 +835,34 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
         cameraReady = false;
         selectedCamera = null;
         if (!fromPaused) {
-            if (!useCamera2) {
-                isFrontface = true;
+            switch (HundredGramConfig.cameraRoundStartCamera) {
+                case HundredGramConfig.CAMERA_ROUND_START_FRONT:
+                    isFrontface = true;
+                    HundredGramConfig.cameraXWideAngle = false;
+                    break;
+                case HundredGramConfig.CAMERA_ROUND_START_BACK:
+                    isFrontface = false;
+                    HundredGramConfig.cameraXWideAngle = false;
+                    break;
+                case HundredGramConfig.CAMERA_ROUND_START_LAST_USED:
+                    isFrontface = HundredGramConfig.cameraRoundLastUsedFront;
+                    HundredGramConfig.cameraXWideAngle = false;
+                    break;
+                case HundredGramConfig.CAMERA_ROUND_START_MENU:
+                default:
+                    if (HundredGramConfig.cameraXWideAngle) {
+                        isFrontface = false;
+                    } else {
+                        isFrontface = HundredGramConfig.cameraRoundLastUsedFront;
+                    }
+                    break;
             }
             updateFlash();
             recordedTime = 0;
             progress = 0;
+            if (zoomSlider != null) {
+                updateZoomSliderPosition();
+            }
         }
         cancelled = false;
         file = null;
@@ -798,6 +925,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 camera2SessionCurrent.setRecordingVideo(true);
                 previewSize[0] = new Size(camera2SessionCurrent.getPreviewWidth(), camera2SessionCurrent.getPreviewHeight());
             }
+            updateZoomSliderPosition();
         }
         textureView = new TextureView(getContext());
         textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
@@ -896,20 +1024,26 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
             animationTranslationY = fromPaused ? 0 : (getMeasuredHeight() / 2f) * (float) animation.getAnimatedValue();
             updateTranslationY();
         });
-        animatorSet.playTogether(
-                ObjectAnimator.ofFloat(buttonsLayout, View.ALPHA, open ? 1.0f : 0.0f),
-                ObjectAnimator.ofFloat(muteImageView, View.ALPHA, 0.0f),
-                ObjectAnimator.ofInt(paint, AnimationProperties.PAINT_ALPHA, open ? 255 : 0),
-                ObjectAnimator.ofFloat(cameraContainer, View.ALPHA, open ? 1.0f : 0.0f),
-                ObjectAnimator.ofFloat(cameraContainer, View.SCALE_X, open ? 1.0f : 0.1f),
-                ObjectAnimator.ofFloat(cameraContainer, View.SCALE_Y, open ? 1.0f : 0.1f),
-                ObjectAnimator.ofFloat(cameraContainer, View.TRANSLATION_X, toX),
-                ObjectAnimator.ofFloat(textureOverlayView, View.ALPHA, open ? 1.0f : 0.0f),
-                ObjectAnimator.ofFloat(textureOverlayView, View.SCALE_X, open ? 1.0f : 0.1f),
-                ObjectAnimator.ofFloat(textureOverlayView, View.SCALE_Y, open ? 1.0f : 0.1f),
-                ObjectAnimator.ofFloat(textureOverlayView, View.TRANSLATION_X, toX),
-                translationYAnimator
-        );
+        if (zoomSlider != null && open && HundredGramConfig.cameraXZoomSlider) {
+            zoomSlider.setVisibility(VISIBLE);
+        }
+        ArrayList<Animator> animators = new ArrayList<>();
+        animators.add(ObjectAnimator.ofFloat(buttonsLayout, View.ALPHA, open ? 1.0f : 0.0f));
+        animators.add(ObjectAnimator.ofFloat(muteImageView, View.ALPHA, 0.0f));
+        animators.add(ObjectAnimator.ofInt(paint, AnimationProperties.PAINT_ALPHA, open ? 255 : 0));
+        animators.add(ObjectAnimator.ofFloat(cameraContainer, View.ALPHA, open ? 1.0f : 0.0f));
+        animators.add(ObjectAnimator.ofFloat(cameraContainer, View.SCALE_X, open ? 1.0f : 0.1f));
+        animators.add(ObjectAnimator.ofFloat(cameraContainer, View.SCALE_Y, open ? 1.0f : 0.1f));
+        animators.add(ObjectAnimator.ofFloat(cameraContainer, View.TRANSLATION_X, toX));
+        animators.add(ObjectAnimator.ofFloat(textureOverlayView, View.ALPHA, open ? 1.0f : 0.0f));
+        animators.add(ObjectAnimator.ofFloat(textureOverlayView, View.SCALE_X, open ? 1.0f : 0.1f));
+        animators.add(ObjectAnimator.ofFloat(textureOverlayView, View.SCALE_Y, open ? 1.0f : 0.1f));
+        animators.add(ObjectAnimator.ofFloat(textureOverlayView, View.TRANSLATION_X, toX));
+        animators.add(translationYAnimator);
+        if (zoomSlider != null) {
+            animators.add(ObjectAnimator.ofFloat(zoomSlider, View.ALPHA, open && HundredGramConfig.cameraXZoomSlider ? 1.0f : 0.0f));
+        }
+        animatorSet.playTogether(animators);
         if (!open) {
             animatorSet.addListener(new AnimatorListenerAdapter() {
                 @Override
@@ -918,6 +1052,9 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                         hideCamera(true);
                         setVisibilityFromPause = false;
                         setVisibility(INVISIBLE);
+                        if (zoomSlider != null) {
+                            zoomSlider.setVisibility(GONE);
+                        }
                     }
                 }
             });
@@ -1134,6 +1271,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
             }
         }
         isFrontface = !isFrontface;
+        HundredGramConfig.setCameraRoundLastUsedFront(isFrontface);
         updateFlash();
         if (useCamera2) {
             if (bothCameras) {
@@ -1151,6 +1289,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 camera2SessionCurrent.setRecordingVideo(true);
                 previewSize[0] = new Size(camera2SessionCurrent.getPreviewWidth(), camera2SessionCurrent.getPreviewHeight());
                 cameraThread.setCurrentSession(camera2SessionCurrent);
+                updateZoomSliderPosition();
             }
         } else {
             if (cameraSession != null) {
@@ -2314,8 +2453,17 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
             }
 
             started = true;
-            int resolution = MessagesController.getInstance(currentAccount).roundVideoSize;
+            int resolution = HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : MessagesController.getInstance(currentAccount).roundVideoSize;
             int bitrate = MessagesController.getInstance(currentAccount).roundVideoBitrate * 1024;
+            if (bitrate <= 0) {
+                bitrate = (int) (1000 * 1024 * 1.5f);
+            }
+            if (HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps) {
+                bitrate = (int) (bitrate * 1.5f);
+            }
+            if (HundredGramConfig.cameraRoundHighBitrate) {
+                bitrate = (int) (bitrate * 1.5f);
+            }
             AndroidUtilities.runOnUIThread(() -> {
                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.stopAllHeavyOperations, 512);
             });
@@ -2793,9 +2941,10 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 videoEditedInfo.key = key;
                 videoEditedInfo.iv = iv;
                 videoEditedInfo.estimatedSize = Math.max(1, size);
-                videoEditedInfo.framerate = 25;
-                videoEditedInfo.resultWidth = videoEditedInfo.originalWidth = 360;
-                videoEditedInfo.resultHeight = videoEditedInfo.originalHeight = 360;
+                videoEditedInfo.framerate = (HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps) ? 60 : 30;
+                int res = HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : 360;
+                videoEditedInfo.resultWidth = videoEditedInfo.originalWidth = res;
+                videoEditedInfo.resultHeight = videoEditedInfo.originalHeight = res;
                 videoEditedInfo.originalPath = previewFile.getAbsolutePath();
                 setupVideoPlayer(previewFile);
                 videoEditedInfo.estimatedDuration = recordedTime;
@@ -2899,9 +3048,10 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                         videoEditedInfo.encryptedFile = encryptedFile;
                         videoEditedInfo.key = key;
                         videoEditedInfo.iv = iv;
-                        videoEditedInfo.framerate = 25;
-                        videoEditedInfo.resultWidth = videoEditedInfo.originalWidth = 360;
-                        videoEditedInfo.resultHeight = videoEditedInfo.originalHeight = 360;
+                        videoEditedInfo.framerate = (HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps) ? 60 : 30;
+                        int res = HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : 360;
+                        videoEditedInfo.resultWidth = videoEditedInfo.originalWidth = res;
+                        videoEditedInfo.resultHeight = videoEditedInfo.originalHeight = res;
                         videoEditedInfo.originalPath = videoFile.getAbsolutePath();
                         videoEditedInfo.notReadyYet = true;
                         videoEditedInfo.thumb = firstFrameThumb;
@@ -3051,9 +3201,10 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                         videoEditedInfo.encryptedFile = encryptedFile;
                         videoEditedInfo.key = key;
                         videoEditedInfo.iv = iv;
-                        videoEditedInfo.framerate = 25;
-                        videoEditedInfo.resultWidth = videoEditedInfo.originalWidth = 360;
-                        videoEditedInfo.resultHeight = videoEditedInfo.originalHeight = 360;
+                        videoEditedInfo.framerate = (HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps) ? 60 : 30;
+                        int res = HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : 360;
+                        videoEditedInfo.resultWidth = videoEditedInfo.originalWidth = res;
+                        videoEditedInfo.resultHeight = videoEditedInfo.originalHeight = res;
                         videoEditedInfo.originalPath = videoFile.getAbsolutePath();
                         final VideoEditedInfo info = videoEditedInfo;
                         if (send == ENCODER_SEND_SEND) {
@@ -3210,14 +3361,20 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 audioEncoder.configure(audioFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
                 audioEncoder.start();
 
-                videoEncoder = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE);
+                String mimeType = (HundredGramConfig.cameraRoundCodec == 1) ? MediaFormat.MIMETYPE_VIDEO_HEVC : VIDEO_MIME_TYPE;
+                try {
+                    videoEncoder = MediaCodec.createEncoderByType(mimeType);
+                } catch (Throwable t) {
+                    mimeType = VIDEO_MIME_TYPE;
+                    videoEncoder = MediaCodec.createEncoderByType(VIDEO_MIME_TYPE);
+                }
                 firstEncode = true;
 
-                MediaFormat format = MediaFormat.createVideoFormat(VIDEO_MIME_TYPE, videoWidth, videoHeight);
+                MediaFormat format = MediaFormat.createVideoFormat(mimeType, videoWidth, videoHeight);
 
                 format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
                 format.setInteger(MediaFormat.KEY_BIT_RATE, videoBitrate);
-                format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
+                format.setInteger(MediaFormat.KEY_FRAME_RATE, (HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps) ? 60 : FRAME_RATE);
                 format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, IFRAME_INTERVAL);
 
                 videoEncoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);

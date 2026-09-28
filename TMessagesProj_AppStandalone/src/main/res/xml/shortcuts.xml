@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <share-target android:targetClass="org.telegram.ui.LaunchActivity">
+        <data android:mimeType="*/*" />
+        <category android:name="org.telegram.messenger.SHORTCUT_SHARE" />
+    </share-target>
+
+    <shortcut
+        android:shortcutId="ghost_mode"
+        android:enabled="true"
+        android:icon="@drawable/msg_mask"
+        android:shortcutShortLabel="@string/ShortcutGhostMode"
+        android:shortcutLongLabel="@string/ShortcutGhostMode">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.telegram.messenger.web"
+            android:targetClass="org.telegram.ui.LaunchActivity">
+            <extra android:name="hundredgram_action" android:value="ghost_mode" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="streamer_mode"
+        android:enabled="true"
+        android:icon="@drawable/msg_secret"
+        android:shortcutShortLabel="@string/ShortcutStreamerMode"
+        android:shortcutLongLabel="@string/ShortcutStreamerMode">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.telegram.messenger.web"
+            android:targetClass="org.telegram.ui.LaunchActivity">
+            <extra android:name="hundredgram_action" android:value="streamer_mode" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="vault"
+        android:enabled="true"
+        android:icon="@drawable/msg_archive"
+        android:shortcutShortLabel="@string/ShortcutVault"
+        android:shortcutLongLabel="@string/ShortcutVault">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.telegram.messenger.web"
+            android:targetClass="org.telegram.ui.LaunchActivity">
+            <extra android:name="hundredgram_action" android:value="vault" />
+        </intent>
+    </shortcut>
+
+    <capability android:name="actions.intent.GET_THING">
+        <intent>
+            <url-template android:value="tg://search{?query}" />
+            <parameter
+                android:name="thing.name"
+                android:key="query"
+                android:required="true" />
+        </intent>
+        <intent>
+            <url-template android:value="tg://search" />
+        </intent>
+    </capability>
+    <capability android:name="actions.intent.CREATE_CALL">
+        <intent>
+            <url-template android:value="tg://call{?format,name,phone}" />
+            <parameter
+                android:name="call.callFormat"
+                android:key="format" />
+            <parameter
+                android:name="call.participant.name"
+                android:key="name" />
+            <parameter
+                android:name="call.participant.telephone"
+                android:key="phone" />
+        </intent>
+    </capability>
+    <capability android:name="actions.intent.GET_ACCOUNT">
+        <intent>
+            <url-template android:value="tg://settings" />
+        </intent>
+    </capability>
+    <capability android:name="actions.intent.GET_BARCODE">
+        <intent>
+            <url-template android:value="tg://scanqr" />
+        </intent>
+    </capability>
+    <capability android:name="actions.intent.GET_CALL">
+        <intent>
+            <url-template android:value="tg://calllog" />
+        </intent>
+    </capability>
+</shortcuts>

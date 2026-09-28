@@ -39,6 +39,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.window.OnBackInvokedDispatcher;
 
 import androidx.annotation.NonNull;
@@ -58,6 +59,10 @@ import org.telegram.messenger.AnimationNotificationsLocker;
 import org.telegram.messenger.BotWebViewVibrationEffect;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.DialogObject;
+import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.LocaleController;
+import org.telegram.ui.ActionBar.AlertDialog;
+import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.FileStreamLoadOperation;
@@ -377,6 +382,50 @@ public class StoryViewer implements NotificationCenter.NotificationCenterDelegat
         open(UserConfig.selectedAccount, context, storyItem, peerIds, position, storiesList, userStories, placeProvider, reversed);
     }
     public void open(int account, Context context, TL_stories.StoryItem storyItem, ArrayList<Long> peerIds, int position, StoriesController.StoriesList storiesList, TL_stories.PeerStories userStories, PlaceProvider placeProvider, boolean reversed) {
+        long myUserId = UserConfig.getInstance(account).clientUserId;
+        boolean isSelf = (storyItem != null && storyItem.dialogId == myUserId)
+                || (userStories != null && DialogObject.getPeerDialogId(userStories.peer) == myUserId)
+                || (peerIds != null && peerIds.size() == 1 && peerIds.get(0) == myUserId);
+
+        if (!isSelf && HundredGramConfig.ghostStoriesMode == HundredGramConfig.GHOST_STORIES_PROMPT && context != null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(LocaleController.getString("GhostStoriesPromptTitle", R.string.GhostStoriesPromptTitle));
+            builder.setMessage(LocaleController.getString("GhostStoriesPromptMessage", R.string.GhostStoriesPromptMessage));
+
+            final CheckBoxCell cell = new CheckBoxCell(context, 1);
+            cell.setText(LocaleController.getString("GhostStoriesPromptRemember", R.string.GhostStoriesPromptRemember), "", false, false);
+            cell.setOnClickListener(v -> cell.setChecked(!cell.isChecked(), true));
+
+            final LinearLayout container = new LinearLayout(context);
+            container.setOrientation(LinearLayout.VERTICAL);
+            container.addView(cell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT, 8, 6, 8, 4));
+            builder.setView(container);
+
+            builder.setPositiveButton(LocaleController.getString("GhostStoriesPromptGhost", R.string.GhostStoriesPromptGhost), (d, w) -> {
+                if (cell.isChecked()) {
+                    HundredGramConfig.setGhostStoriesMode(HundredGramConfig.GHOST_STORIES_ALWAYS);
+                }
+                HundredGramConfig.currentStoryGhostSession = true;
+                openInternal(account, context, storyItem, peerIds, position, storiesList, userStories, placeProvider, reversed);
+            });
+
+            builder.setNegativeButton(LocaleController.getString("GhostStoriesPromptNormal", R.string.GhostStoriesPromptNormal), (d, w) -> {
+                if (cell.isChecked()) {
+                    HundredGramConfig.setGhostStoriesMode(HundredGramConfig.GHOST_STORIES_OFF);
+                }
+                HundredGramConfig.currentStoryGhostSession = false;
+                openInternal(account, context, storyItem, peerIds, position, storiesList, userStories, placeProvider, reversed);
+            });
+
+            builder.show();
+            return;
+        }
+
+        HundredGramConfig.currentStoryGhostSession = !isSelf && (HundredGramConfig.ghostStoriesMode == HundredGramConfig.GHOST_STORIES_ALWAYS);
+        openInternal(account, context, storyItem, peerIds, position, storiesList, userStories, placeProvider, reversed);
+    }
+
+    private void openInternal(int account, Context context, TL_stories.StoryItem storyItem, ArrayList<Long> peerIds, int position, StoriesController.StoriesList storiesList, TL_stories.PeerStories userStories, PlaceProvider placeProvider, boolean reversed) {
         if (!isContextSafe(context)) {
             doOnAnimationReadyRunnables.clear();
             return;
@@ -2877,7 +2926,7 @@ public class StoryViewer implements NotificationCenter.NotificationCenterDelegat
         if (BuildVars.DEBUG_PRIVATE_VERSION) {
             return;
         }
-        allowScreenshots = !isShowing || allowScreenshots;
+        allowScreenshots = true;
         if (this.allowScreenshots != allowScreenshots) {
             this.allowScreenshots = allowScreenshots;
 
@@ -2889,22 +2938,12 @@ public class StoryViewer implements NotificationCenter.NotificationCenterDelegat
             }
             if (ATTACH_TO_FRAGMENT) {
                 if (fragment.getParentActivity() != null) {
-                    if (allowScreenshots) {
-                        fragment.getParentActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
-                        AndroidUtilities.logFlagSecure();
-                    } else {
-                        fragment.getParentActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-                        AndroidUtilities.logFlagSecure();
-                    }
+                    fragment.getParentActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                    AndroidUtilities.logFlagSecure();
                 }
             } else {
-                if (allowScreenshots) {
-                    windowLayoutParams.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
-                    AndroidUtilities.logFlagSecure();
-                } else {
-                    windowLayoutParams.flags |= WindowManager.LayoutParams.FLAG_SECURE;
-                    AndroidUtilities.logFlagSecure();
-                }
+                windowLayoutParams.flags &= ~WindowManager.LayoutParams.FLAG_SECURE;
+                AndroidUtilities.logFlagSecure();
                 try {
                     windowManager.updateViewLayout(windowView, windowLayoutParams);
                 } catch (Exception e) {

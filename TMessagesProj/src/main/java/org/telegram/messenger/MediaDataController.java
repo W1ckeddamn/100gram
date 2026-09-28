@@ -4948,6 +4948,9 @@ public class MediaDataController extends BaseController {
                     List<ShortcutInfoCompat> currentShortcuts = ShortcutManagerCompat.getDynamicShortcuts(ApplicationLoader.applicationContext);
                     if (currentShortcuts != null && !currentShortcuts.isEmpty()) {
                         newShortcutsIds.add("compose");
+                        newShortcutsIds.add("ghost_mode");
+                        newShortcutsIds.add("streamer_mode");
+                        newShortcutsIds.add("vault");
                         for (int a = 0; a < hintsFinal.size(); a++) {
                             TLRPC.TL_topPeer hint = hintsFinal.get(a);
                             newShortcutsIds.add("did3_" + MessageObject.getPeerId(hint.peer));
@@ -4969,8 +4972,11 @@ public class MediaDataController extends BaseController {
                     }
                 }
 
+                String currentPkg = ApplicationLoader.applicationContext.getPackageName();
+
                 Intent intent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
                 intent.setAction("new_dialog");
+                intent.setPackage(currentPkg);
                 ArrayList<ShortcutInfoCompat> arrayList = new ArrayList<>();
                 ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(ApplicationLoader.applicationContext, "compose")
                         .setShortLabel(LocaleController.getString(R.string.NewConversationShortcut))
@@ -4988,6 +4994,54 @@ public class MediaDataController extends BaseController {
                     } else {
                         ShortcutManagerCompat.addDynamicShortcuts(ApplicationLoader.applicationContext, arrayList);
                     }
+                    arrayList.clear();
+                }
+
+                Intent ghostIntent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
+                ghostIntent.setAction("android.intent.action.VIEW");
+                ghostIntent.setPackage(currentPkg);
+                ghostIntent.putExtra("hundredgram_action", "ghost_mode");
+                ShortcutInfoCompat ghostShortcut = new ShortcutInfoCompat.Builder(ApplicationLoader.applicationContext, "ghost_mode")
+                        .setShortLabel(LocaleController.getString("ShortcutGhostMode", R.string.ShortcutGhostMode))
+                        .setLongLabel(LocaleController.getString("ShortcutGhostMode", R.string.ShortcutGhostMode))
+                        .setIcon(IconCompat.createWithResource(ApplicationLoader.applicationContext, R.drawable.msg_mask))
+                        .setRank(1)
+                        .setIntent(ghostIntent)
+                        .build();
+
+                Intent streamerIntent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
+                streamerIntent.setAction("android.intent.action.VIEW");
+                streamerIntent.setPackage(currentPkg);
+                streamerIntent.putExtra("hundredgram_action", "streamer_mode");
+                ShortcutInfoCompat streamerShortcut = new ShortcutInfoCompat.Builder(ApplicationLoader.applicationContext, "streamer_mode")
+                        .setShortLabel(LocaleController.getString("ShortcutStreamerMode", R.string.ShortcutStreamerMode))
+                        .setLongLabel(LocaleController.getString("ShortcutStreamerMode", R.string.ShortcutStreamerMode))
+                        .setIcon(IconCompat.createWithResource(ApplicationLoader.applicationContext, R.drawable.msg_secret))
+                        .setRank(2)
+                        .setIntent(streamerIntent)
+                        .build();
+
+                Intent vaultIntent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
+                vaultIntent.setAction("android.intent.action.VIEW");
+                vaultIntent.setPackage(currentPkg);
+                vaultIntent.putExtra("hundredgram_action", "vault");
+                ShortcutInfoCompat vaultShortcut = new ShortcutInfoCompat.Builder(ApplicationLoader.applicationContext, "vault")
+                        .setShortLabel(LocaleController.getString("ShortcutVault", R.string.ShortcutVault))
+                        .setLongLabel(LocaleController.getString("ShortcutVault", R.string.ShortcutVault))
+                        .setIcon(IconCompat.createWithResource(ApplicationLoader.applicationContext, R.drawable.msg_archive))
+                        .setRank(3)
+                        .setIntent(vaultIntent)
+                        .build();
+
+                if (recreateShortcuts) {
+                    ShortcutManagerCompat.pushDynamicShortcut(ApplicationLoader.applicationContext, ghostShortcut);
+                    ShortcutManagerCompat.pushDynamicShortcut(ApplicationLoader.applicationContext, streamerShortcut);
+                    ShortcutManagerCompat.pushDynamicShortcut(ApplicationLoader.applicationContext, vaultShortcut);
+                } else {
+                    arrayList.add(ghostShortcut);
+                    arrayList.add(streamerShortcut);
+                    arrayList.add(vaultShortcut);
+                    ShortcutManagerCompat.addDynamicShortcuts(ApplicationLoader.applicationContext, arrayList);
                     arrayList.clear();
                 }
 

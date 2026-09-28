@@ -391,6 +391,14 @@ public class MessagesStorage extends BaseController {
                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.onDatabaseMigration, false);
             }
         });
+        try {
+            database.executeFast("CREATE TABLE IF NOT EXISTS user_activity_log(user_id INTEGER, time_start INTEGER, time_end INTEGER, trigger_type INTEGER, PRIMARY KEY(user_id, time_start));").stepThis().dispose();
+            database.executeFast("CREATE INDEX IF NOT EXISTS idx_user_activity ON user_activity_log(user_id, time_start);").stepThis().dispose();
+            database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_message_edits(mid INTEGER, uid INTEGER, edit_date INTEGER, data BLOB, PRIMARY KEY(mid, uid, edit_date));").stepThis().dispose();
+            database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_message_edits ON hundredgram_message_edits(uid, mid, edit_date);").stepThis().dispose();
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
         loadDialogFilters();
         loadUnreadMessages();
         loadPendingTasks();
@@ -757,6 +765,10 @@ public class MessagesStorage extends BaseController {
         database.executeFast("CREATE TABLE telegraher_message_history(mid INTEGER, uid INTEGER, date INTEGER, message TEXT, PRIMARY KEY(mid, uid, date));").stepThis().dispose();
         database.executeFast("CREATE INDEX mid_uid ON telegraher_message_history (mid, uid);").stepThis().dispose();
         database.executeFast("CREATE TABLE telegraher_message_deletions(mid INTEGER, uid INTEGER, isdel INTEGER, PRIMARY KEY(mid, uid));").stepThis().dispose();
+        database.executeFast("CREATE TABLE IF NOT EXISTS user_activity_log(user_id INTEGER, time_start INTEGER, time_end INTEGER, trigger_type INTEGER, PRIMARY KEY(user_id, time_start));").stepThis().dispose();
+        database.executeFast("CREATE INDEX IF NOT EXISTS idx_user_activity ON user_activity_log(user_id, time_start);").stepThis().dispose();
+        database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_message_edits(mid INTEGER, uid INTEGER, edit_date INTEGER, data BLOB, PRIMARY KEY(mid, uid, edit_date));").stepThis().dispose();
+        database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_message_edits ON hundredgram_message_edits(uid, mid, edit_date);").stepThis().dispose();
 
     }
 
@@ -12616,9 +12628,13 @@ public class MessagesStorage extends BaseController {
                     }
                     data.reuse();
 
-                    if (downloadMask != 0 && (message.peer_id.channel_id == 0 || message.post) && message.date >= getConnectionsManager().getCurrentTime() - 15 * 60 && getDownloadController().canDownloadMedia(message) == 1) {
-                        final long dialogId = MessageObject.getDialogId(message);
-                        if (getDialogFolderIdInternal(dialogId) != 1 && (message.media instanceof TLRPC.TL_messageMediaPhoto || message.media instanceof TLRPC.TL_messageMediaDocument || message.media instanceof TLRPC.TL_messageMediaWebPage)) {
+                    boolean standardAutoDownload = downloadMask != 0 && (message.peer_id.channel_id == 0 || message.post) && message.date >= getConnectionsManager().getCurrentTime() - 15 * 60 && getDownloadController().canDownloadMedia(message) == 1;
+                    final long dialogId = MessageObject.getDialogId(message);
+                    int folderId = getDialogFolderIdInternal(dialogId);
+                    boolean allowVaultDownload = HundredGramConfig.canVaultDownload(dialogId, message, folderId);
+
+                    if (standardAutoDownload || allowVaultDownload) {
+                        if ((allowVaultDownload || folderId != 1) && (message.media instanceof TLRPC.TL_messageMediaPhoto || message.media instanceof TLRPC.TL_messageMediaDocument || message.media instanceof TLRPC.TL_messageMediaWebPage)) {
                             int type = 0;
                             long id = 0;
                             TLRPC.MessageMedia object = null;
@@ -14667,7 +14683,9 @@ public class MessagesStorage extends BaseController {
                 try {
                     long did = cursor.longValue(0);
                     int mid = cursor.intValue(1);
-                    database.executeFast(String.format(Locale.US, "INSERT INTO telegraher_message_deletions values (%d,%d,1);", mid, did)).stepThis().dispose();
+                    if (HundredGramConfig.isChatAntiDelete(did)) {
+                        database.executeFast(String.format(Locale.US, "INSERT INTO telegraher_message_deletions values (%d,%d,1);", mid, did)).stepThis().dispose();
+                    }
                 } catch (Exception e) {
                     //we don't care, made to ignore unique key errors
                 }
@@ -15874,12 +15892,26 @@ public class MessagesStorage extends BaseController {
                                         sameMedia = MessageObject.getPhoto(oldMessage).id == MessageObject.getPhoto(message).id;
                                     } else if (MessageObject.getDocument(oldMessage) != null && MessageObject.getDocument(message) != null) {
                                         sameMedia = MessageObject.getDocument(oldMessage).id == MessageObject.getDocument(message).id;
+                                    } else if (oldMessage.media == null && message.media == null) {
+                                        sameMedia = true;
                                     }
                                     if (oldMessage.out && !message.out) {
                                         message.out = oldMessage.out;
                                     }
                                     if (!sameMedia) {
                                         addFilesToDelete(oldMessage, filesToDelete, idsToDelete, namesToDelete, false);
+                                    }
+                                    boolean textChanged = !TextUtils.equals(oldMessage.message, message.message);
+                                    boolean editDateChanged = oldMessage.edit_date != message.edit_date && message.edit_date != 0;
+                                    boolean mediaChanged = (oldMessage.media != null || message.media != null) && !sameMedia;
+                                    if (textChanged || editDateChanged || mediaChanged) {
+                                        int oldVersionDate = oldMessage.edit_date != 0 ? oldMessage.edit_date : oldMessage.date;
+                                        int newVersionDate = message.edit_date != 0 ? message.edit_date : message.date;
+                                        if (oldVersionDate >= newVersionDate && newVersionDate > 0) {
+                                            oldVersionDate = newVersionDate - 1;
+                                        }
+                                        saveMessageEditVersionInternal(oldMessage, oldVersionDate);
+                                        saveMessageEditVersionInternal(message, newVersionDate);
                                     }
                                     NativeByteBuffer customParams = cursor.byteBufferValue(6);
                                     MessageCustomParamsHelper.readLocalParams(message, customParams);
@@ -15911,6 +15943,8 @@ public class MessagesStorage extends BaseController {
                             cursor.dispose();
                             cursor = null;
                             if (!exist) {
+                                int newVersionDate = message.edit_date != 0 ? message.edit_date : message.date;
+                                saveMessageEditVersionInternal(message, newVersionDate);
                                 continue;
                             }
                         }
@@ -17188,6 +17222,10 @@ public class MessagesStorage extends BaseController {
                 state_tasks.dispose();
             }
         }
+    }
+
+    public int getDialogFolderId(long dialogId) {
+        return getDialogFolderIdInternal(dialogId);
     }
 
     private int getDialogFolderIdInternal(long dialogId) {
@@ -18637,5 +18675,221 @@ public class MessagesStorage extends BaseController {
                     ", topicId=" + topicId +
                     '}';
         }
+    }
+
+    public void saveUserActivityStart(long userId, long timeStart, int triggerType) {
+        storageQueue.postRunnable(() -> {
+            try {
+                database.executeFast(String.format(Locale.US, "INSERT OR REPLACE INTO user_activity_log VALUES(%d, %d, 0, %d);", userId, timeStart, triggerType)).stepThis().dispose();
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        });
+    }
+
+    public void saveUserActivityEnd(long userId, long timeStart, long timeEnd) {
+        storageQueue.postRunnable(() -> {
+            try {
+                database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = %d WHERE user_id = %d AND time_start = %d;", timeEnd, userId, timeStart)).stepThis().dispose();
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        });
+    }
+
+    public long getLastSeenFromDb(long userId) {
+        SQLiteCursor cursor = null;
+        try {
+            cursor = database.queryFinalized(String.format(Locale.US, "SELECT MAX(CASE WHEN time_end > 0 THEN time_end ELSE time_start END) FROM user_activity_log WHERE user_id = %d", userId));
+            if (cursor.next()) {
+                return cursor.longValue(0);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        } finally {
+            if (cursor != null) {
+                cursor.dispose();
+            }
+        }
+        return 0;
+    }
+
+    public void getUserActivityLogs(long userId, int limit, Utilities.Callback<ArrayList<HundredGramActivityTracker.ActivityEntry>> callback) {
+        storageQueue.postRunnable(() -> {
+            ArrayList<HundredGramActivityTracker.ActivityEntry> entries = new ArrayList<>();
+            SQLiteCursor cursor = null;
+            try {
+                cursor = database.queryFinalized(String.format(Locale.US, "SELECT time_start, time_end, trigger_type FROM user_activity_log WHERE user_id = %d ORDER BY time_start DESC LIMIT %d", userId, limit));
+                while (cursor.next()) {
+                    long start = cursor.longValue(0);
+                    long end = cursor.longValue(1);
+                    int type = cursor.intValue(2);
+                    entries.add(new HundredGramActivityTracker.ActivityEntry(start, end, type));
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            } finally {
+                if (cursor != null) {
+                    cursor.dispose();
+                }
+            }
+            if (callback != null) {
+                AndroidUtilities.runOnUIThread(() -> callback.run(entries));
+            }
+        });
+    }
+
+    public void clearUserActivityLogs(long userId, Runnable callback) {
+        storageQueue.postRunnable(() -> {
+            try {
+                database.executeFast(String.format(Locale.US, "DELETE FROM user_activity_log WHERE user_id = %d", userId)).stepThis().dispose();
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+            if (callback != null) {
+                AndroidUtilities.runOnUIThread(callback);
+            }
+        });
+    }
+
+    public void saveMessageEditVersionInternal(TLRPC.Message msg, int versionDate) {
+        if (msg == null || database == null) {
+            return;
+        }
+        NativeByteBuffer buf = null;
+        SQLitePreparedStatement state = null;
+        try {
+            long dialogId = MessageObject.getDialogId(msg);
+            if (versionDate == 0) {
+                versionDate = msg.edit_date != 0 ? msg.edit_date : msg.date;
+            }
+            if (versionDate == 0) {
+                versionDate = (int) (System.currentTimeMillis() / 1000);
+            }
+            buf = new NativeByteBuffer(msg.getObjectSize());
+            msg.serializeToStream(buf);
+            state = database.executeFast("INSERT OR REPLACE INTO hundredgram_message_edits VALUES(?, ?, ?, ?)");
+            state.bindInteger(1, msg.id);
+            state.bindLong(2, dialogId);
+            state.bindInteger(3, versionDate);
+            state.bindByteBuffer(4, buf);
+            state.step();
+        } catch (Exception e) {
+            FileLog.e(e);
+        } finally {
+            if (state != null) {
+                state.dispose();
+            }
+            if (buf != null) {
+                buf.reuse();
+            }
+        }
+
+        try {
+            long dialogId = MessageObject.getDialogId(msg);
+            String query = String.format(Locale.US,
+                    "INSERT OR REPLACE INTO telegraher_message_history VALUES(%d, %d, %d, '%s');",
+                    msg.id,
+                    dialogId,
+                    versionDate,
+                    msg.message != null ? android.util.Base64.encodeToString(msg.message.getBytes(), android.util.Base64.NO_WRAP) : ""
+            );
+            database.executeFast(query).stepThis().dispose();
+        } catch (Exception ignore) {
+        }
+    }
+
+    public void loadMessageEdits(long dialogId, int mid, Utilities.Callback<ArrayList<TLRPC.Message>> callback) {
+        storageQueue.postRunnable(() -> {
+            ArrayList<TLRPC.Message> list = new ArrayList<>();
+            SQLiteCursor cursor = null;
+            try {
+                cursor = database.queryFinalized(String.format(Locale.US,
+                        "SELECT edit_date, data FROM hundredgram_message_edits WHERE uid = %d AND mid = %d ORDER BY edit_date ASC",
+                        dialogId, mid));
+                while (cursor.next()) {
+                    int editDate = cursor.intValue(0);
+                    NativeByteBuffer data = cursor.byteBufferValue(1);
+                    if (data != null) {
+                        try {
+                            TLRPC.Message editMsg = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
+                            if (editMsg != null) {
+                                editMsg.id = mid;
+                                editMsg.dialog_id = dialogId;
+                                if (editMsg.edit_date == 0 && editDate != editMsg.date) {
+                                    editMsg.edit_date = editDate;
+                                }
+                                list.add(editMsg);
+                            }
+                        } catch (Exception e) {
+                            FileLog.e(e);
+                        } finally {
+                            data.reuse();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            } finally {
+                if (cursor != null) {
+                    cursor.dispose();
+                    cursor = null;
+                }
+            }
+
+            if (list.isEmpty()) {
+                try {
+                    cursor = database.queryFinalized(String.format(Locale.US,
+                            "SELECT date, message FROM telegraher_message_history WHERE uid = %d AND mid = %d ORDER BY date ASC",
+                            dialogId, mid));
+                    while (cursor.next()) {
+                        int date = cursor.intValue(0);
+                        String b64 = cursor.stringValue(1);
+                        String text = "";
+                        if (b64 != null) {
+                            try {
+                                text = new String(android.util.Base64.decode(b64, android.util.Base64.DEFAULT));
+                            } catch (Exception ignore) {
+                                text = b64;
+                            }
+                        }
+                        TLRPC.TL_message fallbackMsg = new TLRPC.TL_message();
+                        fallbackMsg.id = mid;
+                        fallbackMsg.dialog_id = dialogId;
+                        fallbackMsg.date = date;
+                        fallbackMsg.edit_date = date;
+                        fallbackMsg.message = text;
+                        list.add(fallbackMsg);
+                    }
+                } catch (Exception e) {
+                    FileLog.e(e);
+                } finally {
+                    if (cursor != null) {
+                        cursor.dispose();
+                        cursor = null;
+                    }
+                }
+            }
+
+            AndroidUtilities.runOnUIThread(() -> {
+                if (callback != null) {
+                    callback.run(list);
+                }
+            });
+        });
+    }
+
+    public void clearMessageEdits(long dialogId, int mid, Runnable callback) {
+        storageQueue.postRunnable(() -> {
+            try {
+                database.executeFast(String.format(Locale.US, "DELETE FROM hundredgram_message_edits WHERE uid = %d AND mid = %d", dialogId, mid)).stepThis().dispose();
+                database.executeFast(String.format(Locale.US, "DELETE FROM telegraher_message_history WHERE uid = %d AND mid = %d", dialogId, mid)).stepThis().dispose();
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+            if (callback != null) {
+                AndroidUtilities.runOnUIThread(callback);
+            }
+        });
     }
 }

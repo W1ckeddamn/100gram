@@ -2988,12 +2988,23 @@ public class AndroidUtilities {
         return getPhotoSize(false);
     }
 
-    public static int getPhotoSize(boolean highQuality) {
-        if (highQuality) {
-            if (highQualityPhotoSize == null) {
-                highQualityPhotoSize = 2560;
+    public static int getPhotoSize(long dialogId) {
+        return getPhotoSize(dialogId, false);
+    }
+
+    public static int getPhotoSize(long dialogId, boolean highQuality) {
+        if (dialogId != 0) {
+            int overrideRes = HundredGramConfig.getChatPhotoResolution(dialogId);
+            if (overrideRes > 0) {
+                return overrideRes;
             }
-            return highQualityPhotoSize;
+        }
+        return getPhotoSize(highQuality);
+    }
+
+    public static int getPhotoSize(boolean highQuality) {
+        if (HundredGramConfig.alwaysHighQualityPhotos || highQuality) {
+            return HundredGramConfig.photoMaxResolution;
         } else {
             if (photoSize == null) {
                 photoSize = 1280;
@@ -3572,7 +3583,88 @@ public class AndroidUtilities {
         return (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || !OneUIUtilities.hasBuiltInClipboardToasts()) && Build.VERSION.SDK_INT < 32;
     }
 
+    private static final java.util.regex.Pattern URL_CLEAN_PATTERN = java.util.regex.Pattern.compile("https?://[^\\s]+");
+    private static final String[] TRACKING_PARAMS = {
+        "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "utm_id",
+        "fbclid", "gclid", "gbraid", "wbraid", "si", "igshid", "ref", "ref_src",
+        "yclid", "ysclid", "mc_eid", "_hsenc", "_hsmi"
+    };
+
+    public static String cleanUrl(String url) {
+        if (url == null || (!url.startsWith("http://") && !url.startsWith("https://"))) {
+            return url;
+        }
+        try {
+            int qIndex = url.indexOf('?');
+            if (qIndex < 0) {
+                return url;
+            }
+            String base = url.substring(0, qIndex);
+            String query = url.substring(qIndex + 1);
+            String fragment = "";
+            int fIndex = query.indexOf('#');
+            if (fIndex >= 0) {
+                fragment = query.substring(fIndex);
+                query = query.substring(0, fIndex);
+            }
+            String[] pairs = query.split("&");
+            StringBuilder newQuery = new StringBuilder();
+            for (String pair : pairs) {
+                if (pair.isEmpty()) continue;
+                int eq = pair.indexOf('=');
+                String key = eq >= 0 ? pair.substring(0, eq).toLowerCase() : pair.toLowerCase();
+                boolean isTracking = false;
+                for (String tp : TRACKING_PARAMS) {
+                    if (key.equals(tp) || key.startsWith("utm_")) {
+                        isTracking = true;
+                        break;
+                    }
+                }
+                if (!isTracking) {
+                    if (newQuery.length() > 0) newQuery.append('&');
+                    newQuery.append(pair);
+                }
+            }
+            if (newQuery.length() > 0) {
+                return base + "?" + newQuery.toString() + fragment;
+            } else {
+                return base + fragment;
+            }
+        } catch (Exception e) {
+            return url;
+        }
+    }
+
+    public static CharSequence cleanUrls(CharSequence text) {
+        if (text == null || !HundredGramConfig.cleanUrls) {
+            return text;
+        }
+        String str = text.toString();
+        if (!str.contains("http://") && !str.contains("https://")) {
+            return text;
+        }
+        try {
+            java.util.regex.Matcher matcher = URL_CLEAN_PATTERN.matcher(str);
+            StringBuffer sb = new StringBuffer();
+            while (matcher.find()) {
+                String match = matcher.group();
+                String cleaned = cleanUrl(match);
+                matcher.appendReplacement(sb, java.util.regex.Matcher.quoteReplacement(cleaned));
+            }
+            matcher.appendTail(sb);
+            return sb.toString();
+        } catch (Exception e) {
+            return text;
+        }
+    }
+
     public static boolean addToClipboard(CharSequence plain, String html) {
+        if (HundredGramConfig.cleanUrls) {
+            plain = cleanUrls(plain);
+            if (html != null) {
+                html = cleanUrls(html).toString();
+            }
+        }
         if (html == null) return addToClipboard(plain);
         try {
             android.content.ClipboardManager clipboard = (android.content.ClipboardManager) ApplicationLoader.applicationContext.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -3586,6 +3678,9 @@ public class AndroidUtilities {
     }
 
     public static boolean addToClipboard(CharSequence str) {
+        if (HundredGramConfig.cleanUrls) {
+            str = cleanUrls(str);
+        }
         try {
             android.content.ClipboardManager clipboard = (android.content.ClipboardManager) ApplicationLoader.applicationContext.getSystemService(Context.CLIPBOARD_SERVICE);
 
@@ -4253,26 +4348,60 @@ public class AndroidUtilities {
                 if (restrict && MessageObject.isV(ext)) {
                     return true;
                 }
-                realMimeType = myMime.getMimeTypeFromExtension(ext.toLowerCase());
-                if (realMimeType == null) {
-                    realMimeType = mimeType;
-                    if (realMimeType == null || realMimeType.length() == 0) {
-                        realMimeType = null;
+                if ("apk".equalsIgnoreCase(ext)) {
+                    realMimeType = "application/vnd.android.package-archive";
+                } else {
+                    realMimeType = myMime.getMimeTypeFromExtension(ext.toLowerCase());
+                    if (realMimeType == null) {
+                        realMimeType = mimeType;
+                        if (realMimeType == null || realMimeType.length() == 0) {
+                            realMimeType = null;
+                        }
                     }
                 }
             }
-            if (realMimeType != null && realMimeType.equals("application/vnd.android.package-archive")) {
+            boolean isApk = "application/vnd.android.package-archive".equals(realMimeType);
+            if (isApk) {
                 if (restrict) return true;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !ApplicationLoader.applicationContext.getPackageManager().canRequestPackageInstalls()) {
                     AlertsCreator.createApkRestrictedDialog(activity, resourcesProvider).show();
                     return true;
                 }
             }
+            Uri fileUri;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                intent.setDataAndType(FileProvider.getUriForFile(activity, ApplicationLoader.getApplicationId() + ".provider", f), realMimeType != null ? realMimeType : "text/plain");
+                fileUri = FileProvider.getUriForFile(activity, ApplicationLoader.getApplicationId() + ".provider", f);
             } else {
-                intent.setDataAndType(Uri.fromFile(f), realMimeType != null ? realMimeType : "text/plain");
+                fileUri = Uri.fromFile(f);
             }
+            intent.setDataAndType(fileUri, realMimeType != null ? realMimeType : "text/plain");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            if (isApk) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    activity.startActivity(intent);
+                } catch (Exception e) {
+                    FileLog.e(e);
+                    try {
+                        Intent installIntent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+                        installIntent.setDataAndType(fileUri, "application/vnd.android.package-archive");
+                        installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        activity.startActivity(installIntent);
+                    } catch (Exception e2) {
+                        FileLog.e(e2);
+                        if (activity != null) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(activity, resourcesProvider);
+                            builder.setTitle(LocaleController.getString(R.string.AppName));
+                            builder.setMessage(LocaleController.formatString("NoHandleAppInstalled", R.string.NoHandleAppInstalled, "application/vnd.android.package-archive"));
+                            builder.setPositiveButton(LocaleController.getString(R.string.OK), null);
+                            builder.show();
+                        }
+                    }
+                }
+                return true;
+            }
+
             if (realMimeType != null) {
                 try {
                     activity.startActivityForResult(intent, 500);

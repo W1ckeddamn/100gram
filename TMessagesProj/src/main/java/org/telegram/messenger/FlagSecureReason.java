@@ -74,8 +74,10 @@ public class FlagSecureReason {
     }
 
     public static boolean isSecuredNow(Window window) {
-        if (SharedConfig.allowScreenCapture) return false;
-        return currentSecureReasons != null && currentSecureReasons.get(window) != null;
+        if (HundredGramConfig.streamerMode && HundredGramConfig.streamerBlockScreenshots) {
+            return true;
+        }
+        return currentSecureReasons != null && currentSecureReasons.containsKey(window);
     }
 
     public interface FlagSecureCondition {

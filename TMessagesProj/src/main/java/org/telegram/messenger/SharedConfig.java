@@ -228,7 +228,7 @@ public class SharedConfig {
     public static int autoLockIn = 60 * 60;
 
     public static boolean saveIncomingPhotos;
-    public static boolean allowScreenCapture;
+    public static boolean allowScreenCapture = true;
     public static int lastPauseTime;
     public static boolean isWaitingForPasscodeEnter;
     public static boolean useFingerprintLock = true;
@@ -880,7 +880,7 @@ public class SharedConfig {
         useFingerprintLock = true;
         shufflePinButtons = false;
         isWaitingForPasscodeEnter = false;
-        allowScreenCapture = false;
+        allowScreenCapture = true;
         textSelectionHintShows = 0;
         scheduledOrNoSoundHintShows = 0;
         scheduledOrNoSoundHintSeenAt = 0;

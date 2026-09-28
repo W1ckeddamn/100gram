@@ -96,6 +96,10 @@ public class AccountInstance {
         return MemberRequestsController.getInstance(currentAccount);
     }
 
+    public HundredGramAutomationEngine getAutomationEngine() {
+        return HundredGramAutomationEngine.getInstance(currentAccount);
+    }
+
     public int getCurrentAccount() {
         return currentAccount;
     }

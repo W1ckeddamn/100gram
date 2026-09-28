@@ -1,0 +1,7 @@
+# Ensure all .attheme files always maintain Unix LF line endings
+*.attheme text eol=lf
+*.dat binary
+*.gzip binary
+*.json text eol=lf
+*.txt text eol=lf
+*.html text eol=lf

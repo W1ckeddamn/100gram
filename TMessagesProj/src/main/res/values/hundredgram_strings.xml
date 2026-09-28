@@ -1,0 +1,541 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Message Details & Actions -->
+    <string name="Details">Details</string>
+    <string name="Date">Date</string>
+    <string name="EditedDate">Edit Date</string>
+    <string name="ForwardedDate">Forward Date</string>
+    <string name="FileSize">File Size</string>
+    <string name="FileName">File Name</string>
+    <string name="FilePath">File Path</string>
+    <string name="Resolution">Resolution</string>
+    <string name="Bitrate">Bitrate</string>
+    <string name="MimeType">MIME Type</string>
+    <string name="Datacenter">Datacenter</string>
+    <string name="PhotoCopied">Photo copied to clipboard</string>
+    <string name="CopyPhoto">Copy Photo</string>
+    <string name="SaveToSavedMessages">Save</string>
+
+    <!-- Double Tap -->
+    <string name="DoubleTapActionIncoming">Double-tap (incoming)</string>
+    <string name="DoubleTapActionOutgoing">Double-tap (outgoing)</string>
+    <string name="DoubleTapReaction">Quick reaction</string>
+    <string name="DoubleTapReply">Reply</string>
+    <string name="DoubleTapCopy">Copy text</string>
+    <string name="DoubleTapForward">Forward</string>
+    <string name="DoubleTapEdit">Edit</string>
+    <string name="DoubleTapSave">Save message</string>
+    <string name="DoubleTapDelete">Delete</string>
+    <string name="DoubleTapNone">Disabled</string>
+
+    <!-- Context Menu Options -->
+    <string name="ShowSaveMessageButton">\"Save\" in message menu</string>
+    <string name="ShowDetailsButton">\"Details\" in message menu</string>
+    <string name="ShowCopyPhotoButton">\"Copy Photo\" in message menu</string>
+    <string name="ShowEditHistoryButton">\"Edit History\" in message menu</string>
+    <string name="MessageEditHistory">Edit History</string>
+    <string name="MessageOriginalVersion">Original version</string>
+    <string name="MessageCurrentVersion">Current version</string>
+    <string name="MessageEditedVersion">Revision %1$d</string>
+    <string name="MessageIsDeleted">Message was deleted</string>
+    <string name="MessageDeletedBadge">Deleted</string>
+    <string name="MessageNotEdited">This message was not edited</string>
+    <string name="MessageEditsEmpty">No edit history saved for this message</string>
+    <string name="MessageEditHistoryHint">Edits captured while app is running are preserved even if deleted</string>
+    <string name="CopyVersionText">Copy text</string>
+    <string name="NoCaption">No caption</string>
+    <string name="EmptyMessage">Empty message</string>
+
+    <!-- Privacy -->
+    <string name="UsernameHidden">Hidden</string>
+    <string name="HundredGramHideOtherPhoneNumbers">Hide other users\' phone numbers</string>
+    <string name="HundredGramHideOtherPhoneNumbersInfo">Hides phone numbers of other users in their profiles and chat headers</string>
+    <string name="HundredGramHideUsername">Hide own username</string>
+    <string name="HundredGramHideUsernameInfo">Hides your username in settings and profile</string>
+    <string name="HundredGramHideOtherUsernames">Hide other users\' usernames</string>
+    <string name="HundredGramHideOtherUsernamesInfo">Hides usernames of other users and channels in profiles</string>
+    <string name="RevealPhone">Reveal phone number</string>
+    <string name="RevealUsername">Reveal username</string>
+    <string name="RevealPhoneTitle">Reveal phone number?</string>
+    <string name="RevealPhoneMessage">Are you sure you want to reveal the phone number?</string>
+    <string name="RevealUsernameTitle">Reveal username?</string>
+    <string name="RevealUsernameMessage">Are you sure you want to reveal the username?</string>
+    <string name="Reveal">Reveal</string>
+
+    <!-- Media Vault & Archiver -->
+    <string name="HundredGramVaultHeader">Archiver &amp; Media Vault</string>
+    <string name="HundredGramBackgroundArchiver">Background sync for all chats</string>
+    <string name="HundredGramBackgroundArchiverInfo">Syncs messages even from muted channels and groups in background</string>
+    <string name="HundredGramMediaVault">Pre-emptive media auto-download</string>
+    <string name="HundredGramMediaVaultInfo">Automatically downloads files before author or admin can delete them</string>
+    <string name="HundredGramMediaVaultLimit">Maximum file size</string>
+    <string name="HundredGramMediaVaultScope">Where to save media</string>
+    <string name="HundredGramMediaVaultScopePrivate">Private chats only</string>
+    <string name="HundredGramMediaVaultScopeGroups">Private chats and groups</string>
+    <string name="HundredGramMediaVaultScopeAll">All chats (including channels)</string>
+    <string name="HundredGramMediaVaultOnlyWifi">Save on Wi-Fi only</string>
+    <string name="HundredGramMediaVaultOnlyWifiInfo">Saves mobile data by only pre-caching media when connected to Wi-Fi</string>
+
+    <!-- Activity Tracker & Online -->
+    <string name="HundredGramTrackerHeader">Activity &amp; Online Tracker</string>
+    <string name="HundredGramTrackOnlineStatus">Track online sessions</string>
+    <string name="HundredGramTrackOnlineStatusInfo">Records exact activity times for users with hidden status (\"last seen recently\")</string>
+    <string name="HundredGramNotifyUserOnline">Notify when contact is online</string>
+    <string name="HundredGramNotifyUserOnlineInfo">Shows notification when tracked user comes online</string>
+    <string name="UserActivityLog">Activity Log</string>
+    <string name="UserActivityLastSeen">seen at %1$s</string>
+    <string name="UserActivityTotalToday">Online today: %1$s</string>
+    <string name="UserActivitySessionsCount">Visits today: %1$d</string>
+    <string name="UserActivityEmpty">No activity recorded yet</string>
+    <string name="UserActivityClear">Clear log</string>
+    <string name="UserActivityClearConfirm">Clear activity history for this user?</string>
+    <string name="UserOnlineNow">%1$s is online now!</string>
+    <string name="ActivityHistory">Activity History</string>
+    <string name="EnableNotifyUserOnline">Notify when online</string>
+    <string name="DisableNotifyUserOnline">Stop notifying when online</string>
+    <string name="NotifyOnlineEnabledForUser">Online notifications enabled for %1$s</string>
+    <string name="NotifyOnlineDisabledForUser">Online notifications disabled for %1$s</string>
+    <string name="ActivityTriggerOnline">Online</string>
+    <string name="ActivityTriggerTyping">Typing...</string>
+    <string name="ActivityTriggerMessage">Sent message</string>
+
+    <!-- Chat Media Vault & Exceptions -->
+    <string name="HundredGramChatVaultMenu">Media Vault</string>
+    <string name="HundredGramChatVaultTitle">Chat Media Vault Settings</string>
+    <string name="HundredGramVaultModeHeader">Saving mode for chat</string>
+    <string name="HundredGramVaultModeDefault">Default (Global settings)</string>
+    <string name="HundredGramVaultModeAlways">Always save in this chat</string>
+    <string name="HundredGramVaultModeNever">Never save (Exclude chat)</string>
+    <string name="HundredGramVaultTypesHeader">What to save</string>
+    <string name="HundredGramVaultPhotos">Photos</string>
+    <string name="HundredGramVaultVideos">Videos</string>
+    <string name="HundredGramVaultVoicesRounds">Voice &amp; Video messages</string>
+    <string name="HundredGramVaultDocuments">Files &amp; Documents</string>
+    <string name="HundredGramVaultLimitHeader">File size limit for this chat</string>
+    <string name="HundredGramVaultResetDefault">Reset settings for this chat</string>
+    <string name="HundredGramVaultResetConfirm">Reset media save settings for this chat to default?</string>
+    <string name="HundredGramVaultExceptions">Chat Exceptions</string>
+    <string name="HundredGramVaultExceptionsInfo">Custom media save rules and auto-download overrides for specific chats</string>
+    <string name="HundredGramVaultNoExceptions">None</string>
+    <string name="HundredGramVaultAddException">Add Exception</string>
+    <string name="HundredGramVaultExceptionsEmpty">You don\'t have any chat exceptions yet</string>
+    <string name="HundredGramVaultSizeDefault">Default (%1$d MB)</string>
+    <string name="HundredGramVaultSizeUnlimited">Unlimited</string>
+    <string name="HundredGramVaultSaved">Chat settings saved</string>
+    <string name="HundredGramVaultDeleted">Exception removed</string>
+    <string name="HundredGramVaultDeleteConfirm">Remove exception for chat \"%1$s\"?</string>
+
+    <!-- Sub-settings Categories -->
+    <string name="HundredGramCategoryVault">Media Vault &amp; Archiver</string>
+    <string name="HundredGramCategoryVaultSub">Auto-save media, chat exceptions, clear archive</string>
+    <string name="HundredGramCategoryTracker">Activity Monitoring</string>
+    <string name="HundredGramCategoryTrackerSub">Hidden online tracking, sessions, notifications</string>
+    <string name="HundredGramCategoryPrivacy">Privacy &amp; Profile</string>
+    <string name="HundredGramCategoryPrivacySub">Hide phone numbers, usernames, show ID &amp; DC</string>
+    <string name="HundredGramCategoryInterface">Interface &amp; Chats</string>
+    <string name="HundredGramCategoryInterfaceSub">Relative time, archive folder, keyboard scroll</string>
+    <string name="HundredGramCategoryCamera">Camera &amp; Video Notes</string>
+    <string name="HundredGramCategoryCameraSub">CameraX API, 60 FPS recording, zoom slider</string>
+    <string name="HundredGramCategoryActions">Actions &amp; Gestures</string>
+    <string name="HundredGramCategoryActionsSub">Double tap actions, message context menu</string>
+
+    <!-- Clear Vault -->
+    <string name="HundredGramVaultClearHeader">Archive Cleanup</string>
+    <string name="HundredGramVaultClearChat">Clear chat offline archive</string>
+    <string name="HundredGramVaultClearChatInfo">Removes pre-emptively cached media of this chat from device storage</string>
+    <string name="HundredGramVaultClearChatConfirm">Delete all cached media of this chat from device storage?</string>
+    <string name="HundredGramVaultClearedChat">Chat offline archive cleared (%1$s freed)</string>
+    <string name="HundredGramVaultClearAll">Clear all offline archive</string>
+    <string name="HundredGramVaultClearAllInfo">Removes all pre-cached media files across all chats to free storage</string>
+    <string name="HundredGramVaultClearAllConfirm">Delete all pre-emptively cached media from all chats from device?</string>
+    <string name="HundredGramVaultClearedAll">All offline archive cleared (%1$s freed)</string>
+
+    <!-- Deleted Messages Highlight -->
+    <string name="HundredGramHighlightDeleted">Ghost mode for deleted messages</string>
+    <string name="HundredGramHighlightDeletedInfo">Renders deleted messages and media semi-transparently to clearly distinguish preserved copies</string>
+
+    <!-- Media Quality & Extera Features -->
+    <string name="HundredGramCategoryMediaQuality">Media Quality &amp; Downloads</string>
+    <string name="HundredGramCategoryMediaQualitySub">4K photos, uncompressed video, download speed boost</string>
+    <string name="AlwaysHighQualityPhotos">Always send photos in HD</string>
+    <string name="AlwaysHighQualityPhotosInfo">Automatically enables high quality (HD) for all selected and sent photos</string>
+    <string name="PhotoMaxResolution">Max photo resolution</string>
+    <string name="PhotoMaxResolutionInfo">Maximum photo dimension when sending</string>
+    <string name="PhotoMaxRes1280">1280px (Standard)</string>
+    <string name="PhotoMaxRes2560">2560px (HD)</string>
+    <string name="PhotoMaxRes3840">3840px (Ultra HD 4K)</string>
+    <string name="SendVideoAsDocument">Send video without compression</string>
+    <string name="SendVideoAsDocumentInfo">Sends original video file as document without codec re-encoding or fps drops</string>
+    <string name="BoostDownloadSpeed">Download booster (Parallel Chunks)</string>
+    <string name="BoostDownloadSpeedInfo">Increases parallel chunk download connections to 8 for maximum downloading speed</string>
+    <string name="ConfirmCalls">Confirm before call</string>
+    <string name="ConfirmCallsInfo">Shows a confirmation dialog before starting voice or video calls (accidental call protection)</string>
+    <string name="ConfirmCallUser">Call %1$s?</string>
+    <string name="ConfirmVideoCallUser">Video call %1$s?</string>
+    <string name="ConfirmCall">Call</string>
+    <string name="GoToFirstMessage">Go to first message</string>
+    <string name="CleanUrls">Clean URLs from trackers</string>
+    <string name="CleanUrlsInfo">Automatically strips tracking parameters (utm_*, fbclid, gclid, si, igshid, etc.) when copying links</string>
+
+    <!-- Ghost Mode -->
+    <string name="HundredGramCategoryGhost">Ghost Mode</string>
+    <string name="HundredGramCategoryGhostSub">Stealth message reading, anonymous stories, hide typing status</string>
+    <string name="GhostReadMessages">Ghost read messages</string>
+    <string name="GhostReadMessagesInfo">Messages remain unread for the sender (single checkmark) while you read the chat</string>
+    <string name="GhostReadOnReply">Mark as read on reply</string>
+    <string name="GhostReadOnReplyInfo">Marks the chat as read on the server when you send your own message to the chat</string>
+    <string name="GhostReadMediaContents">Hide voice listening status</string>
+    <string name="GhostReadMediaContentsInfo">Does not send listened status for voice notes and video circles (green dot remains for sender)</string>
+    <string name="GhostShowMarkAsRead">\"Mark as read\" in message menu</string>
+    <string name="GhostShowMarkAsReadInfo">Adds an option to the message context menu to manually mark messages as read up to this message</string>
+    <string name="GhostMarkAsRead">Mark as read</string>
+    <string name="GhostMarkedAsRead">Messages marked as read</string>
+    <string name="GhostTyping">Hide typing status</string>
+    <string name="GhostTypingInfo">Other users will not see when you are typing a message or recording voice/video</string>
+    <string name="GhostStoriesMode">Stories viewing mode</string>
+    <string name="GhostStoriesModeInfo">Allows viewing stories of users and channels anonymously</string>
+    <string name="GhostStoriesOff">Normal (like in Telegram)</string>
+    <string name="GhostStoriesAlways">Always ghost (anonymous)</string>
+    <string name="GhostStoriesPrompt">Ask before opening</string>
+    <string name="GhostStoriesPromptTitle">Story view mode</string>
+    <string name="GhostStoriesPromptMessage">How would you like to view this story?</string>
+    <string name="GhostStoriesPromptNormal">Normal view</string>
+    <string name="GhostStoriesPromptGhost">Ghost view (Anonymous)</string>
+    <string name="GhostStoriesPromptRemember">Remember my choice</string>
+    <string name="UnlockStorySaving">Save stories to gallery</string>
+    <string name="UnlockStorySavingInfo">Allows downloading other users\' stories to gallery without Telegram Premium</string>
+    <string name="GhostStoriesBadge">Ghost</string>
+
+    <!-- Auto check delete for all -->
+    <string name="AutoCheckDeleteForAll">Auto-check delete for everyone</string>
+    <string name="AutoCheckDeleteForAllInfo">Automatically checks \"Delete for everyone\" and \"Also delete for...\" in message and chat deletion dialogs</string>
+
+    <!-- Ghost Online & Read Date -->
+    <string name="GhostOnline">Ghost Online</string>
+    <string name="GhostOnlineInfo">Prevents sending online status when opening the app and browsing chats. You will appear online only when sending messages.</string>
+    <string name="GhostHideReadDate">Hide read time</string>
+    <string name="GhostHideReadDateInfo">Hides the exact time when private messages were read (Telegram Premium)</string>
+
+    <!-- Silent send by default -->
+    <string name="SilentSendByDefault">Send silently by default</string>
+    <string name="SilentSendByDefaultInfo">All outgoing messages are sent without sound notification for the recipient. Hold the send button to send with sound.</string>
+    <string name="SendWithSound">Send with sound</string>
+
+    <!-- Confirm send stickers and gifs -->
+    <string name="ConfirmSendStickers">Confirm before sending stickers</string>
+    <string name="ConfirmSendStickersInfo">Shows a confirmation dialog before sending a sticker to avoid accidental taps</string>
+    <string name="ConfirmSendGifs">Confirm before sending GIFs</string>
+    <string name="ConfirmSendGifsInfo">Shows a confirmation dialog before sending a GIF animation</string>
+    <string name="ConfirmSendStickerTitle">Send sticker?</string>
+    <string name="ConfirmSendGifTitle">Send GIF?</string>
+    <string name="ConfirmSendPrompt">Are you sure you want to send this to the chat?</string>
+
+    <!-- Forward without author -->
+    <string name="ForwardWithoutAuthor">Forward without author</string>
+    <string name="ShowForwardWithoutAuthorButton">\"Forward without author\" in menu</string>
+    <string name="ShowForwardWithoutAuthorButtonInfo">Shows \"Forward without author\" button in the message context menu</string>
+    <string name="AlwaysForwardWithoutAuthor">Always forward without author</string>
+    <string name="AlwaysForwardWithoutAuthorInfo">Automatically strips the original sender name and source header when forwarding messages</string>
+
+    <!-- Unlock Chat Translation -->
+    <string name="UnlockChatTranslation">Real-time chat translation</string>
+    <string name="UnlockChatTranslationInfo">Unlocks the top translation bar to translate entire chats in real time without Telegram Premium</string>
+
+    <!-- Clear Chat Cache -->
+    <string name="ClearChatCache">Clear chat cache</string>
+    <string name="ClearChatCacheConfirm">Clear cached media files (%1$s) for this chat?</string>
+    <string name="ClearChatCacheDone">Chat cache cleared (%1$s freed)</string>
+    <string name="ClearChatCacheEmpty">No cached media files in this chat</string>
+
+    <!-- Vault Viewer -->
+    <string name="VaultBrowseFiles">Browse archive files</string>
+    <string name="VaultBrowseFilesInfo">Inspect and manage all media files saved in the archive across all chats</string>
+    <string name="VaultIncludeArchivedChats">Include Telegram Archive chats</string>
+    <string name="VaultIncludeArchivedChatsInfo">Automatically save media to vault from chats located in Telegram\'s Archive folder</string>
+    <string name="VaultTitle">Archive Storage</string>
+    <string name="VaultFilterAll">All chats</string>
+    <string name="VaultFilterArchived">Archived chats</string>
+    <string name="VaultFilterPrivate">Private chats</string>
+    <string name="VaultFilterGroupsChannels">Groups &amp; Channels</string>
+    <string name="VaultFilesCount">%1$d files · %2$s</string>
+    <string name="VaultNoFiles">No files found in archive</string>
+
+    <!-- Keep-Alive Service -->
+    <string name="KeepAliveServiceTitle">Keep-Alive Service</string>
+    <string name="KeepAliveServiceRunning">Background connection active · Archive working</string>
+    <string name="KeepAliveForegroundService">Foreground Keep-Alive Service</string>
+    <string name="KeepAliveForegroundServiceInfo">Prevents system from killing the app in background and maintains persistent MTProto connection for 24/7 archive and anti-delete</string>
+    <string name="BatteryOptimization">Battery Optimization Settings</string>
+    <string name="BatteryOptimizationInfo">Tap to open battery settings and select \"Unrestricted\" to prevent network sleep when screen is off</string>
+
+    <!-- Per-Chat Individual Overrides -->
+    <string name="HundredGramChatSettingsTitle">Chat Settings (100gram)</string>
+    <string name="HundredGramChatSettingsSub">Individual preferences for this chat</string>
+    <string name="HundredGramChatOverrideDefault">Default</string>
+    <string name="HundredGramChatOverrideDefaultOn">Default (Globally On)</string>
+    <string name="HundredGramChatOverrideDefaultOff">Default (Globally Off)</string>
+    <string name="HundredGramChatOverrideEnabled">Always Enabled</string>
+    <string name="HundredGramChatOverrideDisabled">Always Disabled</string>
+    <string name="HundredGramChatOverrideGhostRead">Ghost Read</string>
+    <string name="HundredGramChatOverrideGhostReadInfo">Do not send read receipts in this chat</string>
+    <string name="HundredGramChatOverrideGhostTyping">Ghost Typing</string>
+    <string name="HundredGramChatOverrideGhostTypingInfo">Hide typing and recording status in this chat</string>
+    <string name="HundredGramChatOverrideHidePhone">Hide Phone Number</string>
+    <string name="HundredGramChatOverrideHidePhoneInfo">Mask phone number in this chat and profile</string>
+    <string name="HundredGramChatOverrideAntiDelete">Anti-Delete Protection</string>
+    <string name="HundredGramChatOverrideAntiDeleteInfo">Preserve deleted messages in this chat</string>
+    <string name="HundredGramChatOverrideSilentSend">Send Silently by Default</string>
+    <string name="HundredGramChatOverrideSilentSendInfo">Send messages without sound notification in this chat</string>
+    <string name="HundredGramChatOverrideAutoTranslate">Auto-Translate Chat</string>
+    <string name="HundredGramChatOverrideAutoTranslateInfo">Automatically translate incoming messages in this chat</string>
+    <string name="HundredGramChatOverrideAutoArchive">Background Archiver</string>
+    <string name="HundredGramChatOverrideAutoArchiveInfo">Preload messages and media in background</string>
+    <string name="HundredGramChatOverridePhotoQuality">Photo Send Quality</string>
+    <string name="HundredGramChatOverrideVideoDoc">Send Video as Document</string>
+    <string name="HundredGramChatOverrideVideoDocInfo">Send uncompressed video without re-encoding</string>
+    <string name="HundredGramChatOverrideCacheLimit">Chat Cache Limit</string>
+    <string name="HundredGramChatOverrideNoLimit">No limit</string>
+    <string name="HundredGramChatOverrideReset">Reset settings for this chat</string>
+    <string name="HundredGramChatOverrideResetConfirm">Reset all individual preferences for this chat to defaults?</string>
+    <string name="HundredGramChatOverrideResetDone">Chat settings reset to defaults</string>
+    <string name="HundredGramChatOverrideSectionGhost">Ghost Mode &amp; Privacy</string>
+    <string name="HundredGramChatOverrideSectionMessaging">Messaging &amp; Translation</string>
+    <string name="HundredGramChatOverrideSectionMedia">Media Quality</string>
+    <string name="HundredGramChatOverrideSectionVault">Vault &amp; Download Policy</string>
+    <string name="HundredGramChatOverrideMute">Mute Notifications</string>
+    <string name="HundredGramChatVaultMode">Media Vault Saving Mode</string>
+    <string name="HundredGramChatVaultMaxSize">Media Vault Max File Size</string>
+
+    <!-- Streamer Mode & Privacy Disguise -->
+    <string name="HundredGramCategoryStreamer">Streamer Mode &amp; Disguise</string>
+    <string name="HundredGramCategoryStreamerSub">Screen-share protection, Privacy Blur, App camouflage</string>
+    <string name="StreamerMode">Streamer Mode</string>
+    <string name="StreamerModeInfo">Hides sensitive data to prevent accidental leaks during screen sharing and live streams</string>
+    <string name="StreamerFakeName">Fake Display Name</string>
+    <string name="StreamerFakeNameInfo">Replaces your account name across the interface</string>
+    <string name="StreamerHidePhones">Hide All Phone Numbers</string>
+    <string name="StreamerHidePhonesInfo">Masks phone numbers of all users and your own account</string>
+    <string name="StreamerHideUsernames">Mask Usernames</string>
+    <string name="StreamerHideUsernamesInfo">Replaces usernames with masked characters</string>
+    <string name="StreamerHideAvatars">Hide Profile Avatars</string>
+    <string name="StreamerHideAvatarsInfo">Replaces user photos with neutral placeholders</string>
+    <string name="StreamerHideDialogMessages">Mask Dialog Messages</string>
+    <string name="StreamerHideDialogMessagesInfo">Masks message text in dialogs list</string>
+    <string name="StreamerHideIdDc">Hide Telegram ID &amp; DC</string>
+    <string name="StreamerHideIdDcInfo">Suppresses account ID and data center badges in profiles</string>
+    <string name="StreamerHideNotificationPreview">Secure Notifications</string>
+    <string name="StreamerHideNotificationPreviewInfo">Displays only \"New message\" without sender or text</string>
+    <string name="StreamerHideOtherAccounts">Hide Other Accounts</string>
+    <string name="StreamerHideOtherAccountsInfo">Hides account switcher list in side menu</string>
+    <string name="StreamerPreventAccidentalCalls">Call Protection</string>
+    <string name="StreamerPreventAccidentalCallsInfo">Asks for confirmation before placing audio/video calls</string>
+    <string name="StreamerCallConfirm">Streamer Mode is active. Are you sure you want to call %1$s?</string>
+    <string name="StreamerModeEnabledBulletin">Streamer Mode enabled</string>
+    <string name="StreamerModeDisabledBulletin">Streamer Mode disabled</string>
+    <string name="StreamerModeQuickToggle">Streamer Mode</string>
+
+    <!-- Privacy Blur & Tap-to-Reveal -->
+    <string name="PrivacyBlurSection">Privacy Blur &amp; Protection</string>
+    <string name="PrivacyBlurDialogMessages">Mask Chat List Previews</string>
+    <string name="PrivacyBlurDialogMessagesInfo">Masks the last message preview in the dialogs list</string>
+    <string name="RevealPhoneConfirmTitle">Reveal Phone Number?</string>
+    <string name="RevealPhoneConfirmMessage">Are you sure you want to reveal this hidden phone number?</string>
+    <string name="RevealUsernameConfirmTitle">Reveal Username?</string>
+    <string name="RevealUsernameConfirmMessage">Are you sure you want to reveal this hidden username?</string>
+    <string name="RevealButton">Reveal</string>
+
+    <!-- App Disguise (Camouflage) -->
+    <string name="AppDisguiseSection">App Disguise (Camouflage)</string>
+    <string name="AppDisguiseInfo">Changes the launcher icon and app name on your home screen</string>
+    <string name="AppDisguiseDefault">100gram (Default)</string>
+    <string name="AppDisguiseCalculator">Calculator</string>
+    <string name="AppDisguiseNotes">Notes</string>
+    <string name="AppDisguiseClock">Clock</string>
+    <string name="StreamerPreventAccidentalDelete">Accidental Delete Protection</string>
+    <string name="StreamerPreventAccidentalDeleteInfo">Requires additional confirmation before deleting any chat</string>
+    <string name="PrivacyBlurAvatars">Hide Avatars in Chat List</string>
+    <string name="PrivacyBlurAvatarsInfo">Shows neutral initial badges instead of personal profile photos in dialogs</string>
+    <string name="AppDisguiseIcon">Launcher Icon &amp; App Name</string>
+    <string name="AppDisguiseApplied">App icon changed to \"%1$s\"</string>
+
+    <!-- Stage 3: Interface, Navigation & Avatar History -->
+    <string name="HideSimilarChannels">Hide Similar Channels</string>
+    <string name="HideSimilarChannelsInfo">Suppresses channel recommendations when subscribing or viewing channels</string>
+    <string name="HideStoriesBar">Hide Stories Bar</string>
+    <string name="HideStoriesBarInfo">Hides the stories carousel on top of the chats list</string>
+    <string name="ShowSecondsInTime">Exact Seconds in Message Time</string>
+    <string name="ShowSecondsInTimeInfo">Displays timestamps with seconds (HH:mm:ss) in chat bubbles</string>
+    <string name="ConfirmLeaveChat">Confirm Leaving Chats</string>
+    <string name="ConfirmLeaveChatInfo">Asks for confirmation before leaving groups or unfollowing channels</string>
+    <string name="ConfirmLeaveChatPrompt">Are you sure you want to leave \"%1$s\"?</string>
+    <string name="AvatarHistory">Avatar History</string>
+    <string name="AvatarHistoryInfo">Saves historical profile photos of users and channels locally</string>
+    <string name="AvatarHistoryTitle">Avatar History</string>
+    <string name="AvatarHistoryCount">Avatar History (%1$d)</string>
+    <string name="AvatarHistoryEmpty">No historical avatars recorded yet</string>
+    <string name="AvatarHistorySaveGallery">Save to Gallery</string>
+    <string name="AvatarHistorySaved">Photo saved to gallery</string>
+    <string name="AvatarHistoryRecordedAt">Detected: %1$s</string>
+
+    <!-- Stage 4: Developer Mode & Chat Export -->
+    <string name="DevCategory">Developer Mode &amp; Export</string>
+    <string name="DeveloperMode">Developer Mode</string>
+    <string name="DeveloperModeInfo">Enables advanced developer tools: Markdown copy, JSON inspector, formatting</string>
+    <string name="CopyAsMarkdown">Copy as Markdown</string>
+    <string name="CopyAsMarkdownDone">Copied as Markdown</string>
+    <string name="PrettyJson">Inspect JSON</string>
+    <string name="PrettyJsonTitle">JSON Inspector</string>
+    <string name="PrettyJsonCopyFormatted">Copy Formatted</string>
+    <string name="PrettyJsonMinify">Minify</string>
+    <string name="PrettyJsonCopied">JSON copied to clipboard</string>
+    <string name="PrettyJsonInvalid">Not a valid JSON object</string>
+    <string name="PrettyJsonIndent">Indent: %1$d spaces</string>
+    <string name="DevCopyCodeButton">Copy button for all code blocks</string>
+    <string name="DevCopyCodeButtonInfo">Always display the \"Copy Code\" button for code snippets regardless of their length</string>
+
+    <string name="ChatExport">Export Chat</string>
+    <string name="ChatExportTitle">Export Chat History</string>
+    <string name="ChatExportFormat">Export Format</string>
+    <string name="ChatExportRange">Messages to Export</string>
+    <string name="ChatExportRangeAll">All messages</string>
+    <string name="ChatExportRange100">Last 100 messages</string>
+    <string name="ChatExportRange500">Last 500 messages</string>
+    <string name="ChatExportRange1000">Last 1,000 messages</string>
+    <string name="ChatExportIncludeDeleted">Include deleted messages (Anti-Delete)</string>
+    <string name="ChatExportIncludeEdits">Include edit history (All versions)</string>
+    <string name="ChatExportIncludeMediaLinks">Include media info &amp; filenames</string>
+    <string name="ChatExportStart">Start Export</string>
+    <string name="ChatExportProgress">Exporting messages (%1$d)...</string>
+    <string name="ChatExportSuccess">Chat exported successfully (%1$d messages)</string>
+    <string name="ChatExportOpen">Open File</string>
+    <string name="ChatExportShare">Share File</string>
+    <string name="ChatExportEmpty">No messages to export in selected range</string>
+    <string name="ChatExportError">Failed to export chat: %1$s</string>
+
+    <!-- Stage 5: Vault Auto-Rotation, Automation Engine, Swipes -->
+    <string name="VaultTtl">Archive Retention Period</string>
+    <string name="VaultTtlInfo">Automatically remove archived media files older than the specified duration</string>
+    <string name="VaultTtlForever">Keep forever</string>
+    <string name="VaultTtl7Days">7 days</string>
+    <string name="VaultTtl30Days">30 days</string>
+    <string name="VaultTtl60Days">60 days</string>
+    <string name="VaultTtl90Days">90 days</string>
+    <string name="VaultMaxSize">Archive Storage Quota</string>
+    <string name="VaultMaxSizeInfo">Maximum disk space allocated for the media archive. When exceeded, oldest files are deleted</string>
+    <string name="VaultMaxSizeUnlimited">Unlimited</string>
+    <string name="VaultMaxSize2Gb">2 GB</string>
+    <string name="VaultMaxSize5Gb">5 GB</string>
+    <string name="VaultMaxSize10Gb">10 GB</string>
+    <string name="VaultMaxSize20Gb">20 GB</string>
+    <string name="VaultCleanExpiredNow">Clean Expired Files</string>
+    <string name="VaultCleanExpiredDone">Cleaned %1$s of expired files</string>
+    <string name="VaultCleanNoExpired">No expired files found</string>
+    <string name="VaultNeverExpireChat">Protect from Auto-Rotation</string>
+    <string name="VaultNeverExpireChatInfo">Files from this chat will be kept forever regardless of retention policies</string>
+
+    <string name="AutomationCategory">Automation &amp; Rules</string>
+    <string name="AutomationTitle">Automation Rules</string>
+    <string name="AutomationSubtitle">Automate actions on incoming messages</string>
+    <string name="AutomationAddRule">Add Rule</string>
+    <string name="AutomationEditRule">Edit Rule</string>
+    <string name="AutomationRuleName">Rule Name</string>
+    <string name="AutomationRuleChat">Source Chat</string>
+    <string name="AutomationRuleChatAny">Any Chat</string>
+    <string name="AutomationRuleKeyword">Keyword or phrase</string>
+    <string name="AutomationRuleMediaType">Media Type</string>
+    <string name="AutomationMediaAny">Any message</string>
+    <string name="AutomationMediaPhoto">Photos only</string>
+    <string name="AutomationMediaVideo">Videos only</string>
+    <string name="AutomationMediaDocument">Documents only</string>
+    <string name="AutomationMediaVoice">Voice &amp; Round notes</string>
+    <string name="AutomationActionSaved">Save to Saved Messages</string>
+    <string name="AutomationActionMarkRead">Mark as Read</string>
+    <string name="AutomationActionGallery">Save media to Gallery</string>
+    <string name="AutomationActionForward">Forward to Chat</string>
+    <string name="AutomationActionNotify">Priority alert &amp; sound</string>
+    <string name="AutomationNoRules">No automation rules yet\nTap + to create your first rule</string>
+    <string name="AutomationDeleteConfirm">Delete rule \"%1$s\"?</string>
+    <string name="AutomationTriggered">Automation rule \"%1$s\" executed</string>
+
+    <string name="ChatSwipeActionTitle">Chat Swipe Gesture</string>
+
+    <!-- Stage 6: Shortcuts, Streamer FLAG_SECURE, Online Alerts -->
+    <string name="ShortcutGhostMode">Ghost Mode</string>
+    <string name="ShortcutStreamerMode">Streamer Mode</string>
+    <string name="ShortcutVault">Media Vault</string>
+    <string name="StreamerBlockScreenshots">Block screenshots &amp; recording</string>
+    <string name="StreamerBlockScreenshotsInfo">Completely blacks out the screen in recordings (OBS/Discord) and blocks screenshots</string>
+    <string name="HundredGramNotifyAllContactsOnline">Notify for all contacts</string>
+    <string name="HundredGramNotifyAllContactsOnlineInfo">Send alert when any saved contact comes online, not only tracked ones</string>
+    <string name="HundredGramTrackedUsersList">Tracked Contacts</string>
+    <string name="HundredGramTrackedUsersCount">%1$d contacts</string>
+    <string name="HundredGramTrackedUsersEmpty">No contacts selected for tracking yet</string>
+    <string name="HundredGramOnlineNotificationChannel">Online Status Alerts</string>
+
+    <!-- Network Boost -->
+    <string name="NetworkBoostTitle">Network Boost</string>
+    <string name="NetworkBoostSub">Parallel MTProto downloads &amp; uploads</string>
+    <string name="NetworkBoostDownloadSpeed">Download Speed Boost</string>
+    <string name="NetworkBoostDownloadOff">Off</string>
+    <string name="NetworkBoostDownloadFast">Fast</string>
+    <string name="NetworkBoostDownloadUltra">Ultra</string>
+    <string name="NetworkBoostAuto">Auto Network Mode</string>
+    <string name="NetworkBoostAutoInfo">Ultra on Wi-Fi, Fast on 4G/LTE, Standard on slow connections</string>
+    <string name="NetworkBoostUpload">Upload Speed Boost</string>
+    <string name="NetworkBoostUploadInfo">Increases parallel upload streams to Telegram servers</string>
+    <string name="NetworkBoostUploadAdaptive">File-size aware mode</string>
+    <string name="NetworkBoostUploadAdaptiveInfo">Standard for &lt;10 MB, Fast for 10–100 MB, Ultra for &gt;100 MB</string>
+    <string name="NetworkBoostLiveStats">Network Monitor</string>
+    <string name="NetworkBoostDownloadRate">Download</string>
+    <string name="NetworkBoostUploadRate">Upload</string>
+    <string name="NetworkBoostActiveThreads">Active streams</string>
+    <string name="NetworkBoostSpeedTest">Speed Test</string>
+    <string name="NetworkBoostSpeedTesting">Testing connection speed...</string>
+    <string name="NetworkBoostSpeedTestResult">Ping: %1$d ms · Recommended: %2$s</string>
+
+    <!-- Camera Engine & CameraX -->
+    <string name="CameraEngineTitle">Advanced Camera (Camera Engine)</string>
+    <string name="CameraEngineSub">CameraX, 60 FPS, 4K &amp; round video notes</string>
+    <string name="CameraEngineChoose">Camera Engine Type</string>
+    <string name="CameraEngineSystem">System Camera (Camera / Camera2)</string>
+    <string name="CameraEngineCameraX">CameraX (Modern Jetpack Engine)</string>
+    <string name="CameraPerformanceMode">Performance Mode</string>
+    <string name="CameraPerformanceModeInfo">Lowers resolution to 1080p, FPS to 30 and disables HDR to prevent overheating and save battery</string>
+    <string name="CameraQuality">Video Quality</string>
+    <string name="CameraFps">Frame Rate (FPS)</string>
+    <string name="CameraFpsAuto">Auto</string>
+    <string name="CameraFps60">60 FPS (Smooth Video)</string>
+    <string name="CameraFps30">30 FPS (Standard)</string>
+    <string name="CameraFps24">24 FPS (Cinematic)</string>
+    <string name="CameraStabilization">Video Stabilization (OIS / EIS)</string>
+    <string name="CameraStabilizationInfo">Hardware stabilization smoothing camera shakes</string>
+    <string name="CameraHdr">HDR Video Recording</string>
+    <string name="CameraHdrAuto">Auto</string>
+    <string name="CameraHdrOn">Always On</string>
+    <string name="CameraHdrOff">Off</string>
+    <string name="CameraDefaultLens">Default Camera</string>
+    <string name="CameraDefaultLensBack">Main (rear)</string>
+    <string name="CameraDefaultLensFront">Front (selfie)</string>
+    <string name="CameraDefaultLensLast">Last used</string>
+    <string name="CameraDiagnostics">Device Capabilities</string>
+    <string name="CameraAutoTune">Auto-tune profile</string>
+    <string name="CameraAutoTuneDone">Applied optimal profile for your device</string>
+
+    <!-- Round Video Messages (Кружочки) -->
+    <string name="RoundVideoHeader">Round Video Messages</string>
+    <string name="RoundCameraStart">Starting camera for round video</string>
+    <string name="RoundCameraFront">🤳 Front camera</string>
+    <string name="RoundCameraBack">📷 Rear (main) camera</string>
+    <string name="RoundCameraWide">🔍 Ultra-wide (0.6x)</string>
+    <string name="RoundCameraMenu">📋 Menu upon recording</string>
+    <string name="RoundCameraLast">🔄 Last used</string>
+    <string name="RoundCameraMenuPrompt">Which camera to record with?</string>
+    <string name="RoundVideoResolution">Round video resolution</string>
+    <string name="RoundVideoFps">60 FPS for round videos</string>
+    <string name="RoundVideoFpsInfo">Maximum smoothness for round video notes</string>
+    <string name="RoundVideoHighBitrate">High Bitrate</string>
+    <string name="RoundVideoHighBitrateInfo">Increases bitrate 1.5–2x for maximum crispness and detail</string>
+    <string name="RoundVideoCodec">Video Codec</string>
+    <string name="RoundVideoCodecH264">H.264 (AVC — universally compatible)</string>
+    <string name="RoundVideoCodecH265">H.265 (HEVC — high efficiency &amp; quality)</string>
+</resources>

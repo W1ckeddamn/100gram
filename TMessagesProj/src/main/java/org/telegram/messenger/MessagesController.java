@@ -1545,6 +1545,8 @@ public class MessagesController extends BaseController implements NotificationCe
             getNotificationCenter().addObserver(messagesController, NotificationCenter.fileLoadFailed);
             getNotificationCenter().addObserver(messagesController, NotificationCenter.messageReceivedByServer);
             getNotificationCenter().addObserver(messagesController, NotificationCenter.updateMessageMedia);
+            HundredGramAutomationEngine.getInstance(currentAccount).start();
+            HundredGramVaultRotator.runRotation(currentAccount, null);
         });
         addSupportUser();
         if (currentAccount == 0) {
@@ -9639,6 +9641,9 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean hasHiddenArchive() {
+        if (HundredGramConfig.hideArchiveFolder) {
+            return false;
+        }
         return SharedConfig.archiveHidden && dialogs_dict.get(DialogObject.makeFolderDialogId(1)) != null;
     }
 
@@ -9810,6 +9815,17 @@ public class MessagesController extends BaseController implements NotificationCe
         ArrayList<TLRPC.Dialog> dialogs = dialogsByFolder.get(folderId);
         if (dialogs == null) {
             return new ArrayList<>();
+        }
+        if (folderId == 0 && HundredGramConfig.hideArchiveFolder) {
+            ArrayList<TLRPC.Dialog> filtered = new ArrayList<>(dialogs.size());
+            long archiveId = DialogObject.makeFolderDialogId(1);
+            for (int i = 0; i < dialogs.size(); i++) {
+                TLRPC.Dialog d = dialogs.get(i);
+                if (d.id != archiveId) {
+                    filtered.add(d);
+                }
+            }
+            return filtered;
         }
         return dialogs;
     }
@@ -10494,7 +10510,7 @@ public class MessagesController extends BaseController implements NotificationCe
         checkReadTasks();
 
         if (getUserConfig().isClientActivated()) {
-            if (!ignoreSetOnline && getConnectionsManager().getPauseTime() == 0 && ApplicationLoader.isScreenOn && !ApplicationLoader.mainInterfacePausedStageQueue) {
+            if (!ignoreSetOnline && !HundredGramConfig.ghostOnline && getConnectionsManager().getPauseTime() == 0 && ApplicationLoader.isScreenOn && !ApplicationLoader.mainInterfacePausedStageQueue) {
                 if (ApplicationLoader.mainInterfacePausedStageQueueTime != 0 && Math.abs(ApplicationLoader.mainInterfacePausedStageQueueTime - System.currentTimeMillis()) > 1000) {
                     if (statusSettingState != 1 && (lastStatusUpdateTime == 0 || Math.abs(System.currentTimeMillis() - lastStatusUpdateTime) >= 55000 || offlineSent)) {
                         statusSettingState = 1;
@@ -11353,6 +11369,9 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean sendTyping(long dialogId, long threadMsgId, int action, String emojicon, int classGuid) {
+        if (HundredGramConfig.isChatGhostTyping(dialogId)) {
+            return false;
+        }
         if (action < 0 || action >= sendingTypings.length || dialogId == 0) {
             return false;
         }
@@ -14438,6 +14457,12 @@ public class MessagesController extends BaseController implements NotificationCe
         if (createDeleteTask) {
             getMessagesStorage().createTaskForMid(dialogId, mid, time, time, ttl, false);
         }
+        if (HundredGramConfig.isChatGhostRead(dialogId) && HundredGramConfig.ghostReadMediaContents) {
+            if (newTaskId != 0) {
+                getMessagesStorage().removePendingTask(newTaskId);
+            }
+            return;
+        }
         if (inputChannel != null) {
             TLRPC.TL_channels_readMessageContents req = new TLRPC.TL_channels_readMessageContents();
             req.channel = inputChannel;
@@ -14722,6 +14747,9 @@ public class MessagesController extends BaseController implements NotificationCe
         }
 
         if (createReadTask) {
+            if (HundredGramConfig.isChatGhostRead(dialogId)) {
+                return;
+            }
             Utilities.stageQueue.postRunnable(() -> {
                 ReadTask currentReadTask;
                 if (threadId != 0) {
@@ -14752,6 +14780,29 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
             });
         }
+    }
+
+    public void markDialogAsReadServer(long dialogId, int maxId, int maxDate, long threadId) {
+        if (maxId <= 0) {
+            TLRPC.Dialog dialog = dialogs_dict.get(dialogId);
+            if (dialog != null) {
+                maxId = dialog.top_message;
+            }
+        }
+        if (maxId <= 0) {
+            return;
+        }
+        final int finalMaxId = maxId;
+        final long monoForumPeerId = getMessagesStorage().isMonoForum(dialogId) ? threadId : 0;
+        Utilities.stageQueue.postRunnable(() -> {
+            ReadTask currentReadTask = new ReadTask();
+            currentReadTask.dialogId = dialogId;
+            currentReadTask.replyId = threadId;
+            currentReadTask.monoForumPeerId = monoForumPeerId;
+            currentReadTask.maxDate = maxDate;
+            currentReadTask.maxId = finalMaxId;
+            completeReadTask(currentReadTask);
+        });
     }
 
     public void fetchCommunityPendingJoinRequests(long communityId, String nextOffset,
@@ -17552,9 +17603,12 @@ public class MessagesController extends BaseController implements NotificationCe
             });
 //            getMessagesStorage().deletePushMessages(dialogId, ids);
 //            ArrayList<Long> dialogIds = getMessagesStorage().markMessagesAsDeleted(dialogId, ids, false, true, 0, 0);
-//            getMessagesStorage().updateDialogsWithDeletedMessages(dialogId, channelId, ids, dialogIds);
-            // TODO: 8/11/26 add DB stuff here
-            List<Long> dialogIds = getMessagesStorage().markMessagesAsIsDeleted(dialogId, ids, false);
+            if (HundredGramConfig.isChatAntiDelete(dialogId)) {
+                List<Long> dialogIds = getMessagesStorage().markMessagesAsIsDeleted(dialogId, ids, false);
+            } else {
+                ArrayList<Long> dialogIds = getMessagesStorage().markMessagesAsDeleted(dialogId, ids, false, true, 0, 0);
+                getMessagesStorage().updateDialogsWithDeletedMessages(dialogId, channelId, ids, dialogIds);
+            }
         });
     }
 
@@ -18858,6 +18912,9 @@ public class MessagesController extends BaseController implements NotificationCe
                     TLRPC.TL_sendMessageHistoryImportAction importAction = (TLRPC.TL_sendMessageHistoryImportAction) action;
                     importingActions.put(uid, importAction.progress);
                 } else if (userId != getUserConfig().getClientUserId()) {
+                    if (userId > 0) {
+                        HundredGramActivityTracker.getInstance(currentAccount).onUserTyping(userId);
+                    }
                     if (action instanceof TLRPC.TL_speakingInGroupCallAction) {
                         if (chatId != 0) {
                             if (groupSpeakingActions == null) {
@@ -19804,6 +19861,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         BotStarsController.getInstance(currentAccount).onUpdate((TL_update.TL_updateStarsRevenueStatus) baseUpdate);
                     } else if (baseUpdate instanceof TL_update.TL_updateUserStatus) {
                         TL_update.TL_updateUserStatus update = (TL_update.TL_updateUserStatus) baseUpdate;
+                        HundredGramActivityTracker.getInstance(currentAccount).onUserStatusUpdate(update.user_id, update.status);
                         TLRPC.User currentUser = getUser(update.user_id);
 
                         if (update.status instanceof TLRPC.TL_userStatusRecently) {
@@ -21117,9 +21175,14 @@ public class MessagesController extends BaseController implements NotificationCe
                 long key = deletedMessages.keyAt(a);
                 List<Integer> arrayList = deletedMessages.valueAt(a);
                 getMessagesStorage().getStorageQueue().postRunnable(() -> {
-//                    ArrayList<Long> dialogIds = getMessagesStorage().markMessagesAsDeleted(key, arrayList, false, true, 0, 0); // TODO: 8/11/26 rework for graher mark
-                    List<Long> dialogIds = getMessagesStorage().markMessagesAsIsDeleted(key, arrayList, false);
-                    getMessagesStorage().updateDialogsWithDeletedMessages(key, -key, arrayList, dialogIds);
+                    if (HundredGramConfig.isChatAntiDelete(key)) {
+                        List<Long> dialogIds = getMessagesStorage().markMessagesAsIsDeleted(key, arrayList, false);
+                        getMessagesStorage().updateDialogsWithDeletedMessages(key, -key, arrayList, dialogIds);
+                    } else {
+                        ArrayList<Integer> ids = arrayList instanceof ArrayList ? (ArrayList<Integer>) arrayList : new ArrayList<>(arrayList);
+                        ArrayList<Long> dialogIds = getMessagesStorage().markMessagesAsDeleted(key, ids, false, true, 0, 0);
+                        getMessagesStorage().updateDialogsWithDeletedMessages(key, -key, ids, dialogIds);
+                    }
                 });
             }
         }
@@ -21785,6 +21848,12 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 if (!hasNotOutMessage && !message.isOut()) {
                     hasNotOutMessage = true;
+                }
+                if (!message.isOut()) {
+                    long senderId = message.getFromChatId();
+                    if (senderId > 0 && senderId != getUserConfig().getClientUserId()) {
+                        HundredGramActivityTracker.getInstance(currentAccount).onUserMessage(senderId);
+                    }
                 }
                 if (message.isOut() && !message.isSending() && !message.isForwarded()) {
                     if (message.isNewGif()) {
@@ -22993,8 +23062,11 @@ public class MessagesController extends BaseController implements NotificationCe
                 processNewDifferenceParams(-1, res.pts, -1, res.pts_count);
                 getMessagesStorage().getStorageQueue().postRunnable(() -> {
                     ArrayList<Integer> dbMessages = getMessagesStorage().getCachedMessagesInRange(dialogId, minDate, maxDate);
-//                    getMessagesStorage().markMessagesAsDeleted(dialogId, dbMessages, false, true, 0, 0);
-                    getMessagesStorage().markMessagesAsIsDeleted(dialogId, dbMessages, false);
+                    if (HundredGramConfig.isChatAntiDelete(dialogId)) {
+                        getMessagesStorage().markMessagesAsIsDeleted(dialogId, dbMessages, false);
+                    } else {
+                        getMessagesStorage().markMessagesAsDeleted(dialogId, dbMessages, false, true, 0, 0);
+                    }
                     getMessagesStorage().updateDialogsWithDeletedMessages(dialogId, 0, dbMessages, null);
                     AndroidUtilities.runOnUIThread(() -> {
                         getNotificationCenter().postNotificationName(NotificationCenter.messagesDeleted, dbMessages, channelId, false);
@@ -23636,13 +23708,16 @@ public class MessagesController extends BaseController implements NotificationCe
 
     private HashMap<Long, ChannelRecommendations> cachedChannelRecommendations;
     public ChannelRecommendations getCachedChannelRecommendations(long dialogId) {
-        if (cachedChannelRecommendations == null) {
+        if (HundredGramConfig.hideSimilarChannels || cachedChannelRecommendations == null) {
             return null;
         }
         return cachedChannelRecommendations.get(dialogId);
     }
 
     public ChannelRecommendations getChannelRecommendations(long dialogId) {
+        if (HundredGramConfig.hideSimilarChannels) {
+            return null;
+        }
         if (cachedChannelRecommendations == null) {
             cachedChannelRecommendations = new HashMap<>();
         }

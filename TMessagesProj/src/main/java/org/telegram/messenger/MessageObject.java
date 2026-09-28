@@ -1057,7 +1057,7 @@ public class MessageObject {
         }
 
         public void layoutCode(String lng, int codeLength, boolean noforwards) {
-            hasCodeCopyButton = codeLength >= 75 && !noforwards;
+            hasCodeCopyButton = (HundredGramConfig.copyCodeButtonEnabled || codeLength >= 75) && !noforwards;
             if (hasCodeCopyButton) {
                 copyText = new Text(getString(R.string.CopyCode).toUpperCase(), SharedConfig.fontSize - 3, AndroidUtilities.bold());
                 copyIcon = ApplicationLoader.applicationContext.getResources().getDrawable(R.drawable.msg_copy).mutate();
@@ -6550,7 +6550,7 @@ public class MessageObject {
         isRoundVideoCached = 0;
         if (isSponsored()) {
             type = TYPE_TEXT;
-        } else if (channelJoined) {
+        } else if (channelJoined && !HundredGramConfig.hideSimilarChannels) {
             contentType = 0;
             type = TYPE_JOINED_CHANNEL;
             channelJoinedExpanded = MessagesController.getInstance(currentAccount).getMainSettings().getBoolean("c" + getDialogId() + "_rec", true);

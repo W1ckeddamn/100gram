@@ -1284,6 +1284,9 @@ public class StoriesController {
         if (storyItem == null || userStories == null) {
             return false;
         }
+        if (org.telegram.messenger.HundredGramConfig.isGhostStoryViewActive()) {
+            return false;
+        }
         final long dialogId = DialogObject.getPeerDialogId(userStories.peer);
         if (storyItem.justUploaded) {
             storyItem.justUploaded = false;

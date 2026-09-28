@@ -113,6 +113,7 @@ import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.FingerprintController;
 import org.telegram.messenger.FlagSecureReason;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.GenericProvider;
 import org.telegram.messenger.GiftAuctionController;
 import org.telegram.messenger.LiteMode;
@@ -409,6 +410,11 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         ApplicationLoader.postInitApplication();
         AndroidUtilities.checkDisplaySize(this, getResources().getConfiguration());
         currentAccount = UserConfig.selectedAccount;
+        Utilities.globalQueue.postRunnable(() -> {
+            try {
+                MediaDataController.getInstance(currentAccount).buildShortcuts();
+            } catch (Exception ignored) {}
+        });
         registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         if (!UserConfig.getInstance(currentAccount).isClientActivated()) {
             Intent intent = getIntent();
@@ -437,8 +443,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         getWindow().setBackgroundDrawable(new ActivityWindowEmptyBackgroundDrawable());
         getWindow().setFormat(PixelFormat.OPAQUE);
 
-        flagSecureReason = new FlagSecureReason(getWindow(), () -> SharedConfig.passcodeHash.length() > 0 && !SharedConfig.allowScreenCapture);
+        flagSecureReason = new FlagSecureReason(getWindow(), () -> (SharedConfig.passcodeHash.length() > 0 && !SharedConfig.allowScreenCapture) || (HundredGramConfig.streamerMode && HundredGramConfig.streamerBlockScreenshots));
         flagSecureReason.attach();
+        updateStreamerSecureFlag();
 
         super.onCreate(savedInstanceState);
         if (Build.VERSION.SDK_INT >= 24) {
@@ -3180,6 +3187,29 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 if (AndroidUtilities.isTablet()) {
                     actionBarLayout.rebuildFragments(INavigationLayout.REBUILD_FLAG_REBUILD_LAST);
                     rightActionBarLayout.rebuildFragments(INavigationLayout.REBUILD_FLAG_REBUILD_LAST);
+                }
+                pushOpened = true;
+            } else if (intent != null && intent.getStringExtra("hundredgram_action") != null) {
+                String hgAction = intent.getStringExtra("hundredgram_action");
+                if ("ghost_mode".equals(hgAction)) {
+                    boolean enabled = HundredGramConfig.toggleGhostModeMaster();
+                    try {
+                        org.telegram.ui.Components.BulletinFactory.global().createSimpleBulletin(
+                                enabled ? R.drawable.msg_mask : R.drawable.msg_secret,
+                                enabled ? LocaleController.getString("GhostOnline", R.string.GhostOnline) + ": ON" : LocaleController.getString("GhostOnline", R.string.GhostOnline) + ": OFF"
+                        ).show();
+                    } catch (Exception ignored) {}
+                } else if ("streamer_mode".equals(hgAction)) {
+                    boolean enabled = HundredGramConfig.toggleStreamerMode();
+                    updateStreamerSecureFlag();
+                    try {
+                        org.telegram.ui.Components.BulletinFactory.global().createSimpleBulletin(
+                                R.drawable.msg_secret,
+                                enabled ? LocaleController.getString("StreamerMode", R.string.StreamerMode) + ": ON" : LocaleController.getString("StreamerMode", R.string.StreamerMode) + ": OFF"
+                        ).show();
+                    } catch (Exception ignored) {}
+                } else if ("vault".equals(hgAction)) {
+                    getActionBarLayout().presentFragment(new INavigationLayout.NavigationParams(new HundredGramVaultViewerActivity()).setNoAnimation(true));
                 }
                 pushOpened = true;
             } else if (callSearchQuery != null) {
@@ -6944,12 +6974,28 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         }
     }
 
+    public void updateStreamerSecureFlag() {
+        try {
+            Window window = getWindow();
+            if (window != null) {
+                if ((HundredGramConfig.streamerMode && HundredGramConfig.streamerBlockScreenshots) || (SharedConfig.passcodeHash.length() > 0 && !SharedConfig.allowScreenCapture)) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+                }
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
+
     View feedbackView;
 
     @Override
     protected void onResume() {
         super.onResume();
         isResumed = true;
+        updateStreamerSecureFlag();
         pipActivityHandler.onResume();
         if (onResumeStaticCallback != null) {
             onResumeStaticCallback.run();

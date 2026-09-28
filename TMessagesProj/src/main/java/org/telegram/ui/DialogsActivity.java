@@ -108,6 +108,7 @@ import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.FilesMigrationService;
 import org.telegram.messenger.ImageLoader;
@@ -3848,7 +3849,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             });
         }
 
-        if (allowSwitchAccount && UserConfig.getActivatedAccountsCount() > 1) {
+        if (allowSwitchAccount && UserConfig.getActivatedAccountsCount() > 1 && !HundredGramConfig.isStreamerHideOtherAccounts()) {
             switchItem = menu.addItemWithWidth(11, 0, dp(56));
             AvatarDrawable avatarDrawable = new AvatarDrawable();
             avatarDrawable.setTextSize(dp(12));
@@ -7690,7 +7691,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 fragmentSearchField.setTranslationY((show ? -dp(FILTER_TABS_HEIGHT) : 0) + getSearchFieldAdditionOffset());
             }
             if (dialogStoriesCell != null) {
-                if (dialogStoriesCellVisible && !isInPreviewMode() && !show) {
+                if (dialogStoriesCellVisible && !isInPreviewMode() && !show && !org.telegram.messenger.HundredGramConfig.hideStoriesBar) {
                     dialogStoriesCell.setVisibility(View.VISIBLE);
                 } else {
                     dialogStoriesCell.setVisibility(View.GONE);
@@ -8634,16 +8635,18 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             });
         }
 
+        final TLRPC.Dialog dialog = getMessagesController().dialogs_dict.get(dialogId);
         if (!isCommunityCell) {
             ActionBarMenuSubItem markAsUnreadItem = new ActionBarMenuSubItem(getParentActivity(), true, false);
-            if (cell.getHasUnread()) {
+            final boolean hasUnread = cell.getHasUnread() || (dialog != null && (dialog.unread_count > 0 || dialog.unread_mark));
+            if (hasUnread) {
                 markAsUnreadItem.setTextAndIcon(LocaleController.getString(R.string.MarkAsRead), R.drawable.msg_markread);
             } else {
                 markAsUnreadItem.setTextAndIcon(LocaleController.getString(R.string.MarkAsUnread), R.drawable.msg_markunread);
             }
             markAsUnreadItem.setMinimumWidth(160);
             markAsUnreadItem.setOnClickListener(e -> {
-                if (cell.getHasUnread()) {
+                if (hasUnread) {
                     markAsRead(dialogId);
                 } else {
                     markAsUnread(dialogId);
@@ -8655,7 +8658,6 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
         final boolean[] hasPinAction = new boolean[1];
         hasPinAction[0] = true;
-        TLRPC.Dialog dialog = getMessagesController().dialogs_dict.get(dialogId);
         boolean containsFilter;
         final MessagesController.DialogFilter filter = (
                 (containsFilter = (viewPages[0].dialogsType == 7 || viewPages[0].dialogsType == 8) && (!actionBar.isActionModeShowed() || actionBar.isActionModeShowed(null))) ?
@@ -8849,7 +8851,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void updateFloatingButtonVisibility(boolean animated) {
-        final boolean isVisible = !(onlySelect && initialDialogsType != 10 || folderId != 0 || communityId != 0 || inPreviewMode || (searching && !onlySelect) || floatingButtonHidden);
+        final boolean isVisible = !(onlySelect && initialDialogsType != 10 || folderId != 0 || communityId != 0 || inPreviewMode || (searching && !onlySelect) || floatingButtonHidden || HundredGramConfig.hideFloatingButton);
 
         if (floatingButton3 != null) {
             floatingButton3.setButtonVisible(isVisible, animated);
@@ -9574,7 +9576,10 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
 
         getMessagesController().markMentionsAsRead(did, 0);
-        getMessagesController().markDialogAsRead(did, dialog.top_message, dialog.top_message, dialog.last_message_date, false, 0, 0, true, 0);
+        int topMsg = dialog != null ? dialog.top_message : 0;
+        int lastDate = dialog != null ? dialog.last_message_date : 0;
+        getMessagesController().markDialogAsRead(did, topMsg, topMsg, lastDate, false, 0, 0, true, 0);
+        getMessagesController().markDialogAsReadServer(did, topMsg, lastDate, 0);
 
         if (selectedDialogIndex >= 0) {
             frozenDialogsList.remove(selectedDialogIndex);
@@ -10520,6 +10525,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
             for (int a = 0; a < viewPages.length; a++) {
                 final ViewPage viewPage = viewPages[a];
+                if (viewPage != null && viewPage.dialogsAdapter != null) {
+                    viewPage.dialogsAdapter.notifyDataSetChanged();
+                }
                 MessagesController.DialogFilter filter = null;
                 if (viewPages[0].dialogsType == 7 || viewPages[0].dialogsType == 8) {
                     filter = getMessagesController().selectedDialogFilter[viewPages[0].dialogsType == 8 ? 1 : 0];
@@ -10554,6 +10562,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         reloadViewPageDialogs(viewPage, false);
                     }
                 }
+                updateStoriesVisibility(false);
             }
         } else if (id == NotificationCenter.dialogsUnreadCounterChanged) {
             if (filterTabsView != null && filterTabsView.getVisibility() == View.VISIBLE) {
@@ -10998,7 +11007,18 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
         MessagesController messagesController = AccountInstance.getInstance(currentAccount).getMessagesController();
         if (dialogsType == DIALOGS_TYPE_DEFAULT) {
-            return messagesController.getDialogs(folderId);
+            ArrayList<TLRPC.Dialog> list = messagesController.getDialogs(folderId);
+            if (HundredGramConfig.hideArchiveFolder && folderId == 0 && list != null && !list.isEmpty()) {
+                ArrayList<TLRPC.Dialog> filtered = new ArrayList<>(list.size());
+                for (int a = 0; a < list.size(); a++) {
+                    TLRPC.Dialog d = list.get(a);
+                    if (!(d instanceof TLRPC.TL_dialogFolder)) {
+                        filtered.add(d);
+                    }
+                }
+                return filtered;
+            }
+            return list;
         } else if (dialogsType == DIALOGS_TYPE_WIDGET || dialogsType == DIALOGS_TYPE_IMPORT_HISTORY) {
             return messagesController.dialogsServerOnly;
         } else if (dialogsType == DIALOGS_TYPE_ADD_USERS_TO) {
@@ -11162,6 +11182,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     boolean floatingButtonHidden;
 
     private void hideFloatingButton(boolean hide) {
+        if (HundredGramConfig.hideFloatingButton) {
+            hide = true;
+        }
         if (rightSlidingDialogContainer.hasFragment()) {
             hide = true;
         }
@@ -12751,6 +12774,27 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         if (dialogStoriesCell == null || storiesVisibilityAnimator != null || rightSlidingDialogContainer != null && rightSlidingDialogContainer.hasFragment() || searchIsShowed || actionBar == null || actionBar.isActionModeShowed() || onlySelect) {
             return;
         }
+        if (org.telegram.messenger.HundredGramConfig.hideStoriesBar) {
+            if (storiesVisibilityAnimator != null) {
+                storiesVisibilityAnimator.cancel();
+                storiesVisibilityAnimator = null;
+            }
+            if (storiesVisibilityAnimator2 != null) {
+                storiesVisibilityAnimator2.cancel();
+                storiesVisibilityAnimator2 = null;
+            }
+            dialogStoriesCell.setVisibility(View.GONE);
+            dialogStoriesCellVisible = false;
+            hasStories = false;
+            hasOnlySlefStories = false;
+            progressToDialogStoriesCell = 0f;
+            progressToShowStories = 0f;
+            animateToHasStories = false;
+            if (fragmentView != null) {
+                fragmentView.invalidate();
+            }
+            return;
+        }
         if (StoryRecorder.isVisible() || (getLastStoryViewer() != null && getLastStoryViewer().isFullyVisible())) {
             animated = false;
         }
@@ -13724,6 +13768,22 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             });
         });
         io.addGap();
+        io.add(HundredGramConfig.isStreamerMode() ? R.drawable.msg_views : R.drawable.msg_secret,
+                LocaleController.getString("StreamerModeQuickToggle", R.string.StreamerModeQuickToggle), () -> {
+            boolean enabled = HundredGramConfig.toggleStreamerMode();
+            BulletinFactory.of(this).createSimpleBulletin(
+                    enabled ? R.drawable.msg_secret : R.drawable.msg_views,
+                    LocaleController.getString(enabled ? R.string.StreamerModeEnabledBulletin : R.string.StreamerModeDisabledBulletin)
+            ).show();
+            if (viewPages != null) {
+                for (int a = 0; a < viewPages.length; a++) {
+                    if (viewPages[a] != null && viewPages[a].dialogsAdapter != null) {
+                        viewPages[a].dialogsAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        });
+        io.addGap();
         io.add(R.drawable.outline_groups_24, getString(R.string.NewGroup), () -> {
             Bundle args = new Bundle();
             presentFragment(new GroupCreateActivity(args));
@@ -14369,6 +14429,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private boolean openAccountSelector(View view) {
+        if (HundredGramConfig.isStreamerHideOtherAccounts()) {
+            return false;
+        }
         final ArrayList<Integer> accountNumbers = new ArrayList<>();
 
         accountNumbers.clear();

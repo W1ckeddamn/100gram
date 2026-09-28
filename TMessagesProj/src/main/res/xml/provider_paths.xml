@@ -3,5 +3,9 @@
     <external-path name="media" path="."/>
     <files-path name="logs" path="/logs/"/>
     <files-path name="cache" path="/cache/"/>
+    <files-path name="internal_files" path="."/>
+    <cache-path name="internal_cache" path="."/>
+    <external-cache-path name="external_cache" path="."/>
+    <external-files-path name="external_files_dir" path="."/>
     <root-path name="external_files" path="/storage/" />
 </paths>

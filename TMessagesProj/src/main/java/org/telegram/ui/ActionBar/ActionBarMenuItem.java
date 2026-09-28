@@ -431,10 +431,15 @@ public class ActionBarMenuItem extends FrameLayout {
     }
 
     public void removeAllSubItems() {
-        if (popupLayout == null) {
-            return;
+        if (popupLayout != null) {
+            popupLayout.removeInnerViews();
         }
-        popupLayout.removeInnerViews();
+        if (lazyList != null) {
+            lazyList.clear();
+        }
+        if (lazyMap != null) {
+            lazyMap.clear();
+        }
     }
 
     public void setShowedFromBottom(boolean value) {
@@ -2002,6 +2007,34 @@ public class ActionBarMenuItem extends FrameLayout {
             showSubItem(id);
         else
             hideSubItem(id);
+    }
+
+    public void setSubItemText(int id, CharSequence text) {
+        Item lazyItem = findLazyItem(id);
+        if (lazyItem != null) {
+            lazyItem.setText(text);
+        }
+        if (popupLayout != null) {
+            View view = popupLayout.findViewWithTag(id);
+            if (view instanceof ActionBarMenuSubItem) {
+                ((ActionBarMenuSubItem) view).setText(text);
+            } else if (view instanceof TextView) {
+                ((TextView) view).setText(text);
+            }
+        }
+    }
+
+    public void setSubItemIcon(int id, int icon) {
+        Item lazyItem = findLazyItem(id);
+        if (lazyItem != null) {
+            lazyItem.setIcon(icon);
+        }
+        if (popupLayout != null) {
+            View view = popupLayout.findViewWithTag(id);
+            if (view instanceof ActionBarMenuSubItem) {
+                ((ActionBarMenuSubItem) view).setIcon(icon);
+            }
+        }
     }
 
     public int getVisibleSubItemsCount() {

@@ -472,6 +472,107 @@ public class FilePathDatabase {
         });
     }
 
+    public void getDialogFilesSize(long dialogId, Utilities.Callback<Long> onComplete) {
+        postRunnable(() -> {
+            long totalBytes = 0;
+            try {
+                ensureDatabaseCreated();
+                SQLiteCursor cursor = database.queryFinalized("SELECT path FROM paths_by_dialog_id WHERE dialog_id = " + dialogId);
+                while (cursor.next()) {
+                    try {
+                        File file = new File(cursor.stringValue(0));
+                        if (file.exists()) {
+                            totalBytes += file.length();
+                        }
+                    } catch (Exception ignored) {}
+                }
+                cursor.dispose();
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
+            final long size = totalBytes;
+            AndroidUtilities.runOnUIThread(() -> {
+                if (onComplete != null) {
+                    onComplete.run(size);
+                }
+            });
+        });
+    }
+
+    public void clearDialogFiles(long dialogId, Utilities.Callback<Long> onComplete) {
+        postRunnable(() -> {
+            long freedBytes = 0;
+            try {
+                ensureDatabaseCreated();
+                SQLiteCursor cursor = database.queryFinalized("SELECT path FROM paths_by_dialog_id WHERE dialog_id = " + dialogId);
+                ArrayList<String> pathsToDelete = new ArrayList<>();
+                while (cursor.next()) {
+                    pathsToDelete.add(cursor.stringValue(0));
+                }
+                cursor.dispose();
+
+                database.beginTransaction();
+                database.executeFast("DELETE FROM paths_by_dialog_id WHERE dialog_id = " + dialogId).stepThis().dispose();
+                database.commitTransaction();
+
+                for (int a = 0; a < pathsToDelete.size(); a++) {
+                    try {
+                        File file = new File(pathsToDelete.get(a));
+                        if (file.exists()) {
+                            freedBytes += file.length();
+                            file.delete();
+                        }
+                    } catch (Exception ignored) {}
+                }
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
+            final long totalFreed = freedBytes;
+            AndroidUtilities.runOnUIThread(() -> {
+                if (onComplete != null) {
+                    onComplete.run(totalFreed);
+                }
+            });
+        });
+    }
+
+    public void clearAllVaultFiles(Utilities.Callback<Long> onComplete) {
+        postRunnable(() -> {
+            long freedBytes = 0;
+            try {
+                ensureDatabaseCreated();
+                SQLiteCursor cursor = database.queryFinalized("SELECT path FROM paths_by_dialog_id");
+                ArrayList<String> pathsToDelete = new ArrayList<>();
+                while (cursor.next()) {
+                    pathsToDelete.add(cursor.stringValue(0));
+                }
+                cursor.dispose();
+
+                database.beginTransaction();
+                database.executeFast("DELETE FROM paths_by_dialog_id").stepThis().dispose();
+                database.commitTransaction();
+
+                for (int a = 0; a < pathsToDelete.size(); a++) {
+                    try {
+                        File file = new File(pathsToDelete.get(a));
+                        if (file.exists()) {
+                            freedBytes += file.length();
+                            file.delete();
+                        }
+                    } catch (Exception ignored) {}
+                }
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
+            final long totalFreed = freedBytes;
+            AndroidUtilities.runOnUIThread(() -> {
+                if (onComplete != null) {
+                    onComplete.run(totalFreed);
+                }
+            });
+        });
+    }
+
     public LongSparseArray<ArrayList<CacheByChatsController.KeepMediaFile>> lookupFiles(ArrayList<? extends CacheByChatsController.KeepMediaFile> keepMediaFiles) {
         CountDownLatch syncLatch = new CountDownLatch(1);
         LongSparseArray<ArrayList<CacheByChatsController.KeepMediaFile>> filesByDialogId = new LongSparseArray<>();

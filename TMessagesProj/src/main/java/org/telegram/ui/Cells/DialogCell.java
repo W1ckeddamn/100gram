@@ -12,6 +12,8 @@ import static org.telegram.messenger.AndroidUtilities.dp;
 import static org.telegram.messenger.AndroidUtilities.dpf2;
 import static org.telegram.messenger.LocaleController.getString;
 
+import org.telegram.messenger.HundredGramConfig;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
@@ -2722,6 +2724,10 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             FileLog.e(e);
         }
 
+        if (HundredGramConfig.isStreamerHideDialogMessages() && !TextUtils.isEmpty(messageString)) {
+            messageString = "••••••••••••••••••••";
+        }
+
         try {
             CharSequence messageStringFinal;
             // Removing links and bold spans to get rid of underlining and boldness
@@ -3466,6 +3472,12 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                         continueUpdate = true;
                     }
                 }
+                if (!continueUpdate && (mask & (MessagesController.UPDATE_MASK_AVATAR | MessagesController.UPDATE_MASK_NAME | MessagesController.UPDATE_MASK_ALL)) != 0) {
+                    if (updateHelper.lastDrawnStreamerHideMessages != org.telegram.messenger.HundredGramConfig.isStreamerHideDialogMessages()
+                            || updateHelper.lastDrawnStreamerHideAvatars != org.telegram.messenger.HundredGramConfig.isStreamerHideAvatars()) {
+                        continueUpdate = true;
+                    }
+                }
 
                 if (!continueUpdate) {
                     //if (invalidate) {
@@ -3559,6 +3571,8 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     } else if (UserObject.isUserSelf(user) && !useMeForMyMessages && !isMonoForumTopicDialog) {
                         avatarDrawable.setAvatarType(AvatarDrawable.AVATAR_TYPE_SAVED);
                         avatarImage.setImage(null, null, avatarDrawable, null, user, 0);
+                    } else if (HundredGramConfig.isStreamerHideAvatars()) {
+                        avatarImage.setImage(null, null, avatarDrawable, null, user, 0);
                     } else {
                         avatarImage.setForUserOrChat(user, avatarDrawable, null, true, VectorAvatarThumbDrawable.TYPE_SMALL, false);
                     }
@@ -3567,6 +3581,9 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     if (chat.monoforum) {
                         ForumUtilities.setMonoForumAvatar(currentAccount, chat, avatarDrawable, avatarImage);
                         avatarDrawable.setScaleSize(1f);
+                    } else if (HundredGramConfig.isStreamerHideAvatars()) {
+                        avatarDrawable.setInfo(currentAccount, chat);
+                        avatarImage.setImage(null, null, avatarDrawable, null, chat, 0);
                     } else {
                         avatarDrawable.setInfo(currentAccount, chat);
                         avatarImage.setForUserOrChat(chat, avatarDrawable);
@@ -3679,6 +3696,11 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
         }
         if (!isTopic && (getMeasuredWidth() != 0 || getMeasuredHeight() != 0)) {
             rebuildLayout = true;
+        }
+        if (updateHelper.lastDrawnStreamerHideMessages != org.telegram.messenger.HundredGramConfig.isStreamerHideDialogMessages()
+                || updateHelper.lastDrawnStreamerHideAvatars != org.telegram.messenger.HundredGramConfig.isStreamerHideAvatars()) {
+            rebuildLayout = true;
+            invalidate = true;
         }
         if (!invalidate) {
             boolean currentStoriesIsEmpty = storyParams.currentState == StoriesUtilities.STATE_EMPTY;
@@ -6170,6 +6192,8 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
         public int lastTopicsCount;
         public boolean lastDrawnPinned;
         public boolean lastDrawnHasCall;
+        public boolean lastDrawnStreamerHideMessages;
+        public boolean lastDrawnStreamerHideAvatars;
 
 
         public float typingProgres;
@@ -6237,6 +6261,8 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             int draftHash = draftMessage == null ? 0 : draftMessage.message.hashCode() + (draftMessage.reply_to != null ? (draftMessage.reply_to.reply_to_msg_id << 16) : 0);
             boolean hasCall = chat != null && chat.call_active && chat.call_not_empty;
             boolean translated = MessagesController.getInstance(currentAccount).getTranslateController().isTranslatingDialog(currentDialogId);
+            boolean streamerHideMessages = org.telegram.messenger.HundredGramConfig.isStreamerHideDialogMessages();
+            boolean streamerHideAvatars = org.telegram.messenger.HundredGramConfig.isStreamerHideAvatars();
             if (lastDrawnSizeHash == sizeHash &&
                     lastDrawnMessageId == messageHash &&
                     lastDrawnTranslated == translated &&
@@ -6248,6 +6274,8 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     draftHash == lastDrawnDraftHash &&
                     lastDrawnPinned == drawPin &&
                     lastDrawnHasCall == hasCall &&
+                    lastDrawnStreamerHideMessages == streamerHideMessages &&
+                    lastDrawnStreamerHideAvatars == streamerHideAvatars &&
                     DialogCell.this.draftVoice == draftVoice) {
                 return false;
             }
@@ -6284,6 +6312,8 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             lastDrawnPinned = drawPin;
             lastDrawnHasCall = hasCall;
             lastDrawnTranslated = translated;
+            lastDrawnStreamerHideMessages = streamerHideMessages;
+            lastDrawnStreamerHideAvatars = streamerHideAvatars;
 
             return true;
         }

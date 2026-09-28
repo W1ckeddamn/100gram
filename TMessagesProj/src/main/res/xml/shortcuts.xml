@@ -5,6 +5,46 @@
         <category android:name="org.telegram.messenger.SHORTCUT_SHARE" />
     </share-target>
 
+    <shortcut
+        android:shortcutId="ghost_mode"
+        android:enabled="true"
+        android:icon="@drawable/msg_mask"
+        android:shortcutShortLabel="@string/ShortcutGhostMode"
+        android:shortcutLongLabel="@string/ShortcutGhostMode">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.telegram.messenger"
+            android:targetClass="org.telegram.ui.LaunchActivity">
+            <extra android:name="hundredgram_action" android:value="ghost_mode" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="streamer_mode"
+        android:enabled="true"
+        android:icon="@drawable/msg_secret"
+        android:shortcutShortLabel="@string/ShortcutStreamerMode"
+        android:shortcutLongLabel="@string/ShortcutStreamerMode">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.telegram.messenger"
+            android:targetClass="org.telegram.ui.LaunchActivity">
+            <extra android:name="hundredgram_action" android:value="streamer_mode" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="vault"
+        android:enabled="true"
+        android:icon="@drawable/msg_archive"
+        android:shortcutShortLabel="@string/ShortcutVault"
+        android:shortcutLongLabel="@string/ShortcutVault">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.telegram.messenger"
+            android:targetClass="org.telegram.ui.LaunchActivity">
+            <extra android:name="hundredgram_action" android:value="vault" />
+        </intent>
+    </shortcut>
+
     <capability android:name="actions.intent.GET_THING">
         <intent>
             <url-template android:value="tg://search{?query}" />

@@ -2062,6 +2062,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         if (messages == null || messages.isEmpty()) {
             return 0;
         }
+        if (HundredGramConfig.ghostReadMessages && HundredGramConfig.ghostReadOnReply && peer != 0) {
+            getMessagesController().markDialogAsReadServer(peer, 0, 0, 0);
+        }
         int sendResult = 0;
         long myId = getUserConfig().getClientUserId();
         boolean isChannel = false;
@@ -4177,6 +4180,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
     }
 
     public void sendMessage(SendMessageParams sendMessageParams) {
+        if (HundredGramConfig.ghostReadMessages && HundredGramConfig.ghostReadOnReply && sendMessageParams != null && sendMessageParams.peer != 0) {
+            getMessagesController().markDialogAsReadServer(sendMessageParams.peer, 0, 0, 0);
+        }
         String message = sendMessageParams.message;
         String caption = sendMessageParams.caption;
         TLRPC.MessageMedia location = sendMessageParams.location;
@@ -9079,9 +9085,14 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
     public TLRPC.TL_photo generatePhotoSizes(String path, Uri imageUri) {
         return generatePhotoSizes(null, path, imageUri, false);
     }
-
     public TLRPC.TL_photo generatePhotoSizes(TLRPC.TL_photo photo, String path, Uri imageUri, boolean highQuality) {
-        Bitmap bitmap = ImageLoader.loadBitmap(path, imageUri, AndroidUtilities.getPhotoSize(highQuality), AndroidUtilities.getPhotoSize(highQuality), true);
+        return generatePhotoSizes(photo, path, imageUri, highQuality, 0);
+    }
+
+    public TLRPC.TL_photo generatePhotoSizes(TLRPC.TL_photo photo, String path, Uri imageUri, boolean highQuality, long dialogId) {
+        highQuality = highQuality || HundredGramConfig.alwaysHighQualityPhotos || (dialogId != 0 && HundredGramConfig.getChatPhotoResolution(dialogId) > 0);
+        int targetSize = AndroidUtilities.getPhotoSize(dialogId, highQuality);
+        Bitmap bitmap = ImageLoader.loadBitmap(path, imageUri, targetSize, targetSize, true);
         if (bitmap == null) {
             bitmap = ImageLoader.loadBitmap(path, imageUri, 800, 800, true);
         }
@@ -9091,9 +9102,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             sizes.add(size);
         }
         if (highQuality) {
-            size = ImageLoader.scaleAndSaveImage(null, bitmap, Bitmap.CompressFormat.JPEG, true, AndroidUtilities.getPhotoSize(highQuality), AndroidUtilities.getPhotoSize(highQuality), 99, false, 101, 101, false);
+            size = ImageLoader.scaleAndSaveImage(null, bitmap, Bitmap.CompressFormat.JPEG, true, targetSize, targetSize, 99, false, 101, 101, false);
         } else {
-            size = ImageLoader.scaleAndSaveImage(bitmap, AndroidUtilities.getPhotoSize(highQuality), AndroidUtilities.getPhotoSize(highQuality), true, 80, false, 101, 101);
+            size = ImageLoader.scaleAndSaveImage(bitmap, targetSize, targetSize, true, 80, false, 101, 101);
         }
         if (size != null) {
             sizes.add(size);
@@ -10688,7 +10699,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                         } else {
                             worker.sync = new CountDownLatch(1);
                             mediaSendThreadPool.execute(() -> {
-                                worker.photo = accountInstance.getSendMessagesHelper().generatePhotoSizes(null, info.path, info.uri, info.highQuality);
+                                worker.photo = accountInstance.getSendMessagesHelper().generatePhotoSizes(null, info.path, info.uri, info.highQuality, dialogId);
                                 if (isEncrypted && info.canDeleteAfter) {
                                     new File(info.path).delete();
                                 }
@@ -11333,7 +11344,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                     ensureMediaThumbExists(accountInstance, isEncrypted, photo, info.path, info.uri, 0);
                                 }
                                 if (photo == null) {
-                                    photo = accountInstance.getSendMessagesHelper().generatePhotoSizes(info.path, info.uri);
+                                    photo = accountInstance.getSendMessagesHelper().generatePhotoSizes(null, info.path, info.uri, false, dialogId);
                                     if (isEncrypted && info.canDeleteAfter) {
                                         new File(info.path).delete();
                                     }

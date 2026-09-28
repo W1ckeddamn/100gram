@@ -30,6 +30,7 @@ import android.telephony.TelephonyManager;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -262,6 +263,11 @@ public class ApplicationLoader extends Application {
                 MessagesController.getInstance(a).putUser(user, true);
                 SendMessagesHelper.getInstance(a).checkUnsentMessages();
             }
+            try {
+                HundredGramBackgroundArchiver.getInstance(a).start();
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
         }
 
         ((ApplicationLoader) ApplicationLoader.applicationContext).initPushServices();
@@ -356,14 +362,23 @@ public class ApplicationLoader extends Application {
         } else {
             enabled = MessagesController.getMainSettings(UserConfig.selectedAccount).getBoolean("keepAliveService", false);
         }
-        if (enabled) {
+        if (enabled || HundredGramConfig.keepAliveForegroundService) {
             try {
-                applicationContext.startService(new Intent(applicationContext, NotificationsService.class));
+                Intent intent = new Intent(applicationContext, NotificationsService.class);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && HundredGramConfig.keepAliveForegroundService) {
+                    ContextCompat.startForegroundService(applicationContext, intent);
+                } else {
+                    applicationContext.startService(intent);
+                }
+            } catch (Throwable ignore) {
+                FileLog.e(ignore);
+            }
+        } else {
+            try {
+                applicationContext.stopService(new Intent(applicationContext, NotificationsService.class));
             } catch (Throwable ignore) {
 
             }
-        } else {
-            applicationContext.stopService(new Intent(applicationContext, NotificationsService.class));
         }
     }
 

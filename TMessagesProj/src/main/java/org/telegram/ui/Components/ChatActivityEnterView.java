@@ -147,6 +147,7 @@ import org.telegram.messenger.SharedPrefsHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.VideoEditedInfo;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.camera.CameraController;
@@ -915,6 +916,10 @@ public class ChatActivityEnterView extends FrameLayout implements
                         return;
                     }
                 }
+                if (HundredGramConfig.cameraRoundStartCamera == HundredGramConfig.CAMERA_ROUND_START_MENU) {
+                    showRoundCameraSelectionMenu();
+                    return;
+                }
                 if (!CameraController.getInstance().isCameraInitied()) {
                     CameraController.getInstance().initCamera(onFinishInitCameraRunnable);
                 } else {
@@ -955,6 +960,50 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
         }
     };
+
+    private void showRoundCameraSelectionMenu() {
+        if (parentFragment == null || parentActivity == null) return;
+        try {
+            ItemOptions options = ItemOptions.makeOptions(parentFragment, audioVideoSendButton);
+            options.setGravity(Gravity.RIGHT | Gravity.BOTTOM);
+            options.add(R.drawable.msg_camera, LocaleController.getString("RoundCameraFront", R.string.RoundCameraFront), () -> {
+                startRoundVideoWithLens(true, false);
+            });
+            options.add(R.drawable.msg_camera, LocaleController.getString("RoundCameraBack", R.string.RoundCameraBack), () -> {
+                startRoundVideoWithLens(false, false);
+            });
+            if (org.telegram.messenger.camera.camerax.CameraXUtils.isCameraXSupported()) {
+                options.add(R.drawable.msg_camera, LocaleController.getString("RoundCameraWide", R.string.RoundCameraWide), () -> {
+                    startRoundVideoWithLens(false, true);
+                });
+            }
+            options.show();
+        } catch (Throwable t) {
+            FileLog.e(t);
+            onFinishInitCameraRunnable.run();
+        }
+    }
+
+    private void startRoundVideoWithLens(boolean front, boolean wideAngle) {
+        HundredGramConfig.setCameraRoundLastUsedFront(front);
+        HundredGramConfig.cameraXWideAngle = wideAngle;
+        if (!CameraController.getInstance().isCameraInitied()) {
+            CameraController.getInstance().initCamera(onFinishInitCameraRunnable);
+        } else {
+            onFinishInitCameraRunnable.run();
+        }
+        if (!recordingAudioVideo) {
+            recordingAudioVideo = true;
+            updateRecordInterface(RECORD_STATE_ENTER, true);
+            if (recordCircle != null) {
+                recordCircle.showWaves(false, false);
+            }
+            if (recordTimerView != null) {
+                recordTimerView.reset();
+            }
+        }
+        startLockTransition();
+    }
 
     private AnimationNotificationsLocker notificationsLocker = new AnimationNotificationsLocker();
 
@@ -4797,13 +4846,18 @@ public class ChatActivityEnterView extends FrameLayout implements
                 }
                 if (sendWithoutSoundButtonValue) {
                     ActionBarMenuSubItem sendWithoutSoundButton = new ActionBarMenuSubItem(getContext(), !scheduleButtonValue, true, resourcesProvider);
-                    sendWithoutSoundButton.setTextAndIcon(LocaleController.getString(R.string.SendWithoutSound), R.drawable.input_notify_off);
+                    boolean isSilent = HundredGramConfig.isChatSilentSend(dialog_id);
+                    if (isSilent) {
+                        sendWithoutSoundButton.setTextAndIcon(LocaleController.getString(R.string.SendWithSound), R.drawable.input_notify_on);
+                    } else {
+                        sendWithoutSoundButton.setTextAndIcon(LocaleController.getString(R.string.SendWithoutSound), R.drawable.input_notify_off);
+                    }
                     sendWithoutSoundButton.setMinimumWidth(dp(196));
                     sendWithoutSoundButton.setOnClickListener(v -> {
                         if (sendPopupWindow != null && sendPopupWindow.isShowing()) {
                             sendPopupWindow.dismiss();
                         }
-                        sendMessageInternal(false, 0, 0, 0, true);
+                        sendMessageInternal(isSilent, 0, 0, 0, true);
                     });
                     sendPopupLayout.addView(sendWithoutSoundButton, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, DEFAULT_HEIGHT));
                 }
@@ -4813,6 +4867,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                     @Override
                     public void dismiss() {
                         super.dismiss();
+                        sendPopupLayout = null;
                         sendButton.invalidate();
                     }
                 };
@@ -5072,9 +5127,13 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
 
         if (sendWithoutSoundButtonValue) {
-            options.add(R.drawable.input_notify_off, getString(R.string.SendWithoutSound), () -> {
+            boolean isSilent = HundredGramConfig.isChatSilentSend(dialog_id);
+            int iconRes = isSilent ? R.drawable.input_notify_on : R.drawable.input_notify_off;
+            String textRes = isSilent ? getString(R.string.SendWithSound) : getString(R.string.SendWithoutSound);
+            boolean notifyParam = isSilent;
+            options.add(iconRes, textRes, () -> {
                 sentFromPreview = System.currentTimeMillis();
-                final boolean shownDialog = sendMessageInternal(false, 0, 0, 0, true);
+                final boolean shownDialog = sendMessageInternal(notifyParam, 0, 0, 0, true);
                 if (!containsSendMessage && messageSendPreview != null) {
                     messageSendPreview.dismiss(!shownDialog);
                     messageSendPreview = null;
@@ -7203,7 +7262,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             }, resourcesProvider);
             return true;
         } else {
-            return sendMessageInternal(true, 0, 0, 0, true);
+            return sendMessageInternal(!HundredGramConfig.isChatSilentSend(dialog_id), 0, 0, 0, true);
         }
     }
 
@@ -12226,7 +12285,14 @@ public class ChatActivityEnterView extends FrameLayout implements
                                 delegate.onMessageSend(null, notify, scheduleDate, 0, 0);
                             }
                         };
-                        if (!showConfirmAlert(runnable)) {
+                        if (HundredGramConfig.confirmSendGifs && parentFragment != null && parentActivity != null) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity, resourcesProvider);
+                            builder.setTitle(LocaleController.getString(R.string.ConfirmSendGifTitle));
+                            builder.setMessage(LocaleController.getString(R.string.ConfirmSendPrompt));
+                            builder.setPositiveButton(LocaleController.getString(R.string.Send), (dialogInterface, i) -> runnable.run());
+                            builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+                            parentFragment.showDialog(builder.create());
+                        } else if (!showConfirmAlert(runnable)) {
                             runnable.run();
                         }
                     });
@@ -12500,7 +12566,14 @@ public class ChatActivityEnterView extends FrameLayout implements
                     }
                     MediaDataController.getInstance(currentAccount).addRecentSticker(MediaDataController.TYPE_IMAGE, parent, sticker, (int) (System.currentTimeMillis() / 1000), false);
                 };
-                if (!showConfirmAlert(runnable)) {
+                if (HundredGramConfig.confirmSendStickers && parentFragment != null && parentActivity != null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity, resourcesProvider);
+                    builder.setTitle(LocaleController.getString(R.string.ConfirmSendStickerTitle));
+                    builder.setMessage(LocaleController.getString(R.string.ConfirmSendPrompt));
+                    builder.setPositiveButton(LocaleController.getString(R.string.Send), (dialogInterface, i) -> runnable.run());
+                    builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+                    parentFragment.showDialog(builder.create());
+                } else if (!showConfirmAlert(runnable)) {
                     runnable.run();
                 }
             });

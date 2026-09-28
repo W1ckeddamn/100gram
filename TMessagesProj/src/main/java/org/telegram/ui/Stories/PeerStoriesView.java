@@ -2068,8 +2068,8 @@ public class PeerStoriesView extends SizeNotifierFrameLayout implements Notifica
                             createQualityItem(popupLayout);
                         }
 
-                        if (!unsupported && allowShare && !currentStory.isLive) {
-                            if (UserConfig.getInstance(currentAccount).isPremium()) {
+                        if (!unsupported && (allowShare || org.telegram.messenger.HundredGramConfig.unlockStorySaving) && !currentStory.isLive) {
+                            if (UserConfig.getInstance(currentAccount).isPremium() || org.telegram.messenger.HundredGramConfig.unlockStorySaving) {
                                 ActionBarMenuItem.addItem(popupLayout, R.drawable.msg_gallery, getString(R.string.SaveToGallery), false, resourcesProvider).setOnClickListener(v -> {
                                     saveToGallery();
                                     if (popupMenu != null) {
@@ -4909,6 +4909,10 @@ public class PeerStoriesView extends SizeNotifierFrameLayout implements Notifica
             stealthModeIsActive = false;
             chatActivityEnterView.setEnabled(true);
             chatActivityEnterView.setOverrideHint(StarsIntroActivity.replaceStars(LocaleController.formatString(R.string.TypeMessageForStars, LocaleController.formatNumber(starsPriceBlocked, ','))), animated);
+        } else if (!currentStory.isLive && org.telegram.messenger.HundredGramConfig.isGhostStoryViewActive()) {
+            stealthModeIsActive = true;
+            chatActivityEnterView.setEnabled(true);
+            chatActivityEnterView.setOverrideHint("👻 " + LocaleController.getString("GhostStoriesBadge", R.string.GhostStoriesBadge), animated);
         } else if (!currentStory.isLive && stealthMode != null && ConnectionsManager.getInstance(currentAccount).getCurrentTime() < stealthMode.active_until_date) {
             stealthModeIsActive = true;
             int time = stealthMode.active_until_date - ConnectionsManager.getInstance(currentAccount).getCurrentTime();

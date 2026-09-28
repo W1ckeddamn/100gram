@@ -18,6 +18,15 @@ public class LauncherIconController {
         setIcon(LauncherIcon.DEFAULT);
     }
 
+    public static LauncherIcon getCurrentIcon() {
+        for (LauncherIcon icon : LauncherIcon.values()) {
+            if (isEnabled(icon)) {
+                return icon;
+            }
+        }
+        return LauncherIcon.DEFAULT;
+    }
+
     public static boolean isEnabled(LauncherIcon icon) {
         Context ctx = ApplicationLoader.applicationContext;
         int i = ctx.getPackageManager().getComponentEnabledSetting(icon.getComponentName(ctx));
@@ -39,7 +48,10 @@ public class LauncherIconController {
         AQUA("AquaIcon", R.drawable.icon_4_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconAqua),
         PREMIUM("PremiumIcon", R.drawable.icon_3_background_sa, R.mipmap.icon_3_foreground_sa, R.string.AppIconPremium, true),
         TURBO("TurboIcon", R.drawable.icon_5_background_sa, R.mipmap.icon_5_foreground_sa, R.string.AppIconTurbo, true),
-        NOX("NoxIcon", R.mipmap.icon_2_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconNox, true);
+        NOX("NoxIcon", R.mipmap.icon_2_background_sa, R.mipmap.icon_foreground_sa, R.string.AppIconNox, true),
+        CALCULATOR("CalculatorIcon", R.drawable.icon_calc_background, R.drawable.icon_calc_foreground, R.string.AppDisguiseCalculator),
+        NOTES("NotesIcon", R.drawable.icon_notes_background, R.drawable.icon_notes_foreground, R.string.AppDisguiseNotes),
+        CLOCK("ClockIcon", R.drawable.icon_clock_background, R.drawable.icon_clock_foreground, R.string.AppDisguiseClock);
 
         public final String key;
         public final int background;

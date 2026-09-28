@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Clock Outer Dial -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,24 A30,30 0 1,0 54,84 A30,30 0 1,0 54,24 Z" />
+    <!-- Clock Inner Face -->
+    <path
+        android:fillColor="#E8EAF6"
+        android:pathData="M54,28 A26,26 0 1,0 54,80 A26,26 0 1,0 54,28 Z" />
+    <!-- Ticks: 12, 3, 6, 9 -->
+    <path
+        android:fillColor="#303F9F"
+        android:pathData="M52.5,30 h3 v5 h-3 z M73,52.5 h5 v3 h-5 z M52.5,73 h3 v5 h-3 z M30,52.5 h5 v3 h-5 z" />
+    <!-- Hour Hand (pointing towards 10 o'clock) -->
+    <path
+        android:fillColor="#1A237E"
+        android:pathData="M52,54 l-10,-10 c-1,-1 -0.5,-2.5 1,-2.5 l2,0 l11,10.5 z" />
+    <!-- Minute Hand (pointing towards 2 o'clock) -->
+    <path
+        android:fillColor="#303F9F"
+        android:pathData="M53,55 l16,-16 c1,-1 2.5,-0.5 2.5,1 l0,2 l-16.5,15 z" />
+    <!-- Center Pin -->
+    <path
+        android:fillColor="#E91E63"
+        android:pathData="M54,51 A3,3 0 1,0 54,57 A3,3 0 1,0 54,51 Z" />
+</vector>

@@ -15,6 +15,8 @@ import static org.telegram.messenger.LocaleController.formatString;
 import static org.telegram.messenger.LocaleController.getString;
 import static org.telegram.messenger.MessagesController.findUpdates;
 
+import org.telegram.messenger.HundredGramConfig;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -2760,7 +2762,7 @@ public class AlertsCreator {
                 updateText.run();
             });
 
-            if (forceDeleteForAll) {
+            if (forceDeleteForAll || HundredGramConfig.autoCheckDeleteForAll) {
                 cell[0].setChecked(deleteForAll[0] = true, false);
                 updateText.run();
             }
@@ -2873,6 +2875,14 @@ public class AlertsCreator {
         }
         builder.setPositiveButton(actionText, (dialogInterface, i) -> {
             if (!clearingCache && !second && !secret) {
+                if (HundredGramConfig.isStreamerPreventAccidentalDelete()) {
+                    createClearOrDeleteDialogAlert(fragment, clear, true, chat, user, false, checkDeleteForAll, deleteForAll[0], canDeleteHistory, onProcessRunnable, resourcesProvider);
+                    return;
+                }
+                if (chat != null && HundredGramConfig.confirmLeaveChat) {
+                    createClearOrDeleteDialogAlert(fragment, clear, true, chat, user, false, checkDeleteForAll, deleteForAll[0], canDeleteHistory, onProcessRunnable, resourcesProvider);
+                    return;
+                }
                 if (UserObject.isUserSelf(user)) {
                     createClearOrDeleteDialogAlert(fragment, clear, true, chat, user, false, checkDeleteForAll, deleteForAll[0], canDeleteHistory, onProcessRunnable, resourcesProvider);
                     return;
@@ -3172,7 +3182,12 @@ public class AlertsCreator {
             cell[0].setPadding(LocaleController.isRTL ? dp(16) : dp(8), 0, LocaleController.isRTL ? dp(8) : dp(16), 0);
             frameLayout.addView(cell[0], LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.BOTTOM | Gravity.LEFT, 0, 0, 0, 0));
 
-            cell[0].setChecked(false, false);
+            if (HundredGramConfig.autoCheckDeleteForAll) {
+                deleteForAll[0] = true;
+                cell[0].setChecked(true, false);
+            } else {
+                cell[0].setChecked(false, false);
+            }
             cell[0].setOnClickListener(v -> {
                 CheckBoxCell cell1 = (CheckBoxCell) v;
                 deleteForAll[0] = !deleteForAll[0];
@@ -8052,6 +8067,10 @@ public class AlertsCreator {
                 }
                 cell.setPadding(LocaleController.isRTL ? dp(16) : dp(8), 0, LocaleController.isRTL ? dp(8) : dp(16), 0);
                 frameLayout.addView(cell, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.TOP | Gravity.LEFT, 0, 0, 0, 0));
+                if (HundredGramConfig.autoCheckDeleteForAll) {
+                    deleteForAll[0] = true;
+                    cell.setChecked(true, false);
+                }
                 cell.setOnClickListener(v -> {
                     CheckBoxCell cell12 = (CheckBoxCell) v;
                     deleteForAll[0] = !deleteForAll[0];
@@ -8111,6 +8130,10 @@ public class AlertsCreator {
                 }
                 cell.setPadding(LocaleController.isRTL ? dp(16) : dp(8), 0, LocaleController.isRTL ? dp(8) : dp(16), 0);
                 frameLayout.addView(cell, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.TOP | Gravity.LEFT, 0, 0, 0, 0));
+                if (HundredGramConfig.autoCheckDeleteForAll) {
+                    deleteForAll[0] = true;
+                    cell.setChecked(true, false);
+                }
                 cell.setOnClickListener(v -> {
                     CheckBoxCell cell1 = (CheckBoxCell) v;
                     deleteForAll[0] = !deleteForAll[0];

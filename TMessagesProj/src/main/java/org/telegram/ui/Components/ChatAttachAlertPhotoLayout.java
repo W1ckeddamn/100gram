@@ -80,6 +80,7 @@ import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.LocaleController;
@@ -176,6 +177,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
     private FrameLayout cameraPanel;
     private ShutterButton shutterButton;
     private ZoomControlView zoomControlView;
+    private org.telegram.messenger.camera.camerax.SlideControlView slideControlView;
     private AnimatorSet zoomControlAnimation;
     private Runnable zoomControlHideRunnable;
     private Runnable afterCameraInitRunnable;
@@ -521,6 +523,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
 
         @Override
         public void sendButtonPressed(int index, VideoEditedInfo videoEditedInfo, boolean notify, int scheduleDate, int scheduleRepeatPeriod, boolean forceDocument) {
+            final boolean finalForceDocument = forceDocument || HundredGramConfig.sendVideoAsDocument;
             parentAlert.sent = true;
             MediaController.PhotoEntry photoEntry = getPhotoEntryAtPosition(index);
             if (photoEntry != null) {
@@ -566,7 +569,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
                 if (parentAlert != null) {
                     parentAlert.setButtonPressed(true);
                 }
-                parentAlert.delegate.didPressedButton(7, true, notify, scheduleDate, 0, 0, parentAlert.isCaptionAbove(), forceDocument, payStars);
+                parentAlert.delegate.didPressedButton(7, true, notify, scheduleDate, 0, 0, parentAlert.isCaptionAbove(), finalForceDocument, payStars);
                 selectedPhotos.clear();
                 cameraPhotos.clear();
                 selectedPhotosOrder.clear();
@@ -1238,6 +1241,17 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         zoomControlView.setAlpha(0.0f);
         container.addView(zoomControlView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 50, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 100 + 16));
         zoomControlView.setDelegate(zoom -> {
+            if (cameraView != null) {
+                cameraView.setZoom(cameraZoom = zoom);
+            }
+            showZoomControls(true, true);
+        });
+
+        slideControlView = new org.telegram.messenger.camera.camerax.SlideControlView(context, org.telegram.messenger.camera.camerax.SlideControlView.SLIDER_MODE_ZOOM);
+        slideControlView.setVisibility(View.GONE);
+        slideControlView.setAlpha(0.0f);
+        container.addView(slideControlView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 50, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 100 + 16));
+        slideControlView.setDelegate(zoom -> {
             if (cameraView != null) {
                 cameraView.setZoom(cameraZoom = zoom);
             }
@@ -2199,6 +2213,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
 
             @Override
             public void sendButtonPressed(int index, VideoEditedInfo videoEditedInfo, boolean notify, int scheduleDate, int scheduleRepeatPeriod, boolean forceDocument) {
+                final boolean finalForceDocument = forceDocument || HundredGramConfig.sendVideoAsDocument;
                 if (cameraPhotos.isEmpty() || parentAlert.destroyed) {
                     return;
                 }
@@ -2230,7 +2245,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
                         parentAlert.setButtonPressed(true);
                     }
                     closeCamera(false);
-                    parentAlert.delegate.didPressedButton(forceDocument ? 4 : 8, true, notify, scheduleDate, 0, 0, parentAlert.isCaptionAbove(), forceDocument, payStars);
+                    parentAlert.delegate.didPressedButton(finalForceDocument ? 4 : 8, true, notify, scheduleDate, 0, 0, parentAlert.isCaptionAbove(), finalForceDocument, payStars);
                     cameraPhotos.clear();
                     selectedPhotosOrder.clear();
                     selectedPhotos.clear();
@@ -2289,7 +2304,8 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
     }
 
     private void showZoomControls(boolean show, boolean animated) {
-        if (zoomControlView.getTag() != null && show || zoomControlView.getTag() == null && !show) {
+        View targetView = (org.telegram.messenger.HundredGramConfig.cameraXZoomSlider && slideControlView != null) ? slideControlView : zoomControlView;
+        if (targetView.getTag() != null && show || targetView.getTag() == null && !show) {
             if (show) {
                 if (zoomControlHideRunnable != null) {
                     AndroidUtilities.cancelRunOnUIThread(zoomControlHideRunnable);
@@ -2304,10 +2320,13 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         if (zoomControlAnimation != null) {
             zoomControlAnimation.cancel();
         }
-        zoomControlView.setTag(show ? 1 : null);
+        targetView.setTag(show ? 1 : null);
+        if (show && targetView == slideControlView) {
+            slideControlView.setSliderValue(cameraZoom, false);
+        }
         zoomControlAnimation = new AnimatorSet();
         zoomControlAnimation.setDuration(180);
-        zoomControlAnimation.playTogether(ObjectAnimator.ofFloat(zoomControlView, View.ALPHA, show ? 1.0f : 0.0f));
+        zoomControlAnimation.playTogether(ObjectAnimator.ofFloat(targetView, View.ALPHA, show ? 1.0f : 0.0f));
         zoomControlAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -2463,8 +2482,17 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         if (parentAlert.getCommentView().isKeyboardVisible() && isFocusable()) {
             parentAlert.getCommentView().closeKeyboard();
         }
-        zoomControlView.setVisibility(View.VISIBLE);
-        zoomControlView.setAlpha(0.0f);
+        if (org.telegram.messenger.HundredGramConfig.cameraXZoomSlider && slideControlView != null) {
+            slideControlView.setVisibility(View.VISIBLE);
+            slideControlView.setAlpha(0.0f);
+            zoomControlView.setVisibility(View.GONE);
+        } else {
+            zoomControlView.setVisibility(View.VISIBLE);
+            zoomControlView.setAlpha(0.0f);
+            if (slideControlView != null) {
+                slideControlView.setVisibility(View.GONE);
+            }
+        }
         cameraPanel.setVisibility(View.VISIBLE);
         cameraPanel.setTag(null);
         animateCameraValues[0] = 0;

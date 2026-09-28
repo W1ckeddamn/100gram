@@ -31,12 +31,14 @@ import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.UserObject;
 import org.telegram.messenger.voip.Instance;
 import org.telegram.messenger.voip.VoIPService;
 import org.telegram.tgnet.ConnectionsManager;
@@ -74,6 +76,32 @@ public class VoIPHelper {
 	private static final int VOIP_SUPPORT_ID = 4244000;
 
 	public static void startCall(TLRPC.User user, boolean videoCall, boolean canVideoCall, final Activity activity, TLRPC.UserFull userFull, AccountInstance accountInstance) {
+		startCall(user, videoCall, canVideoCall, activity, userFull, accountInstance, false);
+	}
+
+	public static void startCall(TLRPC.User user, boolean videoCall, boolean canVideoCall, final Activity activity, TLRPC.UserFull userFull, AccountInstance accountInstance, boolean confirmed) {
+		if (!confirmed && (HundredGramConfig.confirmCalls || HundredGramConfig.isStreamerPreventAccidentalCalls()) && activity != null) {
+			AlertDialog.Builder bldr = new AlertDialog.Builder(activity);
+			bldr.setTitle(LocaleController.getString(R.string.AppName));
+			String name = UserObject.getUserName(user);
+			String message;
+			if (HundredGramConfig.isStreamerPreventAccidentalCalls()) {
+				message = LocaleController.formatString("StreamerCallConfirm", R.string.StreamerCallConfirm, name);
+			} else {
+				message = LocaleController.formatString(videoCall ? "ConfirmVideoCallUser" : "ConfirmCallUser", videoCall ? R.string.ConfirmVideoCallUser : R.string.ConfirmCallUser, name);
+			}
+			bldr.setMessage(message);
+			bldr.setPositiveButton(LocaleController.getString("ConfirmCall", R.string.ConfirmCall), (dialog, which) -> {
+				startCall(user, videoCall, canVideoCall, activity, userFull, accountInstance, true);
+			});
+			bldr.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+			try {
+				bldr.show();
+			} catch (Exception e) {
+				FileLog.e(e);
+			}
+			return;
+		}
 		if (accountInstance == null ? MessagesController.getInstance(UserConfig.selectedAccount).isFrozen() : accountInstance.getMessagesController().isFrozen()) {
 			AccountFrozenAlert.show(accountInstance == null ? UserConfig.selectedAccount : accountInstance.getCurrentAccount());
 			return;

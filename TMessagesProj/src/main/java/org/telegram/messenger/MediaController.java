@@ -511,6 +511,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         @Nullable
         public Boolean highQuality;
         public boolean isHighQuality() {
+            if (HundredGramConfig.alwaysHighQualityPhotos) {
+                return true;
+            }
             if (highQuality == null)
                 return SharedConfig.photoHighQualityDefault;
             return highQuality;
