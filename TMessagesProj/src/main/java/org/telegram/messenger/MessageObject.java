@@ -171,6 +171,7 @@ public class MessageObject {
     public static final int TYPE_SHARING_OFFER = 35;
     public static final int TYPE_ARTICLE = 36;
     public static final int TYPE_COMMUNITY_CHANGED = 37;
+    public static final int TYPE_UNSUPPORTED = 38;
 
     public int localType;
     public String localName;
@@ -6615,7 +6616,8 @@ public class MessageObject {
                 type = TYPE_POLL;
                 checkedVotes = new ArrayList<>();
             } else if (getMedia(messageOwner) instanceof TLRPC.TL_messageMediaUnsupported) {
-                type = TYPE_TEXT;
+                contentType = 10;
+                type = TYPE_UNSUPPORTED;
             } else if (getMedia(messageOwner) instanceof TLRPC.TL_messageMediaDocument) {
                 TLRPC.Document document = getDocument();
                 if (document != null && document.mime_type != null) {
@@ -9771,7 +9773,31 @@ public class MessageObject {
     }
 
     public boolean isUnread() {
-        return messageOwner != null && messageOwner.unread;
+        if (messageOwner == null) {
+            return false;
+        }
+        if (isSaved) {
+            return false;
+        }
+        long dialogId = getDialogId();
+        if (dialogId != 0 && dialogId == UserConfig.getInstance(currentAccount).getClientUserId()) {
+            return false;
+        }
+        if ((messageOwner.out || isOutOwner()) && messageOwner.id > 0 && !DialogObject.isEncryptedDialog(dialogId)) {
+            Integer outboxMax = MessagesController.getInstance(currentAccount).dialogs_read_outbox_max.get(dialogId);
+            if (outboxMax != null && outboxMax > 0) {
+                return outboxMax < messageOwner.id;
+            }
+        }
+        return messageOwner.unread;
+    }
+
+    public boolean isDeleted() {
+        return messageOwner != null && messageOwner.isDeleted;
+    }
+
+    public long getDeletedDate() {
+        return messageOwner != null ? messageOwner.deletedDate : 0;
     }
 
     public boolean isEdited() {
@@ -9783,7 +9809,9 @@ public class MessageObject {
     }
 
     public void setIsRead() {
-        messageOwner.unread = false;
+        if (messageOwner != null) {
+            messageOwner.unread = false;
+        }
     }
 
     public static int getUnreadFlags(TLRPC.Message message) {

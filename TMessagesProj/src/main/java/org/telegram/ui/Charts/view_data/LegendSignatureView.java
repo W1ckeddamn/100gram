@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BillingController;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
@@ -250,13 +251,13 @@ public class LegendSignatureView extends FrameLayout {
                 formatterTON.setMaximumFractionDigits(v > 1_000_000_000 ? 2 : 6);
                 return ChannelMonetizationLayout.replaceTON("TON " + formatterTON.format(v / 1_000_000_000.), textView.getPaint(), .82f, false);
             } else {
-                return BuildVars.gimmeFuLabel();
+                return "≈" + BillingController.getInstance().formatCurrency((long) (v / k), "USD");
             }
         } else if (formatter == ChartData.FORMATTER_XTR) {
             if (formatterIndex == 0) {
                 return StarsIntroActivity.replaceStarsWithPlain("XTR " + LocaleController.formatNumber(v, ' '), .7f);
             } else {
-                return BuildVars.gimmeFuLabel();
+                return "≈" + BillingController.getInstance().formatCurrency((long) (v / k), "USD");
             }
         }
         float num_ = v;

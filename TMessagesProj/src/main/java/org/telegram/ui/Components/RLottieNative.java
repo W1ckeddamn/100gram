@@ -97,6 +97,10 @@ public final class RLottieNative {
      * @param colorReplacement optional color replacement table, may be {@code null}
      * @return a new instance, or {@code null} if the native layer failed
      */
+    public static RLottieNative createFromRawJson(String json) {
+        return createFromRawJson(json, "lottie", null);
+    }
+
     public static RLottieNative createFromRawJson(
             String json,
             String name,

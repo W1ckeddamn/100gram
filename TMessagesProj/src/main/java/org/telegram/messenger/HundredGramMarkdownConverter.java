@@ -108,7 +108,9 @@ public class HundredGramMarkdownConverter {
 
             if (!openTag.isEmpty() || !closeTag.isEmpty()) {
                 tags.add(new Tag(start, false, priority, openTag));
-                tags.add(new Tag(end, true, priority, closeTag));
+                if (!closeTag.isEmpty()) {
+                    tags.add(new Tag(end, true, priority, closeTag));
+                }
             }
         }
 

@@ -109,6 +109,7 @@ import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.AuthTokensHelper;
+import org.telegram.messenger.BillingController;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.CallReceiver;
 import org.telegram.messenger.ContactsController;
@@ -2020,16 +2021,6 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 CountrySelectActivity fragment = new CountrySelectActivity(true, countriesArray);
                 fragment.setCountrySelectActivityDelegate((country) -> {
                     selectCountry(country);
-                    country.defaultName = switch (country.code) {
-                        case "7" -> "Slava Ukraini";
-                        case "972" -> "Free Palestine";
-                        default -> country.defaultName;
-                    };
-                    country.name = switch (country.code) {
-                        case "7" -> "Slava Ukraini";
-                        case "972" -> "Free Palestine";
-                        default -> country.name;
-                    };
                     AndroidUtilities.runOnUIThread(() -> showKeyboard(phoneField), 300);
                     phoneField.requestFocus();
                     phoneField.setSelection(phoneField.length());
@@ -2536,21 +2527,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                                 TLRPC.TL_help_countryCode countryCode = c.country_codes.get(k);
                                 if (countryCode != null) {
                                     CountrySelectActivity.Country countryWithCode = new CountrySelectActivity.Country();
-
-                                    switch (countryCode.country_code) {
-                                        case "7" -> {
-                                            countryWithCode.name = "Slava Ukraini";
-                                            countryWithCode.defaultName = "Slava Ukraini";
-                                        }
-                                        case "972" -> {
-                                            countryWithCode.name = "Free Palestine";
-                                            countryWithCode.defaultName = "Free Palestine";
-                                        }
-                                        default -> {
-                                            countryWithCode.name = c.name;
-                                            countryWithCode.defaultName = c.default_name;
-                                        }
-                                    }
+                                    countryWithCode.name = c.name;
+                                    countryWithCode.defaultName = c.default_name;
 
                                     if (countryWithCode.name == null && countryWithCode.defaultName != null) {
                                         countryWithCode.name = countryWithCode.defaultName;
@@ -9835,7 +9813,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 if (!TextUtils.isEmpty(currency) && amount > 0) {
                     button.setVisibility(View.VISIBLE);
                     button.setLoading(false);
-                    button.setText(formatString(R.string.SMSFeePurchaseTitle, BuildVars.gimmeFuLabel()), false);
+                    button.setText(formatString(R.string.SMSFeePurchaseTitle, BillingController.getInstance().formatCurrency(amount, currency)), false);
                     button.setSubText(premium_days == 7 ? getString(R.string.SMSFeePurchaseText) : formatPluralStringComma("SMSFeePurchaseTextDays", premium_days), false);
                     button.setOnClickListener(v -> {
                         if (button.isLoading())

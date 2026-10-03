@@ -81,8 +81,8 @@ public class FragmentUsernameBottomSheet {
             ownerName = "";
         }
 
-        final String money = BuildVars.gimmeFuLabel();
-        final String crypto_money = BuildVars.gimmeFuLabel();
+        final String money = BillingController.getInstance().formatCurrency(info.amount, info.currency);
+        final String crypto_money = BillingController.getInstance().formatCurrency(info.crypto_amount, info.crypto_currency);
 
         String title;
         String message;

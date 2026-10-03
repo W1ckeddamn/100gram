@@ -256,10 +256,11 @@ public class HundredGramChatExporter {
             if (user != null) {
                 return ContactsController.formatName(user.first_name, user.last_name);
             }
+            SQLiteCursor cursor1 = null;
             try {
-                SQLiteCursor cursor = database.queryFinalized(String.format(Locale.US, "SELECT data FROM users WHERE uid = %d", dialogId));
-                if (cursor.next()) {
-                    NativeByteBuffer data = cursor.byteBufferValue(0);
+                cursor1 = database.queryFinalized(String.format(Locale.US, "SELECT data FROM users WHERE uid = %d", dialogId));
+                if (cursor1.next()) {
+                    NativeByteBuffer data = cursor1.byteBufferValue(0);
                     if (data != null) {
                         try {
                             TLRPC.User u = TLRPC.User.TLdeserialize(data, data.readInt32(false), false);
@@ -271,8 +272,10 @@ public class HundredGramChatExporter {
                         }
                     }
                 }
-                cursor.dispose();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            } finally {
+                if (cursor1 != null) cursor1.dispose();
+            }
             return "User " + dialogId;
         } else {
             long chatId = -dialogId;
@@ -280,10 +283,11 @@ public class HundredGramChatExporter {
             if (chat != null && !TextUtils.isEmpty(chat.title)) {
                 return chat.title;
             }
+            SQLiteCursor cursor2 = null;
             try {
-                SQLiteCursor cursor = database.queryFinalized(String.format(Locale.US, "SELECT data FROM chats WHERE uid = %d", chatId));
-                if (cursor.next()) {
-                    NativeByteBuffer data = cursor.byteBufferValue(0);
+                cursor2 = database.queryFinalized(String.format(Locale.US, "SELECT data FROM chats WHERE uid = %d", chatId));
+                if (cursor2.next()) {
+                    NativeByteBuffer data = cursor2.byteBufferValue(0);
                     if (data != null) {
                         try {
                             TLRPC.Chat c = TLRPC.Chat.TLdeserialize(data, data.readInt32(false), false);
@@ -295,8 +299,10 @@ public class HundredGramChatExporter {
                         }
                     }
                 }
-                cursor.dispose();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            } finally {
+                if (cursor2 != null) cursor2.dispose();
+            }
             return "Chat " + dialogId;
         }
     }
@@ -312,10 +318,11 @@ public class HundredGramChatExporter {
             if (user != null) {
                 return ContactsController.formatName(user.first_name, user.last_name);
             }
+            SQLiteCursor cursor3 = null;
             try {
-                SQLiteCursor cursor = database.queryFinalized(String.format(Locale.US, "SELECT data FROM users WHERE uid = %d", senderId));
-                if (cursor.next()) {
-                    NativeByteBuffer data = cursor.byteBufferValue(0);
+                cursor3 = database.queryFinalized(String.format(Locale.US, "SELECT data FROM users WHERE uid = %d", senderId));
+                if (cursor3.next()) {
+                    NativeByteBuffer data = cursor3.byteBufferValue(0);
                     if (data != null) {
                         try {
                             TLRPC.User u = TLRPC.User.TLdeserialize(data, data.readInt32(false), false);
@@ -327,8 +334,10 @@ public class HundredGramChatExporter {
                         }
                     }
                 }
-                cursor.dispose();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            } finally {
+                if (cursor3 != null) cursor3.dispose();
+            }
             return "User " + senderId;
         } else if (senderId < 0) {
             long chatId = -senderId;
@@ -336,10 +345,11 @@ public class HundredGramChatExporter {
             if (chat != null && !TextUtils.isEmpty(chat.title)) {
                 return chat.title;
             }
+            SQLiteCursor cursor4 = null;
             try {
-                SQLiteCursor cursor = database.queryFinalized(String.format(Locale.US, "SELECT data FROM chats WHERE uid = %d", chatId));
-                if (cursor.next()) {
-                    NativeByteBuffer data = cursor.byteBufferValue(0);
+                cursor4 = database.queryFinalized(String.format(Locale.US, "SELECT data FROM chats WHERE uid = %d", chatId));
+                if (cursor4.next()) {
+                    NativeByteBuffer data = cursor4.byteBufferValue(0);
                     if (data != null) {
                         try {
                             TLRPC.Chat c = TLRPC.Chat.TLdeserialize(data, data.readInt32(false), false);
@@ -351,8 +361,10 @@ public class HundredGramChatExporter {
                         }
                     }
                 }
-                cursor.dispose();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            } finally {
+                if (cursor4 != null) cursor4.dispose();
+            }
             return "Group " + chatId;
         }
         return "Unknown";

@@ -551,8 +551,36 @@ public class Camera2Session {
 
             captureRequestBuilder.set(CaptureRequest.FLASH_MODE, flashing ? (recordingVideo ? CaptureRequest.FLASH_MODE_TORCH : CaptureRequest.FLASH_MODE_SINGLE) : CaptureRequest.FLASH_MODE_OFF);
 
+            Range<Integer> targetRange = null;
+            boolean want60 = HundredGramConfig.cameraRoundFps == 60;
+            if (cameraCharacteristics != null) {
+                Range<Integer>[] availableRanges = cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES);
+                if (availableRanges != null) {
+                    if (want60) {
+                        for (Range<Integer> r : availableRanges) {
+                            if (r.getUpper() >= 60) {
+                                if (targetRange == null || r.getLower() > targetRange.getLower()) {
+                                    targetRange = r;
+                                }
+                            }
+                        }
+                    } else {
+                        for (Range<Integer> r : availableRanges) {
+                            if (r.getUpper() == 30) {
+                                if (targetRange == null || r.getLower() > targetRange.getLower()) {
+                                    targetRange = r;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (targetRange == null) {
+                targetRange = new Range<Integer>(30, 30);
+            }
+            captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, targetRange);
+
             if (recordingVideo) {
-                captureRequestBuilder.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, new Range<Integer>(HundredGramConfig.cameraX60Fps ? 60 : 30, 60));
                 captureRequestBuilder.set(CaptureRequest.CONTROL_CAPTURE_INTENT, CaptureRequest.CONTROL_CAPTURE_INTENT_VIDEO_RECORD);
             }
 

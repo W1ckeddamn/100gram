@@ -2063,7 +2063,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             return 0;
         }
         if (HundredGramConfig.ghostReadMessages && HundredGramConfig.ghostReadOnReply && peer != 0) {
-            getMessagesController().markDialogAsReadServer(peer, 0, 0, 0);
+            getMessagesController().markIncomingDialogMessagesAsReadServer(peer);
         }
         int sendResult = 0;
         long myId = getUserConfig().getClientUserId();
@@ -2639,6 +2639,10 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                             updateMediaPaths(msgObj1, message, message.id, null, true, message.params);
                                             int existFlags = msgObj1.getMediaExistanceFlags();
                                             newMsgObj1.id = message.id;
+                                            newMsgObj1.unread = message.unread;
+                                            if (msgObj1.messageOwner != null) {
+                                                msgObj1.messageOwner.unread = message.unread;
+                                            }
                                             sentCount++;
 
                                             if (scheduled != currentSchedule) {
@@ -4181,7 +4185,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
 
     public void sendMessage(SendMessageParams sendMessageParams) {
         if (HundredGramConfig.ghostReadMessages && HundredGramConfig.ghostReadOnReply && sendMessageParams != null && sendMessageParams.peer != 0) {
-            getMessagesController().markDialogAsReadServer(sendMessageParams.peer, 0, 0, 0);
+            getMessagesController().markIncomingDialogMessagesAsReadServer(sendMessageParams.peer);
         }
         String message = sendMessageParams.message;
         String caption = sendMessageParams.caption;
@@ -7653,6 +7657,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                         getMessagesController().dialogs_read_outbox_max.put(message.dialog_id, value);
                                     }
                                     message.unread = value < message.id;
+                                    newMsgObj.unread = message.unread;
                                 }
                             } else {
                                 isSentError = true;
@@ -8161,6 +8166,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                         getMessagesController().dialogs_read_outbox_max.put(message.dialog_id, value);
                                     }
                                     message.unread = value < message.id;
+                                    msgObj.messageOwner.unread = message.unread;
                                 }
                                 msgObj.messageOwner.post_author = message.post_author;
                                 if ((message.flags & 33554432) != 0) {
@@ -11912,6 +11918,18 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             document.size = (int) temp.length();
                         }
                         fillVideoAttribute(videoPath, attributeVideo, null);
+                    }
+                    if (isRound) {
+                        attributeVideo.round_message = true;
+                        int roundSize = Math.min(attributeVideo.w, attributeVideo.h);
+                        if (roundSize <= 0) {
+                            roundSize = 360;
+                        }
+                        if (roundSize > 480) {
+                            roundSize = 480;
+                        }
+                        attributeVideo.w = roundSize;
+                        attributeVideo.h = roundSize;
                     }
                 } else if (document.thumbs.isEmpty()) {
                     if (videoEditedInfo != null && videoEditedInfo.notReadyYet) {

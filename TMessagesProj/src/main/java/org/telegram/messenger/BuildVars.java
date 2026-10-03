@@ -33,10 +33,6 @@ public class BuildVars {
     public static String BUILD_DUROV_TG = "org.telegram.messenger";
     public static String BUILD_GRAHER = BUILD_DUROV_TG;
     public static String BUILD_VERSION_STRING = "12.10.5";
-    public static final List<String> fuLabel=new ArrayList<>(){{
-        add("Slava Ukraini");
-        add("Free Palestine");
-    }};
 
     public static final int PIN_MIN_SIZE = 4;
     public static final int PIN_MAX_SIZE = 16;
@@ -70,16 +66,12 @@ public class BuildVars {
         }
     }
 
-    public static String gimmeFuLabel(){
-        return fuLabel.get(new java.util.Random().nextInt(fuLabel.size()));
-    }
-
     public static String gimmeUpdateMessage(){
         return "Bruh/sis/whatever, check for new release on github " + PLAYSTORE_APP_URL;
     }
 
     public static boolean useInvoiceBilling() {
-        return false;
+        return true;
     }
 
     private static boolean hasDirectCurrency() {

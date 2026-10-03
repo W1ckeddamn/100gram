@@ -5859,6 +5859,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 }
             }
             if (selectedType == 0) {
+                if (TextUtils.isEmpty(mimeType)) {
+                    mimeType = "image/jpeg";
+                }
                 if (filename == null) {
                     filename = AndroidUtilities.generateFileName(0, extension);
                 }
@@ -5868,6 +5871,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
                 contentValues.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
             } else if (selectedType == 1) {
+                if (TextUtils.isEmpty(mimeType)) {
+                    mimeType = "video/mp4";
+                }
                 if (filename == null) {
                     filename = AndroidUtilities.generateFileName(1, extension);
                 }
@@ -6687,7 +6693,8 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             resultWidth = temp;
         }
 
-        if (!info.shouldLimitFps && framerate > 40 && (Math.min(resultHeight, resultWidth) <= 480)) {
+        boolean round60 = info.roundVideo && (HundredGramConfig.cameraRoundFps == 60);
+        if (!round60 && !info.shouldLimitFps && framerate > 40 && (Math.min(resultHeight, resultWidth) <= 480)) {
             framerate = 30;
         }
 

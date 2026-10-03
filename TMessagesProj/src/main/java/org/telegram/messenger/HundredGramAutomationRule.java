@@ -30,7 +30,8 @@ public class HundredGramAutomationRule {
     public boolean priorityNotify;
 
     public HundredGramAutomationRule() {
-        this.id = System.currentTimeMillis();
+        // Комбинируем время + случайное число во избежание коллизий ID
+        this.id = System.currentTimeMillis() * 1000L + (long) (Math.random() * 1000);
     }
 
     public boolean matches(MessageObject message) {

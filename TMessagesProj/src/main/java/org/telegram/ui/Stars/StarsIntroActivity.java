@@ -1046,7 +1046,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 item.intValue = index;
                 item.longValue = option.stars;
                 item.text = formatPluralStringSpaced("StarsCount", (int) option.stars);
-                item.subtext = option.loadingStorePrice ? null : BuildVars.gimmeFuLabel();
+                item.subtext = option.loadingStorePrice ? null : BillingController.getInstance().formatCurrency(option.amount, option.currency);
                 item.object = option;
                 return item;
             }
@@ -1057,7 +1057,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 item.intValue = index;
                 item.longValue = option.stars;
                 item.text = formatPluralStringSpaced("StarsCount", (int) option.stars);
-                item.subtext = option.loadingStorePrice ? null : BuildVars.gimmeFuLabel();
+                item.subtext = option.loadingStorePrice ? null : BillingController.getInstance().formatCurrency(option.amount, option.currency);
                 item.object = option;
                 return item;
             }
@@ -5203,7 +5203,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                     subPriceView.setText("");
                 } else {
                     subPriceView.animate().alpha(1f).start();
-                    subPriceView.setText("≈" + BuildVars.gimmeFuLabel());
+                    subPriceView.setText("≈" + BillingController.getInstance().formatCurrency((long) (input_stars / 1000.0 * MessagesController.getInstance(UserConfig.selectedAccount).starsUsdWithdrawRate1000), "USD"));
                 }
             }
         });

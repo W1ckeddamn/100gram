@@ -715,6 +715,17 @@ public class ConnectionsManager extends BaseController {
     }
 
     public void setAppPaused(final boolean value, final boolean byScreenState) {
+        if (org.telegram.messenger.HundredGramConfig.isPersistentBackgroundEnabled()) {
+            if (BuildVars.LOGS_ENABLED) {
+                FileLog.d("setAppPaused ignored due to persistent background mode: value=" + value + " byScreenState=" + byScreenState);
+            }
+            if (lastPauseTime != 0 && System.currentTimeMillis() - lastPauseTime > 5000) {
+                getContactsController().checkContacts();
+            }
+            lastPauseTime = 0;
+            native_resumeNetwork(currentAccount, false);
+            return;
+        }
         if (!byScreenState) {
             appPaused = value;
             if (BuildVars.LOGS_ENABLED) {

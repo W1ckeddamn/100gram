@@ -1202,6 +1202,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         }
         switchingAccount = true;
 
+        org.telegram.messenger.HundredGramActivityTracker.getInstance(currentAccount).onSelfAppPause();
         ConnectionsManager.getInstance(currentAccount).setAppPaused(true, false);
         UserConfig.selectedAccount = account;
         UserConfig.getInstance(0).saveConfig(false);
@@ -1238,6 +1239,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             showTosActivity(account, UserConfig.getInstance(account).unacceptedTermsOfService);
         }
         updateCurrentConnectionState(currentAccount);
+        if (!ApplicationLoader.mainInterfacePaused) {
+            org.telegram.messenger.HundredGramActivityTracker.getInstance(currentAccount).onSelfAppResume();
+        }
 
         switchingAccount = false;
     }
@@ -6754,6 +6758,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         pipActivityHandler.onPause();
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.stopAllHeavyOperations, 4096);
         ApplicationLoader.mainInterfacePaused = true;
+        org.telegram.messenger.HundredGramActivityTracker.getInstance(currentAccount).onSelfAppPause();
         int account = currentAccount;
         Utilities.stageQueue.postRunnable(() -> {
             ApplicationLoader.mainInterfacePausedStageQueue = true;
@@ -7013,6 +7018,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.startAllHeavyOperations, 4096);
         MediaController.getInstance().setFeedbackView(feedbackView = actionBarLayout.getView(), true);
         ApplicationLoader.mainInterfacePaused = false;
+        org.telegram.messenger.HundredGramActivityTracker.getInstance(currentAccount).onSelfAppResume();
         MessagesController.getInstance(currentAccount).sortDialogs(null);
         showLanguageAlert(false);
         Utilities.stageQueue.postRunnable(() -> {

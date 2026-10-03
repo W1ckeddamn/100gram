@@ -16,6 +16,7 @@ import static org.telegram.messenger.LocaleController.getString;
 import static org.telegram.ui.bots.AffiliateProgramFragment.percents;
 
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramVaultManager;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -239,6 +240,7 @@ import org.telegram.ui.Cells.BotSwitchCell;
 import org.telegram.ui.Cells.ChatActionCell;
 import org.telegram.ui.Cells.ChatLoadingCell;
 import org.telegram.ui.Cells.ChatMessageCell;
+import org.telegram.ui.Cells.ChatMessageUnsupportedCell;
 import org.telegram.ui.Cells.ChatUnreadCell;
 import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Cells.ContextLinkCell;
@@ -1241,6 +1243,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_FORWARD_NO_QUOTE = 209;
     public final static int OPTION_COPY_MARKDOWN = 210;
     public final static int OPTION_PRETTY_JSON = 211;
+    public final static int OPTION_DELETE_PERMANENTLY = 212; // 100gram: erase anti-delete message from local DB
 
     public final static int OPTION_SUGGESTION_EDIT_PRICE = 111;
     public final static int OPTION_SUGGESTION_EDIT_TIME = 112;
@@ -1371,6 +1374,8 @@ public class ChatActivity extends BaseFragment implements
                 return 980;
             case OPTION_CANCEL_SENDING:
                 return 990;
+            case OPTION_DELETE_PERMANENTLY: // 100gram: erase from local DB (anti-delete)
+                return 999;
             case OPTION_DELETE:
                 return 1000;
 
@@ -4671,10 +4676,14 @@ public class ChatActivity extends BaseFragment implements
             headerItem.lazilyAddSubItem(hundredgram_export_chat, R.drawable.msg_log, LocaleController.getString("ChatExport", R.string.ChatExport));
             headerItem.lazilyAddSubItem(hundredgram_go_to_first_message, R.drawable.msg_go_up, LocaleController.getString("GoToFirstMessage", R.string.GoToFirstMessage));
             headerItem.lazilyAddSubItem(hundredgram_clear_chat_cache, R.drawable.msg_clear, LocaleController.getString(R.string.ClearChatCache));
-            if (currentUser != null && !currentUser.bot && !currentUser.self) {
-                boolean tracked = org.telegram.messenger.HundredGramConfig.isUserTrackedForOnline(currentUser.id);
-                headerItem.lazilyAddSubItem(hundredgram_notify_online, R.drawable.msg_notifications, LocaleController.getString(tracked ? "DisableNotifyUserOnline" : "EnableNotifyUserOnline", tracked ? R.string.DisableNotifyUserOnline : R.string.EnableNotifyUserOnline));
-                headerItem.lazilyAddSubItem(hundredgram_user_activity, R.drawable.msg_calendar2, LocaleController.getString("UserActivityLog", R.string.UserActivityLog));
+            if (currentUser != null && !currentUser.bot) {
+                if (!currentUser.self) {
+                    boolean tracked = org.telegram.messenger.HundredGramConfig.isUserTrackedForOnline(currentUser.id);
+                    headerItem.lazilyAddSubItem(hundredgram_notify_online, R.drawable.msg_notifications, LocaleController.getString(tracked ? "DisableNotifyUserOnline" : "EnableNotifyUserOnline", tracked ? R.string.DisableNotifyUserOnline : R.string.EnableNotifyUserOnline));
+                    headerItem.lazilyAddSubItem(hundredgram_user_activity, R.drawable.msg_calendar2, LocaleController.getString("UserActivityLog", R.string.UserActivityLog));
+                } else {
+                    headerItem.lazilyAddSubItem(hundredgram_user_activity, R.drawable.msg_calendar2, LocaleController.getString("HundredGramMyActivityLog", R.string.HundredGramMyActivityLog));
+                }
             }
             if (ChatObject.isMonoForum(currentChat) && ChatObject.canManageMonoForum(currentAccount, currentChat)) {
                 headerItem.lazilyAddSubItem(remove_fee, R.drawable.menu_paid_off, getString(R.string.DirectRemoveFee));
@@ -5910,7 +5919,13 @@ public class ChatActivity extends BaseFragment implements
                     if (child.getVisibility() == View.INVISIBLE || child.getVisibility() == View.GONE || quickRejectChild(child, positionF)) {
                         continue;
                     }
-                    if (chatAdapter.isBot && child instanceof BotHelpCell) {
+                    if (child instanceof ChatMessageUnsupportedCell) {
+                        ChatMessageUnsupportedCell unsupportedCell = (ChatMessageUnsupportedCell) child;
+                        canvas.save();
+                        canvas.translate(child.getX(), child.getY());
+                        unsupportedCell.drawBackground(canvas);
+                        canvas.restore();
+                    } else if (chatAdapter.isBot && child instanceof BotHelpCell) {
                         BotHelpCell botCell = (BotHelpCell) child;
                         float top = (getMeasuredHeight() - chatListViewPaddingTop - blurredViewBottomOffset) / 2 - child.getMeasuredHeight() / 2 + chatListViewPaddingTop;
                         if (!botCell.animating() && !chatListView.fastScrollAnimationRunning) {
@@ -16311,6 +16326,8 @@ public class ChatActivity extends BaseFragment implements
                 ((UserInfoCell) view).setVisiblePart(visibleTop, visibleBackgroundHeight);
             } else if (view instanceof BotAskCell) {
                 ((BotAskCell) view).setVisiblePart(visibleTop, visibleBackgroundHeight);
+            } else if (view instanceof ChatMessageUnsupportedCell) {
+                ((ChatMessageUnsupportedCell) view).setVisiblePart(visibleTop, visibleBackgroundHeight);
             }
             if (isAllChats()) {
                 final int topicBottom = hasTopicSeparator ? top + view.getPaddingTop() : bottom;
@@ -33286,18 +33303,71 @@ public class ChatActivity extends BaseFragment implements
         return fragment;
     }
 
-    private void saveMessageToGallery(MessageObject messageObject) {
-        String path = messageObject.messageOwner.attachPath;
+    private boolean saveMessageToGallery(MessageObject messageObject) {
+        if (messageObject == null) {
+            return false;
+        }
+        String path = messageObject.messageOwner != null ? messageObject.messageOwner.attachPath : null;
         if (!TextUtils.isEmpty(path)) {
             File temp = new File(path);
             if (!temp.exists()) {
                 path = null;
             }
         }
-        if (TextUtils.isEmpty(path)) {
+        if (TextUtils.isEmpty(path) && messageObject.messageOwner != null) {
             File f = FileLoader.getInstance(currentAccount).getPathToMessage(messageObject.messageOwner);
             if (f != null && f.exists()) {
                 path = f.getPath();
+            }
+        }
+        if (TextUtils.isEmpty(path) && messageObject.messageOwner != null) {
+            File f = FileLoader.getInstance(currentAccount).getPathToMessage(messageObject.messageOwner, true, true);
+            if (f != null && f.exists()) {
+                path = f.getPath();
+            }
+        }
+        if (TextUtils.isEmpty(path) && messageObject.getDocument() != null) {
+            TLRPC.Document doc = messageObject.getDocument();
+            File f = FileLoader.getInstance(currentAccount).getPathToAttach(doc, false);
+            if (f != null && f.exists()) {
+                path = f.getPath();
+            }
+            if (TextUtils.isEmpty(path)) {
+                f = FileLoader.getInstance(currentAccount).getPathToAttach(doc, true);
+                if (f != null && f.exists()) {
+                    path = f.getPath();
+                }
+            }
+            if (TextUtils.isEmpty(path)) {
+                String attachFileName = FileLoader.getAttachFileName(doc);
+                f = new File(FileLoader.getDirectory(FileLoader.MEDIA_DIR_VIDEO), attachFileName);
+                if (f.exists()) {
+                    path = f.getPath();
+                }
+                if (TextUtils.isEmpty(path)) {
+                    f = new File(FileLoader.getDirectory(FileLoader.MEDIA_DIR_DOCUMENT), attachFileName);
+                    if (f.exists()) {
+                        path = f.getPath();
+                    }
+                }
+                if (TextUtils.isEmpty(path)) {
+                    f = new File(FileLoader.getDirectory(FileLoader.MEDIA_DIR_CACHE), attachFileName);
+                    if (f.exists()) {
+                        path = f.getPath();
+                    }
+                }
+                if (TextUtils.isEmpty(path) && messageObject.messageOwner != null) {
+                    f = HundredGramVaultManager.getInstance(currentAccount).getVaultFile(messageObject.messageOwner);
+                    if (f != null && f.exists()) {
+                        path = f.getPath();
+                    }
+                }
+                if (TextUtils.isEmpty(path)) {
+                    f = HundredGramVaultManager.getInstance(currentAccount).getVaultFileByName(attachFileName);
+                    if (f != null && f.exists()) {
+                        path = f.getPath();
+                    }
+                }
             }
         }
         if (TextUtils.isEmpty(path) && messageObject.cachedQuality != null && messageObject.cachedQuality.isCached()) {
@@ -33313,7 +33383,10 @@ public class ChatActivity extends BaseFragment implements
             }
         }
         if (TextUtils.isEmpty(path)) {
-            return;
+            if (messageObject.isRoundVideo() && messageObject.getDocument() != null && getParentActivity() != null) {
+                downloadAndSaveRoundVideo(messageObject);
+            }
+            return false;
         }
         if (messageObject.isLivePhoto()) {
             final TLRPC.Document videoDoc = MessageObject.getMedia(messageObject.messageOwner) != null
@@ -33331,10 +33404,105 @@ public class ChatActivity extends BaseFragment implements
             }
             if (!TextUtils.isEmpty(videoPath)) {
                 MediaController.saveFile(path, videoPath, getParentActivity(), null);
-                return;
+                return true;
             }
         }
-        MediaController.saveFile(path, getParentActivity(), messageObject.isVideo() ? 1 : 0, null, null);
+        boolean isVideo = messageObject.isVideo() || messageObject.isRoundVideo();
+        MediaController.saveFile(path, getParentActivity(), isVideo ? 1 : 0, null, null);
+        return true;
+    }
+
+    private void downloadAndSaveRoundVideo(MessageObject messageObject) {
+        if (getParentActivity() == null || messageObject == null || messageObject.getDocument() == null) {
+            return;
+        }
+        final TLRPC.Document document = messageObject.getDocument();
+        final String fileName = FileLoader.getAttachFileName(document);
+
+        final AlertDialog[] progressDialog = new AlertDialog[1];
+        try {
+            progressDialog[0] = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER, themeDelegate);
+            progressDialog[0].setMessage(LocaleController.getString("Loading", R.string.Loading));
+            progressDialog[0].setCanceledOnTouchOutside(false);
+            progressDialog[0].setCancelable(true);
+            progressDialog[0].setOnCancelListener(dialog -> {
+                FileLoader.getInstance(currentAccount).cancelLoadFile(document);
+            });
+            progressDialog[0].show();
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+
+        final NotificationCenter.NotificationCenterDelegate delegate = new NotificationCenter.NotificationCenterDelegate() {
+            @Override
+            public void didReceivedNotification(int id, int account, Object... args) {
+                if (account != currentAccount) {
+                    return;
+                }
+                if (id == NotificationCenter.fileLoaded) {
+                    String name = (String) args[0];
+                    if (name != null && name.equalsIgnoreCase(fileName)) {
+                        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.fileLoaded);
+                        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.fileLoadFailed);
+                        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.fileLoadProgressChanged);
+                        if (progressDialog[0] != null) {
+                            try {
+                                progressDialog[0].dismiss();
+                            } catch (Exception ignored) {}
+                        }
+                        File finalFile = (File) args[1];
+                        String savedPath = finalFile != null && finalFile.exists() ? finalFile.getAbsolutePath() : null;
+                        if (savedPath == null) {
+                            File f = FileLoader.getInstance(currentAccount).getPathToAttach(document, false);
+                            if (f != null && f.exists()) {
+                                savedPath = f.getAbsolutePath();
+                            }
+                        }
+                        if (savedPath == null) {
+                            File f = FileLoader.getInstance(currentAccount).getPathToAttach(document, true);
+                            if (f != null && f.exists()) {
+                                savedPath = f.getAbsolutePath();
+                            }
+                        }
+                        if (savedPath != null && getParentActivity() != null) {
+                            MediaController.saveFile(savedPath, getParentActivity(), 1, null, null, uri -> {
+                                BulletinFactory.of(ChatActivity.this).createDownloadBulletin(BulletinFactory.FileType.VIDEO, themeDelegate).show();
+                            });
+                        }
+                    }
+                } else if (id == NotificationCenter.fileLoadFailed) {
+                    String name = (String) args[0];
+                    if (name != null && name.equalsIgnoreCase(fileName)) {
+                        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.fileLoaded);
+                        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.fileLoadFailed);
+                        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.fileLoadProgressChanged);
+                        if (progressDialog[0] != null) {
+                            try {
+                                progressDialog[0].dismiss();
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                } else if (id == NotificationCenter.fileLoadProgressChanged) {
+                    String name = (String) args[0];
+                    if (name != null && name.equalsIgnoreCase(fileName)) {
+                        if (progressDialog[0] != null) {
+                            long uploadedSize = (Long) args[1];
+                            long totalSize = (Long) args[2];
+                            int progress = totalSize > 0 ? (int) (uploadedSize * 100 / totalSize) : 0;
+                            try {
+                                progressDialog[0].setProgress(progress);
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                }
+            }
+        };
+
+        NotificationCenter.getInstance(currentAccount).addObserver(delegate, NotificationCenter.fileLoaded);
+        NotificationCenter.getInstance(currentAccount).addObserver(delegate, NotificationCenter.fileLoadFailed);
+        NotificationCenter.getInstance(currentAccount).addObserver(delegate, NotificationCenter.fileLoadProgressChanged);
+
+        FileLoader.getInstance(currentAccount).loadFile(document, messageObject, FileLoader.PRIORITY_HIGH, 0);
     }
 
     private void processSelectedOption(int option) {
@@ -33394,7 +33562,7 @@ public class ChatActivity extends BaseFragment implements
                 if (selectedObject != null) {
                     int msgDate = selectedObject.messageOwner != null ? selectedObject.messageOwner.date : 0;
                     getMessagesController().markDialogAsRead(dialog_id, selectedObject.getId(), selectedObject.getId(), msgDate, false, 0, 0, true, 0);
-                    getMessagesController().markDialogAsReadServer(dialog_id, selectedObject.getId(), msgDate, 0);
+                    getMessagesController().markDialogAsReadServer(dialog_id, selectedObject.getId(), msgDate, getThreadId());
                     getMessagesController().dialogs_read_inbox_max.put(dialog_id, selectedObject.getId());
                     NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.dialogsNeedReload);
                     NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_READ_DIALOG_MESSAGE);
@@ -33423,6 +33591,22 @@ public class ChatActivity extends BaseFragment implements
                     if (text != null) {
                         showDialog(new org.telegram.ui.Components.HundredGramJsonViewerBottomSheet(this, text.toString()));
                     }
+                }
+                break;
+            }
+            // 100gram: erase anti-delete message from local DB + vault
+            case OPTION_DELETE_PERMANENTLY: {
+                if (selectedObject != null && getParentActivity() != null) {
+                    final MessageObject msgToErase = selectedObject;
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+                    builder.setTitle(LocaleController.getString("DeletePermanently", R.string.DeletePermanently));
+                    builder.setMessage(LocaleController.getString("DeletePermanentlyAlert", R.string.DeletePermanentlyAlert));
+                    builder.setPositiveButton(LocaleController.getString("Delete", R.string.Delete), (d, w) -> {
+                        org.telegram.messenger.HundredGramVaultManager.getInstance(currentAccount).deleteMessagePermanently(msgToErase);
+                        selectedObject = null;
+                    });
+                    builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+                    showDialog(builder.create());
                 }
                 break;
             }
@@ -33545,7 +33729,7 @@ public class ChatActivity extends BaseFragment implements
                         MessageObject messageObject = selectedObjectGroup.messages.get(a);
                         saveMessageToGallery(messageObject);
                         allPhotos &= messageObject.isPhoto();
-                        allVideos &= messageObject.isVideo();
+                        allVideos &= (messageObject.isVideo() || messageObject.isRoundVideo());
                     }
                     final BulletinFactory.FileType fileType;
                     if (allPhotos) {
@@ -33557,9 +33741,10 @@ public class ChatActivity extends BaseFragment implements
                     }
                     BulletinFactory.of(this).createDownloadBulletin(fileType, filesAmount, themeDelegate).show();
                 } else {
-                    saveMessageToGallery(selectedObject);
-                    if (getParentActivity() != null) {
-                        BulletinFactory.of(this).createDownloadBulletin(selectedObject.isLivePhoto() ? BulletinFactory.FileType.LIVEPHOTO : (selectedObject.isVideo() ? BulletinFactory.FileType.VIDEO : BulletinFactory.FileType.PHOTO), themeDelegate).show();
+                    boolean isVideo = selectedObject.isVideo() || selectedObject.isRoundVideo();
+                    boolean savedImmediately = saveMessageToGallery(selectedObject);
+                    if (savedImmediately && getParentActivity() != null) {
+                        BulletinFactory.of(this).createDownloadBulletin(selectedObject.isLivePhoto() ? BulletinFactory.FileType.LIVEPHOTO : (isVideo ? BulletinFactory.FileType.VIDEO : BulletinFactory.FileType.PHOTO), themeDelegate).show();
                     }
                 }
                 break;
@@ -33716,8 +33901,9 @@ public class ChatActivity extends BaseFragment implements
                         break;
                     }
                 }
-                MediaController.saveFile(path, getParentActivity(), 0, null, null);
-                BulletinFactory.createSaveToGalleryBulletin(this, selectedObject.isVideo() && !selectedObject.isLivePhoto(), selectedObject.isLivePhoto(), themeDelegate).show();
+                boolean isVideo = selectedObject.isVideo() || selectedObject.isRoundVideo();
+                MediaController.saveFile(path, getParentActivity(), isVideo ? 1 : 0, null, null);
+                BulletinFactory.createSaveToGalleryBulletin(this, isVideo && !selectedObject.isLivePhoto(), selectedObject.isLivePhoto(), themeDelegate).show();
                 break;
             }
             case OPTION_REPLY: {
@@ -33833,7 +34019,7 @@ public class ChatActivity extends BaseFragment implements
                         }
                     });
                 } else {
-                    boolean video = selectedObject.isVideo();
+                    boolean video = selectedObject.isVideo() || selectedObject.isRoundVideo();
                     boolean photo = selectedObject.isPhoto();
                     boolean gif = selectedObject.isGif();
                     String fileName = FileLoader.getDocumentFileName(selectedObject.getDocument());
@@ -33851,6 +34037,25 @@ public class ChatActivity extends BaseFragment implements
                         File f = FileLoader.getInstance(currentAccount).getPathToMessage(selectedObject.messageOwner);
                         if (f != null && f.exists()) {
                             path = f.getPath();
+                        }
+                    }
+                    if (TextUtils.isEmpty(path)) {
+                        File f = FileLoader.getInstance(currentAccount).getPathToMessage(selectedObject.messageOwner, true, true);
+                        if (f != null && f.exists()) {
+                            path = f.getPath();
+                        }
+                    }
+                    if (TextUtils.isEmpty(path) && selectedObject.getDocument() != null) {
+                        TLRPC.Document doc = selectedObject.getDocument();
+                        File f = FileLoader.getInstance(currentAccount).getPathToAttach(doc, false);
+                        if (f != null && f.exists()) {
+                            path = f.getPath();
+                        }
+                        if (TextUtils.isEmpty(path)) {
+                            f = FileLoader.getInstance(currentAccount).getPathToAttach(doc, true);
+                            if (f != null && f.exists()) {
+                                path = f.getPath();
+                            }
                         }
                     }
                     if (TextUtils.isEmpty(path) && selectedObject.cachedQuality != null && selectedObject.cachedQuality.isCached()) {
@@ -37513,6 +37718,10 @@ public class ChatActivity extends BaseFragment implements
                         return ChatActivity.this.getSideMenuWidth();
                     }
                 };
+            } else if (viewType == 10) {
+                ChatMessageUnsupportedCell cell = new ChatMessageUnsupportedCell(mContext, themeDelegate);
+                cell.setDelegate(getChatMessageCellDelegate());
+                view = cell;
             }
             view.setLayoutParams(new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT));
             return new RecyclerListView.Holder(view);
@@ -39010,6 +39219,21 @@ public class ChatActivity extends BaseFragment implements
 
     private class ChatMessageCellDelegate implements ChatMessageCell.ChatMessageCellDelegate {
         @Override
+        public void didPressAppUpdateButton() {
+            didPressAppUpdateButtonInternal();
+        }
+
+        private void didPressAppUpdateButtonInternal() {
+            if (ApplicationLoader.isStandaloneBuild()) {
+                if (LaunchActivity.instance != null) {
+                    LaunchActivity.instance.checkAppUpdate(true, null);
+                }
+            } else {
+                Browser.openUrl(getParentActivity(), BuildVars.PLAYSTORE_APP_URL);
+            }
+        }
+
+        @Override
         public boolean isReplyOrSelf() {
             return UserObject.isReplyUser(currentUser) || UserObject.isUserSelf(currentUser);
         }
@@ -39512,6 +39736,14 @@ public class ChatActivity extends BaseFragment implements
                 return;
             }
             undoView.showWithAction(dialog_id, UndoView.ACTION_IMPORT_INFO, null);
+        }
+
+        // 100gram: tap on deleted/edited time badge → open edit history
+        @Override
+        public void didPressEditStatus(ChatMessageCell cell, MessageObject messageObject) {
+            if (messageObject != null) {
+                org.telegram.ui.Components.HundredGramEditHistoryBottomSheet.show(ChatActivity.this, messageObject);
+            }
         }
 
         @Override
@@ -46250,14 +46482,7 @@ public class ChatActivity extends BaseFragment implements
                     icons.add(R.drawable.msg_edit);
                 }
             }
-            boolean isUnreadMsg = false;
-            if (selectedObject != null && !selectedObject.isOutOwner() && selectedObject.getId() > 0) {
-                Integer maxRead = getMessagesController().dialogs_read_inbox_max.get(dialog_id_Long != null ? dialog_id_Long : dialog_id);
-                if (maxRead == null || selectedObject.getId() > maxRead) {
-                    isUnreadMsg = true;
-                }
-            }
-            if ((HundredGramConfig.ghostShowMarkAsReadOption || HundredGramConfig.ghostReadMessages) && selectedObject != null && !selectedObject.isSponsored() && !selectedObject.isOutOwner() && isUnreadMsg && !options.contains(OPTION_MARK_AS_READ)) {
+            if (HundredGramConfig.isChatGhostRead(dialog_id) && HundredGramConfig.ghostShowMarkAsReadOption && selectedObject != null && selectedObject.getId() > 0 && !selectedObject.isSponsored() && !options.contains(OPTION_MARK_AS_READ)) {
                 items.add(LocaleController.getString("GhostMarkAsRead", R.string.GhostMarkAsRead));
                 options.add(OPTION_MARK_AS_READ);
                 icons.add(R.drawable.msg_markread);
@@ -46279,6 +46504,14 @@ public class ChatActivity extends BaseFragment implements
                         icons.add(R.drawable.msg_view_file);
                     }
                 }
+            }
+            // 100gram: "Erase permanently from DB" for anti-delete preserved messages
+            if (selectedObject != null && selectedObject.isDeleted()
+                    && HundredGramConfig.isChatAntiDelete(selectedObject.getDialogId())
+                    && !options.contains(OPTION_DELETE_PERMANENTLY)) {
+                items.add(LocaleController.getString("DeletePermanently", R.string.DeletePermanently));
+                options.add(OPTION_DELETE_PERMANENTLY);
+                icons.add(R.drawable.msg_delete_filled);
             }
         }
 

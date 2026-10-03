@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BillingController;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
@@ -464,37 +465,29 @@ public class GiftPremiumBottomSheet extends BottomSheetWithRecyclerListView impl
         }
 
         public String getFormattedPricePerMonth() {
-            return BuildVars.gimmeFuLabel();
+            return BillingController.getInstance().formatCurrency(getPricePerMonth(), getCurrency());
         }
 
         public String getFormattedPrice() {
-            return BuildVars.gimmeFuLabel();
+            return BillingController.getInstance().formatCurrency(getPrice(), getCurrency());
         }
 
         public long getPrice() {
             if (giftOption != null) {
-                if (BuildVars.useInvoiceBilling() || giftOption.store_product == null) {
-                    return giftOption.amount;
-                }
+                return giftOption.amount;
             } else if (giftCodeOption != null) {
-                if (BuildVars.useInvoiceBilling() || giftCodeOption.store_product == null) {
-                    return giftCodeOption.amount;
-                }
+                return giftCodeOption.amount;
             }
             return 0L;
         }
 
         public String getCurrency() {
             if (giftOption != null) {
-                if (BuildVars.useInvoiceBilling() || giftOption.store_product == null) {
-                    return giftOption.currency;
-                }
+                return giftOption.currency;
             } else if (giftCodeOption != null) {
-                if (BuildVars.useInvoiceBilling() || giftCodeOption.store_product == null) {
-                    return giftCodeOption.currency;
-                }
+                return giftCodeOption.currency;
             }
-            return BuildVars.gimmeFuLabel();
+            return "";
         }
 
         public Object getStarsOption() {

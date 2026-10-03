@@ -172,7 +172,7 @@ public class SaveToGallerySettingsHelper {
             if (messageObject != null && (messageObject.isOutOwner() || messageObject.isSecretMedia())) {
                 return false;
             }
-            boolean isVideo = (messageObject != null && messageObject.isVideo()) || meta.messageType == MessageObject.TYPE_VIDEO;
+            boolean isVideo = (messageObject != null && (messageObject.isVideo() || messageObject.isRoundVideo())) || meta.messageType == MessageObject.TYPE_VIDEO || meta.messageType == MessageObject.TYPE_ROUND_VIDEO;
             long size = messageObject != null ? messageObject.getSize() : meta.messageSize;
             boolean needSaveVideo = saveVideo;
             boolean needSavePhoto = savePhoto;

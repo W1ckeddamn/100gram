@@ -39,6 +39,10 @@
     <string name="MessageEditedVersion">Revision %1$d</string>
     <string name="MessageIsDeleted">Message was deleted</string>
     <string name="MessageDeletedBadge">Deleted</string>
+    <string name="DeletePermanently">Delete permanently from database</string>
+    <string name="DeletePermanentlyAlert">Are you sure you want to permanently delete this message and its saved media from local storage?</string>
+    <string name="DeletedAt">Deleted at %1$s</string>
+    <string name="MessageDeleted">Deleted</string>
     <string name="MessageNotEdited">This message was not edited</string>
     <string name="MessageEditsEmpty">No edit history saved for this message</string>
     <string name="MessageEditHistoryHint">Edits captured while app is running are preserved even if deleted</string>
@@ -85,7 +89,9 @@
     <string name="UserActivityLog">Activity Log</string>
     <string name="UserActivityLastSeen">seen at %1$s</string>
     <string name="UserActivityTotalToday">Online today: %1$s</string>
+    <string name="UserActivityTotalTodayLabel">Online today</string>
     <string name="UserActivitySessionsCount">Visits today: %1$d</string>
+    <string name="UserActivitySessionsCountLabel">Visits today</string>
     <string name="UserActivityEmpty">No activity recorded yet</string>
     <string name="UserActivityClear">Clear log</string>
     <string name="UserActivityClearConfirm">Clear activity history for this user?</string>
@@ -98,6 +104,15 @@
     <string name="ActivityTriggerOnline">Online</string>
     <string name="ActivityTriggerTyping">Typing...</string>
     <string name="ActivityTriggerMessage">Sent message</string>
+    <string name="ActivityTriggerAppOpen">App opened</string>
+    <string name="HundredGramTrackSelfActivity">Track my own activity</string>
+    <string name="HundredGramTrackSelfActivityInfo">Records your app usage sessions, duration, and visits</string>
+    <string name="HundredGramMyActivityLog">My Activity</string>
+    <string name="HundredGramMyActivityLogDesc">View your app usage stats and session history</string>
+    <string name="MyActivityTotalToday">In app today: %1$s</string>
+    <string name="MyActivityTotalTodayLabel">In app today</string>
+    <string name="MyActivitySessionsCount">Visits today: %1$d</string>
+    <string name="MyActivityClearConfirm">Clear your activity history?</string>
 
     <!-- Chat Media Vault & Exceptions -->
     <string name="HundredGramChatVaultMenu">Media Vault</string>
@@ -306,9 +321,9 @@
     <string name="HundredGramChatVaultMode">Media Vault Saving Mode</string>
     <string name="HundredGramChatVaultMaxSize">Media Vault Max File Size</string>
 
-    <!-- Streamer Mode & Privacy Disguise -->
-    <string name="HundredGramCategoryStreamer">Streamer Mode &amp; Disguise</string>
-    <string name="HundredGramCategoryStreamerSub">Screen-share protection, Privacy Blur, App camouflage</string>
+    <!-- Streamer Mode & Privacy Blur -->
+    <string name="HundredGramCategoryStreamer">Streamer Mode &amp; Privacy Blur</string>
+    <string name="HundredGramCategoryStreamerSub">Screen-share protection, data hiding, Privacy Blur</string>
     <string name="StreamerMode">Streamer Mode</string>
     <string name="StreamerModeInfo">Hides sensitive data to prevent accidental leaks during screen sharing and live streams</string>
     <string name="StreamerFakeName">Fake Display Name</string>
@@ -344,19 +359,18 @@
     <string name="RevealUsernameConfirmMessage">Are you sure you want to reveal this hidden username?</string>
     <string name="RevealButton">Reveal</string>
 
-    <!-- App Disguise (Camouflage) -->
-    <string name="AppDisguiseSection">App Disguise (Camouflage)</string>
-    <string name="AppDisguiseInfo">Changes the launcher icon and app name on your home screen</string>
-    <string name="AppDisguiseDefault">100gram (Default)</string>
-    <string name="AppDisguiseCalculator">Calculator</string>
-    <string name="AppDisguiseNotes">Notes</string>
-    <string name="AppDisguiseClock">Clock</string>
     <string name="StreamerPreventAccidentalDelete">Accidental Delete Protection</string>
     <string name="StreamerPreventAccidentalDeleteInfo">Requires additional confirmation before deleting any chat</string>
     <string name="PrivacyBlurAvatars">Hide Avatars in Chat List</string>
     <string name="PrivacyBlurAvatarsInfo">Shows neutral initial badges instead of personal profile photos in dialogs</string>
-    <string name="AppDisguiseIcon">Launcher Icon &amp; App Name</string>
-    <string name="AppDisguiseApplied">App icon changed to \"%1$s\"</string>
+
+    <!-- Settings Main Sections -->
+    <string name="HundredGramSettings">100gram Settings</string>
+    <string name="HundredGramSectionPrivacy">Privacy &amp; Security</string>
+    <string name="HundredGramSectionInterface">Interface &amp; Chats</string>
+    <string name="HundredGramSectionMedia">Media &amp; Camera</string>
+    <string name="HundredGramSectionNetwork">Network &amp; Performance</string>
+    <string name="HundredGramSectionTools">Tools &amp; Utilities</string>
 
     <!-- Stage 3: Interface, Navigation & Avatar History -->
     <string name="HideSimilarChannels">Hide Similar Channels</string>
@@ -554,4 +568,37 @@
     <string name="RoundVideoCodec">Video Codec</string>
     <string name="RoundVideoCodecH264">H.264 (AVC — universally compatible)</string>
     <string name="RoundVideoCodecH265">H.265 (HEVC — high efficiency &amp; quality)</string>
+
+    <!-- Missing strings added in bugfix pass -->
+    <string name="HundredGramMB">MB</string>
+    <string name="AutomationConditionHeader">IF (Trigger Conditions)</string>
+    <string name="AutomationActionsHeader">THEN (Automatic Actions)</string>
+    <string name="HundredGramSpeedTestError">Speed test failed. Check your connection.</string>
+
+    <!-- Protected Media Vault -->
+    <string name="HundredGramProtectedVaultTitle">Protected Media Vault</string>
+    <string name="HundredGramProtectedVaultSize">Vault Storage Used</string>
+    <string name="HundredGramProtectedVaultClear">Clear Protected Vault</string>
+    <string name="HundredGramProtectedVaultClearConfirm">Are you sure you want to clear all media saved in the protected vault? Deleted and edited messages media will be permanently removed.</string>
+    <string name="HundredGramProtectedVaultCleared">Protected vault cleared (%1$s freed)</string>
+    <string name="HundredGramProtectedVaultInfo">Storage for media preserved from deleted and edited messages. Protected from Telegram cache cleanup.</string>
+
+    <!-- Media Vault (Vault Viewer) -->
+    <string name="HundredGramVaultMediaTitle">Media Vault</string>
+    <string name="HundredGramVaultNoFiles">No files in Vault</string>
+    <string name="HundredGramVaultFilterByChat">Filter by chat</string>
+    <string name="HundredGramVaultAllChats">All chats</string>
+    <string name="HundredGramVaultFilterReset">Reset filter</string>
+    <string name="HundredGramVaultShare">Share</string>
+    <string name="HundredGramVaultSaveGallery">Save to Gallery</string>
+    <string name="HundredGramVaultSaveDownloads">Save to Downloads</string>
+    <string name="HundredGramVaultGoToMessage">Go to message</string>
+    <string name="HundredGramVaultDelete">Delete from Vault</string>
+    <string name="HundredGramVaultDeleteFileConfirm">Delete this file from Vault?</string>
+    <string name="HundredGramVaultDeletedFile">File deleted from Vault</string>
+    <string name="HundredGramVaultTabPhotos">Photos</string>
+    <string name="HundredGramVaultTabVideos">Videos</string>
+    <string name="HundredGramVaultTabVoice">Voice</string>
+    <string name="HundredGramVaultTabFiles">Files</string>
+    <string name="HundredGramVaultFileSaved">File saved</string>
 </resources>

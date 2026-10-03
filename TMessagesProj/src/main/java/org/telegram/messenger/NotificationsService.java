@@ -130,10 +130,29 @@ public class NotificationsService extends Service {
             isForeground = false;
         }
         SharedPreferences preferences = MessagesController.getGlobalNotificationsSettings();
-        if (preferences.getBoolean("pushService", true) || HundredGramConfig.keepAliveForegroundService) {
+        if (preferences.getBoolean("pushService", true) || HundredGramConfig.isPersistentBackgroundEnabled()) {
             Intent intent = new Intent("org.telegram.start");
             intent.setPackage(getPackageName());
             sendBroadcast(intent);
+
+            try {
+                android.app.AlarmManager am = (android.app.AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                if (am != null) {
+                    Intent restartIntent = new Intent(getApplicationContext(), NotificationsService.class);
+                    int flags = PendingIntent.FLAG_ONE_SHOT;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        flags |= PendingIntent.FLAG_IMMUTABLE;
+                    }
+                    PendingIntent pi = PendingIntent.getService(getApplicationContext(), 1002, restartIntent, flags);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1500, pi);
+                    } else {
+                        am.set(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1500, pi);
+                    }
+                }
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
         }
     }
 }

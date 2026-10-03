@@ -143,11 +143,8 @@ public class HundredGramAutomationEngine implements NotificationCenter.Notificat
             if (account != currentAccount) {
                 return;
             }
-            if (args.length > 2 && args[2] instanceof Boolean) {
-                boolean scheduled = (Boolean) args[2];
-                if (scheduled) {
-                    return;
-                }
+            if (Boolean.TRUE.equals(args.length > 2 ? args[2] : null)) {
+                return;
             }
             if (args.length > 1 && args[1] instanceof ArrayList) {
                 @SuppressWarnings("unchecked")

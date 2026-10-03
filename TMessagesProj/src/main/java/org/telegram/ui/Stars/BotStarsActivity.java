@@ -641,7 +641,7 @@ public class BotStarsActivity extends BaseFragment implements NotificationCenter
             ssb.setSpan(balanceTitleSizeSpan, index, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         balanceTitle.setText(ssb);
-        balanceSubtitle.setText(BuildVars.gimmeFuLabel());
+        balanceSubtitle.setText("≈" + BillingController.getInstance().formatCurrency(amount, "USD"));
         balanceEditTextContainer.setVisibility(amount > 0 ? View.VISIBLE : View.GONE);
         if (balanceEditTextAll) {
             balanceEditTextIgnore = true;
@@ -674,7 +674,7 @@ public class BotStarsActivity extends BaseFragment implements NotificationCenter
             ssb.setSpan(tonBalanceTitleSizeSpan, index, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         tonBalanceTitle.setText(ssb);
-        tonBalanceSubtitle.setText(BuildVars.gimmeFuLabel());
+        tonBalanceSubtitle.setText("≈" + BillingController.getInstance().formatCurrency(amount, "USD"));
     }
 
     private SpannableStringBuilder lock;

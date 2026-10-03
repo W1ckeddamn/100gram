@@ -392,10 +392,20 @@ public class MessagesStorage extends BaseController {
             }
         });
         try {
+            database.executeFast("CREATE TABLE IF NOT EXISTS telegraher_message_deletions(mid INTEGER, uid INTEGER, isdel INTEGER, deleted_date INTEGER DEFAULT 0, PRIMARY KEY(mid, uid));").stepThis().dispose();
+            try {
+                database.executeFast("ALTER TABLE telegraher_message_deletions ADD COLUMN deleted_date INTEGER DEFAULT 0;").stepThis().dispose();
+            } catch (Exception ignore) {}
             database.executeFast("CREATE TABLE IF NOT EXISTS user_activity_log(user_id INTEGER, time_start INTEGER, time_end INTEGER, trigger_type INTEGER, PRIMARY KEY(user_id, time_start));").stepThis().dispose();
             database.executeFast("CREATE INDEX IF NOT EXISTS idx_user_activity ON user_activity_log(user_id, time_start);").stepThis().dispose();
+            try {
+                long cutoff = (System.currentTimeMillis() / 1000L) - 180L;
+                database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = time_start + 30 WHERE (time_end IS NULL OR time_end <= time_start) AND time_start < %d;", cutoff)).stepThis().dispose();
+            } catch (Exception ignore) {}
             database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_message_edits(mid INTEGER, uid INTEGER, edit_date INTEGER, data BLOB, PRIMARY KEY(mid, uid, edit_date));").stepThis().dispose();
             database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_message_edits ON hundredgram_message_edits(uid, mid, edit_date);").stepThis().dispose();
+            database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_vault(mid INTEGER, uid INTEGER, file_name TEXT, vault_path TEXT, PRIMARY KEY(mid, uid, file_name));").stepThis().dispose();
+            database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_vault ON hundredgram_vault(uid, mid);").stepThis().dispose();
         } catch (Exception e) {
             FileLog.e(e);
         }
@@ -764,11 +774,17 @@ public class MessagesStorage extends BaseController {
         database.executeFast("CREATE TABLE telegraher_init(durov_relogin INTEGER);").stepThis().dispose();
         database.executeFast("CREATE TABLE telegraher_message_history(mid INTEGER, uid INTEGER, date INTEGER, message TEXT, PRIMARY KEY(mid, uid, date));").stepThis().dispose();
         database.executeFast("CREATE INDEX mid_uid ON telegraher_message_history (mid, uid);").stepThis().dispose();
-        database.executeFast("CREATE TABLE telegraher_message_deletions(mid INTEGER, uid INTEGER, isdel INTEGER, PRIMARY KEY(mid, uid));").stepThis().dispose();
+        database.executeFast("CREATE TABLE IF NOT EXISTS telegraher_message_deletions(mid INTEGER, uid INTEGER, isdel INTEGER, deleted_date INTEGER DEFAULT 0, PRIMARY KEY(mid, uid));").stepThis().dispose();
         database.executeFast("CREATE TABLE IF NOT EXISTS user_activity_log(user_id INTEGER, time_start INTEGER, time_end INTEGER, trigger_type INTEGER, PRIMARY KEY(user_id, time_start));").stepThis().dispose();
         database.executeFast("CREATE INDEX IF NOT EXISTS idx_user_activity ON user_activity_log(user_id, time_start);").stepThis().dispose();
+        try {
+            long cutoff = (System.currentTimeMillis() / 1000L) - 180L;
+            database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = time_start + 30 WHERE (time_end IS NULL OR time_end <= time_start) AND time_start < %d;", cutoff)).stepThis().dispose();
+        } catch (Exception ignore) {}
         database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_message_edits(mid INTEGER, uid INTEGER, edit_date INTEGER, data BLOB, PRIMARY KEY(mid, uid, edit_date));").stepThis().dispose();
         database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_message_edits ON hundredgram_message_edits(uid, mid, edit_date);").stepThis().dispose();
+        database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_vault(mid INTEGER, uid INTEGER, file_name TEXT, vault_path TEXT, PRIMARY KEY(mid, uid, file_name));").stepThis().dispose();
+        database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_vault ON hundredgram_vault(uid, mid);").stepThis().dispose();
 
     }
 
@@ -3747,7 +3763,7 @@ public class MessagesStorage extends BaseController {
                         cursor = database.queryFinalized(String.format(Locale.US, "SELECT data, mid, date, uid FROM scheduled_messages_v2 WHERE mid IN(%s) AND uid = %d", TextUtils.join(",", ids), dialogId));
                     } else {
 //                        cursor = database.queryFinalized(String.format(Locale.US, "SELECT data, mid, date, uid FROM messages_v2 WHERE mid IN(%s) AND uid = %d", TextUtils.join(",", ids), dialogId));
-                        cursor = database.queryFinalized(String.format(Locale.US, "SELECT m.data, m.mid, m.date, m.uid, tmd.isdel FROM messages_v2 as m LEFT JOIN telegraher_message_deletions as tmd ON tmd.mid=m.mid AND tmd.uid=m.uid WHERE m.mid IN(%s) AND m.uid = %d", TextUtils.join(",", ids), dialogId));
+                        cursor = database.queryFinalized(String.format(Locale.US, "SELECT m.data, m.mid, m.date, m.uid, tmd.isdel, tmd.deleted_date FROM messages_v2 as m LEFT JOIN telegraher_message_deletions as tmd ON tmd.mid=m.mid AND tmd.uid=m.uid WHERE m.mid IN(%s) AND m.uid = %d", TextUtils.join(",", ids), dialogId));
                     }
                     while (cursor.next()) {
                         NativeByteBuffer data = cursor.byteBufferValue(0);
@@ -3756,8 +3772,14 @@ public class MessagesStorage extends BaseController {
                             message.readAttachPath(data, getUserConfig().clientUserId);
                             data.reuse();
                             message.id = cursor.intValue(1);
-                            if (!quickReplies && !findInScheduled) message.isDeleted = !cursor.isNull(4);
-                            else message.isDeleted = false;
+                            if (!quickReplies && !findInScheduled) {
+                                message.isDeleted = !cursor.isNull(4);
+                                if (message.isDeleted) {
+                                    message.deletedDate = cursor.longValue(5);
+                                }
+                            } else {
+                                message.isDeleted = false;
+                            }
                             message.date = cursor.intValue(2);
                             if (quickReplies) {
                                 message.dialog_id = selfId;
@@ -4421,7 +4443,8 @@ public class MessagesStorage extends BaseController {
                         return;
                     }
                 }
-                if (DialogObject.isEncryptedDialog(did) || messagesOnly == 2) {
+                boolean isAntiDelete = HundredGramConfig.isChatAntiDelete(did);
+                if ((DialogObject.isEncryptedDialog(did) || messagesOnly == 2) && !isAntiDelete) {
                     cursor = database.queryFinalized("SELECT data FROM messages_v2 WHERE uid = " + did);
                     ArrayList<File> filesToDelete = new ArrayList<>();
                     ArrayList<String> namesToDelete = new ArrayList<>();
@@ -4486,8 +4509,14 @@ public class MessagesStorage extends BaseController {
                         cursor2.dispose();
                         cursor2 = null;
 
-                        database.executeFast("DELETE FROM messages_v2 WHERE uid = " + did + " AND mid != " + last_mid_i + " AND mid != " + last_mid).stepThis().dispose();
-                        database.executeFast("DELETE FROM messages_topics WHERE uid = " + did + " AND mid != " + last_mid_i + " AND mid != " + last_mid).stepThis().dispose();
+                        if (isAntiDelete) {
+                            long now = System.currentTimeMillis() / 1000L;
+                            database.executeFast("INSERT OR REPLACE INTO telegraher_message_deletions (mid, uid, isdel, deleted_date) " +
+                                    "SELECT mid, uid, 1, " + now + " FROM messages_v2 WHERE uid = " + did + " AND mid != " + last_mid_i + " AND mid != " + last_mid).stepThis().dispose();
+                        } else {
+                            database.executeFast("DELETE FROM messages_v2 WHERE uid = " + did + " AND mid != " + last_mid_i + " AND mid != " + last_mid).stepThis().dispose();
+                            database.executeFast("DELETE FROM messages_topics WHERE uid = " + did + " AND mid != " + last_mid_i + " AND mid != " + last_mid).stepThis().dispose();
+                        }
                         database.executeFast("DELETE FROM messages_holes WHERE uid = " + did).stepThis().dispose();
                         database.executeFast("DELETE FROM bot_keyboard WHERE uid = " + did).stepThis().dispose();
                         database.executeFast("DELETE FROM bot_keyboard_topics WHERE uid = " + did).stepThis().dispose();
@@ -4513,8 +4542,14 @@ public class MessagesStorage extends BaseController {
                 }
 
                 database.executeFast("UPDATE dialogs SET unread_count = 0, unread_count_i = 0 WHERE did = " + did).stepThis().dispose();
-                database.executeFast("DELETE FROM messages_v2 WHERE uid = " + did).stepThis().dispose();
-                database.executeFast("DELETE FROM messages_topics WHERE uid = " + did).stepThis().dispose();
+                if (isAntiDelete) {
+                    long now = System.currentTimeMillis() / 1000L;
+                    database.executeFast("INSERT OR REPLACE INTO telegraher_message_deletions (mid, uid, isdel, deleted_date) " +
+                            "SELECT mid, uid, 1, " + now + " FROM messages_v2 WHERE uid = " + did).stepThis().dispose();
+                } else {
+                    database.executeFast("DELETE FROM messages_v2 WHERE uid = " + did).stepThis().dispose();
+                    database.executeFast("DELETE FROM messages_topics WHERE uid = " + did).stepThis().dispose();
+                }
                 database.executeFast("DELETE FROM bot_keyboard WHERE uid = " + did).stepThis().dispose();
                 database.executeFast("DELETE FROM bot_keyboard_topics WHERE uid = " + did).stepThis().dispose();
                 database.executeFast("DELETE FROM media_counts_v2 WHERE uid = " + did).stepThis().dispose();
@@ -8899,10 +8934,10 @@ public class MessagesStorage extends BaseController {
             final String messageSelect;
             if (threadMessageId != 0) {
 //                messageSelect = "SELECT m.read_state, m.data, m.send_state, m.mid, m.date, r.random_id, m.replydata, m.media, m.ttl, m.mention, m.imp, m.forwards, m.replies_data, m.custom_params, m.reply_to_story_id FROM messages_topics as m LEFT JOIN randoms_v2 as r ON r.mid = m.mid AND r.uid = m.uid";
-                messageSelect = "SELECT m.read_state, m.data, m.send_state, m.mid, m.date, r.random_id, m.replydata, m.media, m.ttl, m.mention, m.imp, m.forwards, m.replies_data, m.custom_params, m.reply_to_story_id, tmd.isdel FROM messages_topics as m LEFT JOIN randoms_v2 as r ON r.mid = m.mid AND r.uid = m.uid LEFT JOIN telegraher_message_deletions as tmd ON tmd.mid=m.mid AND tmd.uid=m.uid";
+                messageSelect = "SELECT m.read_state, m.data, m.send_state, m.mid, m.date, r.random_id, m.replydata, m.media, m.ttl, m.mention, m.imp, m.forwards, m.replies_data, m.custom_params, m.reply_to_story_id, tmd.isdel, tmd.deleted_date FROM messages_topics as m LEFT JOIN randoms_v2 as r ON r.mid = m.mid AND r.uid = m.uid LEFT JOIN telegraher_message_deletions as tmd ON tmd.mid=m.mid AND tmd.uid=m.uid";
             } else {
 //                messageSelect = "SELECT m.read_state, m.data, m.send_state, m.mid, m.date, r.random_id, m.replydata, m.media, m.ttl, m.mention, m.imp, m.forwards, m.replies_data, m.custom_params, m.reply_to_story_id FROM messages_v2 as m LEFT JOIN randoms_v2 as r ON r.mid = m.mid AND r.uid = m.uid";
-                messageSelect = "SELECT m.read_state, m.data, m.send_state, m.mid, m.date, r.random_id, m.replydata, m.media, m.ttl, m.mention, m.imp, m.forwards, m.replies_data, m.custom_params, m.reply_to_story_id, tmd.isdel FROM messages_v2 as m LEFT JOIN randoms_v2 as r ON r.mid = m.mid AND r.uid = m.uid LEFT JOIN telegraher_message_deletions as tmd ON tmd.mid=m.mid AND tmd.uid=m.uid ";
+                messageSelect = "SELECT m.read_state, m.data, m.send_state, m.mid, m.date, r.random_id, m.replydata, m.media, m.ttl, m.mention, m.imp, m.forwards, m.replies_data, m.custom_params, m.reply_to_story_id, tmd.isdel, tmd.deleted_date FROM messages_v2 as m LEFT JOIN randoms_v2 as r ON r.mid = m.mid AND r.uid = m.uid LEFT JOIN telegraher_message_deletions as tmd ON tmd.mid=m.mid AND tmd.uid=m.uid ";
             }
             if (scheduled) {
                 isEnd = true;
@@ -9562,6 +9597,9 @@ public class MessagesStorage extends BaseController {
                         TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
                         message.send_state = cursor.intValue(2);
                         message.isDeleted = !cursor.isNull(15);
+                        if (message.isDeleted) {
+                            message.deletedDate = cursor.longValue(16);
+                        }
                         long fullMid = cursor.longValue(3);
                         message.id = (int) fullMid;
                         if ((fullMid & 0xffffffff00000000L) == 0xffffffff00000000L && message.id > 0) {
@@ -11223,7 +11261,7 @@ public class MessagesStorage extends BaseController {
                         long dialogId = dialogs.keyAt(b);
                         ArrayList<Integer> mids = dialogs.valueAt(b);
 //                        cursor = database.queryFinalized(String.format(Locale.US, "SELECT mid, data FROM messages_v2 WHERE mid IN (%s) AND uid = %d", TextUtils.join(",", mids), dialogId));
-                        cursor = database.queryFinalized(String.format(Locale.US, "SELECT m.mid, m.data, tmd.isdel FROM messages_v2 as m LEFT JOIN telegraher_message_deletions as tmd ON tmd.mid=m.mid AND tmd.uid=m.uid WHERE m.mid IN (%s) AND m.uid = %d", TextUtils.join(",", mids), dialogId));
+                        cursor = database.queryFinalized(String.format(Locale.US, "SELECT m.mid, m.data, tmd.isdel, tmd.deleted_date FROM messages_v2 as m LEFT JOIN telegraher_message_deletions as tmd ON tmd.mid=m.mid AND tmd.uid=m.uid WHERE m.mid IN (%s) AND m.uid = %d", TextUtils.join(",", mids), dialogId));
                         while (cursor.next()) {
                             int mid = cursor.intValue(0);
                             NativeByteBuffer data = cursor.byteBufferValue(1);
@@ -11234,6 +11272,9 @@ public class MessagesStorage extends BaseController {
                                 if (message.media instanceof TLRPC.TL_messageMediaWebPage) {
                                     message.id = mid;
                                     message.isDeleted = !cursor.isNull(2);
+                                    if (message.isDeleted) {
+                                        message.deletedDate = cursor.longValue(3);
+                                    }
                                     message.media.webpage = webPages.valueAt(a);
                                     messages.add(message);
                                 }
@@ -14675,16 +14716,32 @@ public class MessagesStorage extends BaseController {
             String ids = TextUtils.join(",", messages);
             List<Long> dialogsToUpdate = new ArrayList<>();
             if (dialogId != 0) {
-                cursor = database.queryFinalized(String.format(Locale.US, "SELECT uid, mid FROM messages_v2 WHERE mid IN(%s) AND uid = %d", ids, dialogId));
+                cursor = database.queryFinalized(String.format(Locale.US, "SELECT uid, mid, data FROM messages_v2 WHERE mid IN(%s) AND uid = %d", ids, dialogId));
             } else {
-                cursor = database.queryFinalized(String.format(Locale.US, "SELECT uid, mid FROM messages_v2 WHERE mid IN(%s) AND is_channel = 0", ids));
+                cursor = database.queryFinalized(String.format(Locale.US, "SELECT uid, mid, data FROM messages_v2 WHERE mid IN(%s) AND is_channel = 0", ids));
             }
             while (cursor.next()) {
                 try {
                     long did = cursor.longValue(0);
                     int mid = cursor.intValue(1);
                     if (HundredGramConfig.isChatAntiDelete(did)) {
-                        database.executeFast(String.format(Locale.US, "INSERT INTO telegraher_message_deletions values (%d,%d,1);", mid, did)).stepThis().dispose();
+                        long now = System.currentTimeMillis() / 1000L;
+                        database.executeFast(String.format(Locale.US, "INSERT OR REPLACE INTO telegraher_message_deletions (mid, uid, isdel, deleted_date) VALUES (%d, %d, 1, %d);", mid, did, now)).stepThis().dispose();
+                        NativeByteBuffer data = cursor.byteBufferValue(2);
+                        if (data != null) {
+                            try {
+                                TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
+                                if (message != null) {
+                                    message.readAttachPath(data, getUserConfig().clientUserId);
+                                    MessageObject messageObject = new MessageObject(currentAccount, message, false, false);
+                                    HundredGramVaultManager.getInstance(currentAccount).isolateMediaForMessage(messageObject);
+                                }
+                            } catch (Exception e) {
+                                FileLog.e(e);
+                            } finally {
+                                data.reuse();
+                            }
+                        }
                     }
                 } catch (Exception e) {
                     //we don't care, made to ignore unique key errors
@@ -15898,18 +15955,21 @@ public class MessagesStorage extends BaseController {
                                     if (oldMessage.out && !message.out) {
                                         message.out = oldMessage.out;
                                     }
+                                    int oldVersionDate = oldMessage.edit_date != 0 ? oldMessage.edit_date : oldMessage.date;
+                                    int newVersionDate = message.edit_date != 0 ? message.edit_date : message.date;
+                                    if (oldVersionDate >= newVersionDate && newVersionDate > 0) {
+                                        oldVersionDate = newVersionDate - 1;
+                                    }
                                     if (!sameMedia) {
+                                        // 100gram: preserve old media version in vault before it gets deleted
+                                        HundredGramVaultManager.getInstance(currentAccount).isolateMediaForEdit(oldMessage, oldVersionDate);
+                                        HundredGramVaultManager.getInstance(currentAccount).onMediaReplaced(dialogId, message.id);
                                         addFilesToDelete(oldMessage, filesToDelete, idsToDelete, namesToDelete, false);
                                     }
                                     boolean textChanged = !TextUtils.equals(oldMessage.message, message.message);
                                     boolean editDateChanged = oldMessage.edit_date != message.edit_date && message.edit_date != 0;
                                     boolean mediaChanged = (oldMessage.media != null || message.media != null) && !sameMedia;
                                     if (textChanged || editDateChanged || mediaChanged) {
-                                        int oldVersionDate = oldMessage.edit_date != 0 ? oldMessage.edit_date : oldMessage.date;
-                                        int newVersionDate = message.edit_date != 0 ? message.edit_date : message.date;
-                                        if (oldVersionDate >= newVersionDate && newVersionDate > 0) {
-                                            oldVersionDate = newVersionDate - 1;
-                                        }
                                         saveMessageEditVersionInternal(oldMessage, oldVersionDate);
                                         saveMessageEditVersionInternal(message, newVersionDate);
                                     }
@@ -18719,6 +18779,8 @@ public class MessagesStorage extends BaseController {
             ArrayList<HundredGramActivityTracker.ActivityEntry> entries = new ArrayList<>();
             SQLiteCursor cursor = null;
             try {
+                long cutoff = (System.currentTimeMillis() / 1000L) - 120L;
+                database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = time_start + 30 WHERE (time_end IS NULL OR time_end <= time_start) AND time_start < %d;", cutoff)).stepThis().dispose();
                 cursor = database.queryFinalized(String.format(Locale.US, "SELECT time_start, time_end, trigger_type FROM user_activity_log WHERE user_id = %d ORDER BY time_start DESC LIMIT %d", userId, limit));
                 while (cursor.next()) {
                     long start = cursor.longValue(0);
@@ -18735,6 +18797,34 @@ public class MessagesStorage extends BaseController {
             }
             if (callback != null) {
                 AndroidUtilities.runOnUIThread(() -> callback.run(entries));
+            }
+        });
+    }
+
+    public long getTodayTotalOnlineTime(long userId, long dayStart) {
+        SQLiteCursor cursor = null;
+        try {
+            long cutoff = (System.currentTimeMillis() / 1000L) - 120L;
+            database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = time_start + 30 WHERE (time_end IS NULL OR time_end <= time_start) AND time_start < %d;", cutoff)).stepThis().dispose();
+            cursor = database.queryFinalized(String.format(Locale.US, "SELECT SUM(CASE WHEN time_end > time_start THEN (time_end - time_start) ELSE 30 END) FROM user_activity_log WHERE user_id = %d AND time_start >= %d", userId, dayStart));
+            if (cursor.next()) {
+                return cursor.longValue(0);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        } finally {
+            if (cursor != null) {
+                cursor.dispose();
+            }
+        }
+        return 0;
+    }
+
+    public void getTodayTotalOnlineTime(long userId, long dayStart, Utilities.Callback<Long> callback) {
+        storageQueue.postRunnable(() -> {
+            long total = getTodayTotalOnlineTime(userId, dayStart);
+            if (callback != null) {
+                AndroidUtilities.runOnUIThread(() -> callback.run(total));
             }
         });
     }
@@ -18889,6 +18979,91 @@ public class MessagesStorage extends BaseController {
             }
             if (callback != null) {
                 AndroidUtilities.runOnUIThread(callback);
+            }
+        });
+    }
+
+    public void putVaultFile(int mid, long uid, String fileName, String vaultPath) {
+        storageQueue.postRunnable(() -> {
+            try {
+                SQLitePreparedStatement state = database.executeFast("INSERT OR REPLACE INTO hundredgram_vault VALUES(?, ?, ?, ?)");
+                state.requery();
+                state.bindInteger(1, mid);
+                state.bindLong(2, uid);
+                state.bindString(3, fileName != null ? fileName : "");
+                state.bindString(4, vaultPath != null ? vaultPath : "");
+                state.step();
+                state.dispose();
+            } catch (Exception e) {
+                checkSQLException(e);
+            }
+        });
+    }
+
+    public void loadVaultMappings(Utilities.Callback<java.util.HashMap<String, String>> callback) {
+        storageQueue.postRunnable(() -> {
+            java.util.HashMap<String, String> map = new java.util.HashMap<>();
+            SQLiteCursor cursor = null;
+            try {
+                cursor = database.queryFinalized("SELECT mid, uid, file_name, vault_path FROM hundredgram_vault");
+                while (cursor.next()) {
+                    int mid = cursor.intValue(0);
+                    long uid = cursor.longValue(1);
+                    String fileName = cursor.stringValue(2);
+                    String vaultPath = cursor.stringValue(3);
+                    if (!TextUtils.isEmpty(fileName)) {
+                        map.put(fileName, vaultPath);
+                    }
+                    map.put(uid + "_" + mid, vaultPath);
+                }
+            } catch (Exception e) {
+                checkSQLException(e);
+            } finally {
+                if (cursor != null) {
+                    cursor.dispose();
+                }
+            }
+            if (callback != null) {
+                callback.run(map);
+            }
+        });
+    }
+
+    public void deleteMessagePermanently(int mid, long uid) {
+        storageQueue.postRunnable(() -> {
+            try {
+                database.executeFast("DELETE FROM messages_v2 WHERE mid = " + mid + " AND uid = " + uid).stepThis().dispose();
+                database.executeFast("DELETE FROM telegraher_message_deletions WHERE mid = " + mid + " AND uid = " + uid).stepThis().dispose();
+                database.executeFast("DELETE FROM hundredgram_message_edits WHERE mid = " + mid + " AND uid = " + uid).stepThis().dispose();
+                database.executeFast("DELETE FROM hundredgram_vault WHERE mid = " + mid + " AND uid = " + uid).stepThis().dispose();
+            } catch (Exception e) {
+                checkSQLException(e);
+            }
+        });
+    }
+
+    public void deleteVaultEntry(int mid, long uid, String fileName) {
+        storageQueue.postRunnable(() -> {
+            try {
+                SQLitePreparedStatement state = database.executeFast("DELETE FROM hundredgram_vault WHERE mid = ? AND uid = ? AND file_name = ?");
+                state.requery();
+                state.bindInteger(1, mid);
+                state.bindLong(2, uid);
+                state.bindString(3, fileName != null ? fileName : "");
+                state.step();
+                state.dispose();
+            } catch (Exception e) {
+                checkSQLException(e);
+            }
+        });
+    }
+
+    public void clearAllVault() {
+        storageQueue.postRunnable(() -> {
+            try {
+                database.executeFast("DELETE FROM hundredgram_vault").stepThis().dispose();
+            } catch (Exception e) {
+                checkSQLException(e);
             }
         });
     }

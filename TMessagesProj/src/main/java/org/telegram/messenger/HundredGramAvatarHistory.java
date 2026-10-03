@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class HundredGramAvatarHistory implements NotificationCenter.NotificationCenterDelegate {
 
@@ -82,7 +82,7 @@ public class HundredGramAvatarHistory implements NotificationCenter.Notification
         }
     }
 
-    private final HashSet<String> pendingDownloads = new HashSet<>();
+    private final CopyOnWriteArraySet<String> pendingDownloads = new CopyOnWriteArraySet<>();
 
     private HundredGramAvatarHistory() {
         for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; i++) {
@@ -109,10 +109,11 @@ public class HundredGramAvatarHistory implements NotificationCenter.Notification
             return result;
         }
         try {
-            FileInputStream fis = new FileInputStream(indexFile);
-            byte[] bytes = new byte[(int) indexFile.length()];
-            fis.read(bytes);
-            fis.close();
+            byte[] bytes;
+            try (FileInputStream fis = new FileInputStream(indexFile)) {
+                bytes = new byte[(int) indexFile.length()];
+                fis.read(bytes);
+            }
             String jsonStr = new String(bytes, StandardCharsets.UTF_8);
             JSONArray array = new JSONArray(jsonStr);
             for (int i = 0; i < array.length(); i++) {
@@ -145,9 +146,9 @@ public class HundredGramAvatarHistory implements NotificationCenter.Notification
                 }
             }
             File indexFile = getHistoryIndexFile(dialogId);
-            FileOutputStream fos = new FileOutputStream(indexFile);
-            fos.write(array.toString().getBytes(StandardCharsets.UTF_8));
-            fos.close();
+            try (FileOutputStream fos = new FileOutputStream(indexFile)) {
+                fos.write(array.toString().getBytes(StandardCharsets.UTF_8));
+            }
         } catch (Exception e) {
             FileLog.e(e);
         }
@@ -160,7 +161,7 @@ public class HundredGramAvatarHistory implements NotificationCenter.Notification
         long dialogId = user.id;
         long photoId = user.photo.photo_id;
         if (photoId == 0 && user.photo.photo_big != null) {
-            photoId = user.photo.photo_big.volume_id ^ user.photo.photo_big.local_id;
+            photoId = user.photo.photo_big.volume_id * 31L + user.photo.photo_big.local_id;
         }
         if (photoId == 0) return;
 
@@ -174,7 +175,7 @@ public class HundredGramAvatarHistory implements NotificationCenter.Notification
         long dialogId = -chat.id;
         long photoId = chat.photo.photo_id;
         if (photoId == 0 && chat.photo.photo_big != null) {
-            photoId = chat.photo.photo_big.volume_id ^ chat.photo.photo_big.local_id;
+            photoId = chat.photo.photo_big.volume_id * 31L + chat.photo.photo_big.local_id;
         }
         if (photoId == 0) return;
 
@@ -271,11 +272,10 @@ public class HundredGramAvatarHistory implements NotificationCenter.Notification
                 values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/100gram");
                 Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
                 if (uri != null) {
-                    OutputStream os = context.getContentResolver().openOutputStream(uri);
-                    InputStream is = new FileInputStream(sourceFile);
-                    copyStream(is, os);
-                    is.close();
-                    if (os != null) os.close();
+                    try (InputStream is = new FileInputStream(sourceFile);
+                         OutputStream os = context.getContentResolver().openOutputStream(uri)) {
+                        if (os != null) copyStream(is, os);
+                    }
                     return true;
                 }
             } else {

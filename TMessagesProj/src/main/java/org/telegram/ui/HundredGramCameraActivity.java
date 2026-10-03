@@ -43,7 +43,6 @@ public class HundredGramCameraActivity extends BaseFragment {
     private static final int ITEM_ROUND_RESOLUTION = 11;
     private static final int ITEM_ROUND_FPS = 12;
     private static final int ITEM_ROUND_HIGH_BITRATE = 13;
-    private static final int ITEM_ROUND_CODEC = 14;
     private static final int ITEM_ROUND_SQUARE = 15;
     private static final int ITEM_ROUND_DISABLE_BLUR = 16;
     private static final int ITEM_ROUND_BITRATE = 17;
@@ -297,7 +296,6 @@ public class HundredGramCameraActivity extends BaseFragment {
 
         String resName;
         switch (HundredGramConfig.cameraRoundResolution) {
-            case 720: resName = "720p HD"; break;
             case 480: resName = "480p"; break;
             case 240: resName = "240p (Эконом)"; break;
             default: resName = "360p (Telegram)"; break;
@@ -305,7 +303,7 @@ public class HundredGramCameraActivity extends BaseFragment {
         items.add(UItem.asButton(ITEM_ROUND_RESOLUTION, LocaleController.getString("RoundVideoResolution", R.string.RoundVideoResolution), resName));
 
         items.add(UItem.asCheck(ITEM_ROUND_FPS, LocaleController.getString("RoundVideoFps", R.string.RoundVideoFps))
-                .setChecked(HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps));
+                .setChecked(HundredGramConfig.cameraRoundFps == 60));
         items.add(UItem.asShadow(LocaleController.getString("RoundVideoFpsInfo", R.string.RoundVideoFpsInfo)));
 
         // Sensor Aspect Ratio (16:9 vs 4:3) for older devices
@@ -314,10 +312,6 @@ public class HundredGramCameraActivity extends BaseFragment {
                 : LocaleController.getString("RoundVideoSensorRatio4to3", R.string.RoundVideoSensorRatio4to3);
         items.add(UItem.asButton(ITEM_ROUND_SENSOR_RATIO, LocaleController.getString("RoundVideoSensorRatio", R.string.RoundVideoSensorRatio), ratioName));
         items.add(UItem.asShadow(LocaleController.getString("RoundVideoSensorRatioInfo", R.string.RoundVideoSensorRatioInfo)));
-
-        String codecName = HundredGramConfig.cameraRoundCodec == 1 ? "H.265 (HEVC)" : "H.264 (AVC)";
-        items.add(UItem.asButton(ITEM_ROUND_CODEC, LocaleController.getString("RoundVideoCodec", R.string.RoundVideoCodec), codecName));
-        items.add(UItem.asShadow("H.265 обеспечивает более высокую четкость при том же размере файла"));
     }
 
     private void onClick(UItem item, View view, int position, float x, float y) {
@@ -328,8 +322,8 @@ public class HundredGramCameraActivity extends BaseFragment {
             case ITEM_PERFORMANCE_MODE:
                 HundredGramConfig.toggleCameraPerformanceMode();
                 item.setChecked(HundredGramConfig.cameraPerformanceMode);
-                if (listView != null && listView.adapter != null) {
-                    listView.adapter.update(true);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraPerformanceMode);
                 }
                 break;
             case ITEM_QUALITY:
@@ -344,14 +338,23 @@ public class HundredGramCameraActivity extends BaseFragment {
             case ITEM_WIDE_ANGLE:
                 HundredGramConfig.toggleCameraXWideAngle();
                 item.setChecked(HundredGramConfig.cameraXWideAngle);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraXWideAngle);
+                }
                 break;
             case ITEM_ZOOM_SLIDER:
                 HundredGramConfig.toggleCameraXZoomSlider();
                 item.setChecked(HundredGramConfig.cameraXZoomSlider);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraXZoomSlider);
+                }
                 break;
             case ITEM_STABILIZATION:
                 HundredGramConfig.toggleCameraStabilization();
                 item.setChecked(HundredGramConfig.cameraStabilization);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraStabilization);
+                }
                 break;
             case ITEM_HDR:
                 showHdrDialog();
@@ -363,30 +366,39 @@ public class HundredGramCameraActivity extends BaseFragment {
                 showRoundResolutionDialog();
                 break;
             case ITEM_ROUND_FPS:
-                int targetFps = (HundredGramConfig.cameraRoundFps == 60 || HundredGramConfig.cameraX60Fps) ? 30 : 60;
+                int targetFps = HundredGramConfig.cameraRoundFps == 60 ? 30 : 60;
                 HundredGramConfig.setCameraRoundFps(targetFps);
                 item.setChecked(targetFps == 60);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(targetFps == 60);
+                }
                 break;
             case ITEM_ROUND_HIGH_BITRATE:
                 HundredGramConfig.toggleCameraRoundHighBitrate();
                 item.setChecked(HundredGramConfig.cameraRoundHighBitrate);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraRoundHighBitrate);
+                }
                 break;
             case ITEM_ROUND_SQUARE:
                 HundredGramConfig.toggleCameraRoundSquare();
                 item.setChecked(HundredGramConfig.cameraRoundSquare);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraRoundSquare);
+                }
                 break;
             case ITEM_ROUND_DISABLE_BLUR:
                 HundredGramConfig.toggleCameraRoundDisableBlur();
                 item.setChecked(HundredGramConfig.cameraRoundDisableBlur);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraRoundDisableBlur);
+                }
                 break;
             case ITEM_ROUND_BITRATE:
                 showRoundBitrateDialog();
                 break;
             case ITEM_ROUND_SENSOR_RATIO:
                 showRoundSensorRatioDialog();
-                break;
-            case ITEM_ROUND_CODEC:
-                showRoundCodecDialog();
                 break;
         }
     }
@@ -520,11 +532,11 @@ public class HundredGramCameraActivity extends BaseFragment {
     }
 
     private void showRoundResolutionDialog() {
-        CharSequence[] options = new CharSequence[]{"240p (Эконом / Слабые устройства)", "360p (Стандарт Telegram)", "480p (Четкое)", "720p HD (Высокое качество)"};
+        CharSequence[] options = new CharSequence[]{"240p (Эконом / Слабые устройства)", "360p (Стандарт Telegram)", "480p (Высокое качество)"};
         new AlertDialog.Builder(getParentActivity())
                 .setTitle(LocaleController.getString("RoundVideoResolution", R.string.RoundVideoResolution))
                 .setItems(options, (dialog, which) -> {
-                    int res = which == 0 ? 240 : (which == 3 ? 720 : (which == 2 ? 480 : 360));
+                    int res = which == 0 ? 240 : (which == 2 ? 480 : 360);
                     HundredGramConfig.setCameraRoundResolution(res);
                     if (listView != null && listView.adapter != null) {
                         listView.adapter.update(true);
@@ -574,23 +586,6 @@ public class HundredGramCameraActivity extends BaseFragment {
                     if (HundredGramConfig.cameraRoundSensor16to9 != is16to9) {
                         HundredGramConfig.toggleCameraRoundSensor16to9();
                     }
-                    if (listView != null && listView.adapter != null) {
-                        listView.adapter.update(true);
-                    }
-                })
-                .setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null)
-                .show();
-    }
-
-    private void showRoundCodecDialog() {
-        CharSequence[] options = new CharSequence[]{
-                LocaleController.getString("RoundVideoCodecH264", R.string.RoundVideoCodecH264),
-                LocaleController.getString("RoundVideoCodecH265", R.string.RoundVideoCodecH265)
-        };
-        new AlertDialog.Builder(getParentActivity())
-                .setTitle(LocaleController.getString("RoundVideoCodec", R.string.RoundVideoCodec))
-                .setItems(options, (dialog, which) -> {
-                    HundredGramConfig.setCameraRoundCodec(which);
                     if (listView != null && listView.adapter != null) {
                         listView.adapter.update(true);
                     }

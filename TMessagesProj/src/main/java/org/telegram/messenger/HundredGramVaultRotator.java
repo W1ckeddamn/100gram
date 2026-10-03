@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HundredGramVaultRotator {
 
@@ -13,10 +14,10 @@ public class HundredGramVaultRotator {
         void onDone(long freedBytes, int deletedCount);
     }
 
-    private static boolean isRunning = false;
+    private static final AtomicBoolean isRunning = new AtomicBoolean(false);
 
     public static void runRotation(int account, RotationCallback callback) {
-        if (isRunning) {
+        if (!isRunning.compareAndSet(false, true)) {
             if (callback != null) {
                 AndroidUtilities.runOnUIThread(() -> callback.onDone(0, 0));
             }
@@ -27,10 +28,10 @@ public class HundredGramVaultRotator {
         final int maxSizeGb = HundredGramConfig.vaultMaxSizeGb;
 
         if (ttlDays <= 0 && maxSizeGb <= 0 && callback == null) {
+            isRunning.set(false);
             return;
         }
 
-        isRunning = true;
         FileLoader fileLoader = FileLoader.getInstance(account);
         FilePathDatabase fileDatabase = fileLoader.getFileDatabase();
 
@@ -109,14 +110,14 @@ public class HundredGramVaultRotator {
                     });
                 }
 
-                isRunning = false;
+                isRunning.set(false);
                 if (callback != null) {
                     AndroidUtilities.runOnUIThread(() -> callback.onDone(totalFreed, deletedCount));
                 }
 
             } catch (Exception e) {
                 FileLog.e(e);
-                isRunning = false;
+                isRunning.set(false);
                 if (callback != null) {
                     AndroidUtilities.runOnUIThread(() -> callback.onDone(0, 0));
                 }

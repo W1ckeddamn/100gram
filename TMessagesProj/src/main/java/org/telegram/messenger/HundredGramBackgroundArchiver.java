@@ -2,6 +2,7 @@ package org.telegram.messenger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import androidx.collection.LongSparseArray;
 
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.tgnet.ConnectionsManager;
@@ -30,6 +31,7 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
     private long lastSyncTime;
     private final ArrayList<Long> queue = new ArrayList<>();
     private final HashSet<Long> queuedSet = new HashSet<>();
+    private final LongSparseArray<Integer> lastPolledTopMessageId = new LongSparseArray<>();
     private final Runnable processQueueRunnable = this::processNext;
     private final Runnable periodicSyncRunnable = () -> triggerSync(false);
 
@@ -57,6 +59,7 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
         AndroidUtilities.cancelRunOnUIThread(periodicSyncRunnable);
         queue.clear();
         queuedSet.clear();
+        lastPolledTopMessageId.clear();
         isSyncing = false;
     }
 
@@ -90,6 +93,10 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
             return;
         }
 
+        if (force) {
+            lastPolledTopMessageId.clear();
+        }
+
         long now = System.currentTimeMillis();
         if (!force && (now - lastSyncTime < 15 * 60 * 1000L)) {
             // Already synced recently
@@ -107,15 +114,17 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
         MessagesStorage.getInstance(currentAccount).getStorageQueue().postRunnable(() -> {
             ArrayList<Long> dids = new ArrayList<>();
             ArrayList<Integer> folderIds = new ArrayList<>();
+            SQLiteCursor cursor = null;
             try {
-                SQLiteCursor cursor = MessagesStorage.getInstance(currentAccount).getDatabase().queryFinalized("SELECT did, folder_id FROM dialogs ORDER BY date DESC");
+                cursor = MessagesStorage.getInstance(currentAccount).getDatabase().queryFinalized("SELECT did, folder_id FROM dialogs ORDER BY date DESC");
                 while (cursor.next()) {
                     dids.add(cursor.longValue(0));
                     folderIds.add(cursor.intValue(1));
                 }
-                cursor.dispose();
             } catch (Throwable e) {
                 FileLog.e(e);
+            } finally {
+                if (cursor != null) cursor.dispose();
             }
 
             AndroidUtilities.runOnUIThread(() -> {
@@ -201,6 +210,9 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
     }
 
     private void addEligibleDialogs(ArrayList<TLRPC.Dialog> list) {
+        if (list == null || list.isEmpty()) {
+            return;
+        }
         MessagesController controller = MessagesController.getInstance(currentAccount);
         for (int i = 0; i < list.size(); i++) {
             TLRPC.Dialog d = list.get(i);
@@ -257,6 +269,17 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
 
         long dialogId = queue.remove(0);
         MessagesController controller = MessagesController.getInstance(currentAccount);
+
+        TLRPC.Dialog dialog = controller.dialogs_dict != null ? controller.dialogs_dict.get(dialogId) : null;
+        if (dialog != null && dialog.top_message > 0) {
+            Integer lastTop = lastPolledTopMessageId.get(dialogId);
+            if (lastTop != null && dialog.top_message == lastTop) {
+                // No new messages in this chat, skip without querying MTProto
+                AndroidUtilities.runOnUIThread(processQueueRunnable, 50);
+                return;
+            }
+        }
+
         TLRPC.InputPeer peer = controller.getInputPeer(dialogId);
         if (peer == null || (peer instanceof TLRPC.TL_inputPeerChannel && ((TLRPC.TL_inputPeerChannel) peer).access_hash == 0)) {
             if (dialogId < 0) {
@@ -289,22 +312,69 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
         req.limit = 25;
 
         ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> {
+            if (error != null) {
+                FileLog.e("HundredGramBackgroundArchiver sendRequest error: " + error.code + " " + error.text);
+                if (error.text != null && error.text.startsWith("FLOOD_WAIT_")) {
+                    int waitSeconds = 60;
+                    try {
+                        waitSeconds = Integer.parseInt(error.text.replaceAll("[^0-9]", ""));
+                    } catch (Throwable ignore) {}
+                    waitSeconds = Math.max(10, Math.min(waitSeconds, 3600));
+                    isSyncing = false;
+                    queue.clear();
+                    queuedSet.clear();
+                    AndroidUtilities.cancelRunOnUIThread(periodicSyncRunnable);
+                    AndroidUtilities.runOnUIThread(periodicSyncRunnable, (waitSeconds + 5) * 1000L);
+                    return;
+                }
+                int jitterDelay = 500 + Utilities.random.nextInt(1000);
+                AndroidUtilities.runOnUIThread(processQueueRunnable, jitterDelay);
+                return;
+            }
             if (response instanceof TLRPC.messages_Messages) {
                 TLRPC.messages_Messages res = (TLRPC.messages_Messages) response;
-                controller.putUsers(res.users, false);
-                controller.putChats(res.chats, false);
-                controller.getMessagesStorage().putMessages(
-                        res.messages,
-                        true,
-                        true,
-                        false,
-                        controller.getDownloadController().getAutodownloadMask(),
-                        0,
-                        0
-                );
+                if (res.messages != null) {
+                    if (res.users != null) {
+                        controller.putUsers(res.users, false);
+                    }
+                    if (res.chats != null) {
+                        controller.putChats(res.chats, false);
+                    }
+                    if (controller.getMessagesStorage() != null && controller.getDownloadController() != null) {
+                        controller.getMessagesStorage().putMessages(
+                                res.messages,
+                                true,
+                                true,
+                                false,
+                                controller.getDownloadController().getAutodownloadMask(),
+                                0,
+                                0
+                        );
+                    }
+                    if (HundredGramConfig.autoDownloadMediaVault && HundredGramConfig.isChatAntiDelete(dialogId)) {
+                        for (int m = 0; m < res.messages.size(); m++) {
+                            TLRPC.Message msg = res.messages.get(m);
+                            if (msg != null && msg.media != null && !(msg.media instanceof TLRPC.TL_messageMediaEmpty)) {
+                                MessageObject messageObject = new MessageObject(currentAccount, msg, false, false);
+                                HundredGramVaultManager.getInstance(currentAccount).isolateMediaForMessage(messageObject);
+                            }
+                        }
+                    }
+                }
+                if (controller.dialogs_dict != null) {
+                    TLRPC.Dialog d = controller.dialogs_dict.get(dialogId);
+                    if (d != null && d.top_message > 0) {
+                        lastPolledTopMessageId.put(dialogId, d.top_message);
+                    }
+                }
             }
-            AndroidUtilities.runOnUIThread(processQueueRunnable, 800);
+            int jitterDelay = 300 + Utilities.random.nextInt(500);
+            AndroidUtilities.runOnUIThread(processQueueRunnable, jitterDelay);
         });
+    }
+
+    public void onNewMessage(long dialogId) {
+        lastPolledTopMessageId.remove(dialogId);
     }
 
     private void scheduleNextPeriodicSync() {

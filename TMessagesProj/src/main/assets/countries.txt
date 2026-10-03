@@ -30,6 +30,7 @@
 975;BT;Bhutan;XX XXX XXX
 974;QA;Qatar;XX XXX XXX
 973;BH;Bahrain;XXXX XXXX
+972;IL;Israel;XX XXX XXXX
 971;AE;United Arab Emirates;XX XXX XXXX
 970;PS;Palestine;XXX XX XXXX
 968;OM;Oman;XXXX XXXX
@@ -229,6 +230,7 @@
 27;ZA;South Africa;XX XXX XXXX
 20;EG;Egypt;XX XXXX XXXX
 7;KZ;Kazakhstan;XXX XXX XX XX
+7;RU;Russian Federation;XXX XXX XXXX
 1;PR;Puerto Rico;XXX XXX XXXX
 1;DO;Dominican Rep.;XXX XXX XXXX
 1;CA;Canada;XXX XXX XXXX

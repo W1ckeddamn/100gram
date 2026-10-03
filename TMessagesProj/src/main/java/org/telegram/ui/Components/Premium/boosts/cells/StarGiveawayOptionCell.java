@@ -99,7 +99,7 @@ public class StarGiveawayOptionCell extends FrameLayout {
         } else {
             titleView.setText(LocaleController.formatPluralStringComma("GiveawayStars", (int) option.stars, ' '), false);
             subtitleView.setText(LocaleController.formatPluralStringComma("BoostingStarOptionPerUser", (int) per_user_stars, ','), animated);
-            priceView.setText(BuildVars.gimmeFuLabel());
+            priceView.setText(BillingController.getInstance().formatCurrency(option.amount, option.currency));
         }
 
         starsCount = 1 + index;

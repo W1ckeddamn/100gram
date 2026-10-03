@@ -1,13 +1,16 @@
-.idea/
+# Gradle & Build
 .gradle/
 build/
+*/build/
+bin/
+
+# C++ & NDK artifacts
+.cxx/
+*/.cxx/
+*.so
 obj/
-*.iml
-local.properties
-TMessagesProj/.cxx/
 TMessagesProj/jniLibs/
 TMessagesProj/jniRes/
-**/.DS_Store
 TMessagesProj/afat/
 TMessagesProj_App/afat/
 TMessagesProj_AppHockeyApp/afat/
@@ -15,4 +18,20 @@ TMessagesProj_AppStandalone/afat/
 TMessagesProj_AppHuawei/afat/
 TMessagesProj/jni/ffmpeg/build_android
 
+# Android Studio & IDE
+.idea/
+*.iml
+.navigation/
+captures/
+local.properties
+**/.DS_Store
+
+# Secrets & Keystores
+*.keystore
+*.jks
+google-services.json
+
+# APKs & Logs
 *.apk
+*.aab
+*.log

@@ -305,6 +305,17 @@ public class HundredGramNetworkBoostActivity extends BaseFragment {
 
         final long start = SystemClock.elapsedRealtime();
         ConnectionsManager.getInstance(currentAccount).sendRequest(new org.telegram.tgnet.TLRPC.TL_help_getNearestDc(), (response, error) -> {
+            // Fix 9: при ошибке сети разблокируем кнопку
+            if (error != null) {
+                AndroidUtilities.runOnUIThread(() -> {
+                    isTestingSpeed = false;
+                    if (speedTestButton != null) speedTestButton.setEnabled(true);
+                    if (speedTestResultText != null) {
+                        speedTestResultText.setText(LocaleController.getString("HundredGramSpeedTestError", R.string.HundredGramSpeedTestError));
+                    }
+                });
+                return;
+            }
             long ping = SystemClock.elapsedRealtime() - start;
             AndroidUtilities.runOnUIThread(() -> {
                 isTestingSpeed = false;
@@ -345,5 +356,17 @@ public class HundredGramNetworkBoostActivity extends BaseFragment {
     public void onPause() {
         super.onPause();
         AndroidUtilities.cancelRunOnUIThread(statsUpdateRunnable);
+    }
+
+    // Fix 12: отменяем statsUpdateRunnable и обнуляем view-ссылки при уничтожении
+    @Override
+    public void onFragmentDestroy() {
+        super.onFragmentDestroy();
+        AndroidUtilities.cancelRunOnUIThread(statsUpdateRunnable);
+        downloadSpeedText = null;
+        uploadSpeedText = null;
+        activeThreadsText = null;
+        speedTestResultText = null;
+        speedTestButton = null;
     }
 }

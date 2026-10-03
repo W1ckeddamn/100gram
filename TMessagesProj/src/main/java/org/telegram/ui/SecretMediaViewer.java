@@ -499,7 +499,7 @@ public class SecretMediaViewer implements NotificationCenter.NotificationCenterD
             return;
         }
 
-        final boolean video = currentMessageObject.isVideo();
+        final boolean video = currentMessageObject.isVideo() || currentMessageObject.isRoundVideo();
         final boolean gif = currentMessageObject.isGif();
         final Bitmap preview = (!video && !gif && centerImage != null) ? centerImage.getBitmap() : null;
         final Bitmap bitmapCopy;

@@ -8,7 +8,7 @@ repositories {
 }
 
 configurations {
-    compile.exclude module: 'support-v4'
+    all*.exclude module: 'support-v4'
 }
 
 configurations.all {
@@ -183,25 +183,3 @@ def getProps(String propName) {
     }
 }
 apply plugin: 'com.google.gms.google-services'
-
-task checkVisibility {
-    doFirst {
-        def isPrivateBuild = project.gradle.startParameter.taskNames.find {
-            it.contains("HA_private") || it.contains("HA_hardcore") || it.contains("Debug") || it.contains("Release")
-        }
-        def isPublicAllowed = !project.hasProperty("IS_PRIVATE") || !project.property("IS_PRIVATE").toBoolean()
-        if (!isPrivateBuild && !isPublicAllowed) {
-            throw new GradleException("Building public version of private code!")
-        }
-    }
-    doLast {
-        if (project.gradle.startParameter.taskNames.find { it.contains("HA_public") }) {
-            def privateBuild = file("${projectDir}_AppHockeyApp/afat/HA_private/Telegram-Beta.apk")
-            if (privateBuild.exists()) {
-                privateBuild.delete()
-            }
-        }
-    }
-}
-
-preBuild.dependsOn checkVisibility

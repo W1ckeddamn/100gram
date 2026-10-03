@@ -117,6 +117,7 @@ import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramDebugLog;
 import org.telegram.messenger.FlagSecureReason;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
@@ -552,6 +553,12 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     }
 
     public interface ChatMessageCellDelegate {
+        default void didPressEditStatus(ChatMessageCell cell, MessageObject messageObject) {
+        }
+
+        default void didPressAppUpdateButton() {
+        }
+
         default boolean isReplyOrSelf() {
             return false;
         }
@@ -1709,6 +1716,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
 
     private float drawTimeX;
     private float drawTimeY;
+    // 100gram: cached trash icon for deleted message badge (no alloc in onDraw)
+    private android.graphics.drawable.Drawable deletedBadgeDrawable;
     public StaticLayout timeLayout;
     public int timeWidth;
     private int timeTextWidth;
@@ -4186,6 +4195,45 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         return result;
     }
 
+    // 100gram: flag to track touch-down on the edit/delete status area
+    private boolean editStatusPressed;
+
+    /**
+     * 100gram: Detects a tap on the time/edit-status badge area for deleted or edited messages.
+     * On ACTION_UP fires {@link ChatMessageCellDelegate#didPressEditStatus}.
+     */
+    private boolean checkEditStatusMotionEvent(MotionEvent event) {
+        if (currentMessageObject == null) return false;
+        if (!currentMessageObject.isDeleted() && !currentMessageObject.isEdited()) return false;
+        int x = (int) getEventX(event);
+        int y = (int) getEventY(event);
+        boolean result = false;
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            if (x >= drawTimeX && x <= drawTimeX + timeWidth + dp(18)
+                    && y >= drawTimeY && y <= drawTimeY + dp(20)) {
+                editStatusPressed = true;
+                result = true;
+                invalidate();
+            }
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            if (editStatusPressed) {
+                editStatusPressed = false;
+                playSoundEffect(SoundEffectConstants.CLICK);
+                if (delegate != null) {
+                    delegate.didPressEditStatus(this, currentMessageObject);
+                }
+                invalidate();
+                result = true;
+            }
+        } else if (event.getAction() == MotionEvent.ACTION_CANCEL) {
+            if (editStatusPressed) {
+                editStatusPressed = false;
+                invalidate();
+            }
+        }
+        return result;
+    }
+
     private boolean checkRoundSeekbar(MotionEvent event) {
         if (!MediaController.getInstance().isPlayingMessage(currentMessageObject) || !MediaController.getInstance().isMessagePaused()) {
             return false;
@@ -4968,6 +5016,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         }
         if (!result) {
             result = checkDateMotionEvent(event);
+        }
+        // 100gram: tap on time-area of deleted/edited message → open edit history
+        if (!result) {
+            result = checkEditStatusMotionEvent(event);
         }
         if (!result) {
             result = checkTextSelection(event);
@@ -18409,7 +18461,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         } else if (currentMessageObject.isRepostPreview) {
             timeString = LocaleController.formatSmallDateChat(messageObject.messageOwner.date) + ", " + LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000);
         } else if (deleted) {
-            timeString = "🗑 " + getString(R.string.DeletedMessage) + " " + LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000);
+            timeString = LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000);
         } else if (edited) {
             timeString = AppGlobalConfig.getInstance(currentAccount).messagePrimaryEditedDate.get() ?
                 LocaleController.formatPmEditedDate(currentMessagesGroup != null ? currentMessagesGroup.getMaxEditDate() : messageObject.messageOwner.edit_date) :
@@ -18467,6 +18519,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             }
         }
         timeTextWidth = timeWidth = (int) Math.ceil(Theme.chat_timePaint.measureText(currentTimeString, 0, currentTimeString == null ? 0 : currentTimeString.length()));
+        if (deleted) {
+            timeWidth += dp(15);
+        }
         if (currentMessageObject.scheduled && currentMessageObject.messageOwner.date == 0x7FFFFFFE || currentMessageObject.notime) {
             timeWidth -= dp(8);
         }
@@ -24064,6 +24119,32 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         }
         canvas.restore();
 
+        // 100gram: Draw trash icon badge for deleted (anti-delete preserved) messages
+        if (currentMessageObject != null && currentMessageObject.isDeleted()) {
+            if (deletedBadgeDrawable == null) {
+                deletedBadgeDrawable = getContext().getDrawable(R.drawable.msg_delete);
+            }
+            if (deletedBadgeDrawable != null) {
+                int trashColor;
+                if (shouldDrawTimeOnMedia()) {
+                    trashColor = getThemedColor(Theme.key_chat_mediaTimeText);
+                } else if (currentMessageObject.isOutOwner()) {
+                    trashColor = getThemedColor(drawSelectionBackground ? Theme.key_chat_outTimeSelectedText : Theme.key_chat_outTimeText);
+                } else {
+                    trashColor = getThemedColor(drawSelectionBackground ? Theme.key_chat_inTimeSelectedText : Theme.key_chat_inTimeText);
+                }
+                deletedBadgeDrawable.setColorFilter(new PorterDuffColorFilter(trashColor, PorterDuff.Mode.SRC_IN));
+                int trashW = dp(12);
+                int trashH = dp(12);
+                int trashX = (int) (drawTimeX + timeTextWidth + dp(3));
+                int trashY = (int) (drawTimeY + (dp(14) - trashH) / 2f);
+                deletedBadgeDrawable.setBounds(trashX, trashY, trashX + trashW, trashY + trashH);
+                deletedBadgeDrawable.setAlpha((int) (255 * alpha));
+                deletedBadgeDrawable.draw(canvas);
+            }
+        }
+
+
         if (unlockLayout != null) {
             if (unlockX == 0 || unlockY == 0) {
                 calculateUnlockXY();
@@ -28865,6 +28946,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             return true;
         }
 
+        private int lastLoggedReadMsgId;
+
         public int createStatusDrawableParams() {
             if (currentMessageObject.isOutOwner()) {
                 boolean drawCheck1 = false;
@@ -28881,7 +28964,17 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     drawClock = false;
                     drawError = true;
                 } else if (currentMessageObject.isSent()) {
-                    if (!currentMessageObject.scheduled && !currentMessageObject.isUnread()) {
+                    boolean unread = currentMessageObject.isUnread();
+                    if (!unread && (currentMessageObject.isOut() || currentMessageObject.isOutOwner()) && currentMessageObject.getId() > 0) {
+                        long did = currentMessageObject.getDialogId();
+                        if (did != 0 && did != UserConfig.getInstance(currentAccount).getClientUserId() && !DialogObject.isEncryptedDialog(did)) {
+                            Integer outboxMax = MessagesController.getInstance(currentAccount).dialogs_read_outbox_max.get(did);
+                            if (outboxMax != null && outboxMax > 0 && currentMessageObject.getId() > outboxMax) {
+                                unread = true;
+                            }
+                        }
+                    }
+                    if (!currentMessageObject.scheduled && !unread) {
                         drawCheck1 = true;
                     } else {
                         drawCheck1 = false;
@@ -28889,6 +28982,14 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     drawCheck2 = true;
                     drawClock = false;
                     drawError = false;
+                    if (drawCheck1) {
+                        int msgId = currentMessageObject.getId();
+                        if (msgId > 0 && lastLoggedReadMsgId != msgId) {
+                            lastLoggedReadMsgId = msgId;
+                            Integer outboxMax = MessagesController.getInstance(currentAccount).dialogs_read_outbox_max.get(currentMessageObject.getDialogId());
+                            HundredGramDebugLog.log("ChatMessageCell DRAWING 2 CHECKS (READ): id=" + msgId + " dialogId=" + currentMessageObject.getDialogId() + " isUnread=" + currentMessageObject.isUnread() + " owner.unread=" + (currentMessageObject.messageOwner != null ? currentMessageObject.messageOwner.unread : "null") + " outbox_max=" + outboxMax);
+                        }
+                    }
                 }
                 if (currentMessageObject.notime || currentMessageObject.isQuickReply()) {
                     drawCheck1 = false;

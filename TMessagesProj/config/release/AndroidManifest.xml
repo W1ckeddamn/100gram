@@ -28,7 +28,7 @@
         android:largeHeap="true"
         android:supportsRtl="false"
         android:requestLegacyExternalStorage="true"
-        tools:replace="android:supportsRtl">
+        tools:replace="android:supportsRtl,android:icon,android:roundIcon">
 
         <meta-data android:name="com.google.android.maps.v2.API_KEY" android:value="AIzaSyA-t0jLPjUt2FxrA8VPK2EiYHcYcboIR6k" />
 

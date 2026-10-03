@@ -196,7 +196,7 @@ public class HundredGramAutomationActivity extends BaseFragment {
 
         // 2. Conditions Header
         TextView condHeader = new TextView(context);
-        condHeader.setText("IF (Условия срабатывания)");
+        condHeader.setText(LocaleController.getString("AutomationConditionHeader", R.string.AutomationConditionHeader));
         condHeader.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueHeader));
         condHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         condHeader.setTypeface(AndroidUtilities.bold());
@@ -243,7 +243,7 @@ public class HundredGramAutomationActivity extends BaseFragment {
 
         // 3. Actions Header
         TextView actionsHeader = new TextView(context);
-        actionsHeader.setText("THEN (Автоматические действия)");
+        actionsHeader.setText(LocaleController.getString("AutomationActionsHeader", R.string.AutomationActionsHeader));
         actionsHeader.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueHeader));
         actionsHeader.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         actionsHeader.setTypeface(AndroidUtilities.bold());

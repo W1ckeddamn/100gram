@@ -560,7 +560,7 @@ public class LinkEditActivity extends BaseFragment {
                                 }
                                 subPriceView.setText(formatString(
                                         getConnectionsManager().isTestBackend() ? R.string.RequireMonthlyFeePriceTest5Minutes : R.string.RequireMonthlyFeePrice,
-                                        BuildVars.gimmeFuLabel()
+                                        BillingController.getInstance().formatCurrency((long) (stars / 1000.0 * MessagesController.getInstance(currentAccount).starsUsdWithdrawRate1000), "USD")
                                 ));
                             } catch (Exception e) {
                                 FileLog.e(e);

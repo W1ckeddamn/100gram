@@ -55,6 +55,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BillingController;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.LocaleController;
@@ -2083,27 +2084,27 @@ public class PremiumPreviewFragment extends BaseFragment implements Notification
         }
 
         public String getFormattedPricePerYearRegular() {
-            return BuildVars.gimmeFuLabel();
+            return BillingController.getInstance().formatCurrency(pricePerYearRegular, getCurrency());
         }
 
         public String getFormattedPricePerYear() {
-            return BuildVars.gimmeFuLabel();
+            return BillingController.getInstance().formatCurrency(getPricePerYear(), getCurrency());
         }
 
         public String getFormattedPricePerMonth() {
-            return BuildVars.gimmeFuLabel();
+            return BillingController.getInstance().formatCurrency(getPricePerMonth(), getCurrency());
         }
 
         public String getFormattedPrice() {
-            return BuildVars.gimmeFuLabel();
+            return BillingController.getInstance().formatCurrency(getPrice(), getCurrency());
         }
 
         public long getPrice() {
-            return 0L;
+            return subscriptionOption == null ? 0 : subscriptionOption.amount;
         }
 
         public String getCurrency() {
-            return BuildVars.gimmeFuLabel();
+            return subscriptionOption == null ? "" : subscriptionOption.currency;
         }
     }
 

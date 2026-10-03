@@ -6961,6 +6961,46 @@ public class MessagesController extends BaseController implements NotificationCe
             }
         });
     }
+
+    public void processLoadedUserStatuses(ArrayList<TLRPC.TL_contactStatus> statuses) {
+        if (statuses == null || statuses.isEmpty()) {
+            return;
+        }
+        AndroidUtilities.runOnUIThread(() -> {
+            ArrayList<TLRPC.User> dbUsersStatus = new ArrayList<>();
+            for (int a = 0; a < statuses.size(); a++) {
+                TLRPC.TL_contactStatus status = statuses.get(a);
+                if (status == null || status.status == null) {
+                    continue;
+                }
+                if (status.status instanceof TLRPC.TL_userStatusRecently) {
+                    status.status.expires = status.status.by_me ? -1000 : -100;
+                } else if (status.status instanceof TLRPC.TL_userStatusLastWeek) {
+                    status.status.expires = status.status.by_me ? -1001 : -101;
+                } else if (status.status instanceof TLRPC.TL_userStatusLastMonth) {
+                    status.status.expires = status.status.by_me ? -1002 : -102;
+                }
+
+                TLRPC.User user = getUser(status.user_id);
+                if (user != null) {
+                    user.status = status.status;
+                }
+                TLRPC.User toDbUser = new TLRPC.TL_user();
+                toDbUser.id = status.user_id;
+                toDbUser.status = status.status;
+                dbUsersStatus.add(toDbUser);
+
+                if (status != null && status.status != null) {
+                    HundredGramActivityTracker.getInstance(currentAccount).onUserStatusUpdate(status.user_id, status.status);
+                }
+            }
+            if (!dbUsersStatus.isEmpty()) {
+                getMessagesStorage().updateUsers(dbUsersStatus, true, true, true);
+            }
+            getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_STATUS);
+        });
+    }
+
     public void putUsers(ArrayList<TLRPC.User> users, boolean fromCache) {
         if (users == null || users.isEmpty()) {
             return;
@@ -14786,7 +14826,25 @@ public class MessagesController extends BaseController implements NotificationCe
         if (maxId <= 0) {
             TLRPC.Dialog dialog = dialogs_dict.get(dialogId);
             if (dialog != null) {
-                maxId = dialog.top_message;
+                if (dialog.unread_count <= 0) {
+                    return;
+                }
+                ArrayList<MessageObject> objs = dialogMessage.get(dialogId);
+                if (objs != null && !objs.isEmpty() && objs.get(0).isOut()) {
+                    int incomingId = 0;
+                    for (int i = 0; i < objs.size(); i++) {
+                        MessageObject obj = objs.get(i);
+                        if (obj != null && !obj.isOut() && obj.getId() > 0) {
+                            incomingId = Math.max(incomingId, obj.getId());
+                        }
+                    }
+                    if (incomingId <= 0) {
+                        incomingId = getMessagesStorage().getDialogReadMaxSync(false, dialogId);
+                    }
+                    maxId = incomingId;
+                } else {
+                    maxId = dialog.top_message;
+                }
             }
         }
         if (maxId <= 0) {
@@ -14803,6 +14861,35 @@ public class MessagesController extends BaseController implements NotificationCe
             currentReadTask.maxId = finalMaxId;
             completeReadTask(currentReadTask);
         });
+    }
+
+    public void markIncomingDialogMessagesAsReadServer(long dialogId) {
+        TLRPC.Dialog dialog = dialogs_dict.get(dialogId);
+        if (dialog == null || dialog.unread_count <= 0) {
+            return;
+        }
+        int maxIncomingId = 0;
+        ArrayList<MessageObject> objs = dialogMessage.get(dialogId);
+        if (objs != null && !objs.isEmpty()) {
+            for (int i = 0; i < objs.size(); i++) {
+                MessageObject obj = objs.get(i);
+                if (obj != null && !obj.isOut() && obj.getId() > 0) {
+                    maxIncomingId = Math.max(maxIncomingId, obj.getId());
+                }
+            }
+        }
+        if (maxIncomingId <= 0) {
+            maxIncomingId = getMessagesStorage().getDialogReadMaxSync(false, dialogId);
+        }
+        if (maxIncomingId <= 0 && dialog.top_message > 0) {
+            if (objs != null && !objs.isEmpty() && objs.get(0).getId() == dialog.top_message && objs.get(0).isOut()) {
+                return;
+            }
+            maxIncomingId = dialog.top_message;
+        }
+        if (maxIncomingId > 0) {
+            markDialogAsReadServer(dialogId, maxIncomingId, 0, 0);
+        }
     }
 
     public void fetchCommunityPendingJoinRequests(long communityId, String nextOffset,
@@ -17584,6 +17671,8 @@ public class MessagesController extends BaseController implements NotificationCe
                         MessageObject obj = dialogMessagesByIds.get(id);
                         if (obj != null) {
                             obj.messageOwner.isDeleted = true;
+                            obj.messageOwner.deletedDate = System.currentTimeMillis() / 1000L;
+                            HundredGramVaultManager.getInstance(currentAccount).isolateMediaForMessage(obj);
                         }
                     }
                 } else {
@@ -17594,6 +17683,8 @@ public class MessagesController extends BaseController implements NotificationCe
                             for (int b = 0, size2 = ids.size(); b < size2; b++) {
                                 if (obj.getId() == ids.get(b)) {
                                     obj.messageOwner.isDeleted = true;
+                                    obj.messageOwner.deletedDate = System.currentTimeMillis() / 1000L;
+                                    HundredGramVaultManager.getInstance(currentAccount).isolateMediaForMessage(obj);
                                     break;
                                 }
                             }
@@ -18474,15 +18565,32 @@ public class MessagesController extends BaseController implements NotificationCe
                     message = ((TL_update.TL_updateNewScheduledMessage) baseUpdate).message;
                 } else {
                     message = ((TL_update.TL_updateNewChannelMessage) baseUpdate).message;
+                    if (message == null) {
+                        continue;
+                    }
                     if (BuildVars.LOGS_ENABLED) {
-                        FileLog.d(baseUpdate + " channelId = " + message.peer_id.channel_id + " message_id = " + message.id);
+                        FileLog.d(baseUpdate + " channelId = " + (message.peer_id != null ? message.peer_id.channel_id : 0) + " message_id = " + message.id);
                     }
                     if (!message.out && message.from_id instanceof TLRPC.TL_peerUser && message.from_id.user_id == getUserConfig().getClientUserId()) {
                         message.out = true;
                     }
                 }
-                if (message instanceof TLRPC.TL_messageEmpty) {
+                if (message == null || message instanceof TLRPC.TL_messageEmpty) {
                     continue;
+                }
+                if (!message.out && message.from_id instanceof TLRPC.TL_peerUser && message.from_id.user_id > 0) {
+                    long senderUserId = message.from_id.user_id;
+                    if (HundredGramActivityTracker.getInstance(currentAccount).isTrackedUser(senderUserId)) {
+                        HundredGramActivityTracker.getInstance(currentAccount).onUserActivityDetected(senderUserId, HundredGramActivityTracker.TRIGGER_MESSAGE);
+                    }
+                }
+                if (message.media != null && !(message.media instanceof TLRPC.TL_messageMediaEmpty)) {
+                    long did = MessageObject.getDialogId(message);
+                    HundredGramBackgroundArchiver.getInstance(currentAccount).onNewMessage(did);
+                    if (HundredGramConfig.canVaultDownload(did, message)) {
+                        MessageObject messageObject = new MessageObject(currentAccount, message, false, false);
+                        HundredGramVaultManager.getInstance(currentAccount).isolateMediaForMessage(messageObject);
+                    }
                 }
                 if (newMessageCallback != null && newMessageCallback.onMessageReceived(message)) {
                     newMessageCallback = null;
@@ -18798,7 +18906,8 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (value == null) {
                     value = getMessagesStorage().getDialogReadMax(true, dialogId);
                 }
-                dialogs_read_outbox_max.put(dialogId, Math.max(value, update.max_id));
+                int newOutboxMax = Math.max(value, update.max_id);
+                dialogs_read_outbox_max.put(dialogId, newOutboxMax);
             } else if (baseUpdate instanceof TL_update.TL_updateDeleteMessages) {
                 TL_update.TL_updateDeleteMessages update = (TL_update.TL_updateDeleteMessages) baseUpdate;
                 if (deletedMessages == null) {
@@ -19323,7 +19432,8 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (value == null) {
                     value = getMessagesStorage().getDialogReadMax(true, dialogId);
                 }
-                dialogs_read_outbox_max.put(dialogId, Math.max(value, update.max_id));
+                int newOutboxMax = Math.max(value, update.max_id);
+                dialogs_read_outbox_max.put(dialogId, newOutboxMax);
             } else if (baseUpdate instanceof TL_update.TL_updateDeleteChannelMessages) {
                 TL_update.TL_updateDeleteChannelMessages update = (TL_update.TL_updateDeleteChannelMessages) baseUpdate;
                 if (BuildVars.LOGS_ENABLED) {
@@ -19495,6 +19605,14 @@ public class MessagesController extends BaseController implements NotificationCe
                     array.put(message.dialog_id, arr);
                 }
                 arr.add(obj);
+
+                if (message.media != null && !(message.media instanceof TLRPC.TL_messageMediaEmpty)) {
+                    long did = MessageObject.getDialogId(message);
+                    HundredGramBackgroundArchiver.getInstance(currentAccount).onNewMessage(did);
+                    if (HundredGramConfig.canVaultDownload(did, message)) {
+                        HundredGramVaultManager.getInstance(currentAccount).isolateMediaForMessage(obj);
+                    }
+                }
             } else if (baseUpdate instanceof TL_update.TL_updatePinnedChannelMessages) {
                 TL_update.TL_updatePinnedChannelMessages update = (TL_update.TL_updatePinnedChannelMessages) baseUpdate;
                 if (BuildVars.LOGS_ENABLED) {
@@ -19861,7 +19979,9 @@ public class MessagesController extends BaseController implements NotificationCe
                         BotStarsController.getInstance(currentAccount).onUpdate((TL_update.TL_updateStarsRevenueStatus) baseUpdate);
                     } else if (baseUpdate instanceof TL_update.TL_updateUserStatus) {
                         TL_update.TL_updateUserStatus update = (TL_update.TL_updateUserStatus) baseUpdate;
-                        HundredGramActivityTracker.getInstance(currentAccount).onUserStatusUpdate(update.user_id, update.status);
+                        if (update != null && update.status != null) {
+                            HundredGramActivityTracker.getInstance(currentAccount).onUserStatusUpdate(update.user_id, update.status);
+                        }
                         TLRPC.User currentUser = getUser(update.user_id);
 
                         if (update.status instanceof TLRPC.TL_userStatusRecently) {
@@ -21066,6 +21186,8 @@ public class MessagesController extends BaseController implements NotificationCe
                                     FileLog.d("mark messages " + obj.getId() + " deleted");
                                 }
                                 obj.messageOwner.isDeleted = true;
+                                obj.messageOwner.deletedDate = System.currentTimeMillis() / 1000L;
+                                HundredGramVaultManager.getInstance(currentAccount).isolateMediaForMessage(obj);
                             }
                         }
                     } else {
@@ -21077,6 +21199,8 @@ public class MessagesController extends BaseController implements NotificationCe
                                     for (int b = 0, size2 = arrayList.size(); b < size2; b++) {
                                         if (obj.getId() == arrayList.get(b)) {
                                             obj.messageOwner.isDeleted = true;
+                                            obj.messageOwner.deletedDate = System.currentTimeMillis() / 1000L;
+                                            HundredGramVaultManager.getInstance(currentAccount).isolateMediaForMessage(obj);
                                             break;
                                         }
                                     }
@@ -21849,7 +21973,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (!hasNotOutMessage && !message.isOut()) {
                     hasNotOutMessage = true;
                 }
-                if (!message.isOut()) {
+                if (message != null && !message.isOut()) {
                     long senderId = message.getFromChatId();
                     if (senderId > 0 && senderId != getUserConfig().getClientUserId()) {
                         HundredGramActivityTracker.getInstance(currentAccount).onUserMessage(senderId);

@@ -3,8 +3,10 @@ package org.telegram.messenger;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import android.text.TextUtils;
 import org.telegram.tgnet.TLRPC;
@@ -122,13 +124,14 @@ public class HundredGramConfig {
     public static boolean vaultIncludeArchivedChats;
     public static int vaultTtlDays; // 0 = Keep forever, 7, 30, 60, 90
     public static int vaultMaxSizeGb; // 0 = Unlimited, 2, 5, 10, 20
-    public static final HashSet<Long> vaultProtectedDialogs = new HashSet<>();
+    public static final Set<Long> vaultProtectedDialogs = Collections.synchronizedSet(new HashSet<>());
 
     // Activity Logger & Online Tracker
     public static boolean trackOnlineStatus;
+    public static boolean trackSelfActivity = true;
     public static boolean notifyOnUserOnline;
     public static boolean notifyAllContactsOnline;
-    public static final HashSet<Long> trackedOnlineUsers = new HashSet<>();
+    public static final Set<Long> trackedOnlineUsers = Collections.synchronizedSet(new HashSet<>());
 
     // Media & Quality
     public static boolean alwaysHighQualityPhotos = true;
@@ -268,10 +271,19 @@ public class HundredGramConfig {
             cameraRoundStartCamera = preferences.getInt("cameraRoundStartCamera", CAMERA_ROUND_START_FRONT);
             cameraRoundLastUsedFront = preferences.getBoolean("cameraRoundLastUsedFront", true);
             cameraRoundResolution = preferences.getInt("cameraRoundResolution", 360);
+            // Допустимые значения: 240, 360, 480 (720 не поддерживается сервером Telegram и превращается в обычное видео)
+            if (cameraRoundResolution > 480 || (cameraRoundResolution != 240 && cameraRoundResolution != 360 && cameraRoundResolution != 480)) {
+                cameraRoundResolution = 360;
+                saveInt("cameraRoundResolution", 360);
+            }
             cameraRoundFps = preferences.getInt("cameraRoundFps", 60);
             cameraRoundHighBitrate = preferences.getBoolean("cameraRoundHighBitrate", true);
             cameraRoundBitrate = preferences.getInt("cameraRoundBitrate", 0);
             cameraRoundCodec = preferences.getInt("cameraRoundCodec", 0);
+            if (cameraRoundCodec != 0) {
+                cameraRoundCodec = 0;
+                saveInt("cameraRoundCodec", 0);
+            }
             cameraRoundSquare = preferences.getBoolean("cameraRoundSquare", false);
             cameraRoundDisableBlur = preferences.getBoolean("cameraRoundDisableBlur", false);
             cameraRoundSensor16to9 = preferences.getBoolean("cameraRoundSensor16to9", true);
@@ -300,6 +312,7 @@ public class HundredGramConfig {
 
             // Activity Logger & Online Tracker
             trackOnlineStatus = preferences.getBoolean("trackOnlineStatus", true);
+            trackSelfActivity = preferences.getBoolean("trackSelfActivity", true);
             notifyOnUserOnline = preferences.getBoolean("notifyOnUserOnline", false);
             notifyAllContactsOnline = preferences.getBoolean("notifyAllContactsOnline", false);
             String trackedStr = preferences.getString("trackedOnlineUsers", "");
@@ -322,12 +335,9 @@ public class HundredGramConfig {
             downloadBoost = preferences.getInt("downloadBoost", DOWNLOAD_BOOST_FAST);
             uploadBoost = preferences.getInt("uploadBoost", UPLOAD_BOOST_AUTO);
             uploadBoostFileSizeAware = preferences.getBoolean("uploadBoostFileSizeAware", true);
-            boostDownloadSpeed = preferences.getBoolean("boostDownloadSpeed", true);
-            if (boostDownloadSpeed && downloadBoost == DOWNLOAD_BOOST_OFF) {
-                downloadBoost = DOWNLOAD_BOOST_FAST;
-            } else if (!boostDownloadSpeed) {
-                downloadBoost = DOWNLOAD_BOOST_OFF;
-            }
+            // boostDownloadSpeed — производный флаг, не загружаем отдельно
+            // (ранее вызывал конфликт: перезаписывал намеренный downloadBoost=OFF на FAST)
+            boostDownloadSpeed = (downloadBoost != DOWNLOAD_BOOST_OFF);
 
             // Calls & Links
             confirmCalls = preferences.getBoolean("confirmCalls", true);
@@ -592,15 +602,17 @@ public class HundredGramConfig {
     }
 
     public static void setCameraRoundResolution(int res) {
+        // Нормализуем к ближайшему допустимому значению: 240, 360, 480 (максимум Telegram)
+        if (res > 360) res = 480;
+        else if (res > 240) res = 360;
+        else res = 240;
         cameraRoundResolution = res;
         saveInt("cameraRoundResolution", cameraRoundResolution);
     }
 
     public static void setCameraRoundFps(int fps) {
-        cameraRoundFps = fps;
-        cameraX60Fps = (fps == 60);
+        cameraRoundFps = (fps == 60 ? 60 : 30);
         saveInt("cameraRoundFps", cameraRoundFps);
-        save("cameraX60Fps", cameraX60Fps);
     }
 
     public static void toggleCameraRoundHighBitrate() {
@@ -632,9 +644,16 @@ public class HundredGramConfig {
         } catch (Exception ignored) {}
     }
 
+    /**
+     * H.265/HEVC не поддерживается Telegram-сервером для видеосообщений (round video notes).
+     * Параметр {@code codec} игнорируется — всегда принудительно устанавливается H.264 (AVC).
+     */
     public static void setCameraRoundCodec(int codec) {
-        cameraRoundCodec = codec;
-        saveInt("cameraRoundCodec", cameraRoundCodec);
+        // Сервер Telegram поддерживает только H.264 для round video notes
+        if (cameraRoundCodec != 0) {
+            cameraRoundCodec = 0;
+            saveInt("cameraRoundCodec", 0);
+        }
     }
 
     public static void setDownloadBoost(int mode) {
@@ -761,15 +780,19 @@ public class HundredGramConfig {
     }
 
     public static float getDownloadSpeedMBps() {
-        if (System.currentTimeMillis() - lastDownloadTime > 2500) {
-            currentDownloadSpeedMBps = 0f;
+        synchronized (downloadBytesLock) {
+            if (System.currentTimeMillis() - lastDownloadTime > 2500) {
+                currentDownloadSpeedMBps = 0f;
+            }
         }
         return currentDownloadSpeedMBps;
     }
 
     public static float getUploadSpeedMBps() {
-        if (System.currentTimeMillis() - lastUploadTime > 2500) {
-            currentUploadSpeedMBps = 0f;
+        synchronized (uploadBytesLock) {
+            if (System.currentTimeMillis() - lastUploadTime > 2500) {
+                currentUploadSpeedMBps = 0f;
+            }
         }
         return currentUploadSpeedMBps;
     }
@@ -875,6 +898,11 @@ public class HundredGramConfig {
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_STATUS);
     }
 
+    public static void toggleTrackSelfActivity() {
+        trackSelfActivity = !trackSelfActivity;
+        save("trackSelfActivity", trackSelfActivity);
+    }
+
     public static void toggleNotifyOnUserOnline() {
         notifyOnUserOnline = !notifyOnUserOnline;
         save("notifyOnUserOnline", notifyOnUserOnline);
@@ -968,6 +996,9 @@ public class HundredGramConfig {
     public static final int VAULT_MODE_DEFAULT = 0;
     public static final int VAULT_MODE_ALWAYS = 1;
     public static final int VAULT_MODE_NEVER = 2;
+
+    // 100gram: Global fallback auto-download size limit for vault emergency downloads (MB)
+    public static int vaultMaxAutodownloadSizeMb = 100;
 
     public static final int VAULT_TYPE_PHOTO = 1;
     public static final int VAULT_TYPE_VIDEO = 2;
@@ -1625,6 +1656,10 @@ public class HundredGramConfig {
     public static void toggleAlwaysForwardWithoutAuthor() {
         alwaysForwardWithoutAuthor = !alwaysForwardWithoutAuthor;
         save("alwaysForwardWithoutAuthor", alwaysForwardWithoutAuthor);
+    }
+
+    public static boolean isPersistentBackgroundEnabled() {
+        return keepAliveForegroundService;
     }
 
     public static void toggleKeepAliveForegroundService() {

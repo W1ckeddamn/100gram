@@ -39,6 +39,10 @@
     <string name="MessageEditedVersion">Редакция %1$d</string>
     <string name="MessageIsDeleted">Сообщение удалено</string>
     <string name="MessageDeletedBadge">Удалено</string>
+    <string name="DeletePermanently">Стереть навсегда из базы</string>
+    <string name="DeletePermanentlyAlert">Вы уверены, что хотите навсегда удалить это сообщение и его сохранённые файлы из локальной базы данных?</string>
+    <string name="DeletedAt">Удалено в %1$s</string>
+    <string name="MessageDeleted">Удалено</string>
     <string name="MessageNotEdited">Сообщение не редактировалось</string>
     <string name="MessageEditsEmpty">История изменений для этого сообщения пуста</string>
     <string name="MessageEditHistoryHint">История изменений сохраняется локально, включая удалённые сообщения</string>
@@ -85,7 +89,9 @@
     <string name="UserActivityLog">Журнал активности</string>
     <string name="UserActivityLastSeen">замечен(а) в %1$s</string>
     <string name="UserActivityTotalToday">Сегодня в сети: %1$s</string>
+    <string name="UserActivityTotalTodayLabel">Сегодня в сети</string>
     <string name="UserActivitySessionsCount">Заходов за сегодня: %1$d</string>
+    <string name="UserActivitySessionsCountLabel">Заходов за сегодня</string>
     <string name="UserActivityEmpty">Заходов в сеть пока не зафиксировано</string>
     <string name="UserActivityClear">Очистить журнал</string>
     <string name="UserActivityClearConfirm">Очистить историю активности для этого пользователя?</string>
@@ -98,6 +104,15 @@
     <string name="ActivityTriggerOnline">В сети</string>
     <string name="ActivityTriggerTyping">Печатает...</string>
     <string name="ActivityTriggerMessage">Сообщение</string>
+    <string name="ActivityTriggerAppOpen">Вход в приложение</string>
+    <string name="HundredGramTrackSelfActivity">Мониторинг своей активности</string>
+    <string name="HundredGramTrackSelfActivityInfo">Записывает время использования приложения, длительность сессий и количество заходов</string>
+    <string name="HundredGramMyActivityLog">Моя активность</string>
+    <string name="HundredGramMyActivityLogDesc">Просмотр статистики использования и журнала своих сессий</string>
+    <string name="MyActivityTotalToday">В приложении сегодня: %1$s</string>
+    <string name="MyActivityTotalTodayLabel">В приложении сегодня</string>
+    <string name="MyActivitySessionsCount">Заходов за сегодня: %1$d</string>
+    <string name="MyActivityClearConfirm">Очистить историю своей активности?</string>
 
     <!-- Chat Media Vault & Exceptions -->
     <string name="HundredGramChatVaultMenu">Автосохранение медиа</string>
@@ -307,9 +322,9 @@
     <string name="HundredGramChatVaultMode">Режим сохранения в хранилище</string>
     <string name="HundredGramChatVaultMaxSize">Максимальный размер файла хранилища</string>
 
-    <!-- Streamer Mode & Privacy Disguise -->
-    <string name="HundredGramCategoryStreamer">Режим стримера и маскировка</string>
-    <string name="HundredGramCategoryStreamerSub">Защита при трансляциях, Privacy Blur, камуфляж приложения</string>
+    <!-- Streamer Mode & Privacy Blur -->
+    <string name="HundredGramCategoryStreamer">Режим стримера и Privacy Blur</string>
+    <string name="HundredGramCategoryStreamerSub">Защита при показе экрана, скрытие данных, Privacy Blur</string>
     <string name="StreamerMode">Режим стримера (Streamer Mode)</string>
     <string name="StreamerModeInfo">Скрывает чувствительные данные для защиты от утечек при показе экрана и стримах</string>
     <string name="StreamerFakeName">Отображаемый псевдоним</string>
@@ -345,19 +360,18 @@
     <string name="RevealUsernameConfirmMessage">Вы уверены, что хотите раскрыть скрытое имя пользователя?</string>
     <string name="RevealButton">Показать</string>
 
-    <!-- App Disguise (Camouflage) -->
-    <string name="AppDisguiseSection">Камуфляж приложения (App Disguise)</string>
-    <string name="AppDisguiseInfo">Смена иконки и названия приложения на рабочем столе Android без переустановки</string>
-    <string name="AppDisguiseDefault">100gram (По умолчанию)</string>
-    <string name="AppDisguiseCalculator">Калькулятор</string>
-    <string name="AppDisguiseNotes">Заметки</string>
-    <string name="AppDisguiseClock">Часы</string>
     <string name="StreamerPreventAccidentalDelete">Защита от случайного удаления</string>
     <string name="StreamerPreventAccidentalDeleteInfo">Требует повторного подтверждения перед удалением любого чата</string>
     <string name="PrivacyBlurAvatars">Скрывать аватарки в списке чатов</string>
     <string name="PrivacyBlurAvatarsInfo">Отображает нейтральные значки с инициалами вместо личных фото</string>
-    <string name="AppDisguiseIcon">Иконка и название приложения</string>
-    <string name="AppDisguiseApplied">Иконка приложения изменена на «%1$s»</string>
+
+    <!-- Settings Main Sections -->
+    <string name="HundredGramSettings">Настройки 100gram</string>
+    <string name="HundredGramSectionPrivacy">Конфиденциальность и безопасность</string>
+    <string name="HundredGramSectionInterface">Интерфейс и чаты</string>
+    <string name="HundredGramSectionMedia">Медиа и камера</string>
+    <string name="HundredGramSectionNetwork">Сеть и производительность</string>
+    <string name="HundredGramSectionTools">Инструменты и утилиты</string>
 
     <!-- Stage 3: Interface, Navigation & Avatar History -->
     <string name="HideSimilarChannels">Скрывать «Похожие каналы»</string>
@@ -425,7 +439,7 @@
     <string name="VaultMaxSizeInfo">Максимальный объём памяти для архива медиа. При превышении удаляются самые старые файлы</string>
     <string name="VaultMaxSizeUnlimited">Без лимита</string>
     <string name="VaultMaxSize2Gb">2 ГБ</string>
-    <string name="VaultMaxSize5Gb">5 GB</string>
+    <string name="VaultMaxSize5Gb">5 ГБ</string>
     <string name="VaultMaxSize10Gb">10 ГБ</string>
     <string name="VaultMaxSize20Gb">20 ГБ</string>
     <string name="VaultCleanExpiredNow">Очистить устаревшие файлы</string>
@@ -555,4 +569,37 @@
     <string name="RoundVideoCodec">Видеокодек</string>
     <string name="RoundVideoCodecH264">H.264 (AVC — совместим со всеми)</string>
     <string name="RoundVideoCodecH265">H.265 (HEVC — максимальное сжатие и четкость)</string>
+
+    <!-- Строки добавлены в bugfix-проходе -->
+    <string name="HundredGramMB">МБ</string>
+    <string name="AutomationConditionHeader">ЕСЛИ (Условия срабатывания)</string>
+    <string name="AutomationActionsHeader">ТОГДА (Автоматические действия)</string>
+    <string name="HundredGramSpeedTestError">Тест скорости не удался. Проверь соединение.</string>
+
+    <!-- Защищённое хранилище медиа (Vault) -->
+    <string name="HundredGramProtectedVaultTitle">Защищённое хранилище медиа (Vault)</string>
+    <string name="HundredGramProtectedVaultSize">Занятое место в Vault</string>
+    <string name="HundredGramProtectedVaultClear">Очистить Vault</string>
+    <string name="HundredGramProtectedVaultClearConfirm">Вы уверены, что хотите удалить все сохранённые файлы из защищённого хранилища? Медиа удалённых и отредактированных сообщений будут безвозвратно стёрты.</string>
+    <string name="HundredGramProtectedVaultCleared">Защищённое хранилище очищено (освобождено %1$s)</string>
+    <string name="HundredGramProtectedVaultInfo">Изолированное хранилище медиафайлов удалённых и отредактированных сообщений. Защищено от штатной очистки кэша Telegram.</string>
+
+    <!-- Медиа-сейф (Vault Viewer) -->
+    <string name="HundredGramVaultMediaTitle">Медиа-сейф</string>
+    <string name="HundredGramVaultNoFiles">В сейфе нет файлов</string>
+    <string name="HundredGramVaultFilterByChat">Фильтр по чату</string>
+    <string name="HundredGramVaultAllChats">Все чаты</string>
+    <string name="HundredGramVaultFilterReset">Сбросить фильтр</string>
+    <string name="HundredGramVaultShare">Поделиться</string>
+    <string name="HundredGramVaultSaveGallery">Сохранить в Галерею</string>
+    <string name="HundredGramVaultSaveDownloads">Сохранить в Загрузки</string>
+    <string name="HundredGramVaultGoToMessage">Перейти к сообщению</string>
+    <string name="HundredGramVaultDelete">Удалить из Vault</string>
+    <string name="HundredGramVaultDeleteFileConfirm">Удалить этот файл из Vault?</string>
+    <string name="HundredGramVaultDeletedFile">Файл удалён из Vault</string>
+    <string name="HundredGramVaultTabPhotos">Фото</string>
+    <string name="HundredGramVaultTabVideos">Видео</string>
+    <string name="HundredGramVaultTabVoice">Голосовые</string>
+    <string name="HundredGramVaultTabFiles">Файлы</string>
+    <string name="HundredGramVaultFileSaved">Файл сохранён</string>
 </resources>

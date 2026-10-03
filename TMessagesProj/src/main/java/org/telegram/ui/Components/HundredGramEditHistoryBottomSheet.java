@@ -1,6 +1,8 @@
 package org.telegram.ui.Components;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.text.TextUtils;
@@ -14,6 +16,8 @@ import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLoader;
+import org.telegram.messenger.HundredGramVaultManager;
+import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesStorage;
@@ -21,7 +25,11 @@ import org.telegram.messenger.R;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.PhotoViewer;
 
+import org.telegram.messenger.Utilities;
+
+import java.io.File;
 import java.util.ArrayList;
 
 public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerListView {
@@ -47,6 +55,12 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
             this.isOriginal = isOriginal;
             this.isDeleted = isDeleted;
             this.revisionNumber = revisionNumber;
+        }
+    }
+
+    public static void show(BaseFragment fragment, MessageObject messageObject) {
+        if (fragment != null && messageObject != null) {
+            new HundredGramEditHistoryBottomSheet(fragment, messageObject).show();
         }
     }
 
@@ -310,15 +324,244 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
 
         card.addView(header, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
-        // Media Label (if any)
+        // Media preview — determines type and renders appropriately
         String mediaLabel = getMediaDescription(rev.message);
-        if (!TextUtils.isEmpty(mediaLabel)) {
+        boolean hasMediaPreview = false;
+
+        if (!TextUtils.isEmpty(mediaLabel) && rev.message.media != null
+                && !(rev.message.media instanceof TLRPC.TL_messageMediaEmpty)) {
+
+            long dialogId = messageObject.getDialogId();
+            int mid = rev.message.id != 0 ? rev.message.id : messageObject.getId();
+
+            File vaultFile = null;
+            if (rev.isCurrent) {
+                vaultFile = FileLoader.getInstance(currentAccount).getPathToMessage(rev.message, true);
+                if (vaultFile == null || !vaultFile.exists()) {
+                    vaultFile = HundredGramVaultManager.getInstance(currentAccount).getVaultFile(rev.message);
+                }
+            }
+            if (vaultFile == null || !vaultFile.exists()) {
+                vaultFile = HundredGramVaultManager.getInstance(currentAccount).getVaultFileForEdit(mid, dialogId, rev.versionDate);
+            }
+            if (vaultFile == null || !vaultFile.exists()) {
+                vaultFile = FileLoader.getInstance(currentAccount).getPathToMessage(rev.message, true);
+            }
+            if (vaultFile == null || !vaultFile.exists()) {
+                vaultFile = HundredGramVaultManager.getInstance(currentAccount).getVaultFile(rev.message);
+            }
+            if (vaultFile == null || !vaultFile.exists()) {
+                String attachName = HundredGramVaultManager.getAttachFileName(rev.message);
+                if (attachName != null) {
+                    vaultFile = HundredGramVaultManager.getInstance(currentAccount).getVaultFileByName(attachName);
+                }
+            }
+
+            if (isPhotoOrVideo(rev.message)) {
+                // ── Photo / Video / GIF: render thumbnail ──────────────────────────────
+                hasMediaPreview = true;
+                FrameLayout thumbContainer = new FrameLayout(context);
+                thumbContainer.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(8),
+                        0x18000000));
+
+                BackupImageView thumbView = new BackupImageView(context);
+                thumbView.setRoundRadius(AndroidUtilities.dp(8));
+
+                final File finalVaultFile = vaultFile;
+                final boolean isVideoFile = isVideoDocument(
+                        rev.message.media instanceof TLRPC.TL_messageMediaDocument
+                                ? rev.message.media.document : null);
+                final int targetPx = AndroidUtilities.dp(320); // ~160dp × 2 for density
+
+                // Background decode if local file exists, else use ImageLocation
+                Utilities.globalQueue.postRunnable(() -> {
+                    Bitmap bmp = null;
+                    try {
+                        if (isVideoFile && finalVaultFile != null && finalVaultFile.exists()) {
+                            // Extract a single frame from the video
+                            bmp = android.media.ThumbnailUtils.createVideoThumbnail(
+                                    finalVaultFile.getAbsolutePath(),
+                                    android.provider.MediaStore.Video.Thumbnails.MINI_KIND);
+                        } else if (finalVaultFile != null && finalVaultFile.exists()) {
+                            // Phase 1 — measure dimensions only (no alloc)
+                            BitmapFactory.Options bounds = new BitmapFactory.Options();
+                            bounds.inJustDecodeBounds = true;
+                            BitmapFactory.decodeFile(finalVaultFile.getAbsolutePath(), bounds);
+                            // Phase 2 — compute inSampleSize
+                            int sampleSize = 1;
+                            int w = bounds.outWidth, h = bounds.outHeight;
+                            while (w > targetPx * 2 || h > targetPx * 2) {
+                                sampleSize *= 2;
+                                w /= 2;
+                                h /= 2;
+                            }
+                            // Phase 3 — decode at reduced size with RGB_565
+                            BitmapFactory.Options opts = new BitmapFactory.Options();
+                            opts.inSampleSize = sampleSize;
+                            opts.inPreferredConfig = Bitmap.Config.RGB_565;
+                            bmp = BitmapFactory.decodeFile(finalVaultFile.getAbsolutePath(), opts);
+                        }
+                    } catch (Throwable ignore) {}
+                    final Bitmap finalBmp = bmp;
+                    AndroidUtilities.runOnUIThread(() -> {
+                        if (finalBmp != null) {
+                            thumbView.setImageBitmap(finalBmp);
+                        } else {
+                            if (rev.message.media instanceof TLRPC.TL_messageMediaPhoto && rev.message.media.photo != null) {
+                                TLRPC.Photo photo = rev.message.media.photo;
+                                TLRPC.PhotoSize size = FileLoader.getClosestPhotoSizeWithSize(photo.sizes, 480);
+                                TLRPC.PhotoSize thumb = FileLoader.getClosestPhotoSizeWithSize(photo.sizes, 50);
+                                thumbView.setImage(ImageLocation.getForPhoto(size, photo), "320_160", ImageLocation.getForPhoto(thumb, photo), "b", null, photo);
+                            } else if (rev.message.media instanceof TLRPC.TL_messageMediaDocument && rev.message.media.document != null) {
+                                TLRPC.Document doc = rev.message.media.document;
+                                if (doc.thumbs != null && !doc.thumbs.isEmpty()) {
+                                    TLRPC.PhotoSize thumb = FileLoader.getClosestPhotoSizeWithSize(doc.thumbs, 320);
+                                    thumbView.setImage(ImageLocation.getForDocument(thumb, doc), "320_160", (android.graphics.drawable.Drawable) null, null);
+                                } else {
+                                    thumbView.setBackgroundColor(0x20808080);
+                                }
+                            } else {
+                                thumbView.setBackgroundColor(0x20808080);
+                            }
+                        }
+                    });
+                });
+
+                thumbContainer.addView(thumbView,
+                        LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 160));
+
+                // Media type badge (bottom-left)
+                TextView mediaTypeBadge = new TextView(context);
+                mediaTypeBadge.setText(mediaLabel);
+                mediaTypeBadge.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                mediaTypeBadge.setTypeface(AndroidUtilities.bold());
+                mediaTypeBadge.setTextColor(0xFFFFFFFF);
+                mediaTypeBadge.setBackgroundColor(0x99000000);
+                mediaTypeBadge.setPadding(AndroidUtilities.dp(6), AndroidUtilities.dp(3),
+                        AndroidUtilities.dp(6), AndroidUtilities.dp(3));
+                thumbContainer.addView(mediaTypeBadge,
+                        LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT,
+                                Gravity.BOTTOM | Gravity.START, 8, 0, 8, 6));
+
+                // Play icon overlay for video
+                if (isVideoFile) {
+                    ImageView playIcon = new ImageView(context);
+                    playIcon.setImageResource(R.drawable.ic_play);
+                    playIcon.setAlpha(0.85f);
+                    thumbContainer.addView(playIcon,
+                            LayoutHelper.createFrame(48, 48, Gravity.CENTER));
+                }
+
+                // Tap → open in PhotoViewer
+                thumbContainer.setOnClickListener(v -> {
+                    try {
+                        TLRPC.Message histMsg = rev.message;
+                        histMsg.id = messageObject.getId();
+                        histMsg.dialog_id = messageObject.getDialogId();
+                        if (finalVaultFile != null && finalVaultFile.exists()) {
+                            histMsg.attachPath = finalVaultFile.getAbsolutePath();
+                        }
+                        MessageObject histObj = new MessageObject(currentAccount, histMsg, false, false);
+                        if (finalVaultFile != null && finalVaultFile.exists()) {
+                            histObj.messageOwner.attachPath = finalVaultFile.getAbsolutePath();
+                        }
+                        ArrayList<MessageObject> list = new ArrayList<>();
+                        list.add(histObj);
+                        PhotoViewer.getInstance().setParentActivity(
+                                fragment.getParentActivity(), resourcesProvider);
+                        PhotoViewer.getInstance().openPhoto(list, 0,
+                                messageObject.getDialogId(), 0, 0,
+                                new PhotoViewer.EmptyPhotoViewerProvider());
+                        dismiss();
+                    } catch (Exception ignore) {}
+                });
+
+                card.addView(thumbContainer,
+                        LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 160, 0, 8, 0, 0));
+
+            } else if (isAudioOrDocument(rev.message)) {
+                // ── Audio / Voice / Document: file info row ────────────────────────────
+                hasMediaPreview = true;
+                LinearLayout attachRow = new LinearLayout(context);
+                attachRow.setOrientation(LinearLayout.HORIZONTAL);
+                attachRow.setGravity(Gravity.CENTER_VERTICAL);
+                attachRow.setPadding(AndroidUtilities.dp(10), AndroidUtilities.dp(8),
+                        AndroidUtilities.dp(10), AndroidUtilities.dp(8));
+                GradientDrawable attachBg = new GradientDrawable();
+                attachBg.setCornerRadius(AndroidUtilities.dp(8));
+                attachBg.setColor(0x12000000);
+                attachRow.setBackground(attachBg);
+
+                // File type icon
+                ImageView fileIcon = new ImageView(context);
+                int iconRes = getDocumentIconRes(rev.message);
+                fileIcon.setImageResource(iconRes);
+                fileIcon.setColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4, resourcesProvider));
+                attachRow.addView(fileIcon,
+                        LayoutHelper.createLinear(32, 32, Gravity.CENTER_VERTICAL, 0, 0, 10, 0));
+
+                // File name + size column
+                LinearLayout fileInfo = new LinearLayout(context);
+                fileInfo.setOrientation(LinearLayout.VERTICAL);
+
+                TextView fileNameView = new TextView(context);
+                String displayName = getDocumentDisplayName(rev.message, vaultFile);
+                fileNameView.setText(displayName);
+                fileNameView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+                fileNameView.setTypeface(AndroidUtilities.bold());
+                fileNameView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
+                fileNameView.setMaxLines(1);
+                fileNameView.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+                fileInfo.addView(fileNameView,
+                        LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+                long fileSize = (vaultFile != null && vaultFile.exists()) ? vaultFile.length() :
+                        (rev.message.media != null && rev.message.media.document != null ? rev.message.media.document.size : 0);
+
+                TextView fileSizeView = new TextView(context);
+                fileSizeView.setText((fileSize > 0 ? AndroidUtilities.formatFileSize(fileSize) + " · " : "") + mediaLabel);
+                fileSizeView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+                fileSizeView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
+                fileInfo.addView(fileSizeView,
+                        LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 2, 0, 0));
+
+                attachRow.addView(fileInfo, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1.0f));
+
+                final File finalDocVaultFile = vaultFile;
+                attachRow.setOnClickListener(v -> {
+                    if (finalDocVaultFile != null && finalDocVaultFile.exists()) {
+                        AndroidUtilities.openForView(finalDocVaultFile, displayName,
+                                rev.message.media != null && rev.message.media.document != null ? rev.message.media.document.mime_type : null,
+                                fragment.getParentActivity(), resourcesProvider, false);
+                    } else if (rev.message.media != null && rev.message.media.document != null) {
+                        MessageObject docObj = new MessageObject(currentAccount, rev.message, false, false);
+                        FileLoader.getInstance(currentAccount).loadFile(rev.message.media.document, docObj, 1, 0);
+                        android.widget.Toast.makeText(context, LocaleController.getString(R.string.Downloading), android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                card.addView(attachRow,
+                        LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 8, 0, 0));
+
+            } else if (!TextUtils.isEmpty(mediaLabel)) {
+                // Fallback text label (no vault file, or unsupported type like poll/location)
+                TextView mediaView = new TextView(context);
+                mediaView.setText(mediaLabel);
+                mediaView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
+                mediaView.setTypeface(AndroidUtilities.bold());
+                mediaView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4, resourcesProvider));
+                card.addView(mediaView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT,
+                        LayoutHelper.WRAP_CONTENT, 0, 6, 0, 0));
+            }
+        } else if (!TextUtils.isEmpty(mediaLabel)) {
+            // Non-visual media with no vault file (audio, poll, location, contact) — text label only
             TextView mediaView = new TextView(context);
             mediaView.setText(mediaLabel);
             mediaView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
             mediaView.setTypeface(AndroidUtilities.bold());
             mediaView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4, resourcesProvider));
-            card.addView(mediaView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 6, 0, 0));
+            card.addView(mediaView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT,
+                    LayoutHelper.WRAP_CONTENT, 0, 6, 0, 0));
         }
 
         // Text Content
@@ -342,11 +585,91 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
 
         card.addView(textView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 8, 0, 0));
 
-        // Click on entire card copies as well
-        card.setOnClickListener(v -> copyTextToClipboard(copyText));
+        // Click on entire card copies text (but not if user tapped the media preview)
+        if (!hasMediaPreview) {
+            card.setOnClickListener(v -> copyTextToClipboard(copyText));
+        }
 
         root.addView(card, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
         return root;
+    }
+
+    /** Returns true if the message media is a photo, video, gif, or round video (previewable). */
+    private boolean isPhotoOrVideo(TLRPC.Message message) {
+        if (message == null || message.media == null) return false;
+        if (message.media instanceof TLRPC.TL_messageMediaPhoto) return true;
+        if (message.media instanceof TLRPC.TL_messageMediaDocument && message.media.document != null) {
+            for (TLRPC.DocumentAttribute attr : message.media.document.attributes) {
+                if (attr instanceof TLRPC.TL_documentAttributeVideo
+                        || attr instanceof TLRPC.TL_documentAttributeAnimated) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Returns true if the document is a video (including round video). */
+    private boolean isVideoDocument(TLRPC.Document doc) {
+        if (doc == null) return false;
+        for (TLRPC.DocumentAttribute attr : doc.attributes) {
+            if (attr instanceof TLRPC.TL_documentAttributeVideo) return true;
+        }
+        return false;
+    }
+
+    /** Returns true if the media is audio, voice, round video, or a generic document (not visual). */
+    private boolean isAudioOrDocument(TLRPC.Message message) {
+        if (message == null || message.media == null) return false;
+        if (!(message.media instanceof TLRPC.TL_messageMediaDocument)) return false;
+        if (message.media.document == null) return false;
+        for (TLRPC.DocumentAttribute attr : message.media.document.attributes) {
+            if (attr instanceof TLRPC.TL_documentAttributeAudio) return true;
+            if (attr instanceof TLRPC.TL_documentAttributeVideo && ((TLRPC.TL_documentAttributeVideo) attr).round_message) return true;
+        }
+        // Generic document (PDF, ZIP, etc.)
+        return true;
+    }
+
+    /** Returns appropriate icon resource for the document type. */
+    private int getDocumentIconRes(TLRPC.Message message) {
+        if (message == null || message.media == null || message.media.document == null) {
+            return R.drawable.msg_filehq;
+        }
+        for (TLRPC.DocumentAttribute attr : message.media.document.attributes) {
+            if (attr instanceof TLRPC.TL_documentAttributeAudio) {
+                return ((TLRPC.TL_documentAttributeAudio) attr).voice
+                        ? R.drawable.msg_filled_data_voice : R.drawable.msg_filled_data_music;
+            }
+            if (attr instanceof TLRPC.TL_documentAttributeVideo) {
+                return R.drawable.msg_video;
+            }
+        }
+        return R.drawable.msg_filehq;
+    }
+
+    /** Returns a human-readable display name for the document. */
+    private String getDocumentDisplayName(TLRPC.Message message, File fallbackFile) {
+        if (message != null && message.media != null && message.media.document != null) {
+            String name = FileLoader.getDocumentFileName(message.media.document);
+            if (!TextUtils.isEmpty(name)) return name;
+        }
+        if (fallbackFile != null) {
+            String name = fallbackFile.getName();
+            // Strip the "edit_{mid}_{date}_" prefix we added when saving
+            int lastUnderscore = -1;
+            if (name.startsWith("edit_")) {
+                int count = 0;
+                for (int i = 0; i < name.length(); i++) {
+                    if (name.charAt(i) == '_') {
+                        count++;
+                        if (count == 3) { lastUnderscore = i; break; }
+                    }
+                }
+            }
+            return lastUnderscore >= 0 ? name.substring(lastUnderscore + 1) : name;
+        }
+        return "file";
     }
 
     private CharSequence getMessageText(TLRPC.Message message) {

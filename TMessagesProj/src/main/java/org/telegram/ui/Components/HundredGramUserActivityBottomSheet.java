@@ -10,6 +10,7 @@ import org.telegram.messenger.HundredGramActivityTracker;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
+import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.AlertDialog;
@@ -17,14 +18,28 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
-public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerListView {
+public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerListView implements NotificationCenter.NotificationCenterDelegate {
 
     private final long userId;
     private final BaseFragment fragment;
     private UniversalAdapter adapter;
     private final ArrayList<HundredGramActivityTracker.ActivityEntry> entries = new ArrayList<>();
     private boolean loaded;
+
+    private final Runnable tickerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!isShowing() || getContext() == null) {
+                return;
+            }
+            if (loaded && adapter != null && HundredGramActivityTracker.getInstance(currentAccount).isSessionActive(userId)) {
+                adapter.update(true);
+            }
+            AndroidUtilities.runOnUIThread(this, 1000);
+        }
+    };
 
     public HundredGramUserActivityBottomSheet(BaseFragment fragment, long userId) {
         super(fragment.getContext(), fragment, false, false, false, true, ActionBarType.SLIDING, fragment.getResourceProvider());
@@ -36,7 +51,9 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
         setSlidingActionBar();
         setShowHandle(true);
 
+        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.updateInterfaces);
         loadData();
+        AndroidUtilities.runOnUIThread(tickerRunnable, 1000);
 
         recyclerListView.setOnItemClickListener((view, position, x, y) -> {
             if (adapter == null) return;
@@ -53,6 +70,27 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
         });
     }
 
+    @Override
+    public void dismiss() {
+        AndroidUtilities.cancelRunOnUIThread(tickerRunnable);
+        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.updateInterfaces);
+        super.dismiss();
+    }
+
+    @Override
+    public void didReceivedNotification(int id, int account, Object... args) {
+        if (id == NotificationCenter.updateInterfaces) {
+            if (args != null && args.length > 0 && args[0] instanceof Integer) {
+                int mask = (Integer) args[0];
+                if ((mask & MessagesController.UPDATE_MASK_STATUS) != 0) {
+                    loadData();
+                }
+            } else {
+                loadData();
+            }
+        }
+    }
+
     private void loadData() {
         MessagesStorage.getInstance(currentAccount).getUserActivityLogs(userId, 100, result -> {
             entries.clear();
@@ -66,12 +104,16 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
         });
     }
 
+    private boolean isSelf() {
+        return userId == org.telegram.messenger.UserConfig.getInstance(currentAccount).getClientUserId();
+    }
+
     private void showClearConfirmDialog() {
         Context context = getContext();
         if (context == null) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(context, resourcesProvider);
         builder.setTitle(LocaleController.getString("UserActivityClear", R.string.UserActivityClear));
-        builder.setMessage(LocaleController.getString("UserActivityClearConfirm", R.string.UserActivityClearConfirm));
+        builder.setMessage(LocaleController.getString(isSelf() ? "MyActivityClearConfirm" : "UserActivityClearConfirm", isSelf() ? R.string.MyActivityClearConfirm : R.string.UserActivityClearConfirm));
         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), (dialog, which) -> {
             HundredGramActivityTracker.getInstance(currentAccount).clearHistory(userId, () -> {
                 entries.clear();
@@ -87,7 +129,7 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
 
     @Override
     protected CharSequence getTitle() {
-        return LocaleController.getString("UserActivityLog", R.string.UserActivityLog);
+        return isSelf() ? LocaleController.getString("HundredGramMyActivityLog", R.string.HundredGramMyActivityLog) : LocaleController.getString("UserActivityLog", R.string.UserActivityLog);
     }
 
     @Override
@@ -97,10 +139,12 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
     }
 
     private void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
+        boolean self = isSelf();
         TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(userId);
         String name = user != null ? ContactsController.formatName(user) : "User " + userId;
 
-        items.add(UItem.asHeader(name + " — " + LocaleController.getString("UserActivityLog", R.string.UserActivityLog)));
+        String headerTitle = self ? LocaleController.getString("HundredGramMyActivityLog", R.string.HundredGramMyActivityLog) : (name + " — " + LocaleController.getString("UserActivityLog", R.string.UserActivityLog));
+        items.add(UItem.asHeader(headerTitle));
 
         if (!loaded) {
             items.add(UItem.asShadow(LocaleController.getString("Loading", R.string.Loading)));
@@ -114,20 +158,37 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
 
         // Calculate today stats
         long now = System.currentTimeMillis() / 1000L;
-        long dayStart = now - (now % 86400);
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        long dayStart = cal.getTimeInMillis() / 1000L;
         long todayDuration = 0;
         int todaySessions = 0;
+        boolean isActiveNow = HundredGramActivityTracker.getInstance(currentAccount).isSessionActive(userId);
 
         for (int a = 0; a < entries.size(); a++) {
             HundredGramActivityTracker.ActivityEntry entry = entries.get(a);
-            if (entry.timeStart >= dayStart) {
+            long sessionStart = entry.timeStart;
+            long sessionEnd = (a == 0 && isActiveNow) ? now : entry.timeEnd;
+            if (sessionEnd <= sessionStart) {
+                sessionEnd = sessionStart + 15L;
+            }
+            if (sessionEnd > dayStart) {
                 todaySessions++;
-                todayDuration += entry.getDuration();
+                long startClamped = Math.max(sessionStart, dayStart);
+                long dur = Math.max(0, sessionEnd - startClamped);
+                todayDuration += dur;
             }
         }
 
         String durationStr = formatDuration(todayDuration);
-        items.add(UItem.asButton(1, R.drawable.msg_calendar2, LocaleController.formatString("UserActivityTotalToday", R.string.UserActivityTotalToday, durationStr), LocaleController.formatString("UserActivitySessionsCount", R.string.UserActivitySessionsCount, todaySessions)));
+        String todayTimeLabel = self ? LocaleController.getString("MyActivityTotalTodayLabel", R.string.MyActivityTotalTodayLabel) : LocaleController.getString("UserActivityTotalTodayLabel", R.string.UserActivityTotalTodayLabel);
+        items.add(UItem.asButton(1, R.drawable.msg_calendar2, todayTimeLabel, durationStr));
+
+        String todayCountLabel = LocaleController.getString("UserActivitySessionsCountLabel", R.string.UserActivitySessionsCountLabel);
+        items.add(UItem.asButton(2, R.drawable.msg_usersearch, todayCountLabel, String.valueOf(todaySessions)));
         items.add(UItem.asShadow(null));
 
         items.add(UItem.asHeader(LocaleController.getString("ActivityHistory", R.string.ActivityHistory)));
@@ -136,7 +197,10 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
             HundredGramActivityTracker.ActivityEntry entry = entries.get(a);
             int icon;
             String triggerLabel;
-            if (entry.triggerType == HundredGramActivityTracker.TRIGGER_TYPING) {
+            if (entry.triggerType == HundredGramActivityTracker.TRIGGER_APP_OPEN) {
+                icon = R.drawable.msg_openin;
+                triggerLabel = LocaleController.getString("ActivityTriggerAppOpen", R.string.ActivityTriggerAppOpen);
+            } else if (entry.triggerType == HundredGramActivityTracker.TRIGGER_TYPING) {
                 icon = R.drawable.msg_edit;
                 triggerLabel = LocaleController.getString("ActivityTriggerTyping", R.string.ActivityTriggerTyping);
             } else if (entry.triggerType == HundredGramActivityTracker.TRIGGER_MESSAGE) {
@@ -150,13 +214,12 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
             String timeStartFormatted = LocaleController.formatDateTime(entry.timeStart, false);
             String title = timeStartFormatted + " • " + triggerLabel;
             String value;
-            if (entry.timeEnd > entry.timeStart) {
-                String dur = formatDuration(entry.getDuration());
-                value = dur;
-            } else if (HundredGramActivityTracker.getInstance(currentAccount).isSessionActive(userId) && a == 0) {
-                value = LocaleController.getString("Online", R.string.Online);
+            if (isActiveNow && a == 0) {
+                long activeDur = Math.max(1L, now - entry.timeStart);
+                value = LocaleController.getString("Online", R.string.Online) + " (" + formatDuration(activeDur) + ")";
             } else {
-                value = "";
+                long dur = entry.timeEnd > entry.timeStart ? (entry.timeEnd - entry.timeStart) : 15L;
+                value = formatDuration(dur);
             }
 
             items.add(UItem.asButton(100 + a, icon, title, value));
@@ -167,11 +230,19 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
     }
 
     private static String formatDuration(long seconds) {
+        if (seconds <= 0) {
+            return "0 сек";
+        }
         if (seconds < 60) {
             return seconds + " сек";
         } else if (seconds < 3600) {
             long minutes = seconds / 60;
-            return minutes + " мин";
+            long secs = seconds % 60;
+            if (secs > 0) {
+                return minutes + " мин " + secs + " сек";
+            } else {
+                return minutes + " мин";
+            }
         } else {
             long hours = seconds / 3600;
             long minutes = (seconds % 3600) / 60;

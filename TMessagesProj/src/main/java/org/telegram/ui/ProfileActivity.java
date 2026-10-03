@@ -129,6 +129,7 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.AuthTokensHelper;
 import org.telegram.messenger.BirthdayController;
+import org.telegram.messenger.BillingController;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ChatThemeController;
@@ -7410,8 +7411,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                             }
                             final String usernameStr = "@" + usernameObj.username;
                             final String date = LocaleController.getInstance().getFormatterBoostExpired().format(new Date(info.purchase_date * 1000L));
-                            final String cryptoAmount = BuildVars.gimmeFuLabel();
-                            final String amount = BuildVars.gimmeFuLabel();
+                            final String cryptoAmount = BillingController.getInstance().formatCurrency(info.crypto_amount, info.crypto_currency);
+                            final String amount = BillingController.getInstance().formatCurrency(info.amount, info.currency);
                             BulletinFactory.of(shareAlert.bulletinContainer2, resourcesProvider)
                                     .createImageBulletin(
                                             R.drawable.filled_username,
@@ -11580,7 +11581,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         getMessagesController().reloadUser(getDialogId());
                     }, resourcesProvider);
                 } : null);
-                if (user != null && !user.bot && userId != getUserConfig().getClientUserId()) {
+                if (user != null && !user.bot) {
                     onlineTextView[a].setOnClickListener(v -> {
                         new org.telegram.ui.Components.HundredGramUserActivityBottomSheet(ProfileActivity.this, userId).show();
                     });
@@ -12307,10 +12308,14 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                             otherItem.setSubItemShown(disable_no_forwards, !forwardsAllowed);
                         }
                     }
-                    if (!isBot && user != null && !user.self) {
-                        boolean tracked = org.telegram.messenger.HundredGramConfig.isUserTrackedForOnline(userId);
-                        otherItem.addSubItem(hundredgram_notify_online, R.drawable.msg_notifications, LocaleController.getString(tracked ? "DisableNotifyUserOnline" : "EnableNotifyUserOnline", tracked ? R.string.DisableNotifyUserOnline : R.string.EnableNotifyUserOnline));
-                        otherItem.addSubItem(hundredgram_user_activity, R.drawable.msg_calendar2, LocaleController.getString("UserActivityLog", R.string.UserActivityLog));
+                    if (!isBot && user != null) {
+                        if (!user.self) {
+                            boolean tracked = org.telegram.messenger.HundredGramConfig.isUserTrackedForOnline(userId);
+                            otherItem.addSubItem(hundredgram_notify_online, R.drawable.msg_notifications, LocaleController.getString(tracked ? "DisableNotifyUserOnline" : "EnableNotifyUserOnline", tracked ? R.string.DisableNotifyUserOnline : R.string.EnableNotifyUserOnline));
+                            otherItem.addSubItem(hundredgram_user_activity, R.drawable.msg_calendar2, LocaleController.getString("UserActivityLog", R.string.UserActivityLog));
+                        } else {
+                            otherItem.addSubItem(hundredgram_user_activity, R.drawable.msg_calendar2, LocaleController.getString("HundredGramMyActivityLog", R.string.HundredGramMyActivityLog));
+                        }
                     }
                     if (userId != 0 && (user == null || !user.self)) {
                         otherItem.addSubItem(hundredgram_chat_settings, R.drawable.msg_settings_old, LocaleController.getString("HundredGramChatSettingsTitle", R.string.HundredGramChatSettingsTitle));

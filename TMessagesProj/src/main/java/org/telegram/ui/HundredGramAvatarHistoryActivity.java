@@ -160,7 +160,12 @@ public class HundredGramAvatarHistoryActivity extends BaseFragment {
         options.add(R.drawable.msg_share, LocaleController.getString("ShareFile", R.string.ShareFile), () -> {
             try {
                 Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setType("image/jpeg");
+                // Fix: определяем MIME-тип по расширению файла (аватары бывают .jpg, .png, .webp)
+                String lowerPath = file.getName().toLowerCase(Locale.ROOT);
+                String mimeType = "image/jpeg";
+                if (lowerPath.endsWith(".png")) mimeType = "image/png";
+                else if (lowerPath.endsWith(".webp")) mimeType = "image/webp";
+                intent.setType(mimeType);
                 Uri uri = FileProvider.getUriForFile(getParentActivity(), ApplicationLoader.getApplicationId() + ".provider", file);
                 intent.putExtra(Intent.EXTRA_STREAM, uri);
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

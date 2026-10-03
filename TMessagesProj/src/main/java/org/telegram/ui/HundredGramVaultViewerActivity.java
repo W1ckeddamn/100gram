@@ -1,7 +1,16 @@
 package org.telegram.ui;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -10,13 +19,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.collection.LongSparseArray;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,11 +34,14 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
-import org.telegram.messenger.FilePathDatabase;
+import org.telegram.messenger.HundredGramVaultManager;
+import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
+import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLObject;
@@ -41,675 +53,824 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
-import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Components.AvatarDrawable;
+import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.BulletinFactory;
-import org.telegram.ui.Components.FlickerLoadingView;
+import org.telegram.ui.Components.EmptyTextProgressView;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
-import org.telegram.ui.Storage.CacheModel;
+import org.telegram.ui.Components.ViewPagerFixed;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
-public class HundredGramVaultViewerActivity extends BaseFragment {
+public class HundredGramVaultViewerActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
 
-    public static final int FILTER_ALL = 0;
-    public static final int FILTER_ARCHIVED = 1;
-    public static final int FILTER_PRIVATE = 2;
-    public static final int FILTER_GROUPS = 3;
+    public static final int TAB_PHOTOS = 0;
+    public static final int TAB_VIDEOS = 1;
+    public static final int TAB_VOICE = 2;
+    public static final int TAB_FILES = 3;
 
-    private static final int VIEW_TYPE_HEADER_STATS = 0;
-    private static final int VIEW_TYPE_HEADER_FILTERS = 1;
-    private static final int VIEW_TYPE_HEADER_TITLE = 2;
-    private static final int VIEW_TYPE_CHAT_ITEM = 3;
-    private static final int VIEW_TYPE_LOADING = 4;
-    private static final int VIEW_TYPE_EMPTY = 5;
+    private static final int ITEM_SEARCH = 1;
+    private static final int ITEM_FILTER = 2;
 
-    private static final int HEADER_ROWS = 3;
+    public static class VaultItem {
+        public int mid;
+        public long uid;
+        public String fileName;
+        public String vaultPath;
+        public File file;
+        public long size;
+        public long date;
+        public String chatTitle;
+        private MessageObject messageObject;
 
-    private RecyclerListView listView;
-    private ListAdapter adapter;
-    private TextView[] filterChips = new TextView[4];
+        public boolean isPhoto() {
+            if (fileName == null) return false;
+            String fn = fileName.toLowerCase();
+            return fn.endsWith(".jpg") || fn.endsWith(".jpeg") || fn.endsWith(".png") || fn.endsWith(".webp") || fn.endsWith(".heic");
+        }
 
-    private final ArrayList<CacheControlActivity.DialogFileEntities> allEntities = new ArrayList<>();
-    private final ArrayList<CacheControlActivity.DialogFileEntities> filteredEntities = new ArrayList<>();
-    private final HashSet<Long> archivedDialogIds = new HashSet<>();
+        public boolean isVideo() {
+            if (fileName == null) return false;
+            String fn = fileName.toLowerCase();
+            return fn.endsWith(".mp4") || fn.endsWith(".mkv") || fn.endsWith(".mov") || fn.endsWith(".avi") || fn.endsWith(".webm") || fn.endsWith(".3gp");
+        }
 
-    private int currentFilter = FILTER_ALL;
+        public boolean isVoice() {
+            if (fileName == null) return false;
+            String fn = fileName.toLowerCase();
+            return fn.endsWith(".ogg") || fn.endsWith(".oga") || fn.endsWith(".opus") || fn.endsWith(".mp3") || fn.endsWith(".m4a") || fn.endsWith(".wav") || fn.endsWith(".aac") || fn.endsWith(".flac");
+        }
+
+        public int getTabType() {
+            if (isPhoto()) return TAB_PHOTOS;
+            if (isVideo()) return TAB_VIDEOS;
+            if (isVoice()) return TAB_VOICE;
+            return TAB_FILES;
+        }
+
+        public MessageObject getMessageObject(int currentAccount) {
+            if (messageObject == null) {
+                TLRPC.TL_message msg = new TLRPC.TL_message();
+                msg.id = mid;
+                msg.peer_id = MessagesController.getInstance(currentAccount).getPeer(uid);
+                msg.dialog_id = uid;
+                msg.media = new TLRPC.TL_messageMediaDocument();
+                msg.media.document = new TLRPC.TL_document();
+                msg.media.document.id = mid;
+                msg.media.document.file_name = fileName != null ? fileName : "audio.ogg";
+                msg.media.document.size = size;
+                msg.media.document.mime_type = isVoice() ? "audio/ogg" : "audio/mpeg";
+                TLRPC.TL_documentAttributeAudio audioAttr = new TLRPC.TL_documentAttributeAudio();
+                audioAttr.voice = isVoice();
+                audioAttr.title = fileName;
+                msg.media.document.attributes.add(audioAttr);
+                msg.attachPath = vaultPath;
+                messageObject = new MessageObject(currentAccount, msg, false, false);
+                messageObject.attachPathExists = true;
+            }
+            return messageObject;
+        }
+    }
+
+    private final ArrayList<VaultItem> allItems = new ArrayList<>();
+    private final ArrayList<VaultItem> photosList = new ArrayList<>();
+    private final ArrayList<VaultItem> videosList = new ArrayList<>();
+    private final ArrayList<VaultItem> voiceList = new ArrayList<>();
+    private final ArrayList<VaultItem> filesList = new ArrayList<>();
+
+    private final PageAdapter[] pageAdapters = new PageAdapter[4];
+    private final RecyclerListView[] listViews = new RecyclerListView[4];
+    private final EmptyTextProgressView[] emptyViews = new EmptyTextProgressView[4];
+
+    private ViewPagerFixed viewPager;
+    private ViewPagerFixed.TabsView tabsView;
     private boolean loading = true;
     private String searchQuery = null;
-    private boolean isSearching = false;
-
-    private long totalSize;
-    private int totalFiles;
+    private long selectedDialogId = 0;
+    private long totalVaultSize = 0;
 
     @Override
     public boolean onFragmentCreate() {
         super.onFragmentCreate();
-        getMessagesController().loadDialogs(1, 0, 100, true);
+        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.messagePlayingPlayStateChanged);
+        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.messagePlayingDidReset);
         loadData();
         return true;
+    }
+
+    @Override
+    public void onFragmentDestroy() {
+        super.onFragmentDestroy();
+        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.messagePlayingPlayStateChanged);
+        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.messagePlayingDidReset);
+    }
+
+    @Override
+    public void didReceivedNotification(int id, int account, Object... args) {
+        if (id == NotificationCenter.messagePlayingPlayStateChanged || id == NotificationCenter.messagePlayingDidReset) {
+            if (pageAdapters[TAB_VOICE] != null) {
+                pageAdapters[TAB_VOICE].notifyDataSetChanged();
+            }
+        }
     }
 
     @Override
     public View createView(Context context) {
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
-        actionBar.setTitle(LocaleController.getString("VaultTitle", R.string.VaultTitle));
+        actionBar.setTitle(LocaleController.getString("HundredGramVaultMediaTitle", R.string.HundredGramVaultMediaTitle));
         actionBar.setSubtitle(LocaleController.getString("Loading", R.string.Loading));
+
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override
             public void onItemClick(int id) {
                 if (id == -1) {
                     finishFragment();
-                } else if (id == 1) {
-                    showClearAllPrompt();
+                } else if (id == ITEM_FILTER) {
+                    showChatFilterDialog();
                 }
             }
         });
 
         ActionBarMenu menu = actionBar.createMenu();
-        ActionBarMenuItem searchItem = menu.addItem(2, R.drawable.outline_header_search).setIsSearchField(true);
+        ActionBarMenuItem searchItem = menu.addItem(ITEM_SEARCH, R.drawable.outline_header_search).setIsSearchField(true);
         searchItem.setContentDescription(LocaleController.getString(R.string.Search));
         searchItem.setSearchFieldHint(LocaleController.getString(R.string.Search));
         searchItem.setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
             @Override
-            public void onSearchExpand() {
-                isSearching = true;
-            }
-
-            @Override
             public void onSearchCollapse() {
-                isSearching = false;
                 searchQuery = null;
-                filterAndSort();
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
+                filterAll();
             }
 
             @Override
             public void onTextChanged(EditText editText) {
-                searchQuery = editText.getText().toString().trim().toLowerCase();
-                filterAndSort();
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
+                String text = editText.getText().toString().trim().toLowerCase();
+                searchQuery = TextUtils.isEmpty(text) ? null : text;
+                filterAll();
             }
         });
 
-        ActionBarMenuItem clearAllItem = menu.addItem(1, R.drawable.msg_delete);
-        clearAllItem.setContentDescription(LocaleController.getString("HundredGramVaultClearAll", R.string.HundredGramVaultClearAll));
+        ActionBarMenuItem filterItem = menu.addItem(ITEM_FILTER, R.drawable.msg_openprofile);
+        filterItem.setContentDescription(LocaleController.getString("HundredGramVaultFilterByChat", R.string.HundredGramVaultFilterByChat));
 
-        FrameLayout contentView = new FrameLayout(context);
-        contentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        FrameLayout root = new FrameLayout(context);
+        root.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
 
-        listView = new RecyclerListView(context);
-        listView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
-        listView.setVerticalScrollBarEnabled(false);
-        adapter = new ListAdapter();
-        listView.setAdapter(adapter);
+        viewPager = new ViewPagerFixed(context);
+        tabsView = viewPager.createTabsView(true, 8);
+        tabsView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
 
-        listView.setOnItemClickListener((view, position) -> {
-            if (position >= HEADER_ROWS && !loading && !filteredEntities.isEmpty()) {
-                int entityIndex = position - HEADER_ROWS;
-                if (entityIndex < filteredEntities.size()) {
-                    showDialogOptionsSheet(filteredEntities.get(entityIndex));
+        root.addView(tabsView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.TOP | Gravity.FILL_HORIZONTAL));
+
+        View divider = new View(context);
+        divider.setBackgroundColor(Theme.getColor(Theme.key_divider));
+        root.addView(divider, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 1, Gravity.TOP, 0, 48, 0, 0));
+
+        root.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL, 0, 49, 0, 0));
+
+        viewPager.setAdapter(new ViewPagerFixed.Adapter() {
+            @Override
+            public int getItemCount() {
+                return 4;
+            }
+
+            @Override
+            public CharSequence getItemTitle(int position) {
+                switch (position) {
+                    case TAB_PHOTOS:
+                        return LocaleController.getString("HundredGramVaultTabPhotos", R.string.HundredGramVaultTabPhotos);
+                    case TAB_VIDEOS:
+                        return LocaleController.getString("HundredGramVaultTabVideos", R.string.HundredGramVaultTabVideos);
+                    case TAB_VOICE:
+                        return LocaleController.getString("HundredGramVaultTabVoice", R.string.HundredGramVaultTabVoice);
+                    case TAB_FILES:
+                    default:
+                        return LocaleController.getString("HundredGramVaultTabFiles", R.string.HundredGramVaultTabFiles);
                 }
+            }
+
+            @Override
+            public View createView(int viewType) {
+                FrameLayout pageFrame = new FrameLayout(context);
+                pageFrame.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+
+                RecyclerListView listView = new RecyclerListView(context);
+                listView.setVerticalScrollBarEnabled(true);
+                listView.setClipToPadding(false);
+
+                EmptyTextProgressView emptyView = new EmptyTextProgressView(context);
+                emptyView.setText(LocaleController.getString("HundredGramVaultNoFiles", R.string.HundredGramVaultNoFiles));
+                if (loading) {
+                    emptyView.showProgress();
+                } else {
+                    emptyView.showTextView();
+                }
+                listView.setEmptyView(emptyView);
+
+                pageFrame.addView(emptyView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+                pageFrame.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+
+                return pageFrame;
+            }
+
+            @Override
+            public void bindView(View view, int position, int viewType) {
+                FrameLayout pageFrame = (FrameLayout) view;
+                RecyclerListView listView = (RecyclerListView) pageFrame.getChildAt(1);
+                EmptyTextProgressView emptyView = (EmptyTextProgressView) pageFrame.getChildAt(0);
+
+                listViews[position] = listView;
+                emptyViews[position] = emptyView;
+
+                if (position == TAB_PHOTOS || position == TAB_VIDEOS) {
+                    GridLayoutManager layoutManager = new GridLayoutManager(context, 3);
+                    listView.setLayoutManager(layoutManager);
+                    listView.setPadding(AndroidUtilities.dp(2), AndroidUtilities.dp(2), AndroidUtilities.dp(2), AndroidUtilities.dp(2));
+                } else {
+                    LinearLayoutManager layoutManager = new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false);
+                    listView.setLayoutManager(layoutManager);
+                    listView.setPadding(0, 0, 0, AndroidUtilities.dp(8));
+                }
+
+                PageAdapter adapter = new PageAdapter(position);
+                pageAdapters[position] = adapter;
+                listView.setAdapter(adapter);
+
+                listView.setOnItemClickListener((v, pos) -> {
+                    ArrayList<VaultItem> currentList = getListForTab(position);
+                    if (pos < 0 || pos >= currentList.size()) return;
+                    VaultItem item = currentList.get(pos);
+
+                    if (position == TAB_PHOTOS || position == TAB_VIDEOS) {
+                        openPhotoViewer(currentList, pos);
+                    } else if (position == TAB_VOICE) {
+                        togglePlayAudio(item);
+                    } else {
+                        AndroidUtilities.openForView(item.file, item.fileName, null, getParentActivity(), null, false);
+                    }
+                });
+
+                listView.setOnItemLongClickListener((v, pos) -> {
+                    ArrayList<VaultItem> currentList = getListForTab(position);
+                    if (pos >= 0 && pos < currentList.size()) {
+                        showItemContextMenu(currentList.get(pos));
+                        return true;
+                    }
+                    return false;
+                });
             }
         });
 
-        listView.setOnItemLongClickListener((view, position) -> {
-            if (position >= HEADER_ROWS && !loading && !filteredEntities.isEmpty()) {
-                int entityIndex = position - HEADER_ROWS;
-                if (entityIndex < filteredEntities.size()) {
-                    showDeleteDialogPrompt(filteredEntities.get(entityIndex));
-                    return true;
-                }
-            }
-            return false;
-        });
+        return fragmentView = root;
+    }
 
-        contentView.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
-        actionBar.setAdaptiveBackground(listView);
-
-        return fragmentView = contentView;
+    private ArrayList<VaultItem> getListForTab(int tab) {
+        switch (tab) {
+            case TAB_PHOTOS:
+                return photosList;
+            case TAB_VIDEOS:
+                return videosList;
+            case TAB_VOICE:
+                return voiceList;
+            case TAB_FILES:
+            default:
+                return filesList;
+        }
     }
 
     private void loadData() {
         loading = true;
-        getFileLoader().getFileDatabase().getQueue().postRunnable(() -> {
-            getFileLoader().getFileDatabase().ensureDatabaseCreated();
-            LongSparseArray<CacheControlActivity.DialogFileEntities> dialogsFilesEntities = new LongSparseArray<>();
+        updateEmptyViews();
 
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_CACHE), CacheControlActivity.TYPE_OTHER, dialogsFilesEntities);
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_IMAGE), CacheControlActivity.TYPE_PHOTOS, dialogsFilesEntities);
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_IMAGE_PUBLIC), CacheControlActivity.TYPE_PHOTOS, dialogsFilesEntities);
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_VIDEO), CacheControlActivity.TYPE_VIDEOS, dialogsFilesEntities);
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_VIDEO_PUBLIC), CacheControlActivity.TYPE_VIDEOS, dialogsFilesEntities);
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_AUDIO), CacheControlActivity.TYPE_VOICE, dialogsFilesEntities);
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_STORIES), CacheControlActivity.TYPE_OTHER, dialogsFilesEntities);
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_DOCUMENT), CacheControlActivity.TYPE_DOCUMENTS, dialogsFilesEntities);
-            fillDialogsEntitiesRecursive(FileLoader.checkDirectory(FileLoader.MEDIA_DIR_FILES), CacheControlActivity.TYPE_DOCUMENTS, dialogsFilesEntities);
+        MessagesStorage.getInstance(currentAccount).getStorageQueue().postRunnable(() -> {
+            ArrayList<VaultItem> items = new ArrayList<>();
+            File vaultDir = HundredGramVaultManager.getInstance(currentAccount).getVaultDir();
+            HashSet<Long> uniqueUids = new HashSet<>();
 
-            ArrayList<CacheControlActivity.DialogFileEntities> entities = new ArrayList<>();
+            SQLiteCursor cursor = null;
+            try {
+                cursor = MessagesStorage.getInstance(currentAccount).getDatabase().queryFinalized("SELECT mid, uid, file_name, vault_path FROM hundredgram_vault");
+                while (cursor.next()) {
+                    int mid = cursor.intValue(0);
+                    long uid = cursor.longValue(1);
+                    String fileName = cursor.stringValue(2);
+                    String vaultPath = cursor.stringValue(3);
+
+                    File file = null;
+                    if (!TextUtils.isEmpty(vaultPath)) {
+                        file = new File(vaultPath);
+                    }
+                    if ((file == null || !file.exists()) && vaultDir != null && !TextUtils.isEmpty(fileName)) {
+                        File fallback = new File(vaultDir, fileName);
+                        if (fallback.exists()) {
+                            file = fallback;
+                            vaultPath = fallback.getAbsolutePath();
+                        }
+                    }
+
+                    if (file != null && file.exists() && file.length() > 0) {
+                        VaultItem it = new VaultItem();
+                        it.mid = mid;
+                        it.uid = uid;
+                        it.fileName = fileName;
+                        it.vaultPath = vaultPath;
+                        it.file = file;
+                        it.size = file.length();
+                        it.date = file.lastModified();
+                        items.add(it);
+                        uniqueUids.add(uid);
+                    }
+                }
+            } catch (Throwable e) {
+                FileLog.e(e);
+            } finally {
+                if (cursor != null) cursor.dispose();
+            }
+
             ArrayList<Long> unknownUsers = new ArrayList<>();
             ArrayList<Long> unknownChats = new ArrayList<>();
-
-            for (int i = 0; i < dialogsFilesEntities.size(); i++) {
-                CacheControlActivity.DialogFileEntities dialogEntities = dialogsFilesEntities.valueAt(i);
-                if (dialogEntities.totalSize > 0) {
-                    entities.add(dialogEntities);
-                    if (getMessagesController().getUserOrChat(dialogEntities.dialogId) == null) {
-                        if (dialogEntities.dialogId > 0) {
-                            unknownUsers.add(dialogEntities.dialogId);
-                        } else {
-                            unknownChats.add(dialogEntities.dialogId);
-                        }
+            for (Long uid : uniqueUids) {
+                if (uid != 0 && MessagesController.getInstance(currentAccount).getUserOrChat(uid) == null) {
+                    if (uid > 0) {
+                        unknownUsers.add(uid);
+                    } else {
+                        unknownChats.add(uid);
                     }
                 }
             }
 
-            getMessagesStorage().getStorageQueue().postRunnable(() -> {
-                ArrayList<TLRPC.User> users = new ArrayList<>();
-                ArrayList<TLRPC.Chat> chats = new ArrayList<>();
-                HashSet<Long> archivedSet = new HashSet<>();
+            ArrayList<TLRPC.User> users = new ArrayList<>();
+            ArrayList<TLRPC.Chat> chats = new ArrayList<>();
+            if (!unknownUsers.isEmpty()) {
                 try {
-                    SQLiteCursor cursor = getMessagesStorage().getDatabase().queryFinalized("SELECT did FROM dialogs WHERE folder_id = 1");
-                    while (cursor.next()) {
-                        archivedSet.add(cursor.longValue(0));
-                    }
-                    cursor.dispose();
+                    MessagesStorage.getInstance(currentAccount).getUsersInternal(unknownUsers, users);
                 } catch (Throwable e) {
                     FileLog.e(e);
                 }
-                if (!unknownUsers.isEmpty()) {
-                    try {
-                        getMessagesStorage().getUsersInternal(unknownUsers, users);
-                    } catch (Exception e) {
-                        FileLog.e(e);
-                    }
+            }
+            if (!unknownChats.isEmpty()) {
+                try {
+                    MessagesStorage.getInstance(currentAccount).getChatsInternal(TextUtils.join(",", unknownChats), chats);
+                } catch (Throwable e) {
+                    FileLog.e(e);
                 }
-                if (!unknownChats.isEmpty()) {
-                    try {
-                        getMessagesStorage().getChatsInternal(TextUtils.join(",", unknownChats), chats);
-                    } catch (Exception e) {
-                        FileLog.e(e);
+            }
+
+            Collections.sort(items, (a, b) -> Long.compare(b.date, a.date));
+
+            AndroidUtilities.runOnUIThread(() -> {
+                loading = false;
+                if (!users.isEmpty()) {
+                    MessagesController.getInstance(currentAccount).putUsers(users, true);
+                }
+                if (!chats.isEmpty()) {
+                    MessagesController.getInstance(currentAccount).putChats(chats, true);
+                }
+
+                for (VaultItem it : items) {
+                    TLObject obj = MessagesController.getInstance(currentAccount).getUserOrChat(it.uid);
+                    it.chatTitle = DialogObject.setDialogPhotoTitle(null, obj);
+                    if (TextUtils.isEmpty(it.chatTitle)) {
+                        it.chatTitle = it.uid > 0 ? "User " + it.uid : "Chat " + it.uid;
                     }
                 }
 
-                Collections.sort(entities, (o1, o2) -> Long.compare(o2.totalSize, o1.totalSize));
-
-                AndroidUtilities.runOnUIThread(() -> {
-                    loading = false;
-                    archivedDialogIds.clear();
-                    archivedDialogIds.addAll(archivedSet);
-                    getMessagesController().putUsers(users, true);
-                    getMessagesController().putChats(chats, true);
-                    allEntities.clear();
-                    allEntities.addAll(entities);
-                    filterAndSort();
-                    updateStats();
-                    if (adapter != null) {
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+                allItems.clear();
+                allItems.addAll(items);
+                filterAll();
             });
         });
     }
 
-    private void fillDialogsEntitiesRecursive(final File fromFolder, int type, LongSparseArray<CacheControlActivity.DialogFileEntities> dialogsFilesEntities) {
-        if (fromFolder == null) {
-            return;
-        }
-        File[] files = fromFolder.listFiles();
-        if (files == null) {
-            return;
-        }
-        for (final File fileEntry : files) {
-            if (fileEntry.isDirectory()) {
-                fillDialogsEntitiesRecursive(fileEntry, type, dialogsFilesEntities);
-            } else {
-                if (fileEntry.getName().equals(".nomedia")) {
-                    continue;
-                }
-                FilePathDatabase.FileMeta fileMetadata = getFileLoader().getFileDatabase().getFileDialogId(fileEntry, null);
-                int addToType = type;
-                String fileName = fileEntry.getName().toLowerCase();
-                if (fileName.endsWith(".mp3") || fileName.endsWith(".m4a")) {
-                    addToType = CacheControlActivity.TYPE_MUSIC;
-                }
-                CacheModel.FileInfo fileInfo = new CacheModel.FileInfo(fileEntry);
-                fileInfo.size = fileEntry.length();
-                if (fileInfo.size <= 0) {
-                    continue;
-                }
-                if (fileMetadata != null) {
-                    fileInfo.dialogId = fileMetadata.dialogId;
-                    fileInfo.messageId = fileMetadata.messageId;
-                    fileInfo.messageType = fileMetadata.messageType;
-                    if (fileInfo.messageType == MessageObject.TYPE_STORY && fileInfo.size > 0) {
-                        addToType = CacheControlActivity.TYPE_STORIES;
-                    }
-                }
-                fileInfo.type = addToType;
+    private void filterAll() {
+        photosList.clear();
+        videosList.clear();
+        voiceList.clear();
+        filesList.clear();
 
-                if (fileInfo.dialogId != 0) {
-                    CacheControlActivity.DialogFileEntities dialogEntities = dialogsFilesEntities.get(fileInfo.dialogId, null);
-                    if (dialogEntities == null) {
-                        dialogEntities = new CacheControlActivity.DialogFileEntities(fileInfo.dialogId);
-                        dialogsFilesEntities.put(fileInfo.dialogId, dialogEntities);
-                    }
-                    dialogEntities.addFile(fileInfo, addToType);
-                }
-            }
-        }
-    }
+        totalVaultSize = 0;
+        for (VaultItem it : allItems) {
+            totalVaultSize += it.size;
 
-    private void filterAndSort() {
-        filteredEntities.clear();
-        for (int i = 0; i < allEntities.size(); i++) {
-            CacheControlActivity.DialogFileEntities entity = allEntities.get(i);
-            if (entity.totalSize <= 0) {
+            if (selectedDialogId != 0 && it.uid != selectedDialogId) {
                 continue;
-            }
-            if (currentFilter == FILTER_ARCHIVED) {
-                if (!isArchivedDialog(entity.dialogId)) {
-                    continue;
-                }
-            } else if (currentFilter == FILTER_PRIVATE) {
-                if (entity.dialogId <= 0 || entity.dialogId == CacheControlActivity.UNKNOWN_CHATS_DIALOG_ID) {
-                    continue;
-                }
-            } else if (currentFilter == FILTER_GROUPS) {
-                if (entity.dialogId >= 0) {
-                    continue;
-                }
             }
 
             if (!TextUtils.isEmpty(searchQuery)) {
-                TLObject object = getMessagesController().getUserOrChat(entity.dialogId);
-                String title = DialogObject.setDialogPhotoTitle(null, object);
-                if (title == null || !title.toLowerCase().contains(searchQuery)) {
+                boolean matchName = it.fileName != null && it.fileName.toLowerCase().contains(searchQuery);
+                boolean matchChat = it.chatTitle != null && it.chatTitle.toLowerCase().contains(searchQuery);
+                if (!matchName && !matchChat) {
                     continue;
                 }
             }
 
-            filteredEntities.add(entity);
-        }
-        Collections.sort(filteredEntities, (o1, o2) -> Long.compare(o2.totalSize, o1.totalSize));
-    }
-
-    private boolean isArchivedDialog(long dialogId) {
-        if (archivedDialogIds.contains(dialogId)) {
-            return true;
-        }
-        TLRPC.Dialog dialog = getMessagesController().dialogs_dict.get(dialogId);
-        return dialog != null && dialog.folder_id == 1;
-    }
-
-    private void updateStats() {
-        totalSize = 0;
-        totalFiles = 0;
-
-        for (int i = 0; i < allEntities.size(); i++) {
-            CacheControlActivity.DialogFileEntities entity = allEntities.get(i);
-            totalSize += entity.totalSize;
-            totalFiles += entity.filesCount;
-        }
-
-        if (actionBar != null) {
-            if (loading) {
-                actionBar.setSubtitle(LocaleController.getString("Loading", R.string.Loading));
-            } else {
-                actionBar.setSubtitle(LocaleController.formatString("VaultFilesCount", R.string.VaultFilesCount, totalFiles, AndroidUtilities.formatFileSize(totalSize)));
+            switch (it.getTabType()) {
+                case TAB_PHOTOS:
+                    photosList.add(it);
+                    break;
+                case TAB_VIDEOS:
+                    videosList.add(it);
+                    break;
+                case TAB_VOICE:
+                    voiceList.add(it);
+                    break;
+                case TAB_FILES:
+                    filesList.add(it);
+                    break;
             }
         }
 
-        updateFilterChipCounts();
-    }
+        updateActionBarSubtitle();
+        updateEmptyViews();
 
-    private void updateFilterChipCounts() {
-        if (filterChips[0] == null) return;
-        int allCount = allEntities.size();
-        int archivedCount = 0;
-        int privateCount = 0;
-        int groupsCount = 0;
-        for (int i = 0; i < allEntities.size(); i++) {
-            CacheControlActivity.DialogFileEntities e = allEntities.get(i);
-            if (isArchivedDialog(e.dialogId)) {
-                archivedCount++;
-            }
-            if (e.dialogId > 0 && e.dialogId != CacheControlActivity.UNKNOWN_CHATS_DIALOG_ID) {
-                privateCount++;
-            } else if (e.dialogId < 0) {
-                groupsCount++;
+        for (int i = 0; i < pageAdapters.length; i++) {
+            if (pageAdapters[i] != null) {
+                pageAdapters[i].notifyDataSetChanged();
             }
         }
-        filterChips[0].setText(LocaleController.getString("VaultFilterAll", R.string.VaultFilterAll) + (allCount > 0 ? " (" + allCount + ")" : ""));
-        filterChips[1].setText(LocaleController.getString("VaultFilterArchived", R.string.VaultFilterArchived) + (archivedCount > 0 ? " (" + archivedCount + ")" : ""));
-        filterChips[2].setText(LocaleController.getString("VaultFilterPrivate", R.string.VaultFilterPrivate) + (privateCount > 0 ? " (" + privateCount + ")" : ""));
-        filterChips[3].setText(LocaleController.getString("VaultFilterGroupsChannels", R.string.VaultFilterGroupsChannels) + (groupsCount > 0 ? " (" + groupsCount + ")" : ""));
-        updateFilterChipsStyle();
     }
 
-    private void updateFilterChipsStyle() {
-        for (int i = 0; i < filterChips.length; i++) {
-            TextView chip = filterChips[i];
-            if (chip == null) continue;
-            boolean selected = (currentFilter == i);
-            GradientDrawable bg = new GradientDrawable();
-            bg.setCornerRadius(AndroidUtilities.dp(16));
-            if (selected) {
-                bg.setColor(Theme.getColor(Theme.key_featuredStickers_addButton));
-                chip.setTextColor(Theme.getColor(Theme.key_featuredStickers_buttonText));
-            } else {
-                bg.setColor(Theme.getColor(Theme.key_chat_inBubble));
-                chip.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-            }
-            chip.setBackground(bg);
-        }
-    }
-
-    private void showDialogOptionsSheet(CacheControlActivity.DialogFileEntities entity) {
-        if (entity == null || getParentActivity() == null) {
+    private void updateActionBarSubtitle() {
+        if (actionBar == null) return;
+        if (loading) {
+            actionBar.setSubtitle(LocaleController.getString("Loading", R.string.Loading));
             return;
         }
-        if (entity.dialogId == CacheControlActivity.UNKNOWN_CHATS_DIALOG_ID) {
-            showDeleteDialogPrompt(entity);
+
+        String sizeStr = AndroidUtilities.formatFileSize(totalVaultSize);
+        if (selectedDialogId != 0) {
+            TLObject obj = MessagesController.getInstance(currentAccount).getUserOrChat(selectedDialogId);
+            String title = DialogObject.setDialogPhotoTitle(null, obj);
+            actionBar.setSubtitle(title + " • " + sizeStr);
+        } else {
+            actionBar.setSubtitle(sizeStr);
+        }
+    }
+
+    private void updateEmptyViews() {
+        for (int i = 0; i < emptyViews.length; i++) {
+            EmptyTextProgressView ev = emptyViews[i];
+            if (ev != null) {
+                if (loading) {
+                    ev.showProgress();
+                } else {
+                    ev.showTextView();
+                }
+            }
+        }
+    }
+
+    private void openPhotoViewer(ArrayList<VaultItem> list, int selectedIndex) {
+        if (list.isEmpty() || selectedIndex < 0 || selectedIndex >= list.size()) {
             return;
         }
+        PhotoViewer.getInstance().setParentActivity(this);
+        ArrayList<Object> photoEntries = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            VaultItem it = list.get(i);
+            photoEntries.add(new MediaController.PhotoEntry(0, 0, 0, it.vaultPath, 0, it.isVideo(), 0, 0, 0));
+        }
+        PhotoViewer.getInstance().openPhotoForSelect(photoEntries, selectedIndex, PhotoViewer.SELECT_TYPE_NO_SELECT, false, new PhotoViewer.EmptyPhotoViewerProvider(), null);
+    }
+
+    private void togglePlayAudio(VaultItem item) {
+        MessageObject mo = item.getMessageObject(currentAccount);
+        if (MediaController.getInstance().isPlayingMessage(mo)) {
+            if (!MediaController.getInstance().isMessagePaused()) {
+                MediaController.getInstance().pauseMessage(mo);
+            } else {
+                MediaController.getInstance().playMessage(mo);
+            }
+        } else {
+            MediaController.getInstance().playMessage(mo);
+        }
+        if (pageAdapters[TAB_VOICE] != null) {
+            pageAdapters[TAB_VOICE].notifyDataSetChanged();
+        }
+    }
+
+    private void showItemContextMenu(VaultItem item) {
+        if (getParentActivity() == null || item == null) return;
+
         BottomSheet.Builder builder = new BottomSheet.Builder(getParentActivity());
-        TLObject object = getMessagesController().getUserOrChat(entity.dialogId);
-        String title = DialogObject.setDialogPhotoTitle(null, object);
-        if (TextUtils.isEmpty(title)) {
-            title = LocaleController.getString("Chats", R.string.Chats);
+        builder.setTitle(item.fileName != null ? item.fileName : item.chatTitle, true);
+
+        ArrayList<CharSequence> items = new ArrayList<>();
+        ArrayList<Integer> icons = new ArrayList<>();
+        final ArrayList<Integer> actions = new ArrayList<>();
+
+        items.add(LocaleController.getString("HundredGramVaultShare", R.string.HundredGramVaultShare));
+        icons.add(R.drawable.msg_share);
+        actions.add(0);
+
+        if (item.isPhoto() || item.isVideo()) {
+            items.add(LocaleController.getString("HundredGramVaultSaveGallery", R.string.HundredGramVaultSaveGallery));
+            icons.add(R.drawable.msg_gallery);
+            actions.add(1);
+        } else {
+            items.add(LocaleController.getString("HundredGramVaultSaveDownloads", R.string.HundredGramVaultSaveDownloads));
+            icons.add(R.drawable.msg_download);
+            actions.add(1);
         }
-        builder.setTitle(title, true);
-        CharSequence[] items = new CharSequence[]{
-                LocaleController.getString("Open", R.string.Open),
-                LocaleController.getString("OpenProfile", R.string.OpenProfile),
-                LocaleController.getString("HundredGramChatSettingsTitle", R.string.HundredGramChatSettingsTitle),
-                LocaleController.getString("HundredGramVaultClearChat", R.string.HundredGramVaultClearChat)
-        };
-        int[] icons = new int[]{
-                R.drawable.msg_message,
-                R.drawable.msg_info,
-                R.drawable.msg_settings,
-                R.drawable.msg_delete
-        };
-        builder.setItems(items, icons, (dialog, which) -> {
-            if (which == 0) {
-                Bundle args = new Bundle();
-                if (entity.dialogId > 0) {
-                    args.putLong("user_id", entity.dialogId);
-                } else {
-                    args.putLong("chat_id", -entity.dialogId);
-                }
-                presentFragment(new ChatActivity(args));
-            } else if (which == 1) {
-                Bundle args = new Bundle();
-                if (entity.dialogId > 0) {
-                    args.putLong("user_id", entity.dialogId);
-                } else {
-                    args.putLong("chat_id", -entity.dialogId);
-                }
-                presentFragment(new ProfileActivity(args, null));
-            } else if (which == 2) {
-                showDialog(new org.telegram.ui.Components.HundredGramChatVaultBottomSheet(HundredGramVaultViewerActivity.this, entity.dialogId));
-            } else if (which == 3) {
-                showDeleteDialogPrompt(entity);
+
+        if (item.mid > 0 && item.uid != 0) {
+            items.add(LocaleController.getString("HundredGramVaultGoToMessage", R.string.HundredGramVaultGoToMessage));
+            icons.add(R.drawable.msg_message);
+            actions.add(2);
+        }
+
+        items.add(LocaleController.getString("HundredGramVaultDelete", R.string.HundredGramVaultDelete));
+        icons.add(R.drawable.msg_delete);
+        actions.add(3);
+
+        builder.setItems(items.toArray(new CharSequence[0]), AndroidUtilities.toIntArray(icons), (dialog, which) -> {
+            int action = actions.get(which);
+            if (action == 0) {
+                shareVaultFile(item);
+            } else if (action == 1) {
+                saveVaultFile(item);
+            } else if (action == 2) {
+                goToMessageInChat(item);
+            } else if (action == 3) {
+                showDeleteFilePrompt(item);
             }
         });
+
         showDialog(builder.create());
     }
 
-    private void showDeleteDialogPrompt(CacheControlActivity.DialogFileEntities entity) {
-        if (entity == null || getParentActivity() == null) {
-            return;
+    private void shareVaultFile(VaultItem item) {
+        if (getParentActivity() == null || item.file == null || !item.file.exists()) return;
+        try {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            String ext = FileLoader.getFileExtension(item.file);
+            String mime = !TextUtils.isEmpty(ext) ? android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.toLowerCase()) : null;
+            intent.setType(mime != null ? mime : "*/*");
+            Uri uri = androidx.core.content.FileProvider.getUriForFile(
+                    org.telegram.messenger.ApplicationLoader.applicationContext,
+                    org.telegram.messenger.ApplicationLoader.getApplicationId() + ".provider",
+                    item.file
+            );
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            getParentActivity().startActivity(Intent.createChooser(intent, LocaleController.getString("ShareFile", R.string.ShareFile)));
+        } catch (Throwable e) {
+            FileLog.e(e);
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-        builder.setTitle(LocaleController.getString("HundredGramVaultClearChat", R.string.HundredGramVaultClearChat));
-        builder.setMessage(LocaleController.formatString("ClearChatCacheConfirm", R.string.ClearChatCacheConfirm, AndroidUtilities.formatFileSize(entity.totalSize)));
-        builder.setPositiveButton(LocaleController.getString("Clear", R.string.Clear), (dialog, which) -> {
-            getFileLoader().getFileDatabase().clearDialogFiles(entity.dialogId, freedBytes -> {
-                allEntities.remove(entity);
-                filterAndSort();
-                updateStats();
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
-                BulletinFactory.of(HundredGramVaultViewerActivity.this).createSimpleBulletin(
-                        R.raw.ic_delete,
-                        LocaleController.formatString("HundredGramVaultClearedChat", R.string.HundredGramVaultClearedChat, AndroidUtilities.formatFileSize(freedBytes))
-                ).show();
-            });
-        });
-        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
-        AlertDialog alert = builder.create();
-        alert.show();
-        alert.redPositive();
     }
 
-    private void showClearAllPrompt() {
-        if (getParentActivity() == null || totalSize <= 0) {
-            return;
-        }
-        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-        builder.setTitle(LocaleController.getString("HundredGramVaultClearAll", R.string.HundredGramVaultClearAll));
-        builder.setMessage(LocaleController.getString("HundredGramVaultClearAllConfirm", R.string.HundredGramVaultClearAllConfirm));
-        builder.setPositiveButton(LocaleController.getString("Clear", R.string.Clear), (dialog, which) -> {
-            final AlertDialog progressDialog = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
-            progressDialog.setCanCancel(false);
-            progressDialog.showDelayed(300);
-
-            getFileLoader().getFileDatabase().clearAllVaultFiles(freedBytes -> {
-                try {
-                    progressDialog.dismiss();
-                } catch (Exception ignored) {}
-                allEntities.clear();
-                filteredEntities.clear();
-                updateStats();
-                if (adapter != null) {
-                    adapter.notifyDataSetChanged();
-                }
+    private void saveVaultFile(VaultItem item) {
+        if (getParentActivity() == null || item.file == null || !item.file.exists()) return;
+        int type = item.isPhoto() ? 0 : (item.isVideo() ? 1 : (item.isVoice() ? 3 : 2));
+        MediaController.saveFile(item.file.getAbsolutePath(), getParentActivity(), type, item.fileName, null, uri -> {
+            if (uri != null) {
                 BulletinFactory.of(HundredGramVaultViewerActivity.this).createSimpleBulletin(
-                        R.raw.ic_delete,
-                        LocaleController.formatString("HundredGramVaultClearedAll", R.string.HundredGramVaultClearedAll, AndroidUtilities.formatFileSize(freedBytes))
+                        R.raw.ic_save_to_gallery,
+                        LocaleController.getString("HundredGramVaultFileSaved", R.string.HundredGramVaultFileSaved)
                 ).show();
-            });
-        });
-        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
-        AlertDialog alert = builder.create();
-        alert.show();
-        alert.redPositive();
+            }
+        }, true);
     }
 
-    private class ListAdapter extends RecyclerListView.SelectionAdapter {
+    private void goToMessageInChat(VaultItem item) {
+        if (item.mid <= 0 || item.uid == 0) return;
+        Bundle args = new Bundle();
+        if (item.uid > 0) {
+            args.putLong("user_id", item.uid);
+        } else {
+            args.putLong("chat_id", -item.uid);
+        }
+        args.putInt("message_id", item.mid);
+        presentFragment(new ChatActivity(args));
+    }
 
-        @Override
-        public boolean isEnabled(RecyclerView.ViewHolder holder) {
-            return holder.getItemViewType() == VIEW_TYPE_CHAT_ITEM;
+    private void showDeleteFilePrompt(VaultItem item) {
+        if (getParentActivity() == null || item == null) return;
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramVaultDelete", R.string.HundredGramVaultDelete));
+        builder.setMessage(LocaleController.getString("HundredGramVaultDeleteFileConfirm", R.string.HundredGramVaultDeleteFileConfirm));
+        builder.setPositiveButton(LocaleController.getString("Delete", R.string.Delete), (d, w) -> {
+            HundredGramVaultManager.getInstance(currentAccount).deleteVaultFile(item.mid, item.uid, item.fileName, item.vaultPath);
+            allItems.remove(item);
+            filterAll();
+            BulletinFactory.of(HundredGramVaultViewerActivity.this).createSimpleBulletin(
+                    R.raw.ic_delete,
+                    LocaleController.getString("HundredGramVaultDeletedFile", R.string.HundredGramVaultDeletedFile)
+            ).show();
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.redPositive();
+    }
+
+    private void showChatFilterDialog() {
+        if (getParentActivity() == null) return;
+
+        HashMap<Long, Integer> chatCounts = new HashMap<>();
+        for (VaultItem it : allItems) {
+            chatCounts.put(it.uid, chatCounts.getOrDefault(it.uid, 0) + 1);
+        }
+
+        ArrayList<Long> uids = new ArrayList<>(chatCounts.keySet());
+        Collections.sort(uids, (a, b) -> Integer.compare(chatCounts.get(b), chatCounts.get(a)));
+
+        BottomSheet.Builder builder = new BottomSheet.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramVaultFilterByChat", R.string.HundredGramVaultFilterByChat), true);
+
+        ArrayList<CharSequence> names = new ArrayList<>();
+        ArrayList<Long> dialogIds = new ArrayList<>();
+
+        names.add(LocaleController.getString("HundredGramVaultAllChats", R.string.HundredGramVaultAllChats) + " (" + allItems.size() + ")");
+        dialogIds.add(0L);
+
+        for (Long uid : uids) {
+            TLObject obj = MessagesController.getInstance(currentAccount).getUserOrChat(uid);
+            String title = DialogObject.setDialogPhotoTitle(null, obj);
+            if (TextUtils.isEmpty(title)) {
+                title = uid > 0 ? "User " + uid : "Chat " + uid;
+            }
+            names.add(title + " (" + chatCounts.get(uid) + ")");
+            dialogIds.add(uid);
+        }
+
+        builder.setItems(names.toArray(new CharSequence[0]), (dialog, which) -> {
+            selectedDialogId = dialogIds.get(which);
+            filterAll();
+        });
+
+        showDialog(builder.create());
+    }
+
+    private class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private final int tabIndex;
+
+        public PageAdapter(int tabIndex) {
+            this.tabIndex = tabIndex;
         }
 
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view;
-            Context context = parent.getContext();
-            switch (viewType) {
-                case VIEW_TYPE_HEADER_STATS:
-                    LinearLayout statsContainer = new LinearLayout(context);
-                    statsContainer.setOrientation(LinearLayout.HORIZONTAL);
-                    statsContainer.setGravity(Gravity.CENTER_VERTICAL);
-                    statsContainer.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-                    statsContainer.setPadding(AndroidUtilities.dp(16), AndroidUtilities.dp(16), AndroidUtilities.dp(16), AndroidUtilities.dp(16));
-
-                    ImageView statsIcon = new ImageView(context);
-                    statsIcon.setImageResource(R.drawable.msg_folders);
-                    statsIcon.setColorFilter(Theme.getColor(Theme.key_featuredStickers_addButton));
-                    statsContainer.addView(statsIcon, LayoutHelper.createLinear(36, 36, Gravity.CENTER_VERTICAL, 0, 0, 16, 0));
-
-                    LinearLayout textLayout = new LinearLayout(context);
-                    textLayout.setOrientation(LinearLayout.VERTICAL);
-
-                    TextView titleView = new TextView(context);
-                    titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-                    titleView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-                    titleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-                    titleView.setText(LocaleController.getString("VaultTitle", R.string.VaultTitle));
-                    textLayout.addView(titleView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 2));
-
-                    TextView subtitleView = new TextView(context);
-                    subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
-                    subtitleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
-                    if (loading) {
-                        subtitleView.setText(LocaleController.getString("Loading", R.string.Loading));
-                    } else {
-                        subtitleView.setText(LocaleController.formatString("VaultFilesCount", R.string.VaultFilesCount, totalFiles, AndroidUtilities.formatFileSize(totalSize)));
-                    }
-                    textLayout.addView(subtitleView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
-
-                    statsContainer.addView(textLayout, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
-                    view = statsContainer;
-                    break;
-                case VIEW_TYPE_HEADER_FILTERS:
-                    HorizontalScrollView filterScrollView = new HorizontalScrollView(context);
-                    filterScrollView.setHorizontalScrollBarEnabled(false);
-                    filterScrollView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
-                    LinearLayout chipsContainer = new LinearLayout(context);
-                    chipsContainer.setOrientation(LinearLayout.HORIZONTAL);
-                    chipsContainer.setPadding(AndroidUtilities.dp(12), AndroidUtilities.dp(10), AndroidUtilities.dp(12), AndroidUtilities.dp(10));
-
-                    for (int i = 0; i < 4; i++) {
-                        final int filterIndex = i;
-                        TextView chip = new TextView(context);
-                        chip.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
-                        chip.setGravity(Gravity.CENTER);
-                        chip.setPadding(AndroidUtilities.dp(14), AndroidUtilities.dp(7), AndroidUtilities.dp(14), AndroidUtilities.dp(7));
-                        chip.setOnClickListener(v -> {
-                            if (currentFilter != filterIndex) {
-                                currentFilter = filterIndex;
-                                updateFilterChipsStyle();
-                                filterAndSort();
-                                if (adapter != null) {
-                                    adapter.notifyDataSetChanged();
-                                }
-                            }
-                        });
-                        filterChips[i] = chip;
-                        chipsContainer.addView(chip, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, 4, 0, 4, 0));
-                    }
-                    updateFilterChipCounts();
-                    filterScrollView.addView(chipsContainer, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT));
-                    view = filterScrollView;
-                    break;
-                case VIEW_TYPE_HEADER_TITLE:
-                    HeaderCell headerCell = new HeaderCell(context);
-                    headerCell.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-                    view = headerCell;
-                    break;
-                case VIEW_TYPE_LOADING:
-                    FlickerLoadingView flicker = new FlickerLoadingView(context);
-                    flicker.setViewType(FlickerLoadingView.DIALOG_CACHE_CONTROL);
-                    flicker.setIsSingleCell(true);
-                    flicker.setItemsCount(3);
-                    flicker.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-                    view = flicker;
-                    break;
-                case VIEW_TYPE_EMPTY:
-                    LinearLayout emptyView = new LinearLayout(context);
-                    emptyView.setOrientation(LinearLayout.VERTICAL);
-                    emptyView.setGravity(Gravity.CENTER);
-                    emptyView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-                    emptyView.setPadding(AndroidUtilities.dp(32), AndroidUtilities.dp(48), AndroidUtilities.dp(32), AndroidUtilities.dp(48));
-
-                    ImageView icon = new ImageView(context);
-                    icon.setImageResource(R.drawable.msg_folders);
-                    icon.setColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon));
-                    emptyView.addView(icon, LayoutHelper.createLinear(56, 56, Gravity.CENTER, 0, 0, 0, 16));
-
-                    TextView emptyText = new TextView(context);
-                    emptyText.setText(LocaleController.getString("VaultNoFiles", R.string.VaultNoFiles));
-                    emptyText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
-                    emptyText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
-                    emptyText.setGravity(Gravity.CENTER);
-                    emptyView.addView(emptyText, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
-
-                    view = emptyView;
-                    break;
-                case VIEW_TYPE_CHAT_ITEM:
-                default:
-                    CacheControlActivity.UserCell userCell = new CacheControlActivity.UserCell(context, null);
-                    userCell.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-                    view = userCell;
-                    break;
+            if (tabIndex == TAB_PHOTOS || tabIndex == TAB_VIDEOS) {
+                view = new VaultMediaCell(parent.getContext());
+            } else {
+                view = new VaultFileCell(parent.getContext(), tabIndex == TAB_VOICE);
             }
             return new RecyclerListView.Holder(view);
         }
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            switch (holder.getItemViewType()) {
-                case VIEW_TYPE_HEADER_STATS:
-                    LinearLayout statsLayout = (LinearLayout) holder.itemView;
-                    LinearLayout texts = (LinearLayout) statsLayout.getChildAt(1);
-                    TextView sub = (TextView) texts.getChildAt(1);
-                    if (loading) {
-                        sub.setText(LocaleController.getString("Loading", R.string.Loading));
-                    } else {
-                        sub.setText(LocaleController.formatString("VaultFilesCount", R.string.VaultFilesCount, totalFiles, AndroidUtilities.formatFileSize(totalSize)));
-                    }
-                    break;
-                case VIEW_TYPE_HEADER_TITLE:
-                    HeaderCell headerCell = (HeaderCell) holder.itemView;
-                    headerCell.setText(LocaleController.formatPluralString("Chats", filteredEntities.size()));
-                    break;
-                case VIEW_TYPE_CHAT_ITEM:
-                    int entityIndex = position - HEADER_ROWS;
-                    if (entityIndex >= 0 && entityIndex < filteredEntities.size()) {
-                        CacheControlActivity.UserCell userCell = (CacheControlActivity.UserCell) holder.itemView;
-                        CacheControlActivity.DialogFileEntities entity = filteredEntities.get(entityIndex);
-                        TLObject object = getMessagesController().getUserOrChat(entity.dialogId);
-                        String title;
-                        if (entity.dialogId == CacheControlActivity.UNKNOWN_CHATS_DIALOG_ID) {
-                            title = LocaleController.getString(R.string.CacheOtherChats);
-                            userCell.getImageView().getAvatarDrawable().setAvatarType(AvatarDrawable.AVATAR_TYPE_OTHER_CHATS);
-                            userCell.getImageView().setForUserOrChat(null, userCell.getImageView().getAvatarDrawable());
-                        } else {
-                            title = DialogObject.setDialogPhotoTitle(userCell.getImageView(), object);
-                        }
-                        if (isArchivedDialog(entity.dialogId)) {
-                            title = "📁 " + title;
-                        }
-                        userCell.dialogFileEntities = entity;
-                        userCell.getImageView().setRoundRadius(AndroidUtilities.dp(object instanceof TLRPC.Chat && ((TLRPC.Chat) object).forum ? 12 : 19));
-                        String filesStr = LocaleController.formatString("VaultFilesCount", R.string.VaultFilesCount, entity.filesCount, AndroidUtilities.formatFileSize(entity.totalSize));
-                        userCell.setTextAndValue(title, filesStr, entityIndex < filteredEntities.size() - 1);
-                    }
-                    break;
-            }
-        }
+            ArrayList<VaultItem> list = getListForTab(tabIndex);
+            if (position < 0 || position >= list.size()) return;
+            VaultItem item = list.get(position);
 
-        @Override
-        public int getItemViewType(int position) {
-            if (position == 0) return VIEW_TYPE_HEADER_STATS;
-            if (position == 1) return VIEW_TYPE_HEADER_FILTERS;
-            if (position == 2) return VIEW_TYPE_HEADER_TITLE;
-            if (loading) return VIEW_TYPE_LOADING;
-            if (filteredEntities.isEmpty()) return VIEW_TYPE_EMPTY;
-            return VIEW_TYPE_CHAT_ITEM;
+            if (holder.itemView instanceof VaultMediaCell) {
+                ((VaultMediaCell) holder.itemView).setItem(item);
+            } else if (holder.itemView instanceof VaultFileCell) {
+                ((VaultFileCell) holder.itemView).setItem(item);
+            }
         }
 
         @Override
         public int getItemCount() {
-            if (loading || filteredEntities.isEmpty()) {
-                return HEADER_ROWS + 1;
+            return getListForTab(tabIndex).size();
+        }
+    }
+
+    public static class VaultMediaCell extends FrameLayout {
+        private final BackupImageView imageView;
+        private final FrameLayout videoBadge;
+        private final TextView videoDurationText;
+
+        public VaultMediaCell(@NonNull Context context) {
+            super(context);
+
+            imageView = new BackupImageView(context);
+            imageView.setAspectFit(false);
+            addView(imageView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL, 1, 1, 1, 1));
+
+            videoBadge = new FrameLayout(context);
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor(0x88000000);
+            bg.setCornerRadius(AndroidUtilities.dp(10));
+            videoBadge.setBackground(bg);
+            videoBadge.setPadding(AndroidUtilities.dp(6), AndroidUtilities.dp(2), AndroidUtilities.dp(6), AndroidUtilities.dp(2));
+
+            LinearLayout badgeLayout = new LinearLayout(context);
+            badgeLayout.setOrientation(LinearLayout.HORIZONTAL);
+            badgeLayout.setGravity(Gravity.CENTER_VERTICAL);
+
+            ImageView playIcon = new ImageView(context);
+            playIcon.setImageResource(R.drawable.ic_play);
+            playIcon.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            badgeLayout.addView(playIcon, LayoutHelper.createLinear(12, 12, Gravity.CENTER_VERTICAL, 0, 0, 4, 0));
+
+            videoDurationText = new TextView(context);
+            videoDurationText.setTextColor(Color.WHITE);
+            videoDurationText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            videoDurationText.setText("VIDEO");
+            badgeLayout.addView(videoDurationText, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL));
+
+            videoBadge.addView(badgeLayout, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
+            addView(videoBadge, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START, 6, 0, 0, 6));
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            int width = MeasureSpec.getSize(widthMeasureSpec);
+            super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY));
+        }
+
+        public void setItem(VaultItem item) {
+            if (item == null || item.vaultPath == null) return;
+            imageView.setImage(ImageLocation.getForPath(item.vaultPath), "150_150", (Drawable) null, null);
+            if (item.isVideo()) {
+                videoBadge.setVisibility(View.VISIBLE);
+            } else {
+                videoBadge.setVisibility(View.GONE);
             }
-            return HEADER_ROWS + filteredEntities.size();
+        }
+    }
+
+    public class VaultFileCell extends FrameLayout {
+        private final ImageView iconView;
+        private final TextView titleView;
+        private final TextView subtitleView;
+        private final boolean isVoice;
+        private VaultItem currentItem;
+
+        public VaultFileCell(@NonNull Context context, boolean isVoice) {
+            super(context);
+            this.isVoice = isVoice;
+            setBackground(Theme.getSelectorDrawable(false));
+
+            FrameLayout iconContainer = new FrameLayout(context);
+            GradientDrawable bg = new GradientDrawable();
+            bg.setShape(GradientDrawable.OVAL);
+            bg.setColor(Theme.getColor(isVoice ? Theme.key_featuredStickers_addButton : Theme.key_chat_inBubble));
+            iconContainer.setBackground(bg);
+
+            iconView = new ImageView(context);
+            if (isVoice) {
+                iconView.setImageResource(R.drawable.ic_play);
+                iconView.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            } else {
+                iconView.setImageResource(R.drawable.media_doc_blue);
+            }
+            iconContainer.addView(iconView, LayoutHelper.createFrame(22, 22, Gravity.CENTER));
+            addView(iconContainer, LayoutHelper.createFrame(44, 44, Gravity.CENTER_VERTICAL | Gravity.START, 16, 0, 0, 0));
+
+            LinearLayout textContainer = new LinearLayout(context);
+            textContainer.setOrientation(LinearLayout.VERTICAL);
+
+            titleView = new TextView(context);
+            titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+            titleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            titleView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
+            titleView.setSingleLine(true);
+            titleView.setEllipsize(TextUtils.TruncateAt.END);
+            textContainer.addView(titleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 2));
+
+            subtitleView = new TextView(context);
+            subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+            subtitleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
+            subtitleView.setSingleLine(true);
+            subtitleView.setEllipsize(TextUtils.TruncateAt.END);
+            textContainer.addView(subtitleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+            addView(textContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, 72, 0, 16, 0));
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64), MeasureSpec.EXACTLY));
+        }
+
+        public void setItem(VaultItem item) {
+            this.currentItem = item;
+            if (item == null) return;
+
+            titleView.setText(item.fileName != null ? item.fileName : "file");
+            String sizeStr = AndroidUtilities.formatFileSize(item.size);
+            String dateStr = LocaleController.formatDateForBan(item.date / 1000L);
+            subtitleView.setText(sizeStr + " • " + dateStr + " • " + (item.chatTitle != null ? item.chatTitle : ""));
+
+            if (isVoice) {
+                MessageObject mo = item.getMessageObject(currentAccount);
+                boolean playing = MediaController.getInstance().isPlayingMessage(mo) && !MediaController.getInstance().isMessagePaused();
+                iconView.setImageResource(playing ? R.drawable.ic_pause : R.drawable.ic_play);
+                iconView.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
+            }
         }
     }
 }

@@ -1268,6 +1268,10 @@ public class FileLoader extends BaseController {
         if (message == null) {
             return new File("");
         }
+        File vaultFile = HundredGramVaultManager.getInstance(currentAccount).getVaultFile(message);
+        if (vaultFile != null && vaultFile.exists()) {
+            return vaultFile;
+        }
         if (message instanceof TLRPC.TL_messageService) {
             if (message.action.photo != null) {
                 ArrayList<TLRPC.PhotoSize> sizes = message.action.photo.sizes;
@@ -1413,13 +1417,18 @@ public class FileLoader extends BaseController {
         if (dir == null) {
             return new File("");
         }
+        String attachFileName = getAttachFileName(attach, ext);
+        File vaultFile = HundredGramVaultManager.getInstance(currentAccount).getVaultFileByName(attachFileName);
+        if (vaultFile != null && vaultFile.exists()) {
+            return vaultFile;
+        }
         if (documentId != 0) {
             String path = getInstance(UserConfig.selectedAccount).getFileDatabase().getPath(documentId, dcId, type, useFileDatabaseQueue);
             if (path != null) {
                 return new File(path);
             }
         }
-        return new File(dir, getAttachFileName(attach, ext));
+        return new File(dir, attachFileName);
     }
 
     public FilePathDatabase getFileDatabase() {
