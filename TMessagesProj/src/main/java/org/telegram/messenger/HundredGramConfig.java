@@ -913,8 +913,30 @@ public class HundredGramConfig {
         save("notifyAllContactsOnline", notifyAllContactsOnline);
     }
 
+    public static boolean isTrackedUser(long userId) {
+        return trackedOnlineUsers.contains(userId);
+    }
+
     public static boolean isUserTrackedForOnline(long userId) {
         return trackedOnlineUsers.contains(userId);
+    }
+
+    public static void setTrackedUser(long userId, boolean enabled) {
+        if (userId <= 0) return;
+        if (enabled) {
+            trackedOnlineUsers.add(userId);
+            if (!notifyOnUserOnline) {
+                notifyOnUserOnline = true;
+                save("notifyOnUserOnline", true);
+            }
+        } else {
+            trackedOnlineUsers.remove(userId);
+        }
+        saveTrackedOnlineUsers();
+    }
+
+    public static java.util.Set<Long> getTrackedOnlineUsers() {
+        return new java.util.HashSet<>(trackedOnlineUsers);
     }
 
     public static boolean toggleUserTrackedForOnline(long userId) {

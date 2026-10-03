@@ -18750,7 +18750,8 @@ public class MessagesStorage extends BaseController {
     public void saveUserActivityEnd(long userId, long timeStart, long timeEnd) {
         storageQueue.postRunnable(() -> {
             try {
-                database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = %d WHERE user_id = %d AND time_start = %d;", timeEnd, userId, timeStart)).stepThis().dispose();
+                long safeEnd = timeEnd > timeStart ? timeEnd : (timeStart + 30L);
+                database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = %d WHERE user_id = %d AND time_start = %d;", safeEnd, userId, timeStart)).stepThis().dispose();
             } catch (Exception e) {
                 FileLog.e(e);
             }
@@ -18779,8 +18780,8 @@ public class MessagesStorage extends BaseController {
             ArrayList<HundredGramActivityTracker.ActivityEntry> entries = new ArrayList<>();
             SQLiteCursor cursor = null;
             try {
-                long cutoff = (System.currentTimeMillis() / 1000L) - 120L;
-                database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = time_start + 30 WHERE (time_end IS NULL OR time_end <= time_start) AND time_start < %d;", cutoff)).stepThis().dispose();
+                long cutoff = (System.currentTimeMillis() / 1000L) - 90L;
+                database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = time_start + 45 WHERE (time_end IS NULL OR time_end <= time_start) AND time_start < %d;", cutoff)).stepThis().dispose();
                 cursor = database.queryFinalized(String.format(Locale.US, "SELECT time_start, time_end, trigger_type FROM user_activity_log WHERE user_id = %d ORDER BY time_start DESC LIMIT %d", userId, limit));
                 while (cursor.next()) {
                     long start = cursor.longValue(0);
@@ -18804,8 +18805,8 @@ public class MessagesStorage extends BaseController {
     public long getTodayTotalOnlineTime(long userId, long dayStart) {
         SQLiteCursor cursor = null;
         try {
-            long cutoff = (System.currentTimeMillis() / 1000L) - 120L;
-            database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = time_start + 30 WHERE (time_end IS NULL OR time_end <= time_start) AND time_start < %d;", cutoff)).stepThis().dispose();
+            long cutoff = (System.currentTimeMillis() / 1000L) - 90L;
+            database.executeFast(String.format(Locale.US, "UPDATE user_activity_log SET time_end = time_start + 45 WHERE (time_end IS NULL OR time_end <= time_start) AND time_start < %d;", cutoff)).stepThis().dispose();
             cursor = database.queryFinalized(String.format(Locale.US, "SELECT SUM(CASE WHEN time_end > time_start THEN (time_end - time_start) ELSE 30 END) FROM user_activity_log WHERE user_id = %d AND time_start >= %d", userId, dayStart));
             if (cursor.next()) {
                 return cursor.longValue(0);

@@ -662,6 +662,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private int idDcRow;
     private int notificationsDividerRow;
     private int notificationsRow;
+    private int trackActivityRow;
     private int bizHoursRow;
     private int bizLocationRow;
     private int notificationsSimpleRow;
@@ -2787,6 +2788,12 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     TLRPC.User user = getMessagesController().getUser(userId);
                     if (user != null) {
                         boolean tracked = org.telegram.messenger.HundredGramConfig.toggleUserTrackedForOnline(userId);
+                        if (tracked) {
+                            org.telegram.messenger.HundredGramActivityTracker.getInstance(currentAccount).requestTrackedUserStatuses(true);
+                        }
+                        if (listAdapter != null && trackActivityRow != -1) {
+                            listAdapter.notifyItemChanged(trackActivityRow);
+                        }
                         String name = ContactsController.formatName(user);
                         BulletinFactory.of(ProfileActivity.this).createSimpleBulletin(
                             R.raw.chats_infotip,
@@ -4470,6 +4477,20 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 showDialog(AlertsCreator.createTTLAlert(getParentActivity(), currentEncryptedChat, resourcesProvider).create());
             } else if (position == notificationsRow) {
                 onNotificationsClicked(false, x, y, view);
+            } else if (position == trackActivityRow) {
+                boolean tracked = org.telegram.messenger.HundredGramConfig.isUserTrackedForOnline(userId);
+                boolean newTracked = !tracked;
+                org.telegram.messenger.HundredGramConfig.setTrackedUser(userId, newTracked);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(newTracked);
+                }
+                if (newTracked) {
+                    org.telegram.messenger.HundredGramActivityTracker.getInstance(currentAccount).requestTrackedUserStatuses(true);
+                }
+                if (otherItem != null) {
+                    otherItem.setSubItemText(hundredgram_notify_online, LocaleController.getString(newTracked ? "DisableNotifyUserOnline" : "EnableNotifyUserOnline", newTracked ? R.string.DisableNotifyUserOnline : R.string.EnableNotifyUserOnline));
+                }
+                getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_STATUS);
 
             } else if (position == unblockRow) {
                 getMessagesController().unblockPeer(userId);
@@ -10635,6 +10656,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         notificationsDividerRow = -1;
         reportDividerRow = -1;
         notificationsRow = -1;
+        trackActivityRow = -1;
         bizLocationRow = -1;
         bizHoursRow = -1;
         infoSectionRow = -1;
@@ -10849,6 +10871,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 }
                 if (isBot && user != null && user.bot_has_main_app) {
                     botAppRow = rowCount++;
+                }
+                if (userId != 0 && !myProfile && (user == null || (!user.bot && !UserObject.isService(user.id)))) {
+                    trackActivityRow = rowCount++;
                 }
                 infoEndRow = rowCount - 1;
                 infoSectionRow = rowCount++;
@@ -13266,7 +13291,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 VIEW_TYPE_TEXT_DETAIL_MULTILINE_2 = 30,
                 VIEW_TYPE_EMPTY2 = 31,
                 VIEW_TYPE_TEXT2 = 32,
-                VIEW_TYPE_LINKED_COMMUNITY = 33
+                VIEW_TYPE_LINKED_COMMUNITY = 33,
+                VIEW_TYPE_TRACK_ACTIVITY = 34
                         ;
 
         private Context mContext;
@@ -13349,7 +13375,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     };
                     break;
                 }
-                case VIEW_TYPE_NOTIFICATIONS_CHECK_SIMPLE: {
+                case VIEW_TYPE_NOTIFICATIONS_CHECK_SIMPLE:
+                case VIEW_TYPE_TRACK_ACTIVITY: {
                     view = new TextCheckCell(mContext, 18, false, resourcesProvider);
                     break;
                 }
@@ -14336,6 +14363,17 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     TextCheckCell textCheckCell = (TextCheckCell) holder.itemView;
                     textCheckCell.setTextAndCheck(LocaleController.getString(R.string.Notifications), !getMessagesController().isDialogMuted(getDialogId(), topicId), false);
                     break;
+                case VIEW_TYPE_TRACK_ACTIVITY:
+                    TextCheckCell trackCell = (TextCheckCell) holder.itemView;
+                    boolean isTracked = HundredGramConfig.isUserTrackedForOnline(userId);
+                    trackCell.setTextAndValueAndCheck(
+                            LocaleController.getString("HundredGramTrackActivity", R.string.HundredGramTrackActivity),
+                            LocaleController.getString("HundredGramTrackActivityDesc", R.string.HundredGramTrackActivityDesc),
+                            isTracked,
+                            true,
+                            false
+                    );
+                    break;
                 case VIEW_TYPE_LOCATION:
                     ((ProfileLocationCell) holder.itemView).set(userInfo != null ? userInfo.business_location : null, notificationsDividerRow < 0 && !myProfile);
                     break;
@@ -14538,6 +14576,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 return VIEW_TYPE_NOTIFICATIONS_CHECK;
             } else if (position == notificationsSimpleRow) {
                 return VIEW_TYPE_NOTIFICATIONS_CHECK_SIMPLE;
+            } else if (position == trackActivityRow) {
+                return VIEW_TYPE_TRACK_ACTIVITY;
             } else if (position == lastSectionRow || position == membersSectionRow || position == linkedCommunityDividerRow ||
                     position == secretSettingsSectionRow || position == settingsSectionRow || position == devicesSectionRow ||
                     position == helpSectionCell || position == setAvatarSectionRow || position == passwordSuggestionSectionRow ||

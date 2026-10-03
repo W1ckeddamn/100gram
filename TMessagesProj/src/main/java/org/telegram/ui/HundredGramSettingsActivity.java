@@ -9,6 +9,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.ActionBar;
@@ -36,6 +37,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
     private static final int ITEM_CATEGORY_STREAMER = 9;
     private static final int ITEM_CATEGORY_AUTOMATION = 10;
     private static final int ITEM_CATEGORY_NETWORK = 11;
+    private static final int ITEM_TRACKED_USERS = 12;
 
     private UniversalRecyclerView listView;
 
@@ -119,6 +121,12 @@ public class HundredGramSettingsActivity extends BaseFragment {
 
         items.add(UItem.asButton(ITEM_CATEGORY_TRACKER, R.drawable.msg_usersearch,
                 LocaleController.getString("HundredGramCategoryTracker", R.string.HundredGramCategoryTracker)));
+
+        int trackedCount = HundredGramConfig.trackedOnlineUsers.size();
+        String countStr = String.format(LocaleController.getString("HundredGramTrackedUsersCount", R.string.HundredGramTrackedUsersCount), trackedCount);
+        items.add(UItem.asButton(ITEM_TRACKED_USERS, R.drawable.msg_usersearch,
+                LocaleController.getString("HundredGramTrackedUsersList", R.string.HundredGramTrackedUsersList),
+                countStr));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramCategoryTrackerSub", R.string.HundredGramCategoryTrackerSub)));
 
         items.add(UItem.asButton(ITEM_CATEGORY_AUTOMATION, R.drawable.msg_bot,
@@ -157,6 +165,9 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 break;
             case ITEM_CATEGORY_TRACKER:
                 presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_TRACKER));
+                break;
+            case ITEM_TRACKED_USERS:
+                presentFragment(new HundredGramTrackedUsersActivity());
                 break;
             case ITEM_CATEGORY_AUTOMATION:
                 presentFragment(new HundredGramAutomationActivity());

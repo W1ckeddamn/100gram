@@ -843,7 +843,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 }
                 break;
             case ITEM_TRACKED_USERS_LIST:
-                showTrackedUsersDialog();
+                presentFragment(new HundredGramTrackedUsersActivity());
                 break;
             case ITEM_TRACK_SELF_ACTIVITY:
                 HundredGramConfig.toggleTrackSelfActivity();

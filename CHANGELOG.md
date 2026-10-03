@@ -9,8 +9,13 @@
 ## [Unreleased]
 
 ### Added
+- [Tracker] Добавлен переключатель «Отслеживать активность» (`TextCheckCell`) в профиле любого пользователя (`ProfileActivity`) для быстрого включения мониторинга онлайна.
+- [Tracker] Создан экран управления отслеживаемыми контактами [`HundredGramTrackedUsersActivity`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramTrackedUsersActivity.java): список пользователей с аватарками и статусами, выбор из контактов, удаление и переход к журналу активности.
 - [Docs] Набор руководств и навыков для ИИ-агентов в каталоге `.agents/skills/` (`100gram-architect`, `100gram-build`, `100gram-tracker-vault`, `100gram-ui-components`, `100gram-changelog`).
 - [Automation] Скрипт управления версиями и релизами `.agents/skills/100gram-changelog/scripts/changelog-helper.ps1`.
+
+### Fixed
+- [Tracker] Исправлен подсчёт времени сессий и суммарного времени за день: внедрён таймаут автозакрытия висячих сессий (90 секунд), устранены сессии с `end_time = 0`, стандартизированы секунды Unix-времени и форматирование в UI (`X мин` / `X ч Y мин`).
 
 ### Changed
 - [Git] Нормализация репозитория: переключение рабочей ветки на `main`, удаление устаревших веток (`backup-12.92-full`, `graher_12.92.1`, `upgrade-12.10.5`).

@@ -161,9 +161,9 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
         cancelTypingTimeout(userId);
 
         boolean isNewSession = false;
-        if (existingStart == null || (lastAction != null && now - lastAction > 120)) {
+        if (existingStart == null || (lastAction != null && now - lastAction > 90)) {
             if (existingStart != null) {
-                long estimatedEnd = Math.max(lastAction != null ? lastAction : (existingStart + 30L), existingStart + 30L);
+                long estimatedEnd = (lastAction != null && lastAction > existingStart) ? lastAction : (existingStart + 45L);
                 lastSeenCache.put(userId, estimatedEnd);
                 MessagesStorage.getInstance(currentAccount).saveUserActivityEnd(userId, existingStart, estimatedEnd);
             }
@@ -374,8 +374,8 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
             return last != null && (now - last <= 6);
         }
         long lastAction = last != null ? last : start;
-        if (now - lastAction > 120) {
-            long estimatedEnd = Math.max(lastAction, start + 30L);
+        if (now - lastAction > 90) {
+            long estimatedEnd = (lastAction > start) ? lastAction : (start + 45L);
             lastSeenCache.put(userId, estimatedEnd);
             MessagesStorage.getInstance(currentAccount).saveUserActivityEnd(userId, start, estimatedEnd);
             activeSessions.remove(userId);
@@ -384,6 +384,19 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
             return false;
         }
         return true;
+    }
+
+    public static String formatDuration(long seconds) {
+        if (seconds <= 0) {
+            return "0 мин";
+        }
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long remMinutes = minutes % 60;
+        if (hours > 0) {
+            return hours + " ч " + remMinutes + " мин";
+        }
+        return Math.max(1, minutes) + " мин";
     }
 
     public long getTodayTotalOnlineTime(long userId) {
@@ -442,6 +455,10 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
     private long lastStatusSyncTime = 0;
 
     public void requestTrackedUserStatuses() {
+        requestTrackedUserStatuses(false);
+    }
+
+    public void requestTrackedUserStatuses(boolean force) {
         if (!HundredGramConfig.trackOnlineStatus) {
             return;
         }
@@ -452,7 +469,7 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
         }
 
         long now = System.currentTimeMillis();
-        if (now - lastStatusSyncTime < 10 * 60 * 1000L) {
+        if (!force && now - lastStatusSyncTime < 2 * 60 * 1000L) {
             return;
         }
 

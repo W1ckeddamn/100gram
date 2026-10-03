@@ -486,6 +486,10 @@
     <string name="HundredGramTrackedUsersCount">%1$d конт.</string>
     <string name="HundredGramTrackedUsersEmpty">Список отслеживаемых контактов пуст</string>
     <string name="HundredGramOnlineNotificationChannel">Уведомления о входе в сеть</string>
+    <string name="HundredGramTrackActivity">Отслеживать активность</string>
+    <string name="HundredGramTrackActivityDesc">Логировать время в сети и уведомлять об активности</string>
+    <string name="HundredGramTrackedUserDeleted">Контакт удалён из отслеживания</string>
+    <string name="HundredGramAddTrackedUser">Добавить контакт</string>
 
     <!-- Network Boost -->
     <string name="NetworkBoostTitle">Ускоритель сети (Network Boost)</string>

@@ -485,6 +485,10 @@
     <string name="HundredGramTrackedUsersCount">%1$d contacts</string>
     <string name="HundredGramTrackedUsersEmpty">No contacts selected for tracking yet</string>
     <string name="HundredGramOnlineNotificationChannel">Online Status Alerts</string>
+    <string name="HundredGramTrackActivity">Track activity</string>
+    <string name="HundredGramTrackActivityDesc">Log online sessions and notify about activity</string>
+    <string name="HundredGramTrackedUserDeleted">Contact removed from tracking</string>
+    <string name="HundredGramAddTrackedUser">Add Contact</string>
 
     <!-- Network Boost -->
     <string name="NetworkBoostTitle">Network Boost</string>

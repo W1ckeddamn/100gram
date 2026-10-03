@@ -164,7 +164,7 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         long dayStart = cal.getTimeInMillis() / 1000L;
-        long todayDuration = 0;
+        long todayDuration = HundredGramActivityTracker.getInstance(currentAccount).getTodayTotalOnlineTime(userId);
         int todaySessions = 0;
         boolean isActiveNow = HundredGramActivityTracker.getInstance(currentAccount).isSessionActive(userId);
 
@@ -177,9 +177,6 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
             }
             if (sessionEnd > dayStart) {
                 todaySessions++;
-                long startClamped = Math.max(sessionStart, dayStart);
-                long dur = Math.max(0, sessionEnd - startClamped);
-                todayDuration += dur;
             }
         }
 
@@ -216,10 +213,10 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
             String value;
             if (isActiveNow && a == 0) {
                 long activeDur = Math.max(1L, now - entry.timeStart);
-                value = LocaleController.getString("Online", R.string.Online) + " (" + formatDuration(activeDur) + ")";
+                value = LocaleController.getString("Online", R.string.Online) + " (" + formatSessionDuration(activeDur) + ")";
             } else {
-                long dur = entry.timeEnd > entry.timeStart ? (entry.timeEnd - entry.timeStart) : 15L;
-                value = formatDuration(dur);
+                long dur = entry.timeEnd > entry.timeStart ? (entry.timeEnd - entry.timeStart) : 30L;
+                value = formatSessionDuration(dur);
             }
 
             items.add(UItem.asButton(100 + a, icon, title, value));
@@ -229,28 +226,23 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
         items.add(UItem.asButton(999, R.drawable.msg_delete, LocaleController.getString("UserActivityClear", R.string.UserActivityClear), ""));
     }
 
-    private static String formatDuration(long seconds) {
+    public static String formatDuration(long seconds) {
         if (seconds <= 0) {
-            return "0 сек";
+            return "0 мин";
         }
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long remMinutes = minutes % 60;
+        if (hours > 0) {
+            return hours + " ч " + remMinutes + " мин";
+        }
+        return Math.max(1, minutes) + " мин";
+    }
+
+    public static String formatSessionDuration(long seconds) {
         if (seconds < 60) {
-            return seconds + " сек";
-        } else if (seconds < 3600) {
-            long minutes = seconds / 60;
-            long secs = seconds % 60;
-            if (secs > 0) {
-                return minutes + " мин " + secs + " сек";
-            } else {
-                return minutes + " мин";
-            }
-        } else {
-            long hours = seconds / 3600;
-            long minutes = (seconds % 3600) / 60;
-            if (minutes > 0) {
-                return hours + " ч " + minutes + " мин";
-            } else {
-                return hours + " ч";
-            }
+            return Math.max(1, seconds) + " сек";
         }
+        return formatDuration(seconds);
     }
 }
