@@ -22,8 +22,10 @@ import org.telegram.messenger.HundredGramActivityTracker;
 import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
+import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.ActionBarMenu;
@@ -111,7 +113,7 @@ public class HundredGramTrackedUsersActivity extends BaseFragment implements Not
                 if (id == -1) {
                     finishFragment();
                 } else if (id == ITEM_ADD) {
-                    openContactPicker();
+                    openUserPicker();
                 }
             }
         });
@@ -179,7 +181,7 @@ public class HundredGramTrackedUsersActivity extends BaseFragment implements Not
         addButton.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(8),
                 Theme.getColor(Theme.key_featuredStickers_addButton, getResourceProvider()),
                 Theme.getColor(Theme.key_featuredStickers_addButtonPressed, getResourceProvider())));
-        addButton.setOnClickListener(v -> openContactPicker());
+        addButton.setOnClickListener(v -> openUserPicker());
         emptyView.addView(addButton, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
 
         frameLayout.addView(emptyView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
@@ -194,38 +196,47 @@ public class HundredGramTrackedUsersActivity extends BaseFragment implements Not
         floatingButton.setImageResource(R.drawable.msg_add);
         floatingButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionIcon, getResourceProvider()), PorterDuff.Mode.MULTIPLY));
         floatingButton.setElevation(AndroidUtilities.dp(6));
-        floatingButton.setOnClickListener(v -> openContactPicker());
+        floatingButton.setOnClickListener(v -> openUserPicker());
         frameLayout.addView(floatingButton, LayoutHelper.createFrame(56, 56, (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.BOTTOM, 16, 16, 16, 16));
 
         updateEmptyView();
         return fragmentView;
     }
 
-    private void openContactPicker() {
+    private void updateRows() {
+        loadUsers();
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void openUserPicker() {
         Bundle args = new Bundle();
-        args.putBoolean("onlyUsers", true);
-        args.putBoolean("destroyAfterSelect", true);
-        args.putBoolean("returnAsResult", true);
-        args.putBoolean("allowSelf", false);
-        ContactsActivity contactsActivity = new ContactsActivity(args);
-        contactsActivity.setDelegate((user, param, activity) -> {
-            if (user != null && !user.self && !user.bot) {
-                HundredGramConfig.setTrackedUser(user.id, true);
-                HundredGramActivityTracker.getInstance(currentAccount).requestTrackedUserStatuses(true);
-                loadUsers();
-                if (listAdapter != null) {
-                    listAdapter.notifyDataSetChanged();
-                }
-                if (BulletinFactory.canShowBulletin(HundredGramTrackedUsersActivity.this)) {
-                    String name = ContactsController.formatName(user);
-                    BulletinFactory.of(HundredGramTrackedUsersActivity.this).createSimpleBulletin(
-                            R.raw.chats_infotip,
-                            name + " — " + LocaleController.getString("HundredGramTrackActivity", R.string.HundredGramTrackActivity)
-                    ).show();
+        args.putBoolean("onlySelect", true);
+        args.putBoolean("checkCanWrite", false);
+        args.putInt("dialogsType", DialogsActivity.DIALOGS_TYPE_USERS_ONLY);
+        DialogsActivity fragment = new DialogsActivity(args);
+        fragment.setDelegate((dialogsActivity, dids, message, param, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment) -> {
+            if (dids != null && !dids.isEmpty()) {
+                long did = dids.get(0).dialogId;
+                if (did > 0 && did != UserConfig.getInstance(currentAccount).getClientUserId()) {
+                    HundredGramConfig.setTrackedUser(did, true);
+                    HundredGramActivityTracker.getInstance(currentAccount).requestTrackedUserStatuses(true);
+                    updateRows();
+                    if (BulletinFactory.canShowBulletin(HundredGramTrackedUsersActivity.this)) {
+                        TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(did);
+                        String name = user != null ? ContactsController.formatName(user) : ("ID: " + did);
+                        BulletinFactory.of(HundredGramTrackedUsersActivity.this).createSimpleBulletin(
+                                R.raw.chats_infotip,
+                                name + " — " + LocaleController.getString("HundredGramTrackActivity", R.string.HundredGramTrackActivity)
+                        ).show();
+                    }
                 }
             }
+            dialogsActivity.finishFragment();
+            return true;
         });
-        presentFragment(contactsActivity);
+        presentFragment(fragment);
     }
 
     private void showUserOptionsDialog(long userId) {
@@ -338,6 +349,12 @@ public class HundredGramTrackedUsersActivity extends BaseFragment implements Not
             cell.setTag(uid);
 
             TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(uid);
+            if (user == null) {
+                user = MessagesStorage.getInstance(currentAccount).getUser(uid);
+                if (user != null) {
+                    MessagesController.getInstance(currentAccount).putUser(user, true);
+                }
+            }
             if (user != null) {
                 CharSequence status = LocaleController.formatUserStatus(currentAccount, user);
                 cell.setData(user, null, status, position != userIds.size() - 1);

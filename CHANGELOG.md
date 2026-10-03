@@ -10,7 +10,8 @@
 
 ### Added
 - [Tracker] Добавлен переключатель «Отслеживать активность» (`TextCheckCell`) в профиле любого пользователя (`ProfileActivity`) для быстрого включения мониторинга онлайна.
-- [Tracker] Создан экран управления отслеживаемыми контактами [`HundredGramTrackedUsersActivity`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramTrackedUsersActivity.java): список пользователей с аватарками и статусами, выбор из контактов, удаление и переход к журналу активности.
+- [Tracker] Создан экран управления отслеживаемыми контактами [`HundredGramTrackedUsersActivity`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramTrackedUsersActivity.java): список пользователей с аватарками и статусами, выбор любых личных чатов (включая не-контакты) через `DialogsActivity`, удаление и переход к журналу активности.
+- [Tracker] Добавлена поддержка опроса статусов не-контактов и отслеживаемых пользователей через MTProto `users.getUsers` (`TLRPC.TL_users_getUsers`) в `HundredGramActivityTracker`.
 - [Docs] Набор руководств и навыков для ИИ-агентов в каталоге `.agents/skills/` (`100gram-architect`, `100gram-build`, `100gram-tracker-vault`, `100gram-ui-components`, `100gram-changelog`).
 - [Automation] Скрипт управления версиями и релизами `.agents/skills/100gram-changelog/scripts/changelog-helper.ps1`.
 

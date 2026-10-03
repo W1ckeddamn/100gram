@@ -479,6 +479,8 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
         }
 
         lastStatusSyncTime = now;
+
+        // 1. Request contact statuses for phonebook contacts
         TLRPC.TL_contacts_getStatuses req = new TLRPC.TL_contacts_getStatuses();
         ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> {
             if (response instanceof Vector) {
@@ -498,5 +500,61 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
                 }
             }
         });
+
+        // 2. Request full user statuses for tracked users (including non-contacts) via users.getUsers
+        if (trackedUsers != null && !trackedUsers.isEmpty()) {
+            ArrayList<TLRPC.InputUser> inputUsers = new ArrayList<>();
+            for (Long uid : trackedUsers) {
+                if (uid == null || uid <= 0 || uid == UserConfig.getInstance(currentAccount).getClientUserId()) {
+                    continue;
+                }
+                TLRPC.User u = MessagesController.getInstance(currentAccount).getUser(uid);
+                if (u == null) {
+                    u = MessagesStorage.getInstance(currentAccount).getUser(uid);
+                    if (u != null) {
+                        MessagesController.getInstance(currentAccount).putUser(u, true);
+                    }
+                }
+                TLRPC.InputUser inputUser = MessagesController.getInstance(currentAccount).getInputUser(u);
+                if (inputUser != null && !(inputUser instanceof TLRPC.TL_inputUserEmpty)) {
+                    inputUsers.add(inputUser);
+                }
+            }
+
+            if (!inputUsers.isEmpty()) {
+                final int BATCH_SIZE = 50;
+                for (int i = 0; i < inputUsers.size(); i += BATCH_SIZE) {
+                    TLRPC.TL_users_getUsers usersReq = new TLRPC.TL_users_getUsers();
+                    usersReq.id.addAll(inputUsers.subList(i, Math.min(i + BATCH_SIZE, inputUsers.size())));
+                    ConnectionsManager.getInstance(currentAccount).sendRequest(usersReq, (response, error) -> {
+                        if (response instanceof Vector) {
+                            Vector vector = (Vector) response;
+                            if (vector.objects != null && !vector.objects.isEmpty()) {
+                                ArrayList<TLRPC.User> users = new ArrayList<>();
+                                for (int a = 0; a < vector.objects.size(); a++) {
+                                    Object obj = vector.objects.get(a);
+                                    if (obj instanceof TLRPC.User) {
+                                        users.add((TLRPC.User) obj);
+                                    }
+                                }
+                                if (!users.isEmpty()) {
+                                    AndroidUtilities.runOnUIThread(() -> {
+                                        for (int a = 0; a < users.size(); a++) {
+                                            TLRPC.User user = users.get(a);
+                                            if (user != null && user.status != null) {
+                                                onUserStatusUpdate(user.id, user.status);
+                                            }
+                                        }
+                                        MessagesController.getInstance(currentAccount).putUsers(users, false);
+                                        MessagesStorage.getInstance(currentAccount).putUsersAndChats(users, null, true, true);
+                                        NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_STATUS);
+                                    });
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
     }
 }
