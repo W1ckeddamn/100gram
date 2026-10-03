@@ -9,6 +9,9 @@
 ## [Unreleased]
 
 ### Added
+- [Vault/Archiver] Реализована принудительная фоновая предзагрузка медиаданных через `FileLoader.loadFile` со сниженным приоритетом `FileLoader.PRIORITY_LOW` (фотографии, документы, видео, аудио, видеосообщения) в `HundredGramBackgroundArchiver`.
+- [Vault] Добавлен перехват системных уведомлений `NotificationCenter.fileLoaded`: изоляция и hardlink в `HundredGramVaultManager.isolateMediaForMessage` происходят строго после завершения записи файла на диск.
+- [Service] Добавлен запуск службы `HundredGramBackgroundArchiver` в `NotificationsService.onCreate()` для всех активных учетных записей.
 - [Tracker] Добавлен переключатель «Отслеживать активность» (`TextCheckCell`) в профиле любого пользователя (`ProfileActivity`) для быстрого включения мониторинга онлайна.
 - [Tracker] Создан экран управления отслеживаемыми контактами [`HundredGramTrackedUsersActivity`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramTrackedUsersActivity.java): список пользователей с аватарками и статусами, выбор любых личных чатов (включая не-контакты) через `DialogsActivity`, удаление и переход к журналу активности.
 - [Tracker] Добавлена поддержка опроса статусов не-контактов и отслеживаемых пользователей через MTProto `users.getUsers` (`TLRPC.TL_users_getUsers`) в `HundredGramActivityTracker`.
@@ -16,6 +19,8 @@
 - [Automation] Скрипт управления версиями и релизами `.agents/skills/100gram-changelog/scripts/changelog-helper.ps1`.
 
 ### Fixed
+- [Vault] Устранена ошибка «файл не найден» при архивации: устранена попытка создания ссылки до скачивания бинарного содержимого.
+- [Vault] Исправлен фильтр `canVaultDownload`: гарантировано включение всех личных чатов (`dialogId > 0`) и архивированных диалогов (`folder_id == 1`).
 - [Tracker] Исправлен подсчёт времени сессий и суммарного времени за день: внедрён таймаут автозакрытия висячих сессий (90 секунд), устранены сессии с `end_time = 0`, стандартизированы секунды Unix-времени и форматирование в UI (`X мин` / `X ч Y мин`).
 
 ### Changed

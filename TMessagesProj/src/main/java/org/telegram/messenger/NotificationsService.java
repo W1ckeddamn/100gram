@@ -39,6 +39,13 @@ public class NotificationsService extends Service {
         if (HundredGramConfig.keepAliveForegroundService) {
             startForegroundInternal();
         }
+        for (int a : SharedConfig.activeAccounts) {
+            try {
+                HundredGramBackgroundArchiver.getInstance(a).start();
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
+        }
     }
 
     @Override

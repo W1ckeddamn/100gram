@@ -1480,6 +1480,33 @@ public class HundredGramConfig {
         return result;
     }
 
+    public static boolean canVaultDownload(long dialogId) {
+        int mode = getChatVaultMode(dialogId);
+        if (mode == VAULT_MODE_NEVER) return false;
+        if (mode == VAULT_MODE_ALWAYS) return true;
+        if (!autoDownloadMediaVault) return false;
+        if (autoDownloadOnlyWifi && ApplicationLoader.getAutodownloadNetworkType() != StatsController.TYPE_WIFI) {
+            return false;
+        }
+        if (dialogId > 0) return true;
+        if (dialogId < 0) {
+            TLRPC.Dialog d = null;
+            try {
+                d = MessagesController.getInstance(UserConfig.selectedAccount).dialogs_dict.get(dialogId);
+            } catch (Throwable ignored) {}
+            if (d != null && d.folder_id == 1) {
+                return vaultIncludeArchivedChats;
+            }
+            int scope = autoDownloadChatsScope;
+            if (scope == 1) {
+                TLRPC.Chat chat = MessagesController.getInstance(UserConfig.selectedAccount).getChat(-dialogId);
+                return chat == null || !ChatObject.isChannelAndNotMegaGroup(chat);
+            }
+            return scope == 2;
+        }
+        return false;
+    }
+
     public static boolean canVaultDownload(long dialogId, TLRPC.Message message) {
         return canVaultDownload(dialogId, message, -1);
     }
@@ -1517,9 +1544,9 @@ public class HundredGramConfig {
             int scope = autoDownloadChatsScope;
             boolean inScope;
             if (scope == 0) {
-                inScope = message.peer_id != null && message.peer_id.user_id != 0;
+                inScope = dialogId > 0 || (message.peer_id != null && message.peer_id.user_id != 0);
             } else if (scope == 1) {
-                inScope = message.peer_id != null && (message.peer_id.user_id != 0 || message.peer_id.chat_id != 0 || (message.peer_id.channel_id != 0 && !message.post));
+                inScope = dialogId > 0 || (message.peer_id != null && (message.peer_id.user_id != 0 || message.peer_id.chat_id != 0 || (message.peer_id.channel_id != 0 && !message.post)));
             } else {
                 inScope = true;
             }

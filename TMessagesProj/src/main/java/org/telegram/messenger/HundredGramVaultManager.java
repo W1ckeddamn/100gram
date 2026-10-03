@@ -70,6 +70,32 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
         });
     }
 
+    public void isolateMediaForMessage(TLRPC.Message message, String filePath) {
+        if (message == null || TextUtils.isEmpty(filePath)) {
+            return;
+        }
+        long dialogId = message.dialog_id != 0 ? message.dialog_id : MessageObject.getDialogId(message);
+        if (!HundredGramConfig.isChatAntiDelete(dialogId)) {
+            return;
+        }
+        File file = new File(filePath);
+        if (!file.exists() || file.length() == 0) {
+            return;
+        }
+
+        Utilities.globalQueue.postRunnable(() -> {
+            String fileName = file.getName();
+            File dest = new File(vaultDir, fileName);
+            if (linkOrCopyFile(file, dest)) {
+                String vaultPath = dest.getAbsolutePath();
+                vaultCache.put(fileName, vaultPath);
+                vaultCache.put(dialogId + "_" + message.id, vaultPath);
+                MessagesStorage.getInstance(currentAccount).putVaultFile(message.id, dialogId, fileName, vaultPath);
+                FileLog.d("HundredGramArchiver: successfully isolated to Vault: " + vaultPath + " for msg " + message.id);
+            }
+        });
+    }
+
     public void isolateMediaForMessage(MessageObject messageObject) {
         if (messageObject == null || messageObject.messageOwner == null) {
             return;
@@ -121,8 +147,8 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
             if (localFile == null && messageObject.photoThumbs != null && !messageObject.photoThumbs.isEmpty()) {
                 TLRPC.PhotoSize sizeFull = FileLoader.getClosestPhotoSizeWithSize(messageObject.photoThumbs, AndroidUtilities.getPhotoSize(true));
                 if (sizeFull != null) {
-                    fileName = FileLoader.getAttachFileName(sizeFull);
-                    File f = FileLoader.getInstance(currentAccount).getPathToAttach(sizeFull, true);
+                    fileName = FileLoader.getAttachFileName(sizeFull, "jpg");
+                    File f = FileLoader.getInstance(currentAccount).getPathToAttach(sizeFull, "jpg", true);
                     if (f != null && f.exists()) {
                         localFile = f;
                     }
@@ -139,6 +165,7 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                     vaultCache.put(fileName, vaultPath);
                     vaultCache.put(dialogId + "_" + message.id, vaultPath);
                     MessagesStorage.getInstance(currentAccount).putVaultFile(message.id, dialogId, fileName, vaultPath);
+                    FileLog.d("HundredGramArchiver: local file directly linked to Vault: " + vaultPath + " for msg " + message.id);
                 }
             } else {
                 // Media not downloaded yet. Check auto-download limits
@@ -168,7 +195,8 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
 
                     if (messageObject.getDocument() != null) {
                         final TLRPC.Document doc = messageObject.getDocument();
-                        AndroidUtilities.runOnUIThread(() -> FileLoader.getInstance(currentAccount).loadFile(doc, messageObject, 1, 0));
+                        FileLog.d("HundredGramArchiver: queueing document load for msg " + message.id + " (" + pendingFileName + ")");
+                        AndroidUtilities.runOnUIThread(() -> FileLoader.getInstance(currentAccount).loadFile(doc, messageObject, FileLoader.PRIORITY_LOW, 0));
                     } else {
                         TLRPC.PhotoSize sizeFull = null;
                         if (photo != null && photo.sizes != null && !photo.sizes.isEmpty()) {
@@ -178,10 +206,17 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                         }
                         if (sizeFull != null) {
                             final TLRPC.PhotoSize fSize = sizeFull;
-                            final String photoFileName = FileLoader.getAttachFileName(fSize);
+                            final String photoFileName = FileLoader.getAttachFileName(fSize, "jpg");
                             pendingDownloads.put(photoFileName, new PendingVaultMedia(message.id, dialogId, photoFileName));
-                            final org.telegram.tgnet.TLObject parentObj = photo != null ? photo : (messageObject.photoThumbsObject instanceof org.telegram.tgnet.TLObject ? (org.telegram.tgnet.TLObject) messageObject.photoThumbsObject : null);
-                            AndroidUtilities.runOnUIThread(() -> FileLoader.getInstance(currentAccount).loadFile(ImageLocation.getForObject(fSize, parentObj), messageObject, null, 1, 1));
+                            final TLRPC.Photo finalPhoto = photo;
+                            FileLog.d("HundredGramArchiver: queueing photo load for msg " + message.id + " (" + photoFileName + ")");
+                            AndroidUtilities.runOnUIThread(() -> FileLoader.getInstance(currentAccount).loadFile(
+                                    finalPhoto != null ? ImageLocation.getForPhoto(fSize, finalPhoto) : ImageLocation.getForObject(fSize, (org.telegram.tgnet.TLObject) messageObject.photoThumbsObject),
+                                    messageObject,
+                                    "jpg",
+                                    FileLoader.PRIORITY_LOW,
+                                    1
+                            ));
                         }
                     }
                 }
