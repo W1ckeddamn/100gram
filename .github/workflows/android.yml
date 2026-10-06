@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch: # позволяет запускать сборку кнопкой вручную
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,10 +22,9 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Set up Android NDK (r27b)
-      uses: nttld/setup-ndk@v1
-      with:
-        ndk-version: '27.2.12479018'
+    - name: Set up Android NDK
+      run: |
+        echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.2.12479018"
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
