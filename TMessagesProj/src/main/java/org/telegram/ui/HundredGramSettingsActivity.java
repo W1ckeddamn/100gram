@@ -63,7 +63,13 @@ public class HundredGramSettingsActivity extends BaseFragment {
     }
 
     private void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
-        // Раздел 1: Невидимость
+        // Блок "Что нового" в самом верху меню
+        items.add(UItem.asButton(ITEM_WHATS_NEW, R.drawable.msg_info,
+                LocaleController.getString("HundredGramWhatsNew", R.string.HundredGramWhatsNew),
+                "v1.2"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramWhatsNewSub", R.string.HundredGramWhatsNewSub)));
+
+        // Раздел 1: Невидимость и приватность
         items.add(UItem.asHeader(LocaleController.getString("HundredGramSectionStealth", R.string.HundredGramSectionStealth)));
 
         items.add(UItem.asButton(ITEM_CATEGORY_GHOST, R.drawable.msg_secret,
@@ -100,7 +106,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 LocaleController.getString("CameraEngineTitle", R.string.CameraEngineTitle)));
         items.add(UItem.asShadow(LocaleController.getString("CameraEngineSub", R.string.CameraEngineSub)));
 
-        // Раздел 4: Данные
+        // Раздел 4: Хранилище и Сеть (Данные)
         items.add(UItem.asHeader(LocaleController.getString("HundredGramSectionData", R.string.HundredGramSectionData)));
 
         items.add(UItem.asButton(ITEM_CATEGORY_VAULT, R.drawable.msg_download,
@@ -122,13 +128,8 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 LocaleController.getString("AutomationTitle", R.string.AutomationTitle)));
         items.add(UItem.asShadow(LocaleController.getString("AutomationSubtitle", R.string.AutomationSubtitle)));
 
-        // Раздел 6: О приложении
+        // Раздел 6: О приложении и разработчик
         items.add(UItem.asHeader(LocaleController.getString("HundredGramAboutSection", R.string.HundredGramAboutSection)));
-
-        items.add(UItem.asButton(ITEM_WHATS_NEW, R.drawable.msg_info,
-                LocaleController.getString("HundredGramWhatsNew", R.string.HundredGramWhatsNew),
-                "v1.2"));
-        items.add(UItem.asShadow(LocaleController.getString("HundredGramWhatsNewSub", R.string.HundredGramWhatsNewSub)));
 
         items.add(UItem.asButton(ITEM_AUTHOR, R.drawable.msg_openprofile,
                 LocaleController.getString("HundredGramAuthor", R.string.HundredGramAuthor),
@@ -143,6 +144,9 @@ public class HundredGramSettingsActivity extends BaseFragment {
 
     private void onClick(UItem item, View view, int position, float x, float y) {
         switch (item.id) {
+            case ITEM_WHATS_NEW:
+                presentFragment(new HundredGramWhatsNewActivity());
+                break;
             case ITEM_CATEGORY_GHOST:
                 presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_GHOST));
                 break;
@@ -175,9 +179,6 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 break;
             case ITEM_CATEGORY_AUTOMATION:
                 presentFragment(new HundredGramAutomationActivity());
-                break;
-            case ITEM_WHATS_NEW:
-                presentFragment(new HundredGramWhatsNewActivity());
                 break;
             case ITEM_AUTHOR:
                 Browser.openUrl(getParentActivity(), "https://t.me/w1ckeddamn");

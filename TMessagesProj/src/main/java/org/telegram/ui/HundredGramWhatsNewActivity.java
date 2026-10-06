@@ -1,9 +1,16 @@
 package org.telegram.ui;
 
 import android.content.Context;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.browser.Browser;
@@ -19,27 +26,9 @@ import java.util.ArrayList;
 
 public class HundredGramWhatsNewActivity extends BaseFragment {
 
-    // Quick-action links
     private static final int ITEM_CHECK_UPDATES = 1;
     private static final int ITEM_GITHUB_REPO   = 2;
     private static final int ITEM_AUTHOR_LINK   = 3;
-
-    // v1.2 — кликабельные (переход в нужный раздел)
-    private static final int ITEM_WN_STICKER_SIZE = 101;
-    private static final int ITEM_WN_ROUND_VIDEO  = 102;
-    // v1.2 — информационные (без перехода)
-    private static final int ITEM_WN_LAYER229     = 103;
-    private static final int ITEM_WN_AUDIT        = 104;
-
-    // v1.1 — информационные
-    private static final int ITEM_WN_VAULT        = 201;
-    private static final int ITEM_WN_TRACKER      = 202;
-
-    // v1.0 — информационные
-    private static final int ITEM_WN_GHOST        = 301;
-    private static final int ITEM_WN_ANTI_DELETE  = 302;
-    private static final int ITEM_WN_NETWORK      = 303;
-    private static final int ITEM_WN_STREAMER     = 304;
 
     private UniversalRecyclerView listView;
 
@@ -70,11 +59,10 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
     }
 
     private void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
-        final String newBadge = LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew);
+        Context context = getContext();
 
-        // Раздел: Быстрые действия
+        // Верхний баннер с кнопками быстрых ссылок
         items.add(UItem.asHeader("100gram Telegram Fork"));
-
         items.add(UItem.asButton(ITEM_CHECK_UPDATES, R.drawable.msg_help,
                 LocaleController.getString("HundredGramCheckUpdates", R.string.HundredGramCheckUpdates),
                 "GitHub Releases"));
@@ -90,69 +78,223 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
                 "github.com/W1ckeddamn/100gram"));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramGitHubSub", R.string.HundredGramGitHubSub)));
 
-        // Раздел: Версия 1.2 — Текущая
+        // ==========================================
+        // ВЕРСИЯ 1.2 — ТЕКУЩАЯ (КАРТОЧКИ С АКЦЕНТОМ)
+        // ==========================================
         items.add(UItem.asHeader(LocaleController.getString("WhatsNewCurrentVersion", R.string.WhatsNewCurrentVersion)));
 
-        items.add(UItem.asButton(ITEM_WN_STICKER_SIZE, R.drawable.msg_media,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_media,
                 LocaleController.getString("WhatsNewStickerGifSize", R.string.WhatsNewStickerGifSize),
-                newBadge));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewStickerGifSizeDesc", R.string.WhatsNewStickerGifSizeDesc)));
+                LocaleController.getString("WhatsNewStickerGifSizeDesc", R.string.WhatsNewStickerGifSizeDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_MEDIA))
+        )));
+        items.add(UItem.asShadow(null));
 
-        items.add(UItem.asButton(ITEM_WN_ROUND_VIDEO, R.drawable.msg_camera,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_camera,
                 LocaleController.getString("WhatsNewRoundVideo", R.string.WhatsNewRoundVideo),
-                newBadge));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewRoundVideoDesc", R.string.WhatsNewRoundVideoDesc)));
+                LocaleController.getString("WhatsNewRoundVideoDesc", R.string.WhatsNewRoundVideoDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramCameraActivity())
+        )));
+        items.add(UItem.asShadow(null));
 
-        items.add(UItem.asButton(ITEM_WN_LAYER229, R.drawable.msg_bot,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_bot,
                 LocaleController.getString("WhatsNewLayer229", R.string.WhatsNewLayer229),
-                newBadge));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewLayer229Desc", R.string.WhatsNewLayer229Desc)));
+                LocaleController.getString("WhatsNewLayer229Desc", R.string.WhatsNewLayer229Desc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                null
+        )));
+        items.add(UItem.asShadow(null));
 
-        items.add(UItem.asButton(ITEM_WN_AUDIT, R.drawable.msg_permissions,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_permissions,
                 LocaleController.getString("WhatsNewSettingsAudit", R.string.WhatsNewSettingsAudit),
-                newBadge));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewSettingsAuditDesc", R.string.WhatsNewSettingsAuditDesc)));
+                LocaleController.getString("WhatsNewSettingsAuditDesc", R.string.WhatsNewSettingsAuditDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                null
+        )));
+        items.add(UItem.asShadow(null));
 
-        // Раздел: Версия 1.1
+        // ==========================================
+        // ВЕРСИЯ 1.1 (КАРТОЧКИ ПРЕДЫДУЩИХ ВЕРСИЙ)
+        // ==========================================
         items.add(UItem.asHeader(LocaleController.getString("WhatsNewVersion11", R.string.WhatsNewVersion11)));
 
-        items.add(UItem.asButton(ITEM_WN_VAULT, R.drawable.msg_download,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_download,
                 LocaleController.getString("WhatsNewVault", R.string.WhatsNewVault),
-                "v1.1"));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewVaultDesc", R.string.WhatsNewVaultDesc)));
+                LocaleController.getString("WhatsNewVaultDesc", R.string.WhatsNewVaultDesc),
+                "v1.1",
+                false,
+                null
+        )));
+        items.add(UItem.asShadow(null));
 
-        items.add(UItem.asButton(ITEM_WN_TRACKER, R.drawable.msg_usersearch,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_usersearch,
                 LocaleController.getString("WhatsNewTracker", R.string.WhatsNewTracker),
-                "v1.1"));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewTrackerDesc", R.string.WhatsNewTrackerDesc)));
+                LocaleController.getString("WhatsNewTrackerDesc", R.string.WhatsNewTrackerDesc),
+                "v1.1",
+                false,
+                null
+        )));
+        items.add(UItem.asShadow(null));
 
-        // Раздел: Версия 1.0
+        // ==========================================
+        // ВЕРСИЯ 1.0 (КАРТОЧКИ ПЕРВОГО РЕЛИЗА)
+        // ==========================================
         items.add(UItem.asHeader(LocaleController.getString("WhatsNewVersion10", R.string.WhatsNewVersion10)));
 
-        items.add(UItem.asButton(ITEM_WN_GHOST, R.drawable.msg_secret,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_secret,
                 LocaleController.getString("WhatsNewGhost", R.string.WhatsNewGhost),
-                "v1.0"));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewGhostDesc", R.string.WhatsNewGhostDesc)));
+                LocaleController.getString("WhatsNewGhostDesc", R.string.WhatsNewGhostDesc),
+                "v1.0",
+                false,
+                null
+        )));
+        items.add(UItem.asShadow(null));
 
-        items.add(UItem.asButton(ITEM_WN_ANTI_DELETE, R.drawable.msg_edit,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_edit,
                 LocaleController.getString("WhatsNewAntiDelete", R.string.WhatsNewAntiDelete),
-                "v1.0"));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewAntiDeleteDesc", R.string.WhatsNewAntiDeleteDesc)));
+                LocaleController.getString("WhatsNewAntiDeleteDesc", R.string.WhatsNewAntiDeleteDesc),
+                "v1.0",
+                false,
+                null
+        )));
+        items.add(UItem.asShadow(null));
 
-        items.add(UItem.asButton(ITEM_WN_NETWORK, R.drawable.msg_stats,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_stats,
                 LocaleController.getString("WhatsNewNetworkBoost", R.string.WhatsNewNetworkBoost),
-                "v1.0"));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewNetworkBoostDesc", R.string.WhatsNewNetworkBoostDesc)));
+                LocaleController.getString("WhatsNewNetworkBoostDesc", R.string.WhatsNewNetworkBoostDesc),
+                "v1.0",
+                false,
+                null
+        )));
+        items.add(UItem.asShadow(null));
 
-        items.add(UItem.asButton(ITEM_WN_STREAMER, R.drawable.msg_channel,
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_channel,
                 LocaleController.getString("WhatsNewStreamer", R.string.WhatsNewStreamer),
-                "v1.0"));
-        items.add(UItem.asShadow(LocaleController.getString("WhatsNewStreamerDesc", R.string.WhatsNewStreamerDesc)));
+                LocaleController.getString("WhatsNewStreamerDesc", R.string.WhatsNewStreamerDesc),
+                "v1.0",
+                false,
+                null
+        )));
+        items.add(UItem.asShadow(null));
+    }
+
+    private View createFeatureCard(Context context, int iconResId, CharSequence title, CharSequence description, String badgeText, boolean isNew, View.OnClickListener clickListener) {
+        LinearLayout card = new LinearLayout(context);
+        card.setOrientation(LinearLayout.VERTICAL);
+
+        int bgColor = Theme.getColor(Theme.key_windowBackgroundWhite);
+        if (clickListener != null) {
+            int pressedColor = Theme.getColor(Theme.key_listSelector);
+            card.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(14), bgColor, pressedColor));
+            card.setClickable(true);
+            card.setFocusable(true);
+            card.setOnClickListener(clickListener);
+        } else {
+            card.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(14), bgColor));
+        }
+
+        int padH = AndroidUtilities.dp(16);
+        int padV = AndroidUtilities.dp(14);
+        card.setPadding(padH, padV, padH, padV);
+
+        // Верхняя строка: Иконка + Заголовок + Бейдж
+        LinearLayout topRow = new LinearLayout(context);
+        topRow.setOrientation(LinearLayout.HORIZONTAL);
+        topRow.setGravity(Gravity.CENTER_VERTICAL);
+
+        // Иконка в кружке
+        FrameLayout iconWrap = new FrameLayout(context);
+        GradientDrawable iconBg = new GradientDrawable();
+        iconBg.setShape(GradientDrawable.OVAL);
+        int accentColor = Theme.getColor(Theme.key_featuredStickers_addButton);
+        int softIconBg = isNew ? Theme.multAlpha(accentColor, 0.14f) : Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon), 0.12f);
+        iconBg.setColor(softIconBg);
+        iconWrap.setBackground(iconBg);
+
+        ImageView iconView = new ImageView(context);
+        iconView.setImageResource(iconResId);
+        iconView.setColorFilter(isNew ? accentColor : Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon));
+        iconWrap.addView(iconView, LayoutHelper.createFrame(20, 20, Gravity.CENTER));
+
+        topRow.addView(iconWrap, LayoutHelper.createLinear(36, 36, Gravity.CENTER_VERTICAL, 0, 0, 12, 0));
+
+        // Название фичи
+        TextView titleView = new TextView(context);
+        titleView.setText(title);
+        titleView.setTextSize(16);
+        titleView.setTypeface(Typeface.DEFAULT_BOLD);
+        titleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        topRow.addView(titleView, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f, Gravity.CENTER_VERTICAL));
+
+        // Бейдж (НОВОЕ или Версия)
+        if (badgeText != null && !badgeText.isEmpty()) {
+            TextView badge = new TextView(context);
+            badge.setText(badgeText);
+            badge.setTextSize(11);
+            badge.setTypeface(Typeface.DEFAULT_BOLD);
+            badge.setPadding(AndroidUtilities.dp(8), AndroidUtilities.dp(3), AndroidUtilities.dp(8), AndroidUtilities.dp(3));
+
+            GradientDrawable badgeBg = new GradientDrawable();
+            badgeBg.setCornerRadius(AndroidUtilities.dp(8));
+            if (isNew) {
+                badgeBg.setColor(accentColor);
+                badge.setTextColor(Theme.getColor(Theme.key_featuredStickers_buttonText));
+            } else {
+                badgeBg.setColor(Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon), 0.15f));
+                badge.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2));
+            }
+            badge.setBackground(badgeBg);
+
+            topRow.addView(badge, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 0));
+        }
+
+        card.addView(topRow, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        // Описание фичи
+        if (description != null && description.length() > 0) {
+            TextView descView = new TextView(context);
+            descView.setText(description);
+            descView.setTextSize(13.5f);
+            descView.setLineSpacing(AndroidUtilities.dp(2), 1.0f);
+            descView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2));
+            card.addView(descView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 48, 8, 0, 0));
+        }
+
+        // Если элемент кликабельный, показываем стрелочку перехода внизу
+        if (clickListener != null) {
+            TextView actionHint = new TextView(context);
+            actionHint.setText(LocaleController.getString("Settings", R.string.Settings) + " →");
+            actionHint.setTextSize(12.5f);
+            actionHint.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
+            actionHint.setTextColor(accentColor);
+            actionHint.setGravity(Gravity.RIGHT);
+            card.addView(actionHint, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 8, 0, 0));
+        }
+
+        FrameLayout outer = new FrameLayout(context);
+        outer.setPadding(AndroidUtilities.dp(14), AndroidUtilities.dp(4), AndroidUtilities.dp(14), AndroidUtilities.dp(4));
+        outer.addView(card, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+        return outer;
     }
 
     private void onClick(UItem item, View view, int position, float x, float y) {
         switch (item.id) {
-            // Быстрые действия
             case ITEM_CHECK_UPDATES:
                 Browser.openUrl(getParentActivity(), "https://github.com/W1ckeddamn/100gram/releases");
                 break;
@@ -162,16 +304,6 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
             case ITEM_AUTHOR_LINK:
                 Browser.openUrl(getParentActivity(), "https://t.me/w1ckeddamn");
                 break;
-
-            // v1.2 — кликабельные переходы
-            case ITEM_WN_STICKER_SIZE:
-                presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_MEDIA));
-                break;
-            case ITEM_WN_ROUND_VIDEO:
-                presentFragment(new HundredGramCameraActivity());
-                break;
-            // v1.2 информационные (ITEM_WN_LAYER229, ITEM_WN_AUDIT) — без действия
-            // v1.1/v1.0 — без действия (информационные элементы)
         }
     }
 
