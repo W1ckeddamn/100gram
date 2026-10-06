@@ -59,8 +59,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_STREAMER_HIDE_ACCOUNTS = 87;
     private static final int ITEM_STREAMER_PREVENT_CALLS = 88;
     private static final int ITEM_STREAMER_PREVENT_DELETE = 89;
-    private static final int ITEM_PRIVACY_BLUR_MESSAGES = 90;
-    private static final int ITEM_PRIVACY_BLUR_AVATARS = 91;
     private static final int ITEM_STREAMER_BLOCK_SCREENSHOTS = 180;
     private static final int ITEM_STREAMER_HIDE_DIALOG_MESSAGES = 183;
 
@@ -101,6 +99,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_TRACKED_USERS_LIST = 182;
     private static final int ITEM_TRACK_SELF_ACTIVITY = 187;
     private static final int ITEM_MY_ACTIVITY_LOG = 188;
+    private static final int ITEM_AVATAR_HISTORY_ENABLED = 97;
 
     // Item IDs for CATEGORY_PRIVACY
     private static final int ITEM_HIDE_PHONE_NUMBER = 20;
@@ -126,7 +125,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_HIDE_SIMILAR_CHANNELS = 93;
     private static final int ITEM_HIDE_STORIES_BAR = 94;
     private static final int ITEM_SHOW_SECONDS_IN_TIME = 95;
-    private static final int ITEM_AVATAR_HISTORY_ENABLED = 97;
 
     // Item IDs for CATEGORY_ACTIONS
     private static final int ITEM_DOUBLE_TAP_INCOMING = 50;
@@ -414,15 +412,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.hideOtherUsernames));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramPrivacyDataHidingInfo", R.string.HundredGramPrivacyDataHidingInfo)));
 
-        items.add(UItem.asHeader(LocaleController.getString("PrivacyBlurSection", R.string.PrivacyBlurSection)));
-
-        items.add(UItem.asCheck(ITEM_PRIVACY_BLUR_MESSAGES, LocaleController.getString("PrivacyBlurDialogMessages", R.string.PrivacyBlurDialogMessages))
-                .setChecked(HundredGramConfig.privacyBlurDialogMessages));
-        items.add(UItem.asShadow(LocaleController.getString("PrivacyBlurDialogMessagesInfo", R.string.PrivacyBlurDialogMessagesInfo)));
-
-        items.add(UItem.asCheck(ITEM_PRIVACY_BLUR_AVATARS, LocaleController.getString("PrivacyBlurAvatars", R.string.PrivacyBlurAvatars))
-                .setChecked(HundredGramConfig.privacyBlurAvatars));
-        items.add(UItem.asShadow(LocaleController.getString("PrivacyBlurAvatarsInfo", R.string.PrivacyBlurAvatarsInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("HundredGramProfileSection", R.string.HundredGramProfileSection)));
         String idDcValue;
@@ -1304,20 +1293,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.streamerPreventAccidentalDelete);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.streamerPreventAccidentalDelete);
-                }
-                break;
-            case ITEM_PRIVACY_BLUR_MESSAGES:
-                HundredGramConfig.togglePrivacyBlurDialogMessages();
-                item.setChecked(HundredGramConfig.privacyBlurDialogMessages);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.privacyBlurDialogMessages);
-                }
-                break;
-            case ITEM_PRIVACY_BLUR_AVATARS:
-                HundredGramConfig.togglePrivacyBlurAvatars();
-                item.setChecked(HundredGramConfig.privacyBlurAvatars);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.privacyBlurAvatars);
                 }
                 break;
         }

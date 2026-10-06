@@ -357,20 +357,8 @@
     <string name="StreamerModeDisabledBulletin">Режим стримера выключен</string>
     <string name="StreamerModeQuickToggle">Режим стримера</string>
 
-    <!-- Privacy Blur & Tap-to-Reveal -->
-    <string name="PrivacyBlurSection">Размытие и приватность</string>
-    <string name="PrivacyBlurDialogMessages">Маскировать превью сообщений в чатах</string>
-    <string name="PrivacyBlurDialogMessagesInfo">Скрывает текст последнего сообщения в общем списке чатов</string>
-    <string name="RevealPhoneConfirmTitle">Показать номер телефона?</string>
-    <string name="RevealPhoneConfirmMessage">Вы уверены, что хотите раскрыть скрытый номер телефона?</string>
-    <string name="RevealUsernameConfirmTitle">Показать юзернейм?</string>
-    <string name="RevealUsernameConfirmMessage">Вы уверены, что хотите раскрыть скрытое имя пользователя?</string>
-    <string name="RevealButton">Показать</string>
-
     <string name="StreamerPreventAccidentalDelete">Защита от случайного удаления</string>
     <string name="StreamerPreventAccidentalDeleteInfo">Требует повторного подтверждения перед удалением любого чата</string>
-    <string name="PrivacyBlurAvatars">Скрывать аватарки в списке чатов</string>
-    <string name="PrivacyBlurAvatarsInfo">Отображает нейтральные значки с инициалами вместо личных фото</string>
 
     <!-- Settings Main Sections -->
     <string name="HundredGramSettings">Настройки 100gram</string>

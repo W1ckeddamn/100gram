@@ -99,8 +99,8 @@
   - Удалён дублирующий пункт «Разблокировать сохранение историй» из категории «Медиа и качество» (оставлен только в «Невидимке»).
   - Удалён устаревший чекбокс «Ускорение загрузки» из настроек медиа (сетевое ускорение полностью настраивается в выделенном разделе «Ускоритель сети»).
   - Удалена мёртвая категория `CATEGORY_CAMERAX` из `HundredGramSubSettingsActivity` (экран камеры вызывается напрямую через `HundredGramCameraActivity`).
-  - Удалено избыточное двойное подтверждение выхода из чата (`confirmLeaveChat` в `AlertsCreator.java`), вызывавшее повторный диалог при нативном подтверждении Telegram.
-  - Удалены устаревшие неиспользуемые ID и константы (`ITEM_ROUND_HIGH_BITRATE`, `ITEM_NETWORK_BOOST_PANEL`, `ITEM_AUTOMATION_RULES`, `ITEM_CONFIRM_LEAVE_CHAT`, `ITEM_BOOST_DOWNLOAD_SPEED`).
+  - Удален избыточный блок «Размытие и приватность» (`privacyBlurDialogMessages`, `privacyBlurAvatars`) из настроек приватности (реального блюра не производилось, тумблеры дублировали скрытие из «Режима стримера»).
+  - Удалены устаревшие неиспользуемые ID и константы (`ITEM_ROUND_HIGH_BITRATE`, `ITEM_NETWORK_BOOST_PANEL`, `ITEM_AUTOMATION_RULES`, `ITEM_CONFIRM_LEAVE_CHAT`, `ITEM_BOOST_DOWNLOAD_SPEED`, `ITEM_PRIVACY_BLUR_MESSAGES`, `ITEM_PRIVACY_BLUR_AVATARS`).
 
 ---
 

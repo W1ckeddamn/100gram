@@ -47,8 +47,6 @@ public class HundredGramConfig {
     public static boolean streamerPreventAccidentalCalls = true;
     public static boolean streamerPreventAccidentalDelete = true;
     public static boolean streamerBlockScreenshots = true;
-    public static boolean privacyBlurDialogMessages;
-    public static boolean privacyBlurAvatars;
 
     // Double tap actions
     public static final int DOUBLE_TAP_NONE = 0;
@@ -396,8 +394,6 @@ public class HundredGramConfig {
             streamerPreventAccidentalCalls = preferences.getBoolean("streamerPreventAccidentalCalls", true);
             streamerPreventAccidentalDelete = preferences.getBoolean("streamerPreventAccidentalDelete", true);
             streamerBlockScreenshots = preferences.getBoolean("streamerBlockScreenshots", true);
-            privacyBlurDialogMessages = preferences.getBoolean("privacyBlurDialogMessages", false);
-            privacyBlurAvatars = preferences.getBoolean("privacyBlurAvatars", false);
 
             hideSimilarChannels = preferences.getBoolean("hideSimilarChannels", true);
             hideStoriesBar = preferences.getBoolean("hideStoriesBar", false);
@@ -1323,18 +1319,6 @@ public class HundredGramConfig {
         save("streamerPreventAccidentalDelete", streamerPreventAccidentalDelete);
     }
 
-    public static void togglePrivacyBlurDialogMessages() {
-        privacyBlurDialogMessages = !privacyBlurDialogMessages;
-        save("privacyBlurDialogMessages", privacyBlurDialogMessages);
-        postNotificationToAllAccounts(NotificationCenter.dialogsNeedReload);
-    }
-
-    public static void togglePrivacyBlurAvatars() {
-        privacyBlurAvatars = !privacyBlurAvatars;
-        save("privacyBlurAvatars", privacyBlurAvatars);
-        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_AVATAR);
-        postNotificationToAllAccounts(NotificationCenter.dialogsNeedReload);
-    }
 
     public static void toggleHideSimilarChannels() {
         hideSimilarChannels = !hideSimilarChannels;
@@ -1378,17 +1362,11 @@ public class HundredGramConfig {
     }
 
     public static boolean isStreamerHideAvatars() {
-        if (streamerMode) {
-            return streamerHideAvatars;
-        }
-        return privacyBlurAvatars;
+        return streamerMode && streamerHideAvatars;
     }
 
     public static boolean isStreamerHideDialogMessages() {
-        if (streamerMode) {
-            return streamerHideDialogMessages;
-        }
-        return privacyBlurDialogMessages;
+        return streamerMode && streamerHideDialogMessages;
     }
 
     public static boolean isStreamerHideIdAndDc() {

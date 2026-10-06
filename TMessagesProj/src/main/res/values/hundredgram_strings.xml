@@ -356,20 +356,8 @@
     <string name="StreamerModeDisabledBulletin">Streamer Mode disabled</string>
     <string name="StreamerModeQuickToggle">Streamer Mode</string>
 
-    <!-- Privacy Blur & Tap-to-Reveal -->
-    <string name="PrivacyBlurSection">Privacy Blur &amp; Protection</string>
-    <string name="PrivacyBlurDialogMessages">Mask Chat List Previews</string>
-    <string name="PrivacyBlurDialogMessagesInfo">Masks the last message preview in the dialogs list</string>
-    <string name="RevealPhoneConfirmTitle">Reveal Phone Number?</string>
-    <string name="RevealPhoneConfirmMessage">Are you sure you want to reveal this hidden phone number?</string>
-    <string name="RevealUsernameConfirmTitle">Reveal Username?</string>
-    <string name="RevealUsernameConfirmMessage">Are you sure you want to reveal this hidden username?</string>
-    <string name="RevealButton">Reveal</string>
-
     <string name="StreamerPreventAccidentalDelete">Accidental Delete Protection</string>
     <string name="StreamerPreventAccidentalDeleteInfo">Requires additional confirmation before deleting any chat</string>
-    <string name="PrivacyBlurAvatars">Hide Avatars in Chat List</string>
-    <string name="PrivacyBlurAvatarsInfo">Shows neutral initial badges instead of personal profile photos in dialogs</string>
 
     <!-- Settings Main Sections -->
     <string name="HundredGramSettings">100gram Settings</string>
