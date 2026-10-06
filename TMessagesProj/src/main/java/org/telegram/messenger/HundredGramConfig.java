@@ -216,6 +216,9 @@ public class HundredGramConfig {
     // Chat Translation
     public static boolean unlockChatTranslation = true;
 
+    // Offline Voice-to-Text (STT) without Premium
+    public static boolean localSttEnabled;
+
     // Runtime state (current session)
     public static boolean currentStoryGhostSession;
 
@@ -381,6 +384,7 @@ public class HundredGramConfig {
             alwaysForwardWithoutAuthor = preferences.getBoolean("alwaysForwardWithoutAuthor", false);
             keepAliveForegroundService = preferences.getBoolean("keepAliveForegroundService", true);
             unlockChatTranslation = preferences.getBoolean("unlockChatTranslation", true);
+            localSttEnabled = preferences.getBoolean("localSttEnabled", false);
 
             streamerMode = preferences.getBoolean("streamerMode", false);
             streamerFakeName = preferences.getString("streamerFakeName", "Streamer");
@@ -1763,6 +1767,18 @@ public class HundredGramConfig {
     public static void toggleUnlockChatTranslation() {
         unlockChatTranslation = !unlockChatTranslation;
         save("unlockChatTranslation", unlockChatTranslation);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleLocalStt() {
+        localSttEnabled = !localSttEnabled;
+        save("localSttEnabled", localSttEnabled);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setLocalSttEnabled(boolean enabled) {
+        localSttEnabled = enabled;
+        save("localSttEnabled", localSttEnabled);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 

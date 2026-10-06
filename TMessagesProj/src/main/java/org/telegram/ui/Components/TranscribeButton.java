@@ -34,6 +34,7 @@ import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
@@ -231,6 +232,16 @@ public class TranscribeButton {
             if (!premium && toOpen) {
                 if (canTranscribeTrial(parent.getMessageObject()) || parent.getMessageObject() != null && parent.getMessageObject().messageOwner != null && !TextUtils.isEmpty(parent.getMessageObject().messageOwner.voiceTranscription)) {
                     transcribePressed(parent.getMessageObject(), toOpen, parent.getDelegate());
+                } else if (org.telegram.messenger.HundredGramConfig.localSttEnabled) {
+                    if (!org.telegram.messenger.HundredGramSttManager.isModelDownloaded()) {
+                        org.telegram.messenger.HundredGramSttManager.showDownloadDialog(null, () -> {
+                            setLoading(true, true);
+                            transcribeLocally(parent.getMessageObject());
+                        });
+                    } else {
+                        setLoading(true, true);
+                        transcribeLocally(parent.getMessageObject());
+                    }
                 } else {
                     if (parent.getDelegate() != null) {
                         if (MessagesController.getInstance(parent.currentAccount).transcribeAudioTrialWeeklyNumber > 0) {
@@ -777,6 +788,64 @@ public class TranscribeButton {
                 NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.voiceTranscriptionUpdate, messageObject, null, null, (Boolean) false, null);
             });
         }
+    }
+
+    private static void transcribeLocally(MessageObject messageObject) {
+        if (messageObject == null || messageObject.messageOwner == null) {
+            return;
+        }
+        int account = messageObject.currentAccount;
+        java.io.File voiceFile = org.telegram.messenger.FileLoader.getInstance(account).getPathToMessage(messageObject.messageOwner, true);
+        if (voiceFile == null || !voiceFile.exists()) {
+            voiceFile = org.telegram.messenger.FileLoader.getInstance(account).getPathToMessage(messageObject.messageOwner, false);
+        }
+
+        if (voiceFile == null || !voiceFile.exists()) {
+            // Файл еще не скачан, запускаем скачивание через FileLoader
+            org.telegram.messenger.FileLoader.getInstance(account).loadFile(
+                    org.telegram.messenger.ImageLocation.getForDocument(messageObject.getDocument()),
+                    messageObject,
+                    null,
+                    0,
+                    1
+            );
+            AndroidUtilities.runOnUIThread(() -> {
+                BulletinFactory.global().createSimpleBulletin(
+                        R.raw.info,
+                        LocaleController.getString("LocalSttDownloadingAudio", R.string.LocalSttDownloadingAudio)
+                ).show();
+            });
+            return;
+        }
+
+        final java.io.File finalVoiceFile = voiceFile;
+        final long start = SystemClock.elapsedRealtime();
+        final long localTranscriptionId = (long) (Math.random() * 1000000000L);
+
+        messageObject.messageOwner.voiceTranscriptionId = localTranscriptionId;
+        messageObject.messageOwner.voiceTranscriptionOpen = true;
+        messageObject.messageOwner.voiceTranscriptionFinal = false;
+        TranscribeButton.openVideoTranscription(messageObject);
+
+        org.telegram.messenger.HundredGramSttManager.transcribeVoiceAsync(finalVoiceFile, new org.telegram.messenger.HundredGramSttManager.TranscribeCallback() {
+            @Override
+            public void onSuccess(String result) {
+                String finalText = TextUtils.isEmpty(result)
+                        ? LocaleController.getString("LocalSttNoSpeechDetected", R.string.LocalSttNoSpeechDetected)
+                        : result;
+                long duration = SystemClock.elapsedRealtime() - start;
+                AndroidUtilities.runOnUIThread(() -> {
+                    finishTranscription(messageObject, localTranscriptionId, finalText);
+                }, Math.max(0, 300 - duration));
+            }
+
+            @Override
+            public void onError(String error) {
+                AndroidUtilities.runOnUIThread(() -> {
+                    finishTranscription(messageObject, localTranscriptionId, "(" + LocaleController.getString("ErrorOccurred", R.string.ErrorOccurred) + ")");
+                });
+            }
+        });
     }
 
     public static boolean finishTranscription(MessageObject messageObject, long transcription_id, String text) {

@@ -138,6 +138,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_CONFIRM_SEND_STICKERS = 58;
     private static final int ITEM_CONFIRM_SEND_GIFS = 59;
     private static final int ITEM_SHOW_FORWARD_WITHOUT_AUTHOR = 64;
+    private static final int ITEM_LOCAL_STT_ENABLED = 66;
+    private static final int ITEM_LOCAL_STT_MODEL = 67;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;
@@ -604,6 +606,22 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_CONFIRM_SEND_GIFS, LocaleController.getString(R.string.ConfirmSendGifs))
                 .setChecked(HundredGramConfig.confirmSendGifs));
         items.add(UItem.asShadow(LocaleController.getString(R.string.ConfirmSendGifsInfo)));
+
+        // Offline Speech-to-Text (Vosk)
+        items.add(UItem.asHeader(LocaleController.getString("LocalSttHeader", R.string.LocalSttHeader)));
+        items.add(UItem.asCheck(ITEM_LOCAL_STT_ENABLED, LocaleController.getString("LocalSttEnabled", R.string.LocalSttEnabled))
+                .setChecked(HundredGramConfig.localSttEnabled));
+        items.add(UItem.asShadow(LocaleController.getString("LocalSttEnabledInfo", R.string.LocalSttEnabledInfo)));
+
+        boolean modelDownloaded = org.telegram.messenger.HundredGramSttManager.isModelDownloaded();
+        String modelStatus = modelDownloaded
+                ? LocaleController.getString("LocalSttModelReadyStatus", R.string.LocalSttModelReadyStatus)
+                : LocaleController.getString("LocalSttModelNotDownloaded", R.string.LocalSttModelNotDownloaded);
+
+        items.add(UItem.asButton(ITEM_LOCAL_STT_MODEL,
+                LocaleController.getString("LocalSttModelTitle", R.string.LocalSttModelTitle),
+                modelStatus));
+        items.add(UItem.asShadow(LocaleController.getString("LocalSttModelInfo", R.string.LocalSttModelInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("DevCategory", R.string.DevCategory)));
         items.add(UItem.asCheck(ITEM_DEV_MODE, LocaleController.getString("DeveloperMode", R.string.DeveloperMode))
@@ -1146,6 +1164,34 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.confirmSendGifs);
                 }
                 break;
+            case ITEM_LOCAL_STT_ENABLED:
+                HundredGramConfig.toggleLocalStt();
+                item.setChecked(HundredGramConfig.localSttEnabled);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.localSttEnabled);
+                }
+                if (HundredGramConfig.localSttEnabled && !org.telegram.messenger.HundredGramSttManager.isModelDownloaded()) {
+                    org.telegram.messenger.HundredGramSttManager.showDownloadDialog(HundredGramSubSettingsActivity.this, () -> {
+                        if (listView != null && listView.adapter != null) {
+                            listView.adapter.update(true);
+                        }
+                    });
+                }
+                if (listView != null && listView.adapter != null) {
+                    listView.adapter.update(true);
+                }
+                break;
+            case ITEM_LOCAL_STT_MODEL:
+                if (org.telegram.messenger.HundredGramSttManager.isModelDownloaded()) {
+                    showModelManageDialog();
+                } else {
+                    org.telegram.messenger.HundredGramSttManager.showDownloadDialog(HundredGramSubSettingsActivity.this, () -> {
+                        if (listView != null && listView.adapter != null) {
+                            listView.adapter.update(true);
+                        }
+                    });
+                }
+                break;
             case ITEM_DEV_MODE:
                 HundredGramConfig.toggleDeveloperMode();
                 item.setChecked(HundredGramConfig.developerModeEnabled);
@@ -1638,6 +1684,29 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         });
         builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
         showDialog(builder.create());
+    }
+
+    private void showModelManageDialog() {
+        if (getParentActivity() == null) return;
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("LocalSttModelTitle", R.string.LocalSttModelTitle));
+        builder.setMessage(LocaleController.getString("LocalSttModelManageDesc", R.string.LocalSttModelManageDesc));
+        builder.setPositiveButton(LocaleController.getString("Delete", R.string.Delete), (dialog, which) -> {
+            org.telegram.messenger.HundredGramSttManager.deleteModel();
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+            if (BulletinFactory.canShowBulletin(HundredGramSubSettingsActivity.this)) {
+                BulletinFactory.of(HundredGramSubSettingsActivity.this).createSimpleBulletin(
+                        R.raw.ic_delete,
+                        LocaleController.getString("LocalSttModelDeleted", R.string.LocalSttModelDeleted)
+                ).show();
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.redPositive();
     }
 
     @Override

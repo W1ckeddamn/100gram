@@ -748,4 +748,22 @@
     <string name="WhatsNewStreamerDesc">Скрытие телефонных номеров, юзернеймов, аватарок и отключение скриншотов</string>
     <!-- What\'s New badge -->
     <string name="WhatsNewNew">✦ НОВОЕ</string>
+
+    <!-- Offline Speech-to-Text (STT) without Premium -->
+    <string name="LocalSttHeader">Распознавание речи (Офлайн STT)</string>
+    <string name="LocalSttEnabled">Локальный перевод голосовых в текст</string>
+    <string name="LocalSttEnabledInfo">Расшифровывать голосовые сообщения прямо на процессоре устройства без подписки Telegram Premium с помощью компактной модели Vosk.</string>
+    <string name="LocalSttModelTitle">Голосовая модель Vosk</string>
+    <string name="LocalSttModelInfo">Компактная русскоязычная модель (~43 МБ), работающая на 100% офлайн внутри устройства.</string>
+    <string name="LocalSttModelReadyStatus">Установлена (~43 МБ)</string>
+    <string name="LocalSttModelNotDownloaded">Не установлена (Нажмите для загрузки)</string>
+    <string name="LocalSttDownloadTitle">Скачать голосовую модель?</string>
+    <string name="LocalSttDownloadMessage">Для расшифровки голосовых сообщений без Telegram Premium требуется скачать русскую офлайн-модель Vosk (~43 МБ). Аудио будет распознаваться локально на телефоне с нулевым интернет-трафиком.</string>
+    <string name="LocalSttDownloading">Загрузка голосовой модели...</string>
+    <string name="LocalSttModelReady">Голосовая модель успешно установлена</string>
+    <string name="LocalSttDownloadFailed">Не удалось скачать модель. Проверьте интернет-соединение.</string>
+    <string name="LocalSttModelManageDesc">Голосовая модель установлена и занимает около 43 МБ в памяти приложения. Удалить модель для освобождения памяти?</string>
+    <string name="LocalSttModelDeleted">Голосовая модель удалена</string>
+    <string name="LocalSttDownloadingAudio">Загрузка голосового сообщения...</string>
+    <string name="LocalSttNoSpeechDetected">Речь не распознана</string>
 </resources>

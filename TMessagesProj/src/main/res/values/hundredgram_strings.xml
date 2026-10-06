@@ -742,4 +742,22 @@
     <string name="WhatsNewStreamerDesc">Hide phone numbers, usernames, avatars and disable screenshots</string>
     <!-- What\'s New badge -->
     <string name="WhatsNewNew">✦ NEW</string>
+
+    <!-- Offline Speech-to-Text (STT) without Premium -->
+    <string name="LocalSttHeader">Voice-to-Text (Offline STT)</string>
+    <string name="LocalSttEnabled">Offline Voice Transcription</string>
+    <string name="LocalSttEnabledInfo">Transcribe voice messages locally on your device without Telegram Premium using the lightweight Vosk engine.</string>
+    <string name="LocalSttModelTitle">Vosk Voice Model</string>
+    <string name="LocalSttModelInfo">Compact Russian speech model (~43 MB) processed 100% offline on your device.</string>
+    <string name="LocalSttModelReadyStatus">Installed (~43 MB)</string>
+    <string name="LocalSttModelNotDownloaded">Not downloaded (Tap to install)</string>
+    <string name="LocalSttDownloadTitle">Download Voice Model?</string>
+    <string name="LocalSttDownloadMessage">To transcribe voice messages without Telegram Premium, the offline Russian Vosk model (~43 MB) needs to be downloaded. Audio will be transcribed locally on your CPU with zero internet traffic.</string>
+    <string name="LocalSttDownloading">Downloading Voice Model...</string>
+    <string name="LocalSttModelReady">Voice model installed successfully</string>
+    <string name="LocalSttDownloadFailed">Failed to download voice model. Check your connection.</string>
+    <string name="LocalSttModelManageDesc">The voice model is currently installed and takes ~43 MB of storage. Do you want to delete it to free up space?</string>
+    <string name="LocalSttModelDeleted">Voice model removed</string>
+    <string name="LocalSttDownloadingAudio">Downloading voice message...</string>
+    <string name="LocalSttNoSpeechDetected">No speech recognized</string>
 </resources>
