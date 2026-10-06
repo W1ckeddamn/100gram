@@ -165,6 +165,10 @@
     * Разблокировано меню отправки видео как файл («Send as File») по долгому нажатию на кнопку отправки в просмотрщике галереи.
   * **Ускоритель загрузки файлов**:
     * Параллельная многопоточная загрузка чанков файлов (до 8 одновременных запросов в `FileLoadOperation`), значительно повышающая скорость скачивания больших медиа, видео и документов.
+  * **Настройки размера стикеров и GIF-анимаций в чатах**:
+    * Независимая регулировка масштабирования стикеров (`HundredGramConfig.stickerSize`) и GIF (`HundredGramConfig.gifSize`) в разделе «Медиа» настроек форка.
+    * 5 вариантов масштаба для максимальной гибкости плотности чата: 50% (Минимальный), 75% (Компактный), 100% (Стандартный), 125% (Увеличенный), 150% (Огромный).
+    * Автоматический пересчёт границ ячеек `ChatMessageCell`, сохранение пропорций и мгновенное применение к обычным, анимированным, видеостикерам и GIF.
 * **Удобство и приватность**:
   * **Подтверждение звонков**: диалог подтверждения перед началом аудио- или видеозвонка для защиты от случайных нажатий на значок звонка в профиле или чате.
   * **Очистка ссылок от трекеров**: автоматическое удаление маркетинговых и шпионских параметров (`utm_*`, `fbclid`, `gclid`, `si`, `igshid`, `yclid`, `mc_eid` и др.) из URL при копировании в буфер обмена.
@@ -353,8 +357,14 @@
 * **Квадратные видеосообщения**:
   * Возможность переключения формы видеокружков на квадратную («Square Notes»).
   * Настройка скругления углов.
-* **Переключение камеры на лету**:
-  * Переключение между фронтальной и основной камерой прямо в процессе записи видеосообщения без обрыва звуковой дорожки и потери кадров.
+* **Отправка обычных видео из галереи как кружочков (Send Gallery Videos as Round Video Messages)**:
+  * Классы: `PhotoViewer.java`, `SendMessagesHelper.java`, `VideoEditedInfo.java`, `MediaController.java`.
+  * Возможность отправить любое видео из галереи устройства как нативное видеосообщение (круглый видеокружок).
+  * Кнопка быстрого переключения в режим видеосообщения (`roundVideoButton`) в нижней панели предпросмотра медиа рядом с кнопкой выключения звука.
+  * Пункт «Отправить как видеосообщение» (`HundredGramSendAsRoundVideo`) по долгому нажатию на кнопку отправки в `PhotoViewer`.
+  * Автоматическое кадрирование видео в квадрат 1:1, ограничение максимальной длительности таймлайна до 60 секунд.
+  * Нативное кодирование через `MediaCodecVideoConvertor` и отправка с атрибутом `TLRPC.TL_documentAttributeVideo.round_message = true`, разрешением до 480x480 и круглой размытой миниатюрой.
+  * Автоматическое разделение группировки (не группируется в альбомы) и соблюдение прав чата на отправку видеосообщений (`ChatObject.canSendRoundVideo`).
 
 ---
 
@@ -399,3 +409,46 @@
 | **Duress PIN** | `PasscodeActivity.java` | `duressPasscode`, `kaboomOnFail` | Конфиденциальность / Код-пароль |
 | **Foreground Keep-Alive**| `NotificationsService.java` | `keepAliveEnabled` | Приватность / Служба |
 | **Billing & Stars** | `BillingController.java` | Нативный движок | Карточки подарков и звезд |
+| **Sticker & GIF Size** | `ChatMessageCell.java` | `stickerSize`, `gifSize` | Настройки 100gram -> Медиа -> Стикеры и GIF |
+| **Round Video from Gallery** | `PhotoViewer.java` | `roundVideoMaxSide` | Просмотрщик фото/видео, Меню кнопки отправки |
+| **What's New & About** | `HundredGramWhatsNewActivity.java` | — | Настройки 100gram -> О приложении |
+
+---
+
+## 21. Настройки размера стикеров и GIF (Sticker & GIF Size Scaling)
+
+* **Гибкое масштабирование стикеров и анимаций в чатах**:
+  * **Описание:** Позволяет уменьшать или увеличивать размер отображения стикеров (обычных, анимированных TGS, видео WEBM) и GIF-анимаций в сообщениях чатов.
+  * **Где включается (UI):** `Настройки 100gram` -> `Медиа` -> блок `Стикеры и GIF` -> «Размер стикеров» и «Размер GIF».
+  * **Градации:** Минимальный (50%), Компактный (75%), Стандартный (100%), Увеличенный (125%), Огромный (150%).
+  * **Ключи конфигурации:** `HundredGramConfig.stickerSize` (`int`, 0..4), `HundredGramConfig.gifSize` (`int`, 0..4).
+  * **Ключевые классы:** [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java), [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+  * **Статус:** В релизе.
+
+---
+
+## 22. Отправка видео из галереи в виде кружочка (Send Gallery Video as Round Message)
+
+* **Конвертация обычного видео в круглое видеосообщение**:
+  * **Описание:** Позволяет выбрать любое видео из галереи устройства и отправить его собеседнику или в канал как нативное видеосообщение (кружочек) без сторонних ботов и конвертеров.
+  * **Где включается (UI):**
+    1. Кнопка с иконкой кружка (`roundVideoButton`) на нижней панели просмотрщика медиа `PhotoViewer` рядом с кнопкой выключения звука.
+    2. Пункт «Отправить как видеосообщение» в выпадающем меню по долгому нажатию на кнопку отправки в галерее (`pickerViewSendButton`).
+  * **Особенности:** Автоматическое кадрирование 1:1, обрезка до 60 секунд, кодирование в 480x480 (или в соответствии с настройкой качества видеосообщений) через `MediaCodecVideoConvertor`, флаг `round_message = true`.
+  * **Ключевые классы:** [`PhotoViewer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/PhotoViewer.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+  * **Статус:** В релизе.
+
+---
+
+## 23. Экран «Что нового» и блок «О приложении» (What's New & Author Info)
+
+* **Встроенный экран обновлений и информация об авторе**:
+  * **Описание:** Наглядный каталог изменений по версиям клиента прямо внутри приложения, быстрый переход к релизам GitHub и страницам автора.
+  * **Где открывается (UI):** `Настройки 100gram` -> блок «О приложении» -> «Что нового».
+  * **Пункты блока:**
+    * **«Что нового»** — открывает экран [`HundredGramWhatsNewActivity`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramWhatsNewActivity.java).
+    * **«Автор: @w1ckeddamn»** — прямой переход в диалог с автором в Telegram (`https://t.me/w1ckeddamn`).
+    * **«Исходный код: github.com/W1ckeddamn/100gram»** — ссылка на официальный репозиторий GitHub.
+  * **Ключевые классы:** [`HundredGramWhatsNewActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramWhatsNewActivity.java), [`HundredGramSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java).
+  * **Статус:** В релизе.
+

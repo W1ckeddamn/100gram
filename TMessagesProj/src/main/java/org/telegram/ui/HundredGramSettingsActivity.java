@@ -12,6 +12,7 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
+import org.telegram.messenger.browser.Browser;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -38,6 +39,9 @@ public class HundredGramSettingsActivity extends BaseFragment {
     private static final int ITEM_CATEGORY_AUTOMATION = 10;
     private static final int ITEM_CATEGORY_NETWORK = 11;
     private static final int ITEM_TRACKED_USERS = 12;
+    private static final int ITEM_WHATS_NEW = 13;
+    private static final int ITEM_AUTHOR = 14;
+    private static final int ITEM_GITHUB = 15;
 
     private UniversalRecyclerView listView;
 
@@ -132,6 +136,24 @@ public class HundredGramSettingsActivity extends BaseFragment {
         items.add(UItem.asButton(ITEM_CATEGORY_AUTOMATION, R.drawable.msg_bot,
                 LocaleController.getString("AutomationTitle", R.string.AutomationTitle)));
         items.add(UItem.asShadow(LocaleController.getString("AutomationSubtitle", R.string.AutomationSubtitle)));
+
+        // Раздел 6: О форке 100gram
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramAboutSection", R.string.HundredGramAboutSection)));
+
+        items.add(UItem.asButton(ITEM_WHATS_NEW, R.drawable.msg_info,
+                LocaleController.getString("HundredGramWhatsNew", R.string.HundredGramWhatsNew),
+                "v1.2"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramWhatsNewSub", R.string.HundredGramWhatsNewSub)));
+
+        items.add(UItem.asButton(ITEM_AUTHOR, R.drawable.msg_openprofile,
+                LocaleController.getString("HundredGramAuthor", R.string.HundredGramAuthor),
+                "@w1ckeddamn"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramAuthorSub", R.string.HundredGramAuthorSub)));
+
+        items.add(UItem.asButton(ITEM_GITHUB, R.drawable.msg_link,
+                LocaleController.getString("HundredGramGitHub", R.string.HundredGramGitHub),
+                "github.com/W1ckeddamn/100gram"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramGitHubSub", R.string.HundredGramGitHubSub)));
     }
 
     private void onClick(UItem item, View view, int position, float x, float y) {
@@ -171,6 +193,15 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 break;
             case ITEM_CATEGORY_AUTOMATION:
                 presentFragment(new HundredGramAutomationActivity());
+                break;
+            case ITEM_WHATS_NEW:
+                presentFragment(new HundredGramWhatsNewActivity());
+                break;
+            case ITEM_AUTHOR:
+                Browser.openUrl(getParentActivity(), "https://t.me/w1ckeddamn");
+                break;
+            case ITEM_GITHUB:
+                Browser.openUrl(getParentActivity(), "https://github.com/W1ckeddamn/100gram");
                 break;
         }
     }

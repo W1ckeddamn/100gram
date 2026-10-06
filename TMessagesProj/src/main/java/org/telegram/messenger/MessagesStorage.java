@@ -18149,6 +18149,107 @@ public class MessagesStorage extends BaseController {
                 cursor = null;
             }
 
+            // 100gram: Search by Channel / Chat / User ID
+            String cleanQ = query.trim();
+            if (cleanQ.toLowerCase().startsWith("id:")) {
+                cleanQ = cleanQ.substring(3).trim();
+            } else if (cleanQ.startsWith("#")) {
+                cleanQ = cleanQ.substring(1).trim();
+            }
+            if (cleanQ.startsWith("-")) {
+                cleanQ = cleanQ.substring(1).trim();
+            }
+            if (!TextUtils.isEmpty(cleanQ) && cleanQ.length() <= 19 && TextUtils.isDigitsOnly(cleanQ)) {
+                try {
+                    long parsedId = Long.parseLong(cleanQ);
+                    if (parsedId > 0) {
+                        ArrayList<Long> candidateIds = new ArrayList<>();
+                        candidateIds.add(parsedId);
+                        if (cleanQ.startsWith("100") && cleanQ.length() > 3) {
+                            try {
+                                long stripped = Long.parseLong(cleanQ.substring(3));
+                                if (stripped > 0 && !candidateIds.contains(stripped)) {
+                                    candidateIds.add(stripped);
+                                }
+                            } catch (Exception ignore) {}
+                        }
+                        for (int c = 0; c < candidateIds.size(); c++) {
+                            long cId = candidateIds.get(c);
+                            // 1. Check chats / channels
+                            if (dialogsType != DialogsActivity.DIALOGS_TYPE_USERS_ONLY) {
+                                TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(cId);
+                                if (chat == null) {
+                                    SQLiteCursor chatCursor = getDatabase().queryFinalized("SELECT data, name FROM chats WHERE uid = ?", cId);
+                                    if (chatCursor != null) {
+                                        if (chatCursor.next()) {
+                                            NativeByteBuffer data = chatCursor.byteBufferValue(0);
+                                            if (data != null) {
+                                                chat = TLRPC.Chat.TLdeserialize(data, data.readInt32(false), false);
+                                                data.reuse();
+                                            }
+                                        }
+                                        chatCursor.dispose();
+                                    }
+                                }
+                                if (chat != null && !chat.deactivated) {
+                                    if (dialogsType == DialogsActivity.DIALOGS_TYPE_GROUPS_ONLY && ChatObject.isChannelAndNotMegaGroup(chat)) {
+                                        // skip
+                                    } else if (dialogsType == DialogsActivity.DIALOGS_TYPE_CHANNELS_ONLY && !ChatObject.isChannelAndNotMegaGroup(chat)) {
+                                        // skip
+                                    } else {
+                                        long dialogId = -chat.id;
+                                        DialogsSearchAdapter.DialogSearchResult dialogSearchResult = dialogsResult.get(dialogId);
+                                        if (dialogSearchResult == null) {
+                                            dialogSearchResult = new DialogsSearchAdapter.DialogSearchResult();
+                                            dialogsResult.put(dialogId, dialogSearchResult);
+                                            resultCount++;
+                                        }
+                                        dialogSearchResult.date = Integer.MAX_VALUE;
+                                        dialogSearchResult.object = chat;
+                                        String title = chat.title != null ? chat.title : "";
+                                        String displayId = (chat.broadcast || chat.megagroup ? "-100" : "-") + chat.id;
+                                        dialogSearchResult.name = AndroidUtilities.generateSearchName(title, "ID: " + displayId, cleanQ);
+                                        MessagesController.getInstance(currentAccount).putChat(chat, true);
+                                    }
+                                }
+                            }
+                            // 2. Check users
+                            if (dialogsType != DialogsActivity.DIALOGS_TYPE_GROUPS_ONLY && dialogsType != DialogsActivity.DIALOGS_TYPE_CHANNELS_ONLY) {
+                                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(cId);
+                                if (user == null) {
+                                    SQLiteCursor userCursor = getDatabase().queryFinalized("SELECT data, status, name FROM users WHERE uid = ?", cId);
+                                    if (userCursor != null) {
+                                        if (userCursor.next()) {
+                                            NativeByteBuffer data = userCursor.byteBufferValue(0);
+                                            if (data != null) {
+                                                user = TLRPC.User.TLdeserialize(data, data.readInt32(false), false);
+                                                data.reuse();
+                                            }
+                                        }
+                                        userCursor.dispose();
+                                    }
+                                }
+                                if (user != null && !user.deleted) {
+                                    DialogsSearchAdapter.DialogSearchResult dialogSearchResult = dialogsResult.get(user.id);
+                                    if (dialogSearchResult == null) {
+                                        dialogSearchResult = new DialogsSearchAdapter.DialogSearchResult();
+                                        dialogsResult.put(user.id, dialogSearchResult);
+                                        resultCount++;
+                                    }
+                                    dialogSearchResult.date = Integer.MAX_VALUE;
+                                    dialogSearchResult.object = user;
+                                    String name = ContactsController.formatName(user.first_name, user.last_name);
+                                    dialogSearchResult.name = AndroidUtilities.generateSearchName(name, "ID: " + user.id, cleanQ);
+                                    MessagesController.getInstance(currentAccount).putUser(user, true);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+            }
+
             ArrayList<DialogsSearchAdapter.DialogSearchResult> searchResults = new ArrayList<>(resultCount);
             for (int a = 0; a < dialogsResult.size(); a++) {
                 DialogsSearchAdapter.DialogSearchResult dialogSearchResult = dialogsResult.valueAt(a);

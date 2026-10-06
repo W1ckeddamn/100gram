@@ -6618,6 +6618,13 @@ public class MessageObject {
             } else if (getMedia(messageOwner) instanceof TLRPC.TL_messageMediaUnsupported) {
                 contentType = 10;
                 type = TYPE_UNSUPPORTED;
+                if (messageOwner != null) {
+                    FileLog.e("DEBUG_UNSUPPORTED: id=" + messageOwner.id + 
+                        " class=" + messageOwner.getClass().getSimpleName() + 
+                        " media=" + (messageOwner.media != null ? messageOwner.media.getClass().getSimpleName() : "null") + 
+                        " action=" + (messageOwner.action != null ? messageOwner.action.getClass().getSimpleName() : "null") + 
+                        " flags=" + messageOwner.flags);
+                }
             } else if (getMedia(messageOwner) instanceof TLRPC.TL_messageMediaDocument) {
                 TLRPC.Document document = getDocument();
                 if (document != null && document.mime_type != null) {
@@ -8201,6 +8208,9 @@ public class MessageObject {
         int linksCount = 0, spoilersCount = 0, codesCount = 0;
         for (int a = 0; a < count; a++) {
             TextStyleSpan.TextStyleRun run = runs.get(a);
+            if (run.start < 0 || run.start >= run.end || run.end > text.length()) {
+                continue;
+            }
 
             if (allowed == ENTITIES_ONLY_HASHTAGS && !(run.urlEntity instanceof TLRPC.TL_messageEntityHashtag))
                 continue;
@@ -11927,7 +11937,8 @@ public class MessageObject {
                 if (currentPhotoObject == null) {
                     return;
                 }
-                mediaExists = FileLoader.getInstance(currentAccount).getPathToAttach(currentPhotoObject, null, true, useFileDatabaseQueue).exists();
+                File p1 = FileLoader.getInstance(currentAccount).getPathToAttach(currentPhotoObject, null, true, useFileDatabaseQueue);
+                mediaExists = (p1 != null && p1.exists() && p1.length() > 0) || FileLoader.getInstance(currentAccount).getPathToAttach(currentPhotoObject, null, false, useFileDatabaseQueue).exists();
             } else if (type == MessageObject.TYPE_ACTION_PHOTO) {
                 TLRPC.Photo photo = messageOwner.action.photo;
                 if (photo == null || photo.video_sizes.isEmpty()) {

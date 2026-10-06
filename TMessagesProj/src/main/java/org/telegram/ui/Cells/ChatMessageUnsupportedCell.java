@@ -11,8 +11,11 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.R;
+import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.UnsupportedBlockDrawable;
 
@@ -21,6 +24,7 @@ public class ChatMessageUnsupportedCell extends View implements Theme.Colorable 
     public final Theme.ResourcesProvider resourcesProvider;
     private int unsupportedBlockWidth;
     private int unsupportedBlockHeight;
+    private MessageObject currentMessageObject;
 
     public ChatMessageUnsupportedCell(Context context, Theme.ResourcesProvider resourcesProvider) {
         super(context);
@@ -64,6 +68,60 @@ public class ChatMessageUnsupportedCell extends View implements Theme.Colorable 
 
     public void setDelegate(ChatMessageCell.ChatMessageCellDelegate delegate) {
         this.delegate = delegate;
+    }
+
+    private static String getConstructorHex(Object obj) {
+        if (obj == null) return "null";
+        try {
+            int constructor = obj.getClass().getField("constructor").getInt(null);
+            return "0x" + Integer.toHexString(constructor);
+        } catch (Throwable ignored) {
+            return "unknown";
+        }
+    }
+
+    public void setMessageObject(MessageObject messageObject) {
+        currentMessageObject = messageObject;
+        if (messageObject != null && messageObject.messageOwner != null) {
+            TLRPC.Message msg = messageObject.messageOwner;
+            FileLog.e("DEBUG_UNSUPPORTED: id=" + msg.id + 
+                " class=" + msg.getClass().getSimpleName() + 
+                " media=" + (msg.media != null ? msg.media.getClass().getSimpleName() : "null") + 
+                " action=" + (msg.action != null ? msg.action.getClass().getSimpleName() : "null") + 
+                " flags=" + msg.flags);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Msg ID: ").append(msg.id).append("\n");
+            sb.append("Msg Class: ").append(msg.getClass().getSimpleName()).append("\n");
+            sb.append("Msg Constructor: ").append(getConstructorHex(msg)).append("\n");
+            if (msg.media != null) {
+                sb.append("Media: ").append(msg.media.getClass().getSimpleName())
+                  .append(" (").append(getConstructorHex(msg.media)).append(")");
+                if (msg.media.bytes != null) {
+                    sb.append(" [bytes: ").append(msg.media.bytes.length).append("]");
+                }
+                sb.append("\n");
+            } else {
+                sb.append("Media: null\n");
+            }
+            if (msg.action != null) {
+                sb.append("Action: ").append(msg.action.getClass().getSimpleName())
+                  .append(" (").append(getConstructorHex(msg.action)).append(")\n");
+            }
+            sb.append("Flags: 0x").append(Integer.toHexString(msg.flags));
+
+            unsupportedBlockDrawable.setTitle("Неподдерживаемое сообщение");
+            unsupportedBlockDrawable.setSubtitle(sb.toString());
+        } else {
+            unsupportedBlockDrawable.setTitle(LocaleController.getString(R.string.UnsupportedMessageTitle));
+            unsupportedBlockDrawable.setSubtitle(LocaleController.getString(R.string.UnsupportedMessageMessage));
+        }
+        requestLayout();
+        invalidate();
+    }
+
+    public MessageObject getMessageObject() {
+        return currentMessageObject;
     }
 
     public void setVisiblePart(float viewTop, int parentH) {

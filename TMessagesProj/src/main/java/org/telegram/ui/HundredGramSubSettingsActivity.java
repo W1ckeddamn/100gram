@@ -16,6 +16,8 @@ import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.NotificationCenter;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.messenger.HundredGramVaultManager;
 import org.telegram.messenger.HundredGramVaultRotator;
@@ -41,7 +43,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     public static final int CATEGORY_TRACKER = 1;
     public static final int CATEGORY_PRIVACY = 2;
     public static final int CATEGORY_INTERFACE = 3;
-    public static final int CATEGORY_CAMERAX = 4;
     public static final int CATEGORY_ACTIONS = 5;
     public static final int CATEGORY_MEDIA = 6;
     public static final int CATEGORY_GHOST = 7;
@@ -90,6 +91,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_VAULT_INCLUDE_ARCHIVED = 184;
     private static final int ITEM_PROTECTED_VAULT_SIZE = 189;
     private static final int ITEM_CLEAR_PROTECTED_VAULT = 190;
+    private static final int ITEM_VAULT_ARCHIVE_COMMENTS = 191;
+    private static final int ITEM_BACKGROUND_ARCHIVER_MODE = 192;
 
     // Item IDs for CATEGORY_TRACKER
     private static final int ITEM_TRACK_ONLINE_STATUS = 10;
@@ -123,16 +126,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_HIDE_SIMILAR_CHANNELS = 93;
     private static final int ITEM_HIDE_STORIES_BAR = 94;
     private static final int ITEM_SHOW_SECONDS_IN_TIME = 95;
-    private static final int ITEM_CONFIRM_LEAVE_CHAT = 96;
     private static final int ITEM_AVATAR_HISTORY_ENABLED = 97;
-
-    // Item IDs for CATEGORY_CAMERAX
-    private static final int ITEM_CAMERAX_ENABLED = 40;
-    private static final int ITEM_CAMERAX_60FPS = 41;
-    private static final int ITEM_CAMERAX_ZOOM_SLIDER = 42;
-    private static final int ITEM_CAMERAX_WIDE_ANGLE = 43;
-    private static final int ITEM_CAMERAX_ADVANCED = 44;
-    private static final int ITEM_NETWORK_BOOST_PANEL = 45;
 
     // Item IDs for CATEGORY_ACTIONS
     private static final int ITEM_DOUBLE_TAP_INCOMING = 50;
@@ -145,22 +139,19 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_ALWAYS_FORWARD_WITHOUT_AUTHOR = 57;
     private static final int ITEM_CONFIRM_SEND_STICKERS = 58;
     private static final int ITEM_CONFIRM_SEND_GIFS = 59;
+    private static final int ITEM_SHOW_FORWARD_WITHOUT_AUTHOR = 64;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;
     private static final int ITEM_PHOTO_MAX_RESOLUTION = 61;
     private static final int ITEM_SEND_VIDEO_AS_DOCUMENT = 62;
-    private static final int ITEM_BOOST_DOWNLOAD_SPEED = 63;
-    private static final int ITEM_SHOW_FORWARD_WITHOUT_AUTHOR = 64;
-    // Fix: отдельный ID для "Разблокировать сохранение историй" в разделе Media
-    // (ранее совпадал с ITEM_GHOST_UNLOCK_STORY_SAVING = 76, вызывая коллизию обработчиков)
-    private static final int ITEM_MEDIA_UNLOCK_STORY_SAVING = 185;
+    private static final int ITEM_STICKER_SIZE = 201;
+    private static final int ITEM_GIF_SIZE = 202;
 
     // Item IDs for Developer Mode
     private static final int ITEM_DEV_MODE = 100;
     private static final int ITEM_COPY_CODE_BUTTON = 101;
     private static final int ITEM_PRETTY_JSON_VIEWER = 102;
-    private static final int ITEM_AUTOMATION_RULES = 104;
 
     private final int category;
     private UniversalRecyclerView listView;
@@ -217,8 +208,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 return LocaleController.getString("HundredGramCategoryPrivacy", R.string.HundredGramCategoryPrivacy);
             case CATEGORY_INTERFACE:
                 return LocaleController.getString("HundredGramCategoryInterface", R.string.HundredGramCategoryInterface);
-            case CATEGORY_CAMERAX:
-                return LocaleController.getString("HundredGramCategoryCamera", R.string.HundredGramCategoryCamera);
             case CATEGORY_ACTIONS:
                 return LocaleController.getString("HundredGramCategoryActions", R.string.HundredGramCategoryActions);
             case CATEGORY_MEDIA:
@@ -249,9 +238,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
             case CATEGORY_INTERFACE:
                 fillInterfaceItems(items);
                 break;
-            case CATEGORY_CAMERAX:
-                fillCameraXItems(items);
-                break;
             case CATEGORY_ACTIONS:
                 fillActionsItems(items);
                 break;
@@ -277,7 +263,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
 
         if (HundredGramConfig.autoDownloadMediaVault) {
             items.add(UItem.asButton(ITEM_AUTO_DOWNLOAD_MAX_SIZE, LocaleController.getString("HundredGramMediaVaultLimit", R.string.HundredGramMediaVaultLimit), HundredGramConfig.autoDownloadMaxSizeMb + " " + LocaleController.getString("HundredGramMB", R.string.HundredGramMB)));
-            items.add(UItem.asShadow("Файлы крупнее указанного размера не будут загружаться автоматически"));
+            items.add(UItem.asShadow(LocaleController.getString("HundredGramMediaVaultLimitInfo", R.string.HundredGramMediaVaultLimitInfo)));
 
             String scopeName;
             if (HundredGramConfig.autoDownloadChatsScope == 0) {
@@ -288,7 +274,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 scopeName = LocaleController.getString("HundredGramMediaVaultScopeAll", R.string.HundredGramMediaVaultScopeAll);
             }
             items.add(UItem.asButton(ITEM_AUTO_DOWNLOAD_CHATS_SCOPE, LocaleController.getString("HundredGramMediaVaultScope", R.string.HundredGramMediaVaultScope), scopeName));
-            items.add(UItem.asShadow("Определяет типы диалогов, из которых файлы будут превентивно загружаться"));
+            items.add(UItem.asShadow(LocaleController.getString("HundredGramMediaVaultScopeInfo", R.string.HundredGramMediaVaultScopeInfo)));
 
             items.add(UItem.asCheck(ITEM_VAULT_INCLUDE_ARCHIVED, LocaleController.getString("VaultIncludeArchivedChats", R.string.VaultIncludeArchivedChats))
                     .setChecked(HundredGramConfig.vaultIncludeArchivedChats));
@@ -308,6 +294,23 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_BACKGROUND_ARCHIVER, LocaleController.getString("HundredGramBackgroundArchiver", R.string.HundredGramBackgroundArchiver))
                 .setChecked(HundredGramConfig.backgroundArchiverEnabled));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramBackgroundArchiverInfo", R.string.HundredGramBackgroundArchiverInfo)));
+
+        if (HundredGramConfig.backgroundArchiverEnabled) {
+            String modeText;
+            if (HundredGramConfig.backgroundArchiverMode == HundredGramConfig.ARCHIVER_MODE_NEW_ONLY) {
+                modeText = LocaleController.getString("HundredGramArchiverModeNewOnly", R.string.HundredGramArchiverModeNewOnly);
+            } else {
+                modeText = LocaleController.getString("HundredGramArchiverModeFullSync", R.string.HundredGramArchiverModeFullSync);
+            }
+            items.add(UItem.asButton(ITEM_BACKGROUND_ARCHIVER_MODE, LocaleController.getString("HundredGramArchiverMode", R.string.HundredGramArchiverMode), modeText));
+            items.add(UItem.asShadow(HundredGramConfig.backgroundArchiverMode == HundredGramConfig.ARCHIVER_MODE_NEW_ONLY
+                    ? LocaleController.getString("HundredGramArchiverModeNewOnlyInfo", R.string.HundredGramArchiverModeNewOnlyInfo)
+                    : LocaleController.getString("HundredGramArchiverModeFullSyncInfo", R.string.HundredGramArchiverModeFullSyncInfo)));
+        }
+
+        items.add(UItem.asCheck(ITEM_VAULT_ARCHIVE_COMMENTS, LocaleController.getString("HundredGramVaultArchiveComments", R.string.HundredGramVaultArchiveComments))
+                .setChecked(HundredGramConfig.vaultArchiveChannelComments));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramVaultArchiveCommentsInfo", R.string.HundredGramVaultArchiveCommentsInfo)));
 
 
         items.add(UItem.asHeader(LocaleController.getString("VaultTtl", R.string.VaultTtl)));
@@ -399,17 +402,17 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     }
 
     private void fillPrivacyItems(ArrayList<UItem> items) {
-        items.add(UItem.asHeader("Скрытие данных"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramPrivacyDataHiding", R.string.HundredGramPrivacyDataHiding)));
 
-        items.add(UItem.asCheck(ITEM_HIDE_PHONE_NUMBER, "Скрыть свой номер телефона")
+        items.add(UItem.asCheck(ITEM_HIDE_PHONE_NUMBER, LocaleController.getString("HundredGramHidePhoneNumber", R.string.HundredGramHidePhoneNumber))
                 .setChecked(HundredGramConfig.hidePhoneNumber));
-        items.add(UItem.asCheck(ITEM_HIDE_OTHER_PHONE_NUMBERS, "Скрывать чужие номера телефонов")
+        items.add(UItem.asCheck(ITEM_HIDE_OTHER_PHONE_NUMBERS, LocaleController.getString("HundredGramHideOtherPhoneNumbers", R.string.HundredGramHideOtherPhoneNumbers))
                 .setChecked(HundredGramConfig.hideOtherPhoneNumbers));
-        items.add(UItem.asCheck(ITEM_HIDE_USERNAME, "Скрыть свой юзернейм")
+        items.add(UItem.asCheck(ITEM_HIDE_USERNAME, LocaleController.getString("HundredGramHideUsername", R.string.HundredGramHideUsername))
                 .setChecked(HundredGramConfig.hideUsername));
-        items.add(UItem.asCheck(ITEM_HIDE_OTHER_USERNAMES, "Скрывать чужие юзернеймы")
+        items.add(UItem.asCheck(ITEM_HIDE_OTHER_USERNAMES, LocaleController.getString("HundredGramHideOtherUsernames", R.string.HundredGramHideOtherUsernames))
                 .setChecked(HundredGramConfig.hideOtherUsernames));
-        items.add(UItem.asShadow("Маскирует номера телефонов и юзернеймы в настройках и профилях (защита от показа на стримах и скриншотах)"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramPrivacyDataHidingInfo", R.string.HundredGramPrivacyDataHidingInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("PrivacyBlurSection", R.string.PrivacyBlurSection)));
 
@@ -421,19 +424,19 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.privacyBlurAvatars));
         items.add(UItem.asShadow(LocaleController.getString("PrivacyBlurAvatarsInfo", R.string.PrivacyBlurAvatarsInfo)));
 
-        items.add(UItem.asHeader("Профиль"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramProfileSection", R.string.HundredGramProfileSection)));
         String idDcValue;
         if (HundredGramConfig.showIdAndDc == 0) {
-            idDcValue = "Отключено";
+            idDcValue = LocaleController.getString("HundredGramShowIdDisabled", R.string.HundredGramShowIdDisabled);
         } else if (HundredGramConfig.showIdAndDc == 1) {
-            idDcValue = "Только ID";
+            idDcValue = LocaleController.getString("HundredGramShowIdOnly", R.string.HundredGramShowIdOnly);
         } else {
-            idDcValue = "ID и датацентр";
+            idDcValue = LocaleController.getString("HundredGramShowIdAndDcValue", R.string.HundredGramShowIdAndDcValue);
         }
-        items.add(UItem.asButton(ITEM_SHOW_ID_AND_DC, "Отображение ID и DC в профиле", idDcValue));
-        items.add(UItem.asShadow("Показывает Telegram ID и датацентр пользователя или канала с возможностью копирования по клику"));
+        items.add(UItem.asButton(ITEM_SHOW_ID_AND_DC, LocaleController.getString("HundredGramShowIdAndDc", R.string.HundredGramShowIdAndDc), idDcValue));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramShowIdAndDcInfo", R.string.HundredGramShowIdAndDcInfo)));
 
-        items.add(UItem.asHeader("Фоновая работа и синхронизация"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramBackgroundSyncSection", R.string.HundredGramBackgroundSyncSection)));
 
         items.add(UItem.asCheck(ITEM_KEEPALIVE_FOREGROUND_SERVICE, LocaleController.getString("KeepAliveForegroundService", R.string.KeepAliveForegroundService))
                 .setChecked(HundredGramConfig.keepAliveForegroundService));
@@ -478,7 +481,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.ghostTyping));
         items.add(UItem.asShadow(LocaleController.getString("GhostTypingInfo", R.string.GhostTypingInfo)));
 
-        items.add(UItem.asHeader("Истории (Stories)"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramStoriesSection", R.string.HundredGramStoriesSection)));
 
         String storiesModeStr;
         if (HundredGramConfig.ghostStoriesMode == HundredGramConfig.GHOST_STORIES_OFF) {
@@ -497,31 +500,31 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     }
 
     private void fillInterfaceItems(ArrayList<UItem> items) {
-        items.add(UItem.asHeader("Чаты и сообщения"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramChatsAndMessagesSection", R.string.HundredGramChatsAndMessagesSection)));
 
         items.add(UItem.asCheck(ITEM_UNLOCK_CHAT_TRANSLATION, LocaleController.getString("UnlockChatTranslation", R.string.UnlockChatTranslation))
                 .setChecked(HundredGramConfig.unlockChatTranslation));
         items.add(UItem.asShadow(LocaleController.getString("UnlockChatTranslationInfo", R.string.UnlockChatTranslationInfo)));
 
-        items.add(UItem.asCheck(ITEM_RELATIVE_LAST_SEEN, "Относительное время онлайна")
+        items.add(UItem.asCheck(ITEM_RELATIVE_LAST_SEEN, LocaleController.getString("HundredGramRelativeLastSeen", R.string.HundredGramRelativeLastSeen))
                 .setChecked(HundredGramConfig.relativeLastSeen));
-        items.add(UItem.asShadow("Отображает «5 минут назад» или «2 часа назад» вместо точного времени визита"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramRelativeLastSeenInfo", R.string.HundredGramRelativeLastSeenInfo)));
 
-        items.add(UItem.asCheck(ITEM_DISABLE_JUMP_TO_NEXT_CHANNEL, "Не переходить в следующий канал")
+        items.add(UItem.asCheck(ITEM_DISABLE_JUMP_TO_NEXT_CHANNEL, LocaleController.getString("HundredGramDisableJumpChannel", R.string.HundredGramDisableJumpChannel))
                 .setChecked(HundredGramConfig.disableJumpToNextChannel));
-        items.add(UItem.asShadow("Отключает свайп внизу истории канала для перехода к следующему непрочитанному каналу"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramDisableJumpChannelInfo", R.string.HundredGramDisableJumpChannelInfo)));
 
-        items.add(UItem.asCheck(ITEM_HIDE_KEYBOARD_ON_SCROLL, "Скрывать клавиатуру при скролле")
+        items.add(UItem.asCheck(ITEM_HIDE_KEYBOARD_ON_SCROLL, LocaleController.getString("HundredGramHideKeyboardOnScroll", R.string.HundredGramHideKeyboardOnScroll))
                 .setChecked(HundredGramConfig.hideKeyboardOnScroll));
-        items.add(UItem.asShadow("Автоматически сворачивает клавиатуру при прокрутке истории переписки"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramHideKeyboardOnScrollInfo", R.string.HundredGramHideKeyboardOnScrollInfo)));
 
-        items.add(UItem.asCheck(ITEM_ADD_COMMA_AFTER_MENTION, "Запятая после упоминания")
+        items.add(UItem.asCheck(ITEM_ADD_COMMA_AFTER_MENTION, LocaleController.getString("HundredGramAddCommaAfterMention", R.string.HundredGramAddCommaAfterMention))
                 .setChecked(HundredGramConfig.addCommaAfterMention));
-        items.add(UItem.asShadow("Автоматически подставляет запятую после никнейма (@username,)"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramAddCommaAfterMentionInfo", R.string.HundredGramAddCommaAfterMentionInfo)));
 
-        items.add(UItem.asCheck(ITEM_DISABLE_NUMBER_ROUNDING, "Точные числа просмотров и участников")
+        items.add(UItem.asCheck(ITEM_DISABLE_NUMBER_ROUNDING, LocaleController.getString("HundredGramDisableNumberRounding", R.string.HundredGramDisableNumberRounding))
                 .setChecked(HundredGramConfig.disableNumberRounding));
-        items.add(UItem.asShadow("Показывает точное значение с разделителями (например, 1,234,567 вместо 1.2M)"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramDisableNumberRoundingInfo", R.string.HundredGramDisableNumberRoundingInfo)));
 
         items.add(UItem.asCheck(ITEM_HIGHLIGHT_DELETED, LocaleController.getString("HundredGramHighlightDeleted", R.string.HundredGramHighlightDeleted))
                 .setChecked(HundredGramConfig.highlightDeletedMessages));
@@ -535,25 +538,21 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.showSecondsInTime));
         items.add(UItem.asShadow(LocaleController.getString("ShowSecondsInTimeInfo", R.string.ShowSecondsInTimeInfo)));
 
-        items.add(UItem.asCheck(ITEM_CONFIRM_LEAVE_CHAT, LocaleController.getString("ConfirmLeaveChat", R.string.ConfirmLeaveChat))
-                .setChecked(HundredGramConfig.confirmLeaveChat));
-        items.add(UItem.asShadow(LocaleController.getString("ConfirmLeaveChatInfo", R.string.ConfirmLeaveChatInfo)));
-
-        items.add(UItem.asHeader("Главный экран"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramMainScreenSection", R.string.HundredGramMainScreenSection)));
 
         items.add(UItem.asCheck(ITEM_HIDE_STORIES_BAR, LocaleController.getString("HideStoriesBar", R.string.HideStoriesBar))
                 .setChecked(HundredGramConfig.hideStoriesBar));
         items.add(UItem.asShadow(LocaleController.getString("HideStoriesBarInfo", R.string.HideStoriesBarInfo)));
 
-        items.add(UItem.asCheck(ITEM_HIDE_ARCHIVE_FOLDER, "Скрыть архив чатов")
+        items.add(UItem.asCheck(ITEM_HIDE_ARCHIVE_FOLDER, LocaleController.getString("HundredGramHideArchiveFolder", R.string.HundredGramHideArchiveFolder))
                 .setChecked(HundredGramConfig.hideArchiveFolder));
-        items.add(UItem.asShadow("Скрывает строчку «Архив» из основного списка диалогов"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramHideArchiveFolderInfo", R.string.HundredGramHideArchiveFolderInfo)));
 
-        items.add(UItem.asCheck(ITEM_HIDE_FLOATING_BUTTON, "Скрыть плавающую кнопку (FAB)")
+        items.add(UItem.asCheck(ITEM_HIDE_FLOATING_BUTTON, LocaleController.getString("HundredGramHideFloatingButton", R.string.HundredGramHideFloatingButton))
                 .setChecked(HundredGramConfig.hideFloatingButton));
-        items.add(UItem.asShadow("Скрывает круглую кнопку создания нового чата внизу экрана"));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramHideFloatingButtonInfo", R.string.HundredGramHideFloatingButtonInfo)));
 
-        items.add(UItem.asHeader("Звонки и ссылки"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramCallsAndLinksSection", R.string.HundredGramCallsAndLinksSection)));
 
         items.add(UItem.asCheck(ITEM_CONFIRM_CALLS, LocaleController.getString("ConfirmCalls", R.string.ConfirmCalls))
                 .setChecked(HundredGramConfig.confirmCalls));
@@ -564,69 +563,43 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asShadow(LocaleController.getString("CleanUrlsInfo", R.string.CleanUrlsInfo)));
     }
 
-    private void fillCameraXItems(ArrayList<UItem> items) {
-        items.add(UItem.asHeader("Камера и кружки (CameraX)"));
-        items.add(UItem.asButton(ITEM_CAMERAX_ADVANCED, R.drawable.msg_camera,
-                LocaleController.getString("CameraEngineTitle", R.string.CameraEngineTitle),
-                "4K, 60 FPS, выбор камеры, стабилизация, HDR"));
-        items.add(UItem.asShadow(LocaleController.getString("CameraEngineSub", R.string.CameraEngineSub)));
-
-        items.add(UItem.asCheck(ITEM_CAMERAX_ENABLED, "Использовать модуль CameraX")
-                .setChecked(HundredGramConfig.cameraXEnabled));
-        items.add(UItem.asShadow("Активирует современную камеру CameraX для записи видеосообщений (кружков)"));
-
-        if (HundredGramConfig.cameraXEnabled) {
-            items.add(UItem.asCheck(ITEM_CAMERAX_60FPS, "Запись кружков в 60 FPS")
-                    .setChecked(HundredGramConfig.cameraX60Fps));
-            items.add(UItem.asShadow("Повышенная плавность видеосообщений (если поддерживается устройством)"));
-
-            items.add(UItem.asCheck(ITEM_CAMERAX_ZOOM_SLIDER, "Ползунок зума")
-                    .setChecked(HundredGramConfig.cameraXZoomSlider));
-            items.add(UItem.asShadow("Отображает удобный слайдер масштабирования при записи"));
-
-            items.add(UItem.asCheck(ITEM_CAMERAX_WIDE_ANGLE, "Широкоугольный объектив по умолчанию")
-                    .setChecked(HundredGramConfig.cameraXWideAngle));
-            items.add(UItem.asShadow("Запускает запись с ультраширокоугольной камеры"));
-        }
-    }
-
     private void fillActionsItems(ArrayList<UItem> items) {
-        items.add(UItem.asHeader("Двойное нажатие"));
+        items.add(UItem.asHeader(LocaleController.getString("DoubleTapHeader", R.string.DoubleTapHeader)));
 
-        items.add(UItem.asButton(ITEM_DOUBLE_TAP_INCOMING, "Двойное нажатие (входящие)", getDoubleTapActionName(HundredGramConfig.doubleTapAction)));
-        items.add(UItem.asShadow("Действие при двойном нажатии по входящему сообщению"));
+        items.add(UItem.asButton(ITEM_DOUBLE_TAP_INCOMING, LocaleController.getString("DoubleTapActionIncoming", R.string.DoubleTapActionIncoming), getDoubleTapActionName(HundredGramConfig.doubleTapAction)));
+        items.add(UItem.asShadow(LocaleController.getString("DoubleTapActionIncomingDesc", R.string.DoubleTapActionIncomingDesc)));
 
-        items.add(UItem.asButton(ITEM_DOUBLE_TAP_OUTGOING, "Двойное нажатие (исходящие)", getDoubleTapActionName(HundredGramConfig.doubleTapActionOutOwner)));
-        items.add(UItem.asShadow("Действие при двойном нажатии по своему исходящему сообщению"));
+        items.add(UItem.asButton(ITEM_DOUBLE_TAP_OUTGOING, LocaleController.getString("DoubleTapActionOutgoing", R.string.DoubleTapActionOutgoing), getDoubleTapActionName(HundredGramConfig.doubleTapActionOutOwner)));
+        items.add(UItem.asShadow(LocaleController.getString("DoubleTapActionOutgoingDesc", R.string.DoubleTapActionOutgoingDesc)));
 
-        items.add(UItem.asHeader("Меню сообщения"));
+        items.add(UItem.asHeader(LocaleController.getString("MessageMenuSection", R.string.MessageMenuSection)));
 
-        items.add(UItem.asCheck(ITEM_SHOW_SAVE_MESSAGE, "Кнопка «В Избранное» в меню")
+        items.add(UItem.asCheck(ITEM_SHOW_SAVE_MESSAGE, LocaleController.getString("ShowSaveMessageButton", R.string.ShowSaveMessageButton))
                 .setChecked(HundredGramConfig.showSaveMessageButton));
-        items.add(UItem.asShadow("Добавляет пункт быстрого сохранения в Избранное в меню сообщения"));
+        items.add(UItem.asShadow(LocaleController.getString("ShowSaveMessageButtonInfo", R.string.ShowSaveMessageButtonInfo)));
 
-        items.add(UItem.asCheck(ITEM_SHOW_DETAILS, "Кнопка «Подробности» в меню")
+        items.add(UItem.asCheck(ITEM_SHOW_DETAILS, LocaleController.getString("ShowDetailsButton", R.string.ShowDetailsButton))
                 .setChecked(HundredGramConfig.showDetailsButton));
-        items.add(UItem.asShadow("Показывает подробные метаданные сообщения (ID, автор, дата, медиа, DC)"));
+        items.add(UItem.asShadow(LocaleController.getString("ShowDetailsButtonInfo", R.string.ShowDetailsButtonInfo)));
 
-        items.add(UItem.asCheck(ITEM_SHOW_COPY_PHOTO, "Кнопка «Копировать фото» в меню")
+        items.add(UItem.asCheck(ITEM_SHOW_COPY_PHOTO, LocaleController.getString("ShowCopyPhotoButton", R.string.ShowCopyPhotoButton))
                 .setChecked(HundredGramConfig.showCopyPhotoButton));
-        items.add(UItem.asShadow("Позволяет быстро скопировать изображение в буфер обмена"));
+        items.add(UItem.asShadow(LocaleController.getString("ShowCopyPhotoButtonInfo", R.string.ShowCopyPhotoButtonInfo)));
 
         items.add(UItem.asCheck(ITEM_SHOW_EDIT_HISTORY, LocaleController.getString("ShowEditHistoryButton", R.string.ShowEditHistoryButton))
                 .setChecked(HundredGramConfig.showEditHistoryButton));
-        items.add(UItem.asShadow("Отображает пункт «История изменений» для отредактированных и удалённых сообщений"));
+        items.add(UItem.asShadow(LocaleController.getString("ShowEditHistoryButtonInfo", R.string.ShowEditHistoryButtonInfo)));
 
         items.add(UItem.asCheck(ITEM_SHOW_FORWARD_WITHOUT_AUTHOR, LocaleController.getString("ShowForwardWithoutAuthorButton", R.string.ShowForwardWithoutAuthorButton))
                 .setChecked(HundredGramConfig.showForwardWithoutAuthorButton));
         items.add(UItem.asShadow(LocaleController.getString("ShowForwardWithoutAuthorButtonInfo", R.string.ShowForwardWithoutAuthorButtonInfo)));
 
-        items.add(UItem.asHeader("Удаление"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramDeleteSection", R.string.HundredGramDeleteSection)));
         items.add(UItem.asCheck(ITEM_AUTO_CHECK_DELETE_FOR_ALL, LocaleController.getString("AutoCheckDeleteForAll", R.string.AutoCheckDeleteForAll))
                 .setChecked(HundredGramConfig.autoCheckDeleteForAll));
         items.add(UItem.asShadow(LocaleController.getString("AutoCheckDeleteForAllInfo", R.string.AutoCheckDeleteForAllInfo)));
 
-        items.add(UItem.asHeader("Отправка и пересылка"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramSendAndForwardSection", R.string.HundredGramSendAndForwardSection)));
         items.add(UItem.asCheck(ITEM_SILENT_SEND_BY_DEFAULT, LocaleController.getString(R.string.SilentSendByDefault))
                 .setChecked(HundredGramConfig.silentSendByDefault));
         items.add(UItem.asShadow(LocaleController.getString(R.string.SilentSendByDefaultInfo)));
@@ -660,7 +633,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     }
 
     private void fillMediaItems(ArrayList<UItem> items) {
-        items.add(UItem.asHeader("Фотографии"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramPhotosSection", R.string.HundredGramPhotosSection)));
 
         items.add(UItem.asCheck(ITEM_ALWAYS_HD_PHOTOS, LocaleController.getString("AlwaysHighQualityPhotos", R.string.AlwaysHighQualityPhotos))
                 .setChecked(HundredGramConfig.alwaysHighQualityPhotos));
@@ -677,20 +650,55 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asButton(ITEM_PHOTO_MAX_RESOLUTION, LocaleController.getString("PhotoMaxResolution", R.string.PhotoMaxResolution), resValue));
         items.add(UItem.asShadow(LocaleController.getString("PhotoMaxResolutionInfo", R.string.PhotoMaxResolutionInfo)));
 
-        items.add(UItem.asHeader("Видео"));
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramVideosSection", R.string.HundredGramVideosSection)));
         items.add(UItem.asCheck(ITEM_SEND_VIDEO_AS_DOCUMENT, LocaleController.getString("SendVideoAsDocument", R.string.SendVideoAsDocument))
                 .setChecked(HundredGramConfig.sendVideoAsDocument));
         items.add(UItem.asShadow(LocaleController.getString("SendVideoAsDocumentInfo", R.string.SendVideoAsDocumentInfo)));
 
-        items.add(UItem.asHeader("Истории"));
-        items.add(UItem.asCheck(ITEM_MEDIA_UNLOCK_STORY_SAVING, LocaleController.getString("UnlockStorySaving", R.string.UnlockStorySaving))
-                .setChecked(HundredGramConfig.unlockStorySaving));
-        items.add(UItem.asShadow(LocaleController.getString("UnlockStorySavingInfo", R.string.UnlockStorySavingInfo)));
+        items.add(UItem.asHeader(LocaleController.getString("StickersAndGifsHeader", R.string.StickersAndGifsHeader)));
+        String stickerSizeValue;
+        switch (HundredGramConfig.stickerSize) {
+            case HundredGramConfig.MEDIA_SIZE_MINIMAL:
+                stickerSizeValue = LocaleController.getString("MediaSizeMinimal", R.string.MediaSizeMinimal);
+                break;
+            case HundredGramConfig.MEDIA_SIZE_COMPACT:
+                stickerSizeValue = LocaleController.getString("MediaSizeCompact", R.string.MediaSizeCompact);
+                break;
+            case HundredGramConfig.MEDIA_SIZE_LARGE:
+                stickerSizeValue = LocaleController.getString("MediaSizeLarge", R.string.MediaSizeLarge);
+                break;
+            case HundredGramConfig.MEDIA_SIZE_HUGE:
+                stickerSizeValue = LocaleController.getString("MediaSizeHuge", R.string.MediaSizeHuge);
+                break;
+            case HundredGramConfig.MEDIA_SIZE_DEFAULT:
+            default:
+                stickerSizeValue = LocaleController.getString("MediaSizeDefault", R.string.MediaSizeDefault);
+                break;
+        }
+        items.add(UItem.asButton(ITEM_STICKER_SIZE, LocaleController.getString("StickerSize", R.string.StickerSize), stickerSizeValue));
+        items.add(UItem.asShadow(LocaleController.getString("StickerSizeInfo", R.string.StickerSizeInfo)));
 
-        items.add(UItem.asHeader(LocaleController.getString("BoostDownloadSpeed", R.string.BoostDownloadSpeed)));
-        items.add(UItem.asCheck(ITEM_BOOST_DOWNLOAD_SPEED, LocaleController.getString("BoostDownloadSpeed", R.string.BoostDownloadSpeed))
-                .setChecked(HundredGramConfig.boostDownloadSpeed));
-        items.add(UItem.asShadow(LocaleController.getString("BoostDownloadSpeedInfo", R.string.BoostDownloadSpeedInfo)));
+        String gifSizeValue;
+        switch (HundredGramConfig.gifSize) {
+            case HundredGramConfig.MEDIA_SIZE_MINIMAL:
+                gifSizeValue = LocaleController.getString("MediaSizeMinimal", R.string.MediaSizeMinimal);
+                break;
+            case HundredGramConfig.MEDIA_SIZE_COMPACT:
+                gifSizeValue = LocaleController.getString("MediaSizeCompact", R.string.MediaSizeCompact);
+                break;
+            case HundredGramConfig.MEDIA_SIZE_LARGE:
+                gifSizeValue = LocaleController.getString("MediaSizeLarge", R.string.MediaSizeLarge);
+                break;
+            case HundredGramConfig.MEDIA_SIZE_HUGE:
+                gifSizeValue = LocaleController.getString("MediaSizeHuge", R.string.MediaSizeHuge);
+                break;
+            case HundredGramConfig.MEDIA_SIZE_DEFAULT:
+            default:
+                gifSizeValue = LocaleController.getString("MediaSizeDefault", R.string.MediaSizeDefault);
+                break;
+        }
+        items.add(UItem.asButton(ITEM_GIF_SIZE, LocaleController.getString("GifSize", R.string.GifSize), gifSizeValue));
+        items.add(UItem.asShadow(LocaleController.getString("GifSizeInfo", R.string.GifSizeInfo)));
     }
 
     private void fillStreamerItems(ArrayList<UItem> items) {
@@ -786,6 +794,19 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.backgroundArchiverEnabled);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.backgroundArchiverEnabled);
+                }
+                if (listView != null && listView.adapter != null) {
+                    listView.adapter.update(true);
+                }
+                break;
+            case ITEM_BACKGROUND_ARCHIVER_MODE:
+                showArchiverModeDialog();
+                break;
+            case ITEM_VAULT_ARCHIVE_COMMENTS:
+                HundredGramConfig.toggleVaultArchiveChannelComments();
+                item.setChecked(HundredGramConfig.vaultArchiveChannelComments);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.vaultArchiveChannelComments);
                 }
                 break;
             case ITEM_VAULT_BROWSE_FILES:
@@ -959,7 +980,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 showGhostStoriesModeDialog();
                 break;
             case ITEM_GHOST_UNLOCK_STORY_SAVING:
-            case ITEM_MEDIA_UNLOCK_STORY_SAVING:
                 HundredGramConfig.toggleUnlockStorySaving();
                 item.setChecked(HundredGramConfig.unlockStorySaving);
                 if (view instanceof TextCheckCell) {
@@ -1059,55 +1079,12 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.showSecondsInTime);
                 }
                 break;
-            case ITEM_CONFIRM_LEAVE_CHAT:
-                HundredGramConfig.toggleConfirmLeaveChat();
-                item.setChecked(HundredGramConfig.confirmLeaveChat);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.confirmLeaveChat);
-                }
-                break;
             case ITEM_AVATAR_HISTORY_ENABLED:
                 HundredGramConfig.toggleAvatarHistoryEnabled();
                 item.setChecked(HundredGramConfig.avatarHistoryEnabled);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.avatarHistoryEnabled);
                 }
-                break;
-
-            // CATEGORY_CAMERAX
-            case ITEM_CAMERAX_ENABLED:
-                HundredGramConfig.toggleCameraXEnabled();
-                item.setChecked(HundredGramConfig.cameraXEnabled);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.cameraXEnabled);
-                }
-                if (listView != null && listView.adapter != null) {
-                    listView.adapter.update(true);
-                }
-                break;
-            case ITEM_CAMERAX_60FPS:
-                HundredGramConfig.toggleCameraX60Fps();
-                item.setChecked(HundredGramConfig.cameraX60Fps);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.cameraX60Fps);
-                }
-                break;
-            case ITEM_CAMERAX_ZOOM_SLIDER:
-                HundredGramConfig.toggleCameraXZoomSlider();
-                item.setChecked(HundredGramConfig.cameraXZoomSlider);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.cameraXZoomSlider);
-                }
-                break;
-            case ITEM_CAMERAX_WIDE_ANGLE:
-                HundredGramConfig.toggleCameraXWideAngle();
-                item.setChecked(HundredGramConfig.cameraXWideAngle);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.cameraXWideAngle);
-                }
-                break;
-            case ITEM_CAMERAX_ADVANCED:
-                presentFragment(new HundredGramCameraActivity());
                 break;
 
             // CATEGORY_ACTIONS
@@ -1204,9 +1181,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.prettyJsonViewerEnabled);
                 }
                 break;
-            case ITEM_AUTOMATION_RULES:
-                presentFragment(new HundredGramAutomationActivity());
-                break;
 
             case ITEM_CONFIRM_CALLS:
                 HundredGramConfig.toggleConfirmCalls();
@@ -1241,15 +1215,11 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.sendVideoAsDocument);
                 }
                 break;
-            case ITEM_BOOST_DOWNLOAD_SPEED:
-                HundredGramConfig.toggleBoostDownloadSpeed();
-                item.setChecked(HundredGramConfig.boostDownloadSpeed);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.boostDownloadSpeed);
-                }
+            case ITEM_STICKER_SIZE:
+                showStickerSizeDialog();
                 break;
-            case ITEM_NETWORK_BOOST_PANEL:
-                presentFragment(new HundredGramNetworkBoostActivity());
+            case ITEM_GIF_SIZE:
+                showGifSizeDialog();
                 break;
 
             // CATEGORY_STREAMER
@@ -1384,60 +1354,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         showDialog(builder.create());
     }
 
-    private void showTrackedUsersDialog() {
-        if (getParentActivity() == null) return;
-        if (HundredGramConfig.trackedOnlineUsers.isEmpty()) {
-            new AlertDialog.Builder(getParentActivity())
-                    .setTitle(LocaleController.getString("HundredGramTrackedUsersList", R.string.HundredGramTrackedUsersList))
-                    .setMessage(LocaleController.getString("HundredGramTrackedUsersEmpty", R.string.HundredGramTrackedUsersEmpty) + "\n\n" + LocaleController.getString("HundredGramNotifyUserOnlineInfo", R.string.HundredGramNotifyUserOnlineInfo))
-                    .setPositiveButton(LocaleController.getString(R.string.OK), null)
-                    .show();
-            return;
-        }
-
-        final ArrayList<Long> userIds = new ArrayList<>(HundredGramConfig.trackedOnlineUsers);
-        CharSequence[] items = new CharSequence[userIds.size()];
-        for (int i = 0; i < userIds.size(); i++) {
-            long uid = userIds.get(i);
-            TLRPC.User u = getMessagesController().getUser(uid);
-            String name = u != null ? ContactsController.formatName(u) : "User " + uid;
-            items[i] = name;
-        }
-
-        new AlertDialog.Builder(getParentActivity())
-                .setTitle(LocaleController.getString("HundredGramTrackedUsersList", R.string.HundredGramTrackedUsersList))
-                .setItems(items, (dialog, which) -> {
-                    long selectedUid = userIds.get(which);
-                    new AlertDialog.Builder(getParentActivity())
-                            .setTitle(items[which])
-                            .setItems(new CharSequence[]{
-                                    LocaleController.getString(R.string.Open),
-                                    LocaleController.getString(R.string.Delete)
-                            }, (d, w) -> {
-                                if (w == 0) {
-                                    Bundle args = new Bundle();
-                                    args.putLong("user_id", selectedUid);
-                                    presentFragment(new ChatActivity(args));
-                                } else if (w == 1) {
-                                    HundredGramConfig.toggleUserTrackedForOnline(selectedUid);
-                                    if (listView != null && listView.adapter != null) {
-                                        listView.adapter.update(true);
-                                    }
-                                }
-                            })
-                            .setNegativeButton(LocaleController.getString(R.string.Cancel), null)
-                            .show();
-                })
-                .setNeutralButton(LocaleController.getString(R.string.ClearHistory), (dialog, which) -> {
-                    HundredGramConfig.clearTrackedOnlineUsers();
-                    if (listView != null && listView.adapter != null) {
-                        listView.adapter.update(true);
-                    }
-                })
-                .setNegativeButton(LocaleController.getString(R.string.Close), null)
-                .show();
-    }
-
     private void showPhotoMaxResolutionDialog() {
         if (getParentActivity() == null) return;
         String[] options = new String[] {
@@ -1453,6 +1369,62 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
             if (listView != null && listView.adapter != null) {
                 listView.adapter.update(true);
             }
+        });
+        builder.show();
+    }
+
+    private void showStickerSizeDialog() {
+        if (getParentActivity() == null) return;
+        String[] options = new String[] {
+            LocaleController.getString("MediaSizeMinimal", R.string.MediaSizeMinimal),
+            LocaleController.getString("MediaSizeCompact", R.string.MediaSizeCompact),
+            LocaleController.getString("MediaSizeDefault", R.string.MediaSizeDefault),
+            LocaleController.getString("MediaSizeLarge", R.string.MediaSizeLarge),
+            LocaleController.getString("MediaSizeHuge", R.string.MediaSizeHuge)
+        };
+        int[] values = new int[] {
+            HundredGramConfig.MEDIA_SIZE_MINIMAL,
+            HundredGramConfig.MEDIA_SIZE_COMPACT,
+            HundredGramConfig.MEDIA_SIZE_DEFAULT,
+            HundredGramConfig.MEDIA_SIZE_LARGE,
+            HundredGramConfig.MEDIA_SIZE_HUGE
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("StickerSize", R.string.StickerSize));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setStickerSize(values[which]);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+            NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+        });
+        builder.show();
+    }
+
+    private void showGifSizeDialog() {
+        if (getParentActivity() == null) return;
+        String[] options = new String[] {
+            LocaleController.getString("MediaSizeMinimal", R.string.MediaSizeMinimal),
+            LocaleController.getString("MediaSizeCompact", R.string.MediaSizeCompact),
+            LocaleController.getString("MediaSizeDefault", R.string.MediaSizeDefault),
+            LocaleController.getString("MediaSizeLarge", R.string.MediaSizeLarge),
+            LocaleController.getString("MediaSizeHuge", R.string.MediaSizeHuge)
+        };
+        int[] values = new int[] {
+            HundredGramConfig.MEDIA_SIZE_MINIMAL,
+            HundredGramConfig.MEDIA_SIZE_COMPACT,
+            HundredGramConfig.MEDIA_SIZE_DEFAULT,
+            HundredGramConfig.MEDIA_SIZE_LARGE,
+            HundredGramConfig.MEDIA_SIZE_HUGE
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("GifSize", R.string.GifSize));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setGifSize(values[which]);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+            NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
         });
         builder.show();
     }
@@ -1537,20 +1509,37 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         showDialog(builder.create());
     }
 
+    private void showArchiverModeDialog() {
+        if (getParentActivity() == null) return;
+        String[] options = new String[] {
+            LocaleController.getString("HundredGramArchiverModeNewOnly", R.string.HundredGramArchiverModeNewOnly),
+            LocaleController.getString("HundredGramArchiverModeFullSync", R.string.HundredGramArchiverModeFullSync)
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramArchiverMode", R.string.HundredGramArchiverMode));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setBackgroundArchiverMode(which);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        showDialog(builder.create());
+    }
+
     private void showDoubleTapDialog(boolean outOwner) {
         if (getParentActivity() == null) return;
         String[] actions = new String[] {
-            "Отключено",
-            "Быстрая реакция",
-            "Ответить",
-            "Копировать текст",
-            "Переслать",
-            "Редактировать",
-            "В Избранное",
-            "Удалить"
+            LocaleController.getString("DoubleTapNone", R.string.DoubleTapNone),
+            LocaleController.getString("DoubleTapReaction", R.string.DoubleTapReaction),
+            LocaleController.getString("DoubleTapReply", R.string.DoubleTapReply),
+            LocaleController.getString("DoubleTapCopy", R.string.DoubleTapCopy),
+            LocaleController.getString("DoubleTapForward", R.string.DoubleTapForward),
+            LocaleController.getString("DoubleTapEdit", R.string.DoubleTapEdit),
+            LocaleController.getString("DoubleTapSave", R.string.DoubleTapSave),
+            LocaleController.getString("DoubleTapDelete", R.string.DoubleTapDelete)
         };
         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-        builder.setTitle(outOwner ? "Двойное нажатие (исходящие)" : "Двойное нажатие (входящие)");
+        builder.setTitle(outOwner ? LocaleController.getString("DoubleTapActionOutgoing", R.string.DoubleTapActionOutgoing) : LocaleController.getString("DoubleTapActionIncoming", R.string.DoubleTapActionIncoming));
         builder.setItems(actions, (dialog, which) -> {
             if (outOwner) {
                 HundredGramConfig.setDoubleTapActionOutOwner(which);
@@ -1566,15 +1555,15 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
 
     private String getDoubleTapActionName(int action) {
         switch (action) {
-            case HundredGramConfig.DOUBLE_TAP_NONE: return "Отключено";
-            case HundredGramConfig.DOUBLE_TAP_REACTION: return "Быстрая реакция";
-            case HundredGramConfig.DOUBLE_TAP_REPLY: return "Ответить";
-            case HundredGramConfig.DOUBLE_TAP_COPY: return "Копировать";
-            case HundredGramConfig.DOUBLE_TAP_FORWARD: return "Переслать";
-            case HundredGramConfig.DOUBLE_TAP_EDIT: return "Редактировать";
-            case HundredGramConfig.DOUBLE_TAP_SAVE: return "В Избранное";
-            case HundredGramConfig.DOUBLE_TAP_DELETE: return "Удалить";
-            default: return "Быстрая реакция";
+            case HundredGramConfig.DOUBLE_TAP_NONE: return LocaleController.getString("DoubleTapNone", R.string.DoubleTapNone);
+            case HundredGramConfig.DOUBLE_TAP_REACTION: return LocaleController.getString("DoubleTapReaction", R.string.DoubleTapReaction);
+            case HundredGramConfig.DOUBLE_TAP_REPLY: return LocaleController.getString("DoubleTapReply", R.string.DoubleTapReply);
+            case HundredGramConfig.DOUBLE_TAP_COPY: return LocaleController.getString("DoubleTapCopy", R.string.DoubleTapCopy);
+            case HundredGramConfig.DOUBLE_TAP_FORWARD: return LocaleController.getString("DoubleTapForward", R.string.DoubleTapForward);
+            case HundredGramConfig.DOUBLE_TAP_EDIT: return LocaleController.getString("DoubleTapEdit", R.string.DoubleTapEdit);
+            case HundredGramConfig.DOUBLE_TAP_SAVE: return LocaleController.getString("DoubleTapSave", R.string.DoubleTapSave);
+            case HundredGramConfig.DOUBLE_TAP_DELETE: return LocaleController.getString("DoubleTapDelete", R.string.DoubleTapDelete);
+            default: return LocaleController.getString("DoubleTapReaction", R.string.DoubleTapReaction);
         }
     }
 

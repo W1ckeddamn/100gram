@@ -1816,6 +1816,7 @@ public class ChatActivity extends BaseFragment implements
     private final static int hundredgram_clear_chat_cache = 79;
     private final static int hundredgram_chat_settings = 80;
     private final static int hundredgram_export_chat = 81;
+    private final static int hundredgram_force_scan_media = 82;
 
     private final static int id_chat_compose_panel = 1000;
 
@@ -4201,6 +4202,39 @@ public class ChatActivity extends BaseFragment implements
                     }
                 } else if (id == hundredgram_vault_chat_settings) {
                     new org.telegram.ui.Components.HundredGramChatVaultBottomSheet(ChatActivity.this, dialog_id).show();
+                } else if (id == hundredgram_force_scan_media) {
+                    if (getParentActivity() == null) {
+                        return;
+                    }
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                    builder.setTitle(LocaleController.getString("HundredGramScanDepthSelect", R.string.HundredGramScanDepthSelect));
+                    CharSequence[] depthLabels = new CharSequence[] {
+                        LocaleController.getString("HundredGramScanDepth500", R.string.HundredGramScanDepth500),
+                        LocaleController.getString("HundredGramScanDepth1000", R.string.HundredGramScanDepth1000),
+                        LocaleController.getString("HundredGramScanDepth5000", R.string.HundredGramScanDepth5000),
+                        LocaleController.getString("HundredGramScanDepthAll", R.string.HundredGramScanDepthAll)
+                    };
+                    int[] depthValues = new int[] { 500, 1000, 5000, 0 };
+                    builder.setItems(depthLabels, (dialogInterface, which) -> {
+                        int depth = depthValues[which];
+                        String startText = depth == 0
+                            ? LocaleController.getString("HundredGramDeepScanStartedAll", R.string.HundredGramDeepScanStartedAll)
+                            : LocaleController.formatString("HundredGramDeepScanStarted", R.string.HundredGramDeepScanStarted, depth);
+                        BulletinFactory.of(ChatActivity.this).createSimpleBulletin(
+                            R.drawable.msg_download,
+                            startText
+                        ).show();
+                        org.telegram.messenger.HundredGramBackgroundArchiver.getInstance(currentAccount).forceScanDialog(dialog_id, depth, (org.telegram.messenger.Utilities.Callback<Integer>) (queuedCount) -> {
+                            if (getParentActivity() == null) {
+                                return;
+                            }
+                            BulletinFactory.of(ChatActivity.this).createSimpleBulletin(
+                                R.drawable.msg_download,
+                                LocaleController.formatString("HundredGramDeepScanFinished", R.string.HundredGramDeepScanFinished, queuedCount)
+                            ).show();
+                        });
+                    });
+                    showDialog(builder.create());
                 } else if (id == hundredgram_go_to_first_message) {
                     jumpToDate(1);
                 } else if (id == hundredgram_notify_online) {
@@ -4672,6 +4706,7 @@ public class ChatActivity extends BaseFragment implements
                 headerItem.lazilyAddSubItem(add_shortcut, R.drawable.msg_home, LocaleController.getString(R.string.AddShortcut));
             }
             headerItem.lazilyAddSubItem(hundredgram_vault_chat_settings, R.drawable.msg_download_settings, LocaleController.getString("HundredGramChatVaultMenu", R.string.HundredGramChatVaultMenu));
+            headerItem.lazilyAddSubItem(hundredgram_force_scan_media, R.drawable.msg_download, LocaleController.getString("HundredGramDeepScanMedia", R.string.HundredGramDeepScanMedia));
             headerItem.lazilyAddSubItem(hundredgram_chat_settings, R.drawable.msg_settings_old, LocaleController.getString("HundredGramChatSettingsTitle", R.string.HundredGramChatSettingsTitle));
             headerItem.lazilyAddSubItem(hundredgram_export_chat, R.drawable.msg_log, LocaleController.getString("ChatExport", R.string.ChatExport));
             headerItem.lazilyAddSubItem(hundredgram_go_to_first_message, R.drawable.msg_go_up, LocaleController.getString("GoToFirstMessage", R.string.GoToFirstMessage));
@@ -38311,6 +38346,9 @@ public class ChatActivity extends BaseFragment implements
                     if (createUnreadMessageAfterId != 0) {
                         createUnreadMessageAfterId = 0;
                     }
+                } else if (view instanceof ChatMessageUnsupportedCell) {
+                    ChatMessageUnsupportedCell unsupportedCell = (ChatMessageUnsupportedCell) view;
+                    unsupportedCell.setMessageObject(message);
                 }
             }
         }

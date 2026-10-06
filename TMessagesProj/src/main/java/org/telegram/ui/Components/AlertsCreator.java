@@ -2879,10 +2879,7 @@ public class AlertsCreator {
                     createClearOrDeleteDialogAlert(fragment, clear, true, chat, user, false, checkDeleteForAll, deleteForAll[0], canDeleteHistory, onProcessRunnable, resourcesProvider);
                     return;
                 }
-                if (chat != null && HundredGramConfig.confirmLeaveChat) {
-                    createClearOrDeleteDialogAlert(fragment, clear, true, chat, user, false, checkDeleteForAll, deleteForAll[0], canDeleteHistory, onProcessRunnable, resourcesProvider);
-                    return;
-                }
+
                 if (UserObject.isUserSelf(user)) {
                     createClearOrDeleteDialogAlert(fragment, clear, true, chat, user, false, checkDeleteForAll, deleteForAll[0], canDeleteHistory, onProcessRunnable, resourcesProvider);
                     return;

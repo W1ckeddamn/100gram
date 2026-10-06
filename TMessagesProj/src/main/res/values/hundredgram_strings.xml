@@ -70,10 +70,17 @@
     <string name="HundredGramVaultHeader">Archiver &amp; Media Vault</string>
     <string name="HundredGramBackgroundArchiver">Background sync for all chats</string>
     <string name="HundredGramBackgroundArchiverInfo">Syncs messages even from muted channels and groups in background</string>
+    <string name="HundredGramArchiverMode">Archiver mode</string>
+    <string name="HundredGramArchiverModeNewOnly">New messages only (Real-time)</string>
+    <string name="HundredGramArchiverModeNewOnlyInfo">Saves only new incoming messages and media received after archiver is enabled. No historical chat scanning.</string>
+    <string name="HundredGramArchiverModeFullSync">Full sync (With history)</string>
+    <string name="HundredGramArchiverModeFullSyncInfo">Periodically scans all chats and downloads recent message history and media.</string>
     <string name="HundredGramMediaVault">Pre-emptive media auto-download</string>
     <string name="HundredGramMediaVaultInfo">Automatically downloads files before author or admin can delete them</string>
     <string name="HundredGramMediaVaultLimit">Maximum file size</string>
+    <string name="HundredGramMediaVaultLimitInfo">Files larger than the specified size will not be downloaded automatically</string>
     <string name="HundredGramMediaVaultScope">Where to save media</string>
+    <string name="HundredGramMediaVaultScopeInfo">Determines dialog types to proactively download files from</string>
     <string name="HundredGramMediaVaultScopePrivate">Private chats only</string>
     <string name="HundredGramMediaVaultScopeGroups">Private chats and groups</string>
     <string name="HundredGramMediaVaultScopeAll">All chats (including channels)</string>
@@ -605,4 +612,112 @@
     <string name="HundredGramVaultTabVoice">Voice</string>
     <string name="HundredGramVaultTabFiles">Files</string>
     <string name="HundredGramVaultFileSaved">File saved</string>
+
+    <!-- Deep Scan -->
+    <string name="HundredGramDeepScanMedia">Deep media sync</string>
+    <string name="HundredGramDeepScanStarted">Deep scan started (depth %1$d messages)</string>
+    <string name="HundredGramDeepScanFinished">Scan completed. Found and queued %1$d files</string>
+    <string name="HundredGramVaultDeepScanTitle">Deep Scan</string>
+    <string name="HundredGramVaultDeepScanConfirm">Start deep scan of all chats? All missing media will be downloaded in the background.</string>
+    <string name="HundredGramVaultDeepScanProgress">Scanning: %1$d of %2$d chats (%3$d files queued)</string>
+    <string name="HundredGramVaultDeepScanFinished">Deep scan completed. Queued %1$d files</string>
+    <string name="HundredGramVaultDeepScanStarted">Deep scan of all chats started</string>
+    <string name="HundredGramVaultScanPerChat">%1$d messages per chat</string>
+    <string name="HundredGramScanDepthSelect">Select scan depth</string>
+    <string name="HundredGramScanDepth200">200 messages</string>
+    <string name="HundredGramScanDepth500">500 messages</string>
+    <string name="HundredGramScanDepth1000">1,000 messages</string>
+    <string name="HundredGramScanDepth5000">5,000 messages</string>
+    <string name="HundredGramScanDepthAll">Entire chat history (unlimited)</string>
+    <string name="HundredGramDeepScanStartedAll">Deep scan started (entire history)</string>
+    <string name="HundredGramVaultArchiveComments">Archive channel comments</string>
+    <string name="HundredGramVaultArchiveCommentsInfo">Automatically download media from post comments in channels to Media Vault.</string>
+
+    <!-- Round Video From Gallery -->
+    <string name="HundredGramSendAsRoundVideo">Send as video message</string>
+    <string name="HundredGramRoundVideoHint">Video will be cropped to 1:1 round message</string>
+    <string name="HundredGramRoundVideoMaxDuration">Video message cannot exceed 60 seconds</string>
+
+    <!-- Sticker & GIF Size Settings -->
+    <string name="StickersAndGifsHeader">Stickers &amp; GIFs</string>
+    <string name="StickerSize">Sticker Size</string>
+    <string name="StickerSizeInfo">Adjust display size of stickers in chats</string>
+    <string name="GifSize">GIF Size</string>
+    <string name="GifSizeInfo">Adjust maximum display size of GIFs in chats</string>
+    <string name="MediaSizeMinimal">Minimal (50%)</string>
+    <string name="MediaSizeCompact">Compact (75%)</string>
+    <string name="MediaSizeDefault">Default (100%)</string>
+    <string name="MediaSizeLarge">Large (125%)</string>
+    <string name="MediaSizeHuge">Huge (150%)</string>
+
+    <!-- About & What's New -->
+    <string name="HundredGramAboutSection">About 100gram</string>
+    <string name="HundredGramWhatsNew">What\'s New</string>
+    <string name="HundredGramWhatsNewSub">Changelog and update history</string>
+    <string name="HundredGramAuthor">Author</string>
+    <string name="HundredGramAuthorSub">@w1ckeddamn on Telegram</string>
+    <string name="HundredGramGitHub">Source Code</string>
+    <string name="HundredGramGitHubSub">Project repository on GitHub</string>
+    <string name="HundredGramCheckUpdates">Check for Updates</string>
+    <string name="HundredGramCheckUpdatesSub">GitHub Releases page</string>
+
+    <!-- SubSettings additions -->
+    <string name="HundredGramPrivacyDataHiding">Data Hiding</string>
+    <string name="HundredGramPrivacyDataHidingInfo">Masks phone numbers and usernames in settings and profiles (protection against streams and screenshots)</string>
+    <string name="HundredGramHidePhoneNumber">Hide own phone number</string>
+    <string name="HundredGramHidePhoneNumberInfo">Hides your phone number in settings and profile</string>
+    <string name="HundredGramProfileSection">Profile</string>
+    <string name="HundredGramShowIdAndDc">Show ID and DC in profile</string>
+    <string name="HundredGramShowIdAndDcInfo">Shows Telegram ID and datacenter with one-tap copying</string>
+    <string name="HundredGramShowIdDisabled">Disabled</string>
+    <string name="HundredGramShowIdOnly">ID only</string>
+    <string name="HundredGramShowIdAndDcValue">ID and Datacenter</string>
+    <string name="HundredGramBackgroundSyncSection">Background Work &amp; Sync</string>
+    <string name="HundredGramStoriesSection">Stories</string>
+    <string name="HundredGramChatsAndMessagesSection">Chats &amp; Messages</string>
+    <string name="HundredGramRelativeLastSeen">Relative Last Seen</string>
+    <string name="HundredGramRelativeLastSeenInfo">Displays &quot;5 minutes ago&quot; or &quot;2 hours ago&quot; instead of exact timestamp</string>
+    <string name="HundredGramDisableJumpChannel">Disable jump to next channel</string>
+    <string name="HundredGramDisableJumpChannelInfo">Disables bottom swipe gesture in channels to jump to next unread</string>
+    <string name="HundredGramHideKeyboardOnScroll">Hide keyboard on scroll</string>
+    <string name="HundredGramHideKeyboardOnScrollInfo">Automatically collapses keyboard when scrolling message history</string>
+    <string name="HundredGramAddCommaAfterMention">Comma after mention</string>
+    <string name="HundredGramAddCommaAfterMentionInfo">Automatically appends comma after username (@username,)</string>
+    <string name="HundredGramDisableNumberRounding">Exact member &amp; view counts</string>
+    <string name="HundredGramDisableNumberRoundingInfo">Shows exact numbers with commas (e.g. 1,234,567 instead of 1.2M)</string>
+    <string name="HundredGramMainScreenSection">Main Screen</string>
+    <string name="HundredGramHideArchiveFolder">Hide archive folder</string>
+    <string name="HundredGramHideArchiveFolderInfo">Hides the &quot;Archived Chats&quot; item from the main dialog list</string>
+    <string name="HundredGramHideFloatingButton">Hide floating action button (FAB)</string>
+    <string name="HundredGramHideFloatingButtonInfo">Hides the round new chat action button at the bottom</string>
+    <string name="HundredGramCallsAndLinksSection">Calls &amp; Links</string>
+    <string name="DoubleTapHeader">Double Tap</string>
+    <string name="DoubleTapActionIncomingDesc">Action on double-tapping an incoming message</string>
+    <string name="DoubleTapActionOutgoingDesc">Action on double-tapping an outgoing message</string>
+    <string name="MessageMenuSection">Message Menu</string>
+    <string name="ShowSaveMessageButtonInfo">Adds a quick Save to Saved Messages item to message menu</string>
+    <string name="ShowDetailsButtonInfo">Shows detailed message metadata (ID, author, date, media, DC)</string>
+    <string name="ShowCopyPhotoButtonInfo">Allows quickly copying image to clipboard from message menu</string>
+    <string name="ShowEditHistoryButtonInfo">Displays &quot;Edit History&quot; item for edited and deleted messages</string>
+    <string name="HundredGramDeleteSection">Deletion</string>
+    <string name="HundredGramSendAndForwardSection">Sending &amp; Forwarding</string>
+    <string name="HundredGramPhotosSection">Photos</string>
+    <string name="HundredGramVideosSection">Videos</string>
+    <string name="CameraXSettingsHeader">CameraX Settings</string>
+    <string name="CameraXWideAngle">Default to wide-angle lens</string>
+    <string name="CameraXWideAngleInfo">Automatically enables ultrawide camera when opening viewfinder</string>
+    <string name="CameraXZoomSlider">Zoom slider</string>
+    <string name="CameraXZoomSliderInfo">Shows a convenient zoom slider on the camera screen</string>
+    <string name="RoundCameraStartDesc">Choose camera lens to start recording: selfie, back, menu upon tap, or last used</string>
+    <string name="CameraBadgeWideAngle">Wide-angle (0.6x)</string>
+    <string name="CameraEngineChooseInfo">Jetpack CameraX provides advanced zoom capabilities, 60 FPS and wide-angle shooting. Camera2 and Camera1 Legacy for older smartphones.</string>
+    <string name="RoundResolution240">240p (Economy / Low-end devices)</string>
+    <string name="RoundResolution360">360p (Telegram standard)</string>
+    <string name="RoundResolution480">480p (High quality)</string>
+    <string name="NetworkBoostUltraDesc">&quot;Ultra&quot; Mode: 12 parallel MTProto streams, 1 MB chunks (maximum gigabit utilization)</string>
+    <string name="NetworkBoostFastDesc">&quot;Fast&quot; Mode: 8 parallel streams, 512 KB chunks (optimal for 4G/LTE networks)</string>
+    <string name="NetworkBoostStandardDesc">Standard Telegram Mode: 4 parallel streams, 128 KB chunks</string>
+    <string name="NetworkBoostOptimalApplied">Optimal network mode applied: %1$s</string>
+    <string name="NetworkBoostRecUltra">Ultra (12 streams, 1 MB)</string>
+    <string name="NetworkBoostRecFast">Fast (8 streams, 512 KB)</string>
 </resources>

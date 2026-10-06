@@ -96,6 +96,26 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
         });
     }
 
+    public void isolateMediaForMessage(int messageId, long dialogId, File file) {
+        if (file == null || !file.exists() || file.length() == 0 || messageId == 0 || dialogId == 0) {
+            return;
+        }
+        if (!HundredGramConfig.isChatAntiDelete(dialogId)) {
+            return;
+        }
+        Utilities.globalQueue.postRunnable(() -> {
+            String fileName = file.getName();
+            File dest = new File(vaultDir, fileName);
+            if (linkOrCopyFile(file, dest)) {
+                String vaultPath = dest.getAbsolutePath();
+                vaultCache.put(fileName, vaultPath);
+                vaultCache.put(dialogId + "_" + messageId, vaultPath);
+                MessagesStorage.getInstance(currentAccount).putVaultFile(messageId, dialogId, fileName, vaultPath);
+                FileLog.d("HundredGramArchiver: auto-isolated file to Vault: " + vaultPath + " for msg " + messageId);
+            }
+        });
+    }
+
     public void isolateMediaForMessage(MessageObject messageObject) {
         if (messageObject == null || messageObject.messageOwner == null) {
             return;
@@ -128,6 +148,9 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
             // 2. Check getPathToMessage
             if (localFile == null) {
                 File f = FileLoader.getInstance(currentAccount).getPathToMessage(message, true);
+                if (f == null || !f.exists()) {
+                    f = FileLoader.getInstance(currentAccount).getPathToMessage(message, false);
+                }
                 if (f != null && f.exists()) {
                     localFile = f;
                     fileName = f.getName();
@@ -138,6 +161,9 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
             if (localFile == null && messageObject.getDocument() != null) {
                 fileName = FileLoader.getAttachFileName(messageObject.getDocument());
                 File f = FileLoader.getInstance(currentAccount).getPathToAttach(messageObject.getDocument(), true);
+                if (f == null || !f.exists()) {
+                    f = FileLoader.getInstance(currentAccount).getPathToAttach(messageObject.getDocument(), false);
+                }
                 if (f != null && f.exists()) {
                     localFile = f;
                 }
@@ -149,6 +175,9 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                 if (sizeFull != null) {
                     fileName = FileLoader.getAttachFileName(sizeFull, "jpg");
                     File f = FileLoader.getInstance(currentAccount).getPathToAttach(sizeFull, "jpg", true);
+                    if (f == null || !f.exists()) {
+                        f = FileLoader.getInstance(currentAccount).getPathToAttach(sizeFull, "jpg", false);
+                    }
                     if (f != null && f.exists()) {
                         localFile = f;
                     }
@@ -245,12 +274,18 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
             }
             if (localFile == null) {
                 File f = FileLoader.getInstance(currentAccount).getPathToMessage(oldMessage, true);
+                if (f == null || !f.exists()) {
+                    f = FileLoader.getInstance(currentAccount).getPathToMessage(oldMessage, false);
+                }
                 if (f != null && f.exists()) { localFile = f; baseFileName = f.getName(); }
             }
             if (localFile == null && oldMessage.media instanceof TLRPC.TL_messageMediaDocument
                     && oldMessage.media.document != null) {
                 baseFileName = FileLoader.getAttachFileName(oldMessage.media.document);
                 File f = FileLoader.getInstance(currentAccount).getPathToAttach(oldMessage.media.document, true);
+                if (f == null || !f.exists()) {
+                    f = FileLoader.getInstance(currentAccount).getPathToAttach(oldMessage.media.document, false);
+                }
                 if (f != null && f.exists()) localFile = f;
             }
             if (localFile == null && oldMessage.media instanceof TLRPC.TL_messageMediaPhoto
@@ -259,6 +294,9 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                 if (sizeFull != null) {
                     baseFileName = FileLoader.getAttachFileName(sizeFull);
                     File f = FileLoader.getInstance(currentAccount).getPathToAttach(sizeFull, true);
+                    if (f == null || !f.exists()) {
+                        f = FileLoader.getInstance(currentAccount).getPathToAttach(sizeFull, false);
+                    }
                     if (f != null && f.exists()) localFile = f;
                 }
             }
@@ -366,11 +404,15 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
             File file = (File) args[1];
             if (fileName != null && file != null && file.exists() && file.length() > 0) {
                 PendingVaultMedia pending = pendingDownloads.remove(fileName);
+                if (pending == null) {
+                    pending = pendingDownloads.remove(file.getName());
+                }
                 if (pending != null) {
+                    final PendingVaultMedia finalPending = pending;
                     Utilities.globalQueue.postRunnable(() -> {
                         String destFileName;
-                        if (pending.editDate > 0) {
-                            destFileName = "edit_" + pending.messageId + "_" + pending.editDate + "_" + fileName;
+                        if (finalPending.editDate > 0) {
+                            destFileName = "edit_" + finalPending.messageId + "_" + finalPending.editDate + "_" + fileName;
                         } else {
                             destFileName = fileName;
                         }
@@ -378,15 +420,22 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                         if (linkOrCopyFile(file, dest)) {
                             String vaultPath = dest.getAbsolutePath();
                             vaultCache.put(destFileName, vaultPath);
-                            if (pending.editDate > 0) {
-                                String editKey = pending.dialogId + "_" + pending.messageId + "_edit_" + pending.editDate;
+                            if (finalPending.editDate > 0) {
+                                String editKey = finalPending.dialogId + "_" + finalPending.messageId + "_edit_" + finalPending.editDate;
                                 vaultCache.put(editKey, vaultPath);
                             } else {
-                                vaultCache.put(pending.dialogId + "_" + pending.messageId, vaultPath);
+                                vaultCache.put(finalPending.dialogId + "_" + finalPending.messageId, vaultPath);
                             }
-                            MessagesStorage.getInstance(currentAccount).putVaultFile(pending.messageId, pending.dialogId, destFileName, vaultPath);
+                            MessagesStorage.getInstance(currentAccount).putVaultFile(finalPending.messageId, finalPending.dialogId, destFileName, vaultPath);
                         }
                     });
+                } else {
+                    FilePathDatabase.FileMeta fileMeta = FileLoader.getInstance(currentAccount).getFileDatabase().getFileDialogId(file, null);
+                    if (fileMeta != null && fileMeta.dialogId != 0 && fileMeta.messageId != 0) {
+                        if (HundredGramConfig.isChatAntiDelete(fileMeta.dialogId) && HundredGramConfig.canVaultDownload(fileMeta.dialogId)) {
+                            isolateMediaForMessage(fileMeta.messageId, fileMeta.dialogId, file);
+                        }
+                    }
                 }
             }
         }

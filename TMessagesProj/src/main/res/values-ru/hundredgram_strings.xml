@@ -70,10 +70,17 @@
     <string name="HundredGramVaultHeader">Архиватор и сохранение файлов</string>
     <string name="HundredGramBackgroundArchiver">Фоновая синхронизация сообщений</string>
     <string name="HundredGramBackgroundArchiverInfo">Загружает сообщения даже из заглушенных каналов и групп в фоне</string>
+    <string name="HundredGramArchiverMode">Режим работы архиватора</string>
+    <string name="HundredGramArchiverModeNewOnly">Только новые (в реальном времени)</string>
+    <string name="HundredGramArchiverModeNewOnlyInfo">Сохраняются только новые сообщения и медиа, поступившие после включения. История старых чатов не сканируется.</string>
+    <string name="HundredGramArchiverModeFullSync">Полная синхронизация (с историей)</string>
+    <string name="HundredGramArchiverModeFullSyncInfo">Периодически проверяет все диалоги и догружает недавнюю историю сообщений и медиа.</string>
     <string name="HundredGramMediaVault">Превентивная автозагрузка медиа</string>
     <string name="HundredGramMediaVaultInfo">Автоматически скачивает файлы до того, как автор успеет их удалить</string>
     <string name="HundredGramMediaVaultLimit">Максимальный размер файла</string>
+    <string name="HundredGramMediaVaultLimitInfo">Файлы крупнее указанного размера не будут загружаться автоматически</string>
     <string name="HundredGramMediaVaultScope">Где сохранять медиа</string>
+    <string name="HundredGramMediaVaultScopeInfo">Определяет типы диалогов, из которых файлы будут превентивно загружаться</string>
     <string name="HundredGramMediaVaultScopePrivate">Только личные чаты</string>
     <string name="HundredGramMediaVaultScopeGroups">Личные чаты и группы</string>
     <string name="HundredGramMediaVaultScopeAll">Все чаты (включая каналы)</string>
@@ -606,4 +613,117 @@
     <string name="HundredGramVaultTabVoice">Голосовые</string>
     <string name="HundredGramVaultTabFiles">Файлы</string>
     <string name="HundredGramVaultFileSaved">Файл сохранён</string>
+
+    <!-- Unsupported Block -->
+    <string name="UnsupportedBlockTitle">Неподдерживаемый блок</string>
+    <string name="UnsupportedBlockMessage">Обновите Telegram, чтобы просмотреть эту часть сообщения</string>
+    <string name="UnsupportedUpdate">Обновить</string>
+
+    <!-- Deep Scan -->
+    <string name="HundredGramDeepScanMedia">Глубокая синхронизация медиа</string>
+    <string name="HundredGramDeepScanStarted">Глубокий скан запущен (глубина %1$d сообщений)</string>
+    <string name="HundredGramDeepScanFinished">Скан завершён. Найдено и поставлено на загрузку %1$d файлов</string>
+    <string name="HundredGramVaultDeepScanTitle">Глубокое сканирование</string>
+    <string name="HundredGramVaultDeepScanConfirm">Запустить глубокое сканирование всех чатов? Все недостающие медиа будут загружены в фоновом режиме.</string>
+    <string name="HundredGramVaultDeepScanProgress">Сканирование: %1$d из %2$d чатов (%3$d файлов)</string>
+    <string name="HundredGramVaultDeepScanFinished">Сканирование всех чатов завершено. Поставлено файлов: %1$d</string>
+    <string name="HundredGramVaultDeepScanStarted">Глубокое сканирование всех чатов запущено</string>
+    <string name="HundredGramVaultScanPerChat">%1$d сообщений на чат</string>
+    <string name="HundredGramScanDepthSelect">Выберите глубину сканирования</string>
+    <string name="HundredGramScanDepth200">200 сообщений</string>
+    <string name="HundredGramScanDepth500">500 сообщений</string>
+    <string name="HundredGramScanDepth1000">1 000 сообщений</string>
+    <string name="HundredGramScanDepth5000">5 000 сообщений</string>
+    <string name="HundredGramScanDepthAll">Вся история чата (без ограничений)</string>
+    <string name="HundredGramDeepScanStartedAll">Глубокий скан запущен (вся история)</string>
+    <string name="HundredGramVaultArchiveComments">Архивировать комментарии в каналах</string>
+    <string name="HundredGramVaultArchiveCommentsInfo">Автоматически загружать медиа из веток комментариев под постами каналов в Media Vault.</string>
+
+    <!-- Round Video From Gallery -->
+    <string name="HundredGramSendAsRoundVideo">Отправить как видеосообщение</string>
+    <string name="HundredGramRoundVideoHint">Видео будет обрезано в круг 1:1 и отправлено в виде кружка</string>
+    <string name="HundredGramRoundVideoMaxDuration">Видеосообщение не может длиться дольше 60 секунд</string>
+
+    <!-- Sticker & GIF Size Settings -->
+    <string name="StickersAndGifsHeader">Стикеры и GIF</string>
+    <string name="StickerSize">Размер стикеров</string>
+    <string name="StickerSizeInfo">Настройка размера отображения стикеров в чатах</string>
+    <string name="GifSize">Размер GIF</string>
+    <string name="GifSizeInfo">Настройка максимального размера GIF-анимаций в чатах</string>
+    <string name="MediaSizeMinimal">Минимальный (50%)</string>
+    <string name="MediaSizeCompact">Компактный (75%)</string>
+    <string name="MediaSizeDefault">Стандартный (100%)</string>
+    <string name="MediaSizeLarge">Увеличенный (125%)</string>
+    <string name="MediaSizeHuge">Огромный (150%)</string>
+
+    <!-- About & What's New -->
+    <string name="HundredGramAboutSection">О приложении</string>
+    <string name="HundredGramWhatsNew">Что нового</string>
+    <string name="HundredGramWhatsNewSub">Список изменений и история обновлений</string>
+    <string name="HundredGramAuthor">Автор</string>
+    <string name="HundredGramAuthorSub">@w1ckeddamn в Telegram</string>
+    <string name="HundredGramGitHub">Исходный код</string>
+    <string name="HundredGramGitHubSub">Репозиторий проекта на GitHub</string>
+    <string name="HundredGramCheckUpdates">Проверить обновления</string>
+    <string name="HundredGramCheckUpdatesSub">Страница релизов на GitHub</string>
+
+    <!-- SubSettings additions -->
+    <string name="HundredGramPrivacyDataHiding">Скрытие данных</string>
+    <string name="HundredGramPrivacyDataHidingInfo">Маскирует номера телефонов и юзернеймы в настройках и профилях (защита от показа на стримах и скриншотах)</string>
+    <string name="HundredGramHidePhoneNumber">Скрыть свой номер телефона</string>
+    <string name="HundredGramHidePhoneNumberInfo">Маскирует ваш номер телефона в настройках и профиле</string>
+    <string name="HundredGramProfileSection">Профиль</string>
+    <string name="HundredGramShowIdAndDc">Отображение ID и DC в профиле</string>
+    <string name="HundredGramShowIdAndDcInfo">Показывает Telegram ID и датацентр пользователя или канала с возможностью копирования по клику</string>
+    <string name="HundredGramShowIdDisabled">Отключено</string>
+    <string name="HundredGramShowIdOnly">Только ID</string>
+    <string name="HundredGramShowIdAndDcValue">ID и датацентр</string>
+    <string name="HundredGramBackgroundSyncSection">Фоновая работа и синхронизация</string>
+    <string name="HundredGramStoriesSection">Истории (Stories)</string>
+    <string name="HundredGramChatsAndMessagesSection">Чаты и сообщения</string>
+    <string name="HundredGramRelativeLastSeen">Относительное время онлайна</string>
+    <string name="HundredGramRelativeLastSeenInfo">Отображает «5 минут назад» или «2 часа назад» вместо точного времени визита</string>
+    <string name="HundredGramDisableJumpChannel">Не переходить в следующий канал</string>
+    <string name="HundredGramDisableJumpChannelInfo">Отключает свайп внизу истории канала для перехода к следующему непрочитанному каналу</string>
+    <string name="HundredGramHideKeyboardOnScroll">Скрывать клавиатуру при скролле</string>
+    <string name="HundredGramHideKeyboardOnScrollInfo">Автоматически сворачивает клавиатуру при прокрутке истории переписки</string>
+    <string name="HundredGramAddCommaAfterMention">Запятая после упоминания</string>
+    <string name="HundredGramAddCommaAfterMentionInfo">Автоматически подставляет запятую после никнейма (@username,)</string>
+    <string name="HundredGramDisableNumberRounding">Точные числа просмотров и участников</string>
+    <string name="HundredGramDisableNumberRoundingInfo">Показывает точное значение с разделителями (например, 1,234,567 вместо 1.2M)</string>
+    <string name="HundredGramMainScreenSection">Главный экран</string>
+    <string name="HundredGramHideArchiveFolder">Скрыть архив чатов</string>
+    <string name="HundredGramHideArchiveFolderInfo">Скрывает строчку «Архив» из основного списка диалогов</string>
+    <string name="HundredGramHideFloatingButton">Скрыть плавающую кнопку (FAB)</string>
+    <string name="HundredGramHideFloatingButtonInfo">Скрывает круглую кнопку создания нового чата внизу экрана</string>
+    <string name="HundredGramCallsAndLinksSection">Звонки и ссылки</string>
+    <string name="DoubleTapHeader">Двойное нажатие</string>
+    <string name="DoubleTapActionIncomingDesc">Действие при двойном нажатии по входящему сообщению</string>
+    <string name="DoubleTapActionOutgoingDesc">Действие при двойном нажатии по своему исходящему сообщению</string>
+    <string name="MessageMenuSection">Меню сообщения</string>
+    <string name="ShowSaveMessageButtonInfo">Добавляет пункт быстрого сохранения в Избранное в меню сообщения</string>
+    <string name="ShowDetailsButtonInfo">Показывает подробные метаданные сообщения (ID, автор, дата, медиа, DC)</string>
+    <string name="ShowCopyPhotoButtonInfo">Позволяет быстро скопировать изображение в буфер обмена</string>
+    <string name="ShowEditHistoryButtonInfo">Отображает пункт «История изменений» для отредактированных и удалённых сообщений</string>
+    <string name="HundredGramDeleteSection">Удаление</string>
+    <string name="HundredGramSendAndForwardSection">Отправка и пересылка</string>
+    <string name="HundredGramPhotosSection">Фотографии</string>
+    <string name="HundredGramVideosSection">Видео</string>
+    <string name="CameraXSettingsHeader">Настройки CameraX</string>
+    <string name="CameraXWideAngle">Широкоугольный объектив по умолчанию</string>
+    <string name="CameraXWideAngleInfo">Автоматически включает ультраширокоугольный модуль при открытии видоискателя</string>
+    <string name="CameraXZoomSlider">Ползунок зума</string>
+    <string name="CameraXZoomSliderInfo">Отображает удобный слайдер масштабирования</string>
+    <string name="RoundCameraStartDesc">Выбор объектива для начала записи: фронталка, задняя, быстрое меню выбора перед записью или последняя использованная</string>
+    <string name="CameraBadgeWideAngle">Широкоугольная (0.6x)</string>
+    <string name="CameraEngineChooseInfo">Jetpack CameraX обеспечивает расширенные возможности зума, 60 FPS и широкоугольной съемки. Camera2 и Camera1 Legacy для старых смартфонов.</string>
+    <string name="RoundResolution240">240p (Эконом / Слабые устройства)</string>
+    <string name="RoundResolution360">360p (Стандарт Telegram)</string>
+    <string name="RoundResolution480">480p (Высокое качество)</string>
+    <string name="NetworkBoostUltraDesc">Режим «Ультра»: 12 параллельных потоков MTProto, чанки по 1 МБ (максимальная утилизация гигабитного канала)</string>
+    <string name="NetworkBoostFastDesc">Режим «Быстро»: 8 параллельных потоков, чанки по 512 КБ (оптимально для 4G/LTE сетей)</string>
+    <string name="NetworkBoostStandardDesc">Стандартный режим Telegram: 4 параллельных потока, чанки по 128 КБ</string>
+    <string name="NetworkBoostOptimalApplied">Оптимальный режим сети применён: %1$s</string>
+    <string name="NetworkBoostRecUltra">Ультра (12 потоков, 1 МБ)</string>
+    <string name="NetworkBoostRecFast">Быстро (8 потоков, 512 КБ)</string>
 </resources>

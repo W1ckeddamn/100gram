@@ -20,6 +20,7 @@ import android.graphics.Paint;
 import android.graphics.Matrix;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -58,7 +59,21 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.DrawableRes;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
+
+import android.graphics.Xfermode;
+import android.text.style.ReplacementSpan;
+import android.view.animation.OvershootInterpolator;
+
+import me.vkryl.android.util.ClickHelper;
+import org.telegram.messenger.utils.DrawableUtils;
+import org.telegram.messenger.utils.tlutils.TLKeyboardHelper;
+import org.telegram.tgnet.tl.TL_keyboard;
+import org.telegram.ui.Components.ForegroundColorSpanThemable;
+import org.telegram.ui.LinkManager;
 
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.tgnet.TLObject;
@@ -989,6 +1004,10 @@ public class RichMessageLayout {
                 if (child.parentDetails == null) child.parentDetails = header;
             }
             return header;
+        } else if (pageBlock instanceof TL_iv.pageBlockButtonRow) {
+            final RichBlock block = new RichButtonRowBlock(this, padding, maxWidth, (TL_iv.pageBlockButtonRow) pageBlock);
+            blocks.add(block);
+            return block;
         }
 
         if (BuildVars.DEBUG_PRIVATE_VERSION) {
@@ -1596,6 +1615,7 @@ public class RichMessageLayout {
     public static final int TEXT_FLAG_BLOCK_CAPTION  = 10;
     public static final int TEXT_FLAG_BLOCK_QUOTE_CAPTION = 11;
     public static final int TEXT_FLAG_BLOCK_PULLQUOTE = 12;
+    public static final int TEXT_FLAG_BLOCK_BUTTON = 13;
 
     public static final int TEXT_FLAG_BOLD           = 1 << 4;
     public static final int TEXT_FLAG_ITALIC         = 1 << 5;
@@ -1867,6 +1887,13 @@ public class RichMessageLayout {
             entity.date = textDate.date;
             flags |= TEXT_FLAG_URL;
             formatTextAndSetSpan(text.text, out, flags, new StyleSpan(this, flags), new FormattedDateSpan(getString(text), null, entity));
+        } else if (text instanceof TL_iv.textButton) {
+            final TL_iv.textButton textButton = (TL_iv.textButton) text;
+            final int start = out.length();
+            out.append("*");
+            RichButtonSpan span = new RichButtonSpan(this, maxWidth, textButton);
+            span.scale = 1.2f;
+            out.setSpan(span, start, out.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return out;
     }
@@ -1955,6 +1982,7 @@ public class RichMessageLayout {
                 case TEXT_FLAG_BLOCK_HEADING5: return dp(baseSize - 2);
                 case TEXT_FLAG_BLOCK_HEADING6: return dp(baseSize - 3);
 
+                case TEXT_FLAG_BLOCK_BUTTON:
                 case TEXT_FLAG_BLOCK_FOOTER:   return dp(baseSize - 2);
                 case TEXT_FLAG_BLOCK_CODE:     return dp(Math.max(8, baseSize - 2));
                 case TEXT_FLAG_BLOCK_QUOTE:
@@ -2203,6 +2231,15 @@ public class RichMessageLayout {
         private CharacterStyle pressedLink;
         private int pressedLinkStart, pressedLinkEnd;
         private AnimatedEmojiSpan pressedEmoji;
+        private RichButtonSpan pressedButtonSpan;
+
+        private RichButtonSpan[] getButtonSpans() {
+            if (!(layout.getText() instanceof Spanned)) {
+                return null;
+            }
+            final Spanned spanned = (Spanned) layout.getText();
+            return spanned.getSpans(0, spanned.length(), RichButtonSpan.class);
+        }
 
         public boolean onTouchEvent(MotionEvent event) {
             final int act = event.getActionMasked();
@@ -2213,11 +2250,29 @@ public class RichMessageLayout {
                 pressedSpoiler = null;
                 pressedLink = null;
                 pressedEmoji = null;
+                pressedButtonSpan = null;
 
                 for (SpoilerEffect eff : spoilers) {
                     if (eff.getBounds().contains(lx, ly)) {
                         pressedSpoiler = eff;
                         return true;
+                    }
+                }
+
+                final RichButtonSpan[] buttonSpans = getButtonSpans();
+                if (buttonSpans != null) {
+                    for (RichButtonSpan span : buttonSpans) {
+                        if (span.contains(lx, ly, dp(8))) {
+                            if (span.isDisabled()) {
+                                return true;
+                            }
+                            pressedButtonSpan = span;
+                            longPressFired = false;
+                            span.setPressed(true);
+                            if (view != null) view.invalidate();
+                            scheduleLongPress();
+                            return true;
+                        }
                     }
                 }
 
@@ -2307,6 +2362,20 @@ public class RichMessageLayout {
                 return false;
             }
             if (act == MotionEvent.ACTION_UP) {
+                if (pressedButtonSpan != null) {
+                    cancelLongPress();
+                    final RichButtonSpan span = pressedButtonSpan;
+                    pressedButtonSpan = null;
+                    span.setPressed(false);
+                    if (!longPressFired) {
+                        if (view != null) {
+                            view.playSoundEffect(SoundEffectConstants.CLICK);
+                        }
+                        span.didPress(root.getCell(), root.getDelegate(), false);
+                    }
+                    longPressFired = false;
+                    return true;
+                }
                 if (pressedSpoiler != null) {
                     revealSpoilers(lx, ly);
                     pressedSpoiler = null;
@@ -2343,6 +2412,11 @@ public class RichMessageLayout {
             if (act == MotionEvent.ACTION_CANCEL) {
                 pressedSpoiler = null;
                 pressedEmoji = null;
+                if (pressedButtonSpan != null) {
+                    cancelLongPress();
+                    pressedButtonSpan.setPressed(false);
+                    pressedButtonSpan = null;
+                }
                 if (pressedLink != null) {
                     cancelLongPress();
                     if (linkCollector != null) {
@@ -2360,6 +2434,19 @@ public class RichMessageLayout {
             cancelLongPress();
             longPressRunnable = () -> {
                 longPressRunnable = null;
+                if (pressedButtonSpan != null) {
+                    longPressFired = true;
+                    final RichButtonSpan span = pressedButtonSpan;
+                    pressedButtonSpan = null;
+                    span.setPressed(false);
+                    if (view != null) {
+                        try {
+                            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                        } catch (Exception ignore) {}
+                    }
+                    span.didPress(root.getCell(), root.getDelegate(), true);
+                    return;
+                }
                 if (pressedLink == null) return;
                 longPressFired = true;
                 if (view != null) {
@@ -2529,11 +2616,23 @@ public class RichMessageLayout {
                 detach(this.view);
             }
             this.view = view;
+            final RichButtonSpan[] buttonSpans = getButtonSpans();
+            if (buttonSpans != null) {
+                for (RichButtonSpan span : buttonSpans) {
+                    span.attach(view);
+                }
+            }
             onAttachedToWindow();
         }
         public void detach(View view) {
             if (this.view != view) return;
             if (this.view == null) return;
+            final RichButtonSpan[] buttonSpans = getButtonSpans();
+            if (buttonSpans != null) {
+                for (RichButtonSpan span : buttonSpans) {
+                    span.detach(view);
+                }
+            }
             this.view = null;
             onDetachedFromWindow();
         }
@@ -3940,6 +4039,970 @@ public class RichMessageLayout {
         @Override
         protected void onDetachedFromWindow() {
             text.detach(view);
+        }
+    }
+
+    public static TLRPC.KeyboardButton convertPageButton(TL_keyboard.KeyboardButtonProto proto) {
+        if (proto == null) {
+            return null;
+        }
+        TL_keyboard.ButtonTypeProto type = proto.getType();
+        String text = null;
+        if (proto instanceof TL_keyboard.PageButton) {
+            text = getString(((TL_keyboard.PageButton) proto).text);
+        } else if (proto instanceof TL_iv.textButton) {
+            text = getString(((TL_iv.textButton) proto).text);
+        }
+        if (text == null) {
+            text = proto.getText();
+        }
+        if (text == null) {
+            text = "";
+        }
+
+        if (type instanceof TL_keyboard.TL_inlineButtonTypeUrl) {
+            TLRPC.TL_keyboardButtonUrl btn = new TLRPC.TL_keyboardButtonUrl();
+            btn.text = text;
+            btn.url = ((TL_keyboard.TL_inlineButtonTypeUrl) type).url;
+            return btn;
+        } else if (type instanceof TL_keyboard.TL_inlineButtonTypeUrlAuth) {
+            TL_keyboard.TL_inlineButtonTypeUrlAuth auth = (TL_keyboard.TL_inlineButtonTypeUrlAuth) type;
+            TLRPC.TL_keyboardButtonUrlAuth btn = new TLRPC.TL_keyboardButtonUrlAuth();
+            btn.text = text;
+            btn.url = auth.url;
+            btn.fwd_text = auth.fwd_text;
+            btn.button_id = auth.button_id;
+            return btn;
+        } else if (type instanceof TL_keyboard.TL_inlineButtonTypeCallback) {
+            TL_keyboard.TL_inlineButtonTypeCallback cb = (TL_keyboard.TL_inlineButtonTypeCallback) type;
+            TLRPC.TL_keyboardButtonCallback btn = new TLRPC.TL_keyboardButtonCallback();
+            btn.text = text;
+            btn.data = cb.data;
+            btn.requires_password = cb.requires_password;
+            return btn;
+        } else if (type instanceof TL_keyboard.TL_inlineButtonTypeWebView) {
+            TL_keyboard.TL_inlineButtonTypeWebView wv = (TL_keyboard.TL_inlineButtonTypeWebView) type;
+            TLRPC.TL_keyboardButtonWebView btn = new TLRPC.TL_keyboardButtonWebView();
+            btn.text = text;
+            btn.url = wv.url;
+            return btn;
+        } else if (type instanceof TL_keyboard.TL_inlineButtonTypeCopy) {
+            TL_keyboard.TL_inlineButtonTypeCopy cp = (TL_keyboard.TL_inlineButtonTypeCopy) type;
+            TLRPC.TL_keyboardButtonCopy btn = new TLRPC.TL_keyboardButtonCopy();
+            btn.text = text;
+            btn.copy_text = cp.copy_text;
+            return btn;
+        } else if (type instanceof TL_keyboard.TL_inlineButtonTypeBuy) {
+            TLRPC.TL_keyboardButtonBuy btn = new TLRPC.TL_keyboardButtonBuy();
+            btn.text = text;
+            return btn;
+        } else if (type instanceof TL_keyboard.TL_inlineButtonTypeGame) {
+            TLRPC.TL_keyboardButtonGame btn = new TLRPC.TL_keyboardButtonGame();
+            btn.text = text;
+            return btn;
+        } else if (type instanceof TL_keyboard.TL_inlineButtonTypeSwitchInline) {
+            TL_keyboard.TL_inlineButtonTypeSwitchInline sw = (TL_keyboard.TL_inlineButtonTypeSwitchInline) type;
+            TLRPC.TL_keyboardButtonSwitchInline btn = new TLRPC.TL_keyboardButtonSwitchInline();
+            btn.text = text;
+            btn.query = sw.query;
+            btn.same_peer = sw.same_peer;
+            return btn;
+        } else if (type instanceof TL_keyboard.TL_inlineButtonTypeUserProfile) {
+            TL_keyboard.TL_inlineButtonTypeUserProfile up = (TL_keyboard.TL_inlineButtonTypeUserProfile) type;
+            TLRPC.TL_keyboardButtonUserProfile btn = new TLRPC.TL_keyboardButtonUserProfile();
+            btn.text = text;
+            btn.user_id = up.user_id;
+            return btn;
+        }
+        return null;
+    }
+
+    public static class RichButtonRowBlock extends RichBlock {
+        private enum Align {
+            LEFT, RIGHT, CENTER, FILL;
+        }
+
+        private static final int GAP = 7;
+
+        private final RichButton[] buttons;
+        private final Align align;
+        private int layoutWidth = -1;
+
+        public RichButtonRowBlock(RichMessageLayout root, Rect padding, int maxWidth, TL_iv.pageBlockButtonRow pageBlockButtonRow) {
+            super(root, padding, maxWidth);
+            buttons = new RichButton[pageBlockButtonRow.buttons.size()];
+            for (int a = 0, N = pageBlockButtonRow.buttons.size(); a < N; a++) {
+                buttons[a] = new RichButton(root, maxWidth, pageBlockButtonRow.buttons.get(a), this::invalidate);
+            }
+            if (pageBlockButtonRow.align_left) {
+                align = Align.LEFT;
+            } else if (pageBlockButtonRow.align_center) {
+                align = Align.CENTER;
+            } else if (pageBlockButtonRow.align_right) {
+                align = Align.RIGHT;
+            } else {
+                align = Align.FILL;
+            }
+
+            layout(getIntrinsicWidth());
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            updateLayout();
+            for (RichButton button : buttons) {
+                canvas.save();
+                canvas.translate(button.x, Math.round((getHeight() - button.getHeight()) / 2f));
+                button.draw(canvas);
+                canvas.restore();
+            }
+        }
+
+        private int getIntrinsicWidth() {
+            final int count = buttons.length;
+            if (count == 0) {
+                return 0;
+            }
+            int width = dp(GAP) * (count - 1);
+            for (RichButton button : buttons) {
+                width += button.getPreferredWidth();
+            }
+            return Math.min(maxWidth, width);
+        }
+
+        private void updateLayout() {
+            final int bubbleWidth = root.getMinWidth() + root.padLeft + root.padRight;
+            final int width = Math.max(0, bubbleWidth
+                - root.padLeft * 2 - padding.left - padding.right);
+            if (layoutWidth != width) {
+                layout(width);
+            }
+        }
+
+        private void layout(int width) {
+            layoutWidth = width;
+            final int count = buttons.length;
+            if (count == 0) {
+                return;
+            }
+            final int gap = dp(GAP);
+            final int gaps = gap * (count - 1);
+            final int available = Math.max(0, width - gaps);
+
+            int preferred = 0;
+            for (RichButton button : buttons) {
+                button.width = button.getPreferredWidth();
+                preferred += button.width;
+            }
+
+            if (preferred > available) {
+                squeeze(available, preferred);
+            } else if (align == Align.FILL) {
+                stretch(available);
+            }
+
+            int rowWidth = gaps;
+            for (RichButton button : buttons) {
+                rowWidth += button.width;
+            }
+
+            int x;
+            switch (align) {
+                case RIGHT:
+                    x = width - rowWidth;
+                    break;
+                case CENTER:
+                    x = (width - rowWidth) / 2;
+                    break;
+                default:
+                    x = 0;
+                    break;
+            }
+            for (RichButton button : buttons) {
+                button.x = x;
+                x += button.width + gap;
+            }
+        }
+
+        private void stretch(int available) {
+            final boolean[] fixed = new boolean[buttons.length];
+            int flexible = buttons.length;
+            int rest = available;
+            boolean changed = true;
+            while (changed && flexible > 0) {
+                changed = false;
+                final int share = rest / flexible;
+                for (int a = 0; a < buttons.length; a++) {
+                    if (!fixed[a] && buttons[a].width > share) {
+                        fixed[a] = true;
+                        rest -= buttons[a].width;
+                        flexible--;
+                        changed = true;
+                    }
+                }
+            }
+            if (flexible <= 0) {
+                return;
+            }
+            final int share = rest / flexible;
+            int extra = rest - share * flexible;
+            for (int a = 0; a < buttons.length; a++) {
+                if (!fixed[a]) {
+                    buttons[a].width = share + (extra-- > 0 ? 1 : 0);
+                }
+            }
+        }
+
+        private void squeeze(int available, int preferred) {
+            int shrinkable = 0;
+            for (RichButton button : buttons) {
+                shrinkable += button.width - button.getMinWidth();
+            }
+            if (shrinkable <= 0) {
+                for (RichButton button : buttons) {
+                    button.width = button.getMinWidth();
+                }
+                return;
+            }
+            final int total = Math.min(preferred - available, shrinkable);
+            int taken = 0;
+            for (int a = 0; a < buttons.length; a++) {
+                final RichButton button = buttons[a];
+                final int room = button.width - button.getMinWidth();
+                int cut = a == buttons.length - 1 ? total - taken : (int) ((long) total * room / shrinkable);
+                cut = Math.min(cut, room);
+                button.width -= cut;
+                taken += cut;
+            }
+        }
+
+        @Override
+        public int getHeight() {
+            final int buttonHeight = buttons.length == 0 ? dp(18 + root.fontSize) : buttons[0].getHeight();
+            return padding.top + buttonHeight + dp(4.333f) + padding.bottom;
+        }
+
+        @Override
+        public int getMinWidth() {
+            return padding.left + getIntrinsicWidth() + padding.right;
+        }
+
+        private RichButton pressedButton;
+        private RichButton touchButton;
+
+        private RichButton getButtonAt(float x, float y) {
+            updateLayout();
+            final int buttonHeight = buttons.length == 0 ? dp(18 + root.fontSize) : buttons[0].getHeight();
+            final float top = (getHeight() - buttonHeight) / 2f;
+            if (y < top || y > top + buttonHeight) {
+                return null;
+            }
+            for (RichButton button : buttons) {
+                if (button.contains(x)) {
+                    return button;
+                }
+            }
+            return null;
+        }
+
+        private void invalidate() {
+            if (view != null) {
+                view.invalidate();
+            }
+        }
+
+        private void setPressedButton(RichButton button) {
+            if (pressedButton == button) {
+                return;
+            }
+            if (pressedButton != null) {
+                pressedButton.setPressed(false);
+            }
+            pressedButton = button;
+            if (pressedButton != null) {
+                pressedButton.setPressed(true);
+            }
+        }
+
+        private void onButtonClick(RichButton button) {
+            if (root != null && root.delegate != null && button.pageButton != null) {
+                TLRPC.KeyboardButton converted = convertPageButton(button.pageButton);
+                if (converted != null) {
+                    root.delegate.didPressBotButton(root.cell, converted);
+                }
+            }
+        }
+
+        private void onButtonLongClick(RichButton button) {
+            if (root != null && root.delegate != null && button.pageButton != null) {
+                TLRPC.KeyboardButton converted = convertPageButton(button.pageButton);
+                if (converted != null) {
+                    root.delegate.didPressBotButton(root.cell, converted);
+                }
+            }
+        }
+
+        private final ClickHelper clickHelper = new ClickHelper(new ClickHelper.Delegate() {
+            @Override
+            public boolean needClickAt(View view, float x, float y) {
+                final RichButton button = getButtonAt(x, y);
+                touchButton = button != null && !button.isDisabled ? button : null;
+                return touchButton != null;
+            }
+
+            @Override
+            public void onClickTouchDown(View view, float x, float y) {
+                setPressedButton(touchButton);
+            }
+
+            @Override
+            public void onClickTouchMove(View view, float x, float y) {
+                setPressedButton(getButtonAt(x, y) == touchButton ? touchButton : null);
+            }
+
+            @Override
+            public void onClickTouchUp(View view, float x, float y) {
+                setPressedButton(null);
+                touchButton = null;
+            }
+
+            @Override
+            public void onClickAt(View view, float x, float y) {
+                if (touchButton != null) {
+                    onButtonClick(touchButton);
+                }
+            }
+
+            @Override
+            public boolean needLongPress(float x, float y) {
+                return true;
+            }
+
+            @Override
+            public boolean onLongPressRequestedAt(View view, float x, float y) {
+                if (touchButton == null || getButtonAt(x, y) != touchButton) {
+                    return false;
+                }
+                onButtonLongClick(touchButton);
+                return true;
+            }
+        });
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            if (view == null) {
+                return false;
+            }
+            return clickHelper.onTouchEvent(view, event);
+        }
+
+        @Override
+        public boolean isHorizontallyDragging() {
+            return touchButton != null;
+        }
+
+        @Override
+        protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            for (RichButton button : buttons) {
+                button.attach(view);
+            }
+        }
+
+        @Override
+        protected void onDetachedFromWindow() {
+            super.onDetachedFromWindow();
+            for (RichButton button : buttons) {
+                button.detach(view);
+            }
+        }
+    }
+
+    public static class RichButton {
+        private static final Xfermode SRC_OUT = new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT);
+        private static final Paint SRC_OUT_PAINT = new Paint();
+
+        static {
+            SRC_OUT_PAINT.setXfermode(SRC_OUT);
+        }
+
+        public static final int INLINE_PADDING_HORIZONTAL = 7;
+        private static final float PRESS_SCALE = 0.04f;
+        private static final float PRESS_SCALE_INLINE = 0.09f;
+        private static final int PADDING = 20;
+        private static final int PADDING_WITH_ICON = 26;
+        private static final int MIN_PADDING = 8;
+        private static final float ICON_OFFSET_X = 12.33f;
+        private static final float ICON_OFFSET_Y = 11.66f;
+        private static final float ICON_OFFSET_Y_INLINE = 9.33f;
+
+        public final Text text;
+        public final TL_keyboard.InlineButtonType type;
+        public final TL_keyboard.RichButtonStyle style;
+        public final boolean isDisabled;
+
+        @Nullable
+        public final TL_keyboard.PageButton pageButton;
+
+        public int x;
+        public int width;
+
+        private final boolean inline;
+        private final boolean out;
+
+        public final Paint backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final ForegroundColorSpanThemable colorSpan;
+        private boolean needSaveLayer;
+        private Drawable iconDrawable;
+        public int backgroundColor;
+        public int backgroundPressedColor;
+        public int textColor;
+        public int textColorKey;
+        private ColorFilter textColorFilter;
+        private ColorFilter linkColorFilter;
+        private int lastLinkColorFilterColor;
+
+        private final RichMessageLayout layout;
+        private final boolean emojiFirst;
+        private final boolean emojiLast;
+        private final boolean link;
+        public final Runnable invalidateRunnable;
+
+        public boolean pressed;
+        public float pressT;
+        public ValueAnimator pressAnimator;
+
+        public LoadingDrawable loadingDrawable;
+        private boolean loading;
+        private final RectF loadingRect = new RectF();
+        private final RectF textFadeRect = new RectF();
+        private final Theme.IvButtonColors styleKeys;
+        private final int maxWidth;
+
+        public RichButton(RichMessageLayout layout, int maxWidth, TL_keyboard.PageButton button, Runnable invalidateRunnable) {
+            this(layout, maxWidth, layout.formatText(button.text, setBlockFlags(TEXT_FLAG_BOLD, TEXT_FLAG_BLOCK_BUTTON)), button, button.type, button.style, TLKeyboardHelper.isType(button, TL_keyboard.TL_inlineButtonTypeDisabled.class), true, false, false, false, false, null, invalidateRunnable);
+        }
+
+        public RichButton(RichMessageLayout layout, int maxWidth,
+                          CharSequence formattedText,
+                          @Nullable TL_keyboard.PageButton pageButton,
+                          TL_keyboard.InlineButtonType type,
+                          TL_keyboard.RichButtonStyle style,
+                          boolean isDisabled, boolean allowIcon,
+                          boolean emojiFirst,
+                          boolean emojiLast,
+                          boolean link,
+                          boolean inline,
+                          @Nullable Boolean outOverride,
+                          Runnable invalidateRunnable) {
+            this.layout = layout;
+            this.maxWidth = Math.max(1, maxWidth);
+            this.invalidateRunnable = invalidateRunnable;
+            this.pageButton = pageButton;
+            this.type = type;
+            this.style = style;
+            this.isDisabled = isDisabled;
+            this.emojiFirst = emojiFirst;
+            this.emojiLast = emojiLast;
+            this.inline = inline;
+            this.link = link;
+            this.out = outOverride != null ? outOverride : layout.isOut();
+
+            Theme.IvButtonColors styleKeys = Theme.IvButtonColors.of(style);
+            if (styleKeys == Theme.IvButtonColors.DEFAULT && inline) {
+                styleKeys = Theme.IvButtonColors.DEFAULT_IN_TEXT;
+            }
+            this.styleKeys = styleKeys;
+
+            colorSpan = new ForegroundColorSpanThemable(styleKeys.getTextKey(out));
+            colorSpan.setAlpha(isDisabled ? 0.5f : 1f);
+            final SpannableStringBuilder formatted = new SpannableStringBuilder(formattedText);
+            if (link) {
+                formatted.setSpan(new URLSpanNoUnderline(""), 0, formatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            } else {
+                formatted.setSpan(colorSpan, 0, formatted.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            AndroidUtilities.replaceNewLines(formatted);
+            final int oneLineWidth = Math.max(1,
+                (int) Math.ceil(Layout.getDesiredWidth(formatted, layout.textPaint)) + dp(2));
+            text = new Text(layout, formatted, 100_000, Layout.Alignment.ALIGN_CENTER);
+            text.setDrawAtOrigin(true);
+
+            final int iconRes = allowIcon ? getButtonIcon(type) : 0;
+            if (iconRes != 0) {
+                try {
+                    iconDrawable = ApplicationLoader.applicationContext.getResources().getDrawable(iconRes).mutate();
+                } catch (Exception ignore) {}
+            }
+
+            width = getPreferredWidth();
+            updateColors();
+        }
+
+        public void updateColors() {
+            final Theme.ResourcesProvider resourcesProvider = layout.resourcesProvider;
+            final boolean isDark = resourcesProvider != null ? resourcesProvider.isDark() : Theme.isCurrentThemeDark();
+            final boolean isOutInDarkWithGradient;
+
+            if (out && isDark) {
+                final int gradientColor1 = layout.getThemedColor(Theme.key_chat_outBubbleGradient1);
+                final int gradientColor2 = layout.getThemedColor(Theme.key_chat_outBubbleGradient2);
+                final int gradientColor3 = layout.getThemedColor(Theme.key_chat_outBubbleGradient3);
+                isOutInDarkWithGradient = gradientColor1 != 0 || gradientColor2 != 0 || gradientColor3 != 0;
+            } else {
+                isOutInDarkWithGradient = false;
+            }
+
+            Theme.IvButtonColors colors = styleKeys;
+            if (isOutInDarkWithGradient && colors != Theme.IvButtonColors.PRIMARY) {
+                colors = Theme.IvButtonColors.DEFAULT;
+            }
+
+            final int backgroundColorKey = colors.getBackgroundKey(out);
+            final int backgroundPressedColorKey = colors.getBackgroundPressedKey(out);
+            final int textColorKey = colors.getTextKey(out);
+
+            final int textColor = layout.getThemedColor(textColorKey);
+
+            needSaveLayer = false;
+            if (isOutInDarkWithGradient && colors == Theme.IvButtonColors.PRIMARY) {
+                backgroundColor = backgroundPressedColor = layout.getThemedColor(textColorKey);
+                needSaveLayer = true;
+            } else if (Theme.hasThemeKey(backgroundColorKey) || colors == Theme.IvButtonColors.PRIMARY) {
+                backgroundColor = layout.getThemedColor(backgroundColorKey);
+                if (Theme.hasThemeKey(backgroundPressedColorKey)) {
+                    backgroundPressedColor = layout.getThemedColor(backgroundPressedColorKey);
+                } else {
+                    backgroundPressedColor = ColorUtils.blendARGB(backgroundColor, textColor, 0.1f);
+                }
+            } else {
+                backgroundColor = Theme.multAlpha(layout.getThemedColor(textColorKey), colors == Theme.IvButtonColors.DEFAULT ? 0.08f : 0.1f);
+                backgroundPressedColor = Theme.multAlpha(layout.getThemedColor(textColorKey), 0.16f);
+            }
+            setTextColorKey(textColorKey);
+        }
+
+        public void setTextColorKey(int colorKey) {
+            textColorKey = colorKey;
+            int textColorToSet = layout.getThemedColor(colorKey);
+            if (isDisabled) {
+                textColorToSet = Theme.multAlpha(textColorToSet, 0.5f);
+            }
+            if (textColorToSet != textColor || textColorFilter == null) {
+                textColor = textColorToSet;
+                textColorFilter = new PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_IN);
+            }
+            colorSpan.setColorKey(colorKey);
+            invalidateRunnable.run();
+            if (iconDrawable != null) {
+                iconDrawable.setColorFilter(new PorterDuffColorFilter(textColor, PorterDuff.Mode.MULTIPLY));
+            }
+        }
+
+        public int getTextWidth() {
+            return text.right - text.left;
+        }
+
+        public int getHeight() {
+            return inline ? dp(layout.fontSize * 1.166666f) : dp(18 + layout.fontSize);
+        }
+
+        public int getPaddingLeft() {
+            if (link) {
+                return 0;
+            }
+            if (emojiFirst && inline) {
+                return dp(4);
+            }
+            if (inline) {
+                return dp(INLINE_PADDING_HORIZONTAL);
+            }
+            return dp(iconDrawable != null ? PADDING_WITH_ICON : PADDING);
+        }
+
+        public int getPaddingRight() {
+            if (link) {
+                return 0;
+            }
+            if (emojiLast && inline) {
+                return dp(4 + (iconDrawable != null ? 14 : 0));
+            }
+            if (inline) {
+                return dp(INLINE_PADDING_HORIZONTAL + (iconDrawable != null ? 14 : 0));
+            }
+            return dp(iconDrawable != null ? PADDING_WITH_ICON : PADDING);
+        }
+
+        public int getIconReserve() {
+            return iconDrawable != null ? dp(ICON_OFFSET_X) + dp(ICON_OFFSET_Y) / 2 : 0;
+        }
+
+        public float getTextX() {
+            if (inline) {
+                return getPaddingLeft();
+            }
+
+            if (getTextWidth() > getTextAvailableWidth()) {
+                return getTextViewportLeft();
+            }
+
+            if (iconDrawable == null) {
+                return (width - getTextWidth()) / 2f;
+            }
+            float x = (width - getTextWidth()) / 2f;
+            x = Math.min(x, width - getIconReserve() - getTextWidth());
+            return Math.max(x, dp(MIN_PADDING));
+        }
+
+        private int getTextViewportLeft() {
+            return link ? 0 : inline ? getPaddingLeft() : dp(MIN_PADDING);
+        }
+
+        private int getTextViewportRight() {
+            if (link) {
+                return width;
+            }
+            if (inline) {
+                return width - getPaddingRight();
+            }
+            return width - Math.max(dp(MIN_PADDING), getIconReserve());
+        }
+
+        private int getTextAvailableWidth() {
+            return Math.max(1, getTextViewportRight() - getTextViewportLeft());
+        }
+
+        public int getPreferredWidth() {
+            return Math.min(maxWidth, getTextWidth() + getPaddingLeft() + getPaddingRight());
+        }
+
+        public int getMinWidth() {
+            return Math.min(getPreferredWidth(), getHeight() + getIconReserve());
+        }
+
+        public void draw(Canvas canvas) {
+            final float s = getPressScale();
+            canvas.save();
+
+            if (s != 1) {
+                canvas.scale(s, s, width / 2f, getHeight() / 2f);
+            }
+            final boolean drawBackground = !link;
+            final boolean saveLayer = needSaveLayer && drawBackground;
+            if (saveLayer) {
+                canvas.saveLayer(0, 0, width, getHeight(), null);
+            } else {
+                backgroundPaint.setColor(pressed ? backgroundPressedColor : backgroundColor);
+                if (drawBackground) {
+                    canvas.drawRoundRect(0, 0, width, getHeight(), getHeight() / 2f, getHeight() / 2f, backgroundPaint);
+                }
+                drawLoading(canvas);
+            }
+
+            canvas.save();
+            final int textViewportLeft = getTextViewportLeft();
+            final int textViewportRight = getTextViewportRight();
+            final int textAvailableWidth = getTextAvailableWidth();
+            final boolean fadeText = getTextWidth() > textAvailableWidth;
+            if (fadeText) {
+                canvas.saveLayer(textViewportLeft, -dp(10), textViewportRight, getHeight() + dp(10), null);
+            }
+            canvas.clipRect(textViewportLeft, -dp(10), textViewportRight, getHeight() + dp(10));
+            canvas.save();
+
+            final int textBaseLine = (text != null && text.layout != null && text.layout.getLineCount() > 0) ? text.layout.getLineBaseline(0) : -1;
+            if (textBaseLine > 0) {
+                if (inline) {
+                    final int baselineY = getHeight() * 43 / 56;
+                    canvas.translate(getTextX() - text.left, - textBaseLine + baselineY);
+                } else {
+                    final int baselineY = getHeight() * 65 / 102;
+                    canvas.translate(getTextX() - text.left, - textBaseLine + baselineY);
+                }
+            } else {
+                canvas.translate(getTextX() - text.left, (getHeight() - text.getHeight()) / 2f - dp(1));
+            }
+            text.draw(canvas);
+            if (layout.isOverlayActive()) {
+                canvas.translate(0, dp(link ? 0.66f : 2));
+
+                if (link) {
+                    final int linkColor = text.layout.getPaint().linkColor;
+                    if (lastLinkColorFilterColor != linkColor || linkColorFilter == null) {
+                        lastLinkColorFilterColor = linkColor;
+                        linkColorFilter = new PorterDuffColorFilter(linkColor, PorterDuff.Mode.SRC_IN);
+                    }
+                    AnimatedEmojiSpan.drawAnimatedEmojis(canvas, text.layout, text.animatedEmojiStack, 0, text.spoilers, 0, 0, 0, 1, linkColorFilter);
+                } else {
+                    AnimatedEmojiSpan.drawAnimatedEmojis(canvas, text.layout, text.animatedEmojiStack, 0, text.spoilers, 0, 0, 0, 1, textColorFilter);
+                }
+            }
+
+            canvas.restore();
+            if (fadeText) {
+                textFadeRect.set(textViewportRight - dp(8), 0, textViewportRight, getHeight());
+                layout.clip.draw(canvas, textFadeRect, GradientClip.RIGHT, 1.0f);
+                canvas.restore();
+            }
+            canvas.restore();
+            if (iconDrawable != null) {
+                DrawableUtils.setBounds(iconDrawable, width - dp(ICON_OFFSET_X), dp(inline ? ICON_OFFSET_Y_INLINE : ICON_OFFSET_Y), Gravity.CENTER);
+                iconDrawable.draw(canvas);
+            }
+            if (saveLayer) {
+                SRC_OUT_PAINT.setColor(pressed ? backgroundPressedColor : backgroundColor);
+                canvas.drawRoundRect(0, 0, width, getHeight(), getHeight() / 2f, getHeight() / 2f, SRC_OUT_PAINT);
+                canvas.restore();
+                drawLoading(canvas);
+            }
+            canvas.restore();
+        }
+
+        private void drawLoading(Canvas canvas) {
+            boolean drawProgress = false;
+            if (pageButton != null && layout.cell != null) {
+                TLRPC.KeyboardButton converted = convertPageButton(pageButton);
+                if (converted instanceof TLRPC.TL_keyboardButtonCallback || converted instanceof TLRPC.TL_keyboardButtonGame || converted instanceof TLRPC.TL_keyboardButtonBuy || converted instanceof TLRPC.TL_keyboardButtonUrlAuth) {
+                    drawProgress = SendMessagesHelper.getInstance(layout.currentAccount).isSendingCallback(layout.cell.getMessageObject(), converted);
+                }
+            }
+            setLoading(drawProgress);
+            if (loadingDrawable != null && (drawProgress || loadingDrawable.isDisappearing())) {
+                final float sw = loadingDrawable.strokePaint.getStrokeWidth();
+                loadingRect.set(0, 0, width, getHeight());
+                loadingRect.inset(sw / 2f, sw / 2f);
+                loadingDrawable.setRadii(getHeight() / 2f - sw / 2f);
+                loadingDrawable.setBounds(loadingRect);
+                loadingDrawable.setColors(
+                        Theme.multAlpha(textColor, 0.07f),
+                        Theme.multAlpha(textColor, 0.175f),
+                        Theme.multAlpha(textColor, 0.175f),
+                        Theme.multAlpha(textColor, 0.42f)
+                );
+                loadingDrawable.setAlpha(0xFF);
+                loadingDrawable.draw(canvas);
+                invalidateRunnable.run();
+            }
+        }
+
+        public void setLoading(boolean loading) {
+            if (this.loading == loading) {
+                return;
+            }
+            this.loading = loading;
+            if (loading) {
+                if (loadingDrawable == null) {
+                    loadingDrawable = new LoadingDrawable();
+                    loadingDrawable.setAppearByGradient(true);
+                    loadingDrawable.strokePaint.setStrokeWidth(AndroidUtilities.dpf2(1.25f));
+                } else {
+                    loadingDrawable.reset();
+                    loadingDrawable.resetDisappear();
+                }
+            } else if (loadingDrawable != null) {
+                loadingDrawable.disappear();
+            }
+            invalidateRunnable.run();
+        }
+
+        public boolean isLoading() {
+            return loading;
+        }
+
+        public void setPressed(boolean pressed) {
+            if (this.pressed == pressed) {
+                return;
+            }
+            this.pressed = pressed;
+            invalidateRunnable.run();
+            if (pressed) {
+                if (pressAnimator != null) {
+                    pressAnimator.removeAllListeners();
+                    pressAnimator.cancel();
+                    pressAnimator = null;
+                }
+            } else if (pressT != 0) {
+                pressAnimator = ValueAnimator.ofFloat(pressT, 0);
+                pressAnimator.addUpdateListener(animation -> {
+                    pressT = (float) animation.getAnimatedValue();
+                    invalidateRunnable.run();
+                });
+                pressAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        pressAnimator = null;
+                    }
+                });
+                pressAnimator.setInterpolator(new OvershootInterpolator(inline ? 3.5f : 2.0f));
+                pressAnimator.setDuration(inline ? 420 : 350);
+                pressAnimator.start();
+            }
+        }
+
+        public float getPressScale() {
+            if (pressed && pressT != 1f) {
+                pressT += (float) Math.min(40, 1000f / AndroidUtilities.screenRefreshRate) / 100f;
+                pressT = Utilities.clamp(pressT, 1f, 0);
+                invalidateRunnable.run();
+            }
+            final float depth = inline ? PRESS_SCALE_INLINE : PRESS_SCALE;
+            return 1f - depth + depth * (1f - pressT);
+        }
+
+        public boolean contains(float x) {
+            return x >= this.x && x <= this.x + width;
+        }
+
+        public void attach(View view) {
+            text.attach(view);
+        }
+
+        public void detach(View view) {
+            text.detach(view);
+        }
+
+        @DrawableRes
+        private static int getButtonIcon(TL_keyboard.InlineButtonType type) {
+            if (type instanceof TL_keyboard.TL_inlineButtonTypeCopy) {
+                return R.drawable.mini_inline_copy_16;
+            } else if (type instanceof TL_keyboard.TL_inlineButtonTypeUrlAuth) {
+                return R.drawable.mini_inline_arrow_16;
+            } else if (type instanceof TL_keyboard.TL_inlineButtonTypeUrl) {
+                final String url = ((TL_keyboard.TL_inlineButtonTypeUrl) type).url;
+                if (LinkManager.isWebAppLink(url)) {
+                    return R.drawable.bot_webview;
+                } else {
+                    return R.drawable.mini_inline_arrow_16;
+                }
+            } else if (type instanceof TL_keyboard.TL_inlineButtonTypeWebView) {
+                return R.drawable.bot_webview;
+            } else if (type instanceof TL_keyboard.TL_inlineButtonTypeSwitchInline) {
+                return R.drawable.mini_inline_switch_16;
+            } else if (type instanceof TL_keyboard.TL_inlineButtonTypeBuy) {
+                return R.drawable.bot_card;
+            } else if (type instanceof TL_keyboard.TL_inlineButtonTypeUserProfile) {
+                return R.drawable.mini_inline_profile_16;
+            }
+            return 0;
+        }
+    }
+
+    public static class RichButtonSpan extends ReplacementSpan {
+        private static final int MARGIN_HORIZONTAL = 1;
+
+        private final RichButton button;
+        private final TL_iv.textButton textButton;
+        private final RectF bounds = new RectF();
+
+        public RichButtonSpan(RichMessageLayout layout, int maxWidth, TL_iv.textButton textButton) {
+            this(layout, maxWidth, textButton, null);
+        }
+
+        private RichButtonSpan(RichMessageLayout layout, int maxWidth, TL_iv.textButton textButton,
+                               @Nullable Boolean outOverride) {
+            this.textButton = textButton;
+
+            boolean emojiFirst = false;
+            boolean emojiLast = false;
+            if (textButton.text instanceof TL_iv.textConcat) {
+                TL_iv.textConcat textConcat = (TL_iv.textConcat) textButton.text;
+                if (!textConcat.texts.isEmpty()) {
+                    emojiFirst = textConcat.texts.get(0) instanceof TL_iv.textCustomEmoji;
+                    emojiLast = textConcat.texts.get(textConcat.texts.size() - 1) instanceof TL_iv.textCustomEmoji;
+                }
+            }
+
+            final boolean isLink = textButton.style != null && textButton.style.link;
+            final int flags = isLink ?
+                    setBlockFlags(TEXT_FLAG_URL, 0) :
+                    setBlockFlags(TEXT_FLAG_BOLD, TEXT_FLAG_BLOCK_BUTTON);
+
+            button = new RichButton(
+                    layout,
+                    maxWidth,
+                    layout.formatText(textButton.text, flags),
+                    null,
+                    textButton.type,
+                    textButton.style,
+                    textButton.type instanceof TL_keyboard.TL_inlineButtonTypeDisabled,
+                    true,
+                    emojiFirst,
+                    emojiLast,
+                    isLink,
+                    true,
+                    outOverride,
+                    this::invalidate
+            );
+            button.width = button.getPreferredWidth();
+        }
+
+        private void invalidate() {
+            if (v != null) {
+                v.invalidate();
+            }
+        }
+
+        public RichButton getButton() {
+            return button;
+        }
+
+        public float scale = 1.0f;
+
+        @Override
+        public int getSize(@NonNull Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
+            return button.width + (button.link ? 0 : (dp(MARGIN_HORIZONTAL) * 2));
+        }
+
+        @Override
+        public void draw(@NonNull Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, @NonNull Paint paint) {
+            final Paint.FontMetricsInt fm = paint.getFontMetricsInt();
+            float center = y + (fm.ascent + fm.descent) / 2f;
+            canvas.save();
+            final int pillLeft = Math.round(x + (button.link ? 0 : dp(MARGIN_HORIZONTAL)));
+            final int pillTop = (int) Math.ceil(center - button.getHeight() / 2f + 1);
+            bounds.set(pillLeft, pillTop, pillLeft + button.width, pillTop + button.getHeight());
+            canvas.translate(pillLeft, pillTop);
+            button.draw(canvas);
+            canvas.restore();
+        }
+
+        public boolean isDisabled() {
+            return button.isDisabled;
+        }
+
+        public boolean contains(float x, float y) {
+            return bounds.contains(x, y);
+        }
+
+        public boolean contains(float x, float y, float padding) {
+            return x >= bounds.left - padding && x < bounds.right + padding
+                && y >= bounds.top - padding && y < bounds.bottom + padding;
+        }
+
+        public void setPressed(boolean pressed) {
+            button.setPressed(pressed);
+        }
+
+        public void didPress(ChatMessageCell cell, ChatMessageCell.ChatMessageCellDelegate delegate, boolean longPress) {
+            if (cell == null || delegate == null || textButton == null) {
+                return;
+            }
+            TLRPC.KeyboardButton converted = convertPageButton(textButton);
+            if (converted != null) {
+                delegate.didPressBotButton(cell, converted);
+            }
+        }
+
+        private View v;
+        public void attach(View view) {
+            v = view;
+            button.attach(view);
+        }
+
+        public void detach(View view) {
+            v = null;
+            button.detach(view);
         }
     }
 

@@ -77,6 +77,7 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
 
     private static final int ITEM_SEARCH = 1;
     private static final int ITEM_FILTER = 2;
+    private static final int ITEM_SCAN = 3;
 
     public static class VaultItem {
         public int mid;
@@ -194,6 +195,8 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
                     finishFragment();
                 } else if (id == ITEM_FILTER) {
                     showChatFilterDialog();
+                } else if (id == ITEM_SCAN) {
+                    showDeepScanDialog();
                 }
             }
         });
@@ -216,6 +219,9 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
                 filterAll();
             }
         });
+
+        ActionBarMenuItem scanItem = menu.addItem(ITEM_SCAN, R.drawable.msg_retry);
+        scanItem.setContentDescription(LocaleController.getString("HundredGramVaultDeepScanTitle", R.string.HundredGramVaultDeepScanTitle));
 
         ActionBarMenuItem filterItem = menu.addItem(ITEM_FILTER, R.drawable.msg_openprofile);
         filterItem.setContentDescription(LocaleController.getString("HundredGramVaultFilterByChat", R.string.HundredGramVaultFilterByChat));
@@ -707,6 +713,74 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
         });
 
         showDialog(builder.create());
+    }
+
+    private void showDeepScanDialog() {
+        if (getParentActivity() == null) return;
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramVaultDeepScanTitle", R.string.HundredGramVaultDeepScanTitle));
+        CharSequence[] options = new CharSequence[] {
+            LocaleController.formatString("HundredGramVaultScanPerChat", R.string.HundredGramVaultScanPerChat, 500),
+            LocaleController.formatString("HundredGramVaultScanPerChat", R.string.HundredGramVaultScanPerChat, 1000),
+            LocaleController.formatString("HundredGramVaultScanPerChat", R.string.HundredGramVaultScanPerChat, 5000),
+            LocaleController.getString("HundredGramScanDepthAll", R.string.HundredGramScanDepthAll)
+        };
+        int[] limits = new int[] { 500, 1000, 5000, 0 };
+        builder.setItems(options, (dialog, which) -> {
+            startGlobalDeepScan(limits[which]);
+        });
+        builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void startGlobalDeepScan(int limitPerChat) {
+        if (getParentActivity() == null) return;
+        final AlertDialog[] progressDialog = new AlertDialog[1];
+        try {
+            progressDialog[0] = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_LOADING);
+            progressDialog[0].setMessage(LocaleController.getString("HundredGramVaultDeepScanStarted", R.string.HundredGramVaultDeepScanStarted));
+            progressDialog[0].setCanceledOnTouchOutside(false);
+            progressDialog[0].setCancelable(true);
+            showDialog(progressDialog[0]);
+        } catch (Throwable e) {
+            FileLog.e(e);
+        }
+
+        BulletinFactory.of(this).createSimpleBulletin(
+            R.drawable.msg_download,
+            LocaleController.getString("HundredGramVaultDeepScanStarted", R.string.HundredGramVaultDeepScanStarted)
+        ).show();
+
+        org.telegram.messenger.HundredGramBackgroundArchiver.getInstance(currentAccount).forceDeepScanAll(limitPerChat, progress -> {
+            if (progress == null) {
+                return;
+            }
+            if (progress.completed) {
+                if (progressDialog[0] != null) {
+                    try {
+                        progressDialog[0].dismiss();
+                    } catch (Throwable ignore) {}
+                    progressDialog[0] = null;
+                }
+                if (getParentActivity() != null) {
+                    BulletinFactory.of(HundredGramVaultViewerActivity.this).createSimpleBulletin(
+                        R.drawable.msg_download,
+                        LocaleController.formatString("HundredGramVaultDeepScanFinished", R.string.HundredGramVaultDeepScanFinished, progress.mediaEnqueued)
+                    ).show();
+                    loadData();
+                }
+            } else {
+                if (progressDialog[0] != null && progressDialog[0].isShowing()) {
+                    progressDialog[0].setMessage(LocaleController.formatString(
+                        "HundredGramVaultDeepScanProgress",
+                        R.string.HundredGramVaultDeepScanProgress,
+                        progress.currentChat,
+                        progress.totalChats,
+                        progress.mediaEnqueued
+                    ));
+                }
+            }
+        });
     }
 
     private class PageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

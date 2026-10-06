@@ -73,7 +73,6 @@ public class HundredGramConfig {
     public static boolean hideSimilarChannels = true;
     public static boolean hideStoriesBar;
     public static boolean showSecondsInTime;
-    public static boolean confirmLeaveChat = true;
     public static boolean avatarHistoryEnabled = true;
     public static boolean developerModeEnabled = true;
     public static boolean copyCodeButtonEnabled = true;
@@ -116,15 +115,20 @@ public class HundredGramConfig {
     public static boolean cameraRoundSensor16to9 = true; // 16:9 vs 4:3 sensor for legacy devices
 
     // Media Vault & Archiver
+    public static final int ARCHIVER_MODE_NEW_ONLY = 0; // Только новые сообщения (в реальном времени после включения)
+    public static final int ARCHIVER_MODE_FULL_SYNC = 1; // Полная синхронизация (с недавней историей всех чатов)
+    public static int backgroundArchiverMode = ARCHIVER_MODE_NEW_ONLY;
+    public static long backgroundArchiverActivationTime;
     public static boolean backgroundArchiverEnabled;
     public static boolean autoDownloadMediaVault;
-    public static int autoDownloadMaxSizeMb;
+    public static int autoDownloadMaxSizeMb = 20;
     public static int autoDownloadChatsScope; // 0 = private chats, 1 = private & groups, 2 = all including channels
     public static boolean autoDownloadOnlyWifi;
     public static boolean vaultIncludeArchivedChats;
     public static int vaultTtlDays; // 0 = Keep forever, 7, 30, 60, 90
     public static int vaultMaxSizeGb; // 0 = Unlimited, 2, 5, 10, 20
     public static final Set<Long> vaultProtectedDialogs = Collections.synchronizedSet(new HashSet<>());
+    public static boolean vaultArchiveChannelComments;
 
     // Activity Logger & Online Tracker
     public static boolean trackOnlineStatus;
@@ -197,6 +201,16 @@ public class HundredGramConfig {
     public static boolean confirmSendStickers;
     public static boolean confirmSendGifs;
     public static boolean alwaysForwardWithoutAuthor;
+
+    // Sticker & GIF sizes
+    public static final int MEDIA_SIZE_MINIMAL = 0;   // 50%
+    public static final int MEDIA_SIZE_COMPACT = 1;   // 75%
+    public static final int MEDIA_SIZE_DEFAULT = 2;   // 100%
+    public static final int MEDIA_SIZE_LARGE = 3;     // 125%
+    public static final int MEDIA_SIZE_HUGE = 4;      // 150%
+
+    public static int stickerSize = MEDIA_SIZE_DEFAULT;
+    public static int gifSize = MEDIA_SIZE_DEFAULT;
 
     // Keep-Alive Service
     public static boolean keepAliveForegroundService = true;
@@ -290,14 +304,21 @@ public class HundredGramConfig {
             SharedConfig.roundCamera16to9 = cameraRoundSensor16to9;
 
             // Media Vault & Archiver
-            backgroundArchiverEnabled = preferences.getBoolean("backgroundArchiverEnabled", true);
-            autoDownloadMediaVault = preferences.getBoolean("autoDownloadMediaVault", true);
+            backgroundArchiverEnabled = preferences.getBoolean("backgroundArchiverEnabled", false);
+            backgroundArchiverMode = preferences.getInt("backgroundArchiverMode", ARCHIVER_MODE_NEW_ONLY);
+            backgroundArchiverActivationTime = preferences.getLong("backgroundArchiverActivationTime", 0L);
+            if (backgroundArchiverEnabled && backgroundArchiverActivationTime == 0L) {
+                backgroundArchiverActivationTime = System.currentTimeMillis() / 1000L;
+                saveLong("backgroundArchiverActivationTime", backgroundArchiverActivationTime);
+            }
+            autoDownloadMediaVault = preferences.getBoolean("autoDownloadMediaVault", false);
             autoDownloadMaxSizeMb = preferences.getInt("autoDownloadMaxSizeMb", 20);
-            autoDownloadChatsScope = preferences.getInt("autoDownloadChatsScope", 2);
+            autoDownloadChatsScope = preferences.getInt("autoDownloadChatsScope", 0);
             autoDownloadOnlyWifi = preferences.getBoolean("autoDownloadOnlyWifi", false);
-            vaultIncludeArchivedChats = preferences.getBoolean("vaultIncludeArchivedChats", true);
+            vaultIncludeArchivedChats = preferences.getBoolean("vaultIncludeArchivedChats", false);
             vaultTtlDays = preferences.getInt("vaultTtlDays", 0);
             vaultMaxSizeGb = preferences.getInt("vaultMaxSizeGb", 0);
+            vaultArchiveChannelComments = preferences.getBoolean("vaultArchiveChannelComments", false);
             String protectedStr = preferences.getString("vaultProtectedDialogs", "");
             vaultProtectedDialogs.clear();
             if (!TextUtils.isEmpty(protectedStr)) {
@@ -357,6 +378,8 @@ public class HundredGramConfig {
             silentSendByDefault = preferences.getBoolean("silentSendByDefault", false);
             confirmSendStickers = preferences.getBoolean("confirmSendStickers", false);
             confirmSendGifs = preferences.getBoolean("confirmSendGifs", false);
+            stickerSize = preferences.getInt("stickerSize", MEDIA_SIZE_DEFAULT);
+            gifSize = preferences.getInt("gifSize", MEDIA_SIZE_DEFAULT);
             alwaysForwardWithoutAuthor = preferences.getBoolean("alwaysForwardWithoutAuthor", false);
             keepAliveForegroundService = preferences.getBoolean("keepAliveForegroundService", true);
             unlockChatTranslation = preferences.getBoolean("unlockChatTranslation", true);
@@ -379,7 +402,6 @@ public class HundredGramConfig {
             hideSimilarChannels = preferences.getBoolean("hideSimilarChannels", true);
             hideStoriesBar = preferences.getBoolean("hideStoriesBar", false);
             showSecondsInTime = preferences.getBoolean("showSecondsInTime", false);
-            confirmLeaveChat = preferences.getBoolean("confirmLeaveChat", true);
             avatarHistoryEnabled = preferences.getBoolean("avatarHistoryEnabled", true);
             developerModeEnabled = preferences.getBoolean("developerModeEnabled", true);
             copyCodeButtonEnabled = preferences.getBoolean("copyCodeButtonEnabled", true);
@@ -823,11 +845,43 @@ public class HundredGramConfig {
 
     public static void toggleBackgroundArchiverEnabled() {
         backgroundArchiverEnabled = !backgroundArchiverEnabled;
-        save("backgroundArchiverEnabled", backgroundArchiverEnabled);
         if (backgroundArchiverEnabled) {
-            try {
-                HundredGramBackgroundArchiver.getInstance(UserConfig.selectedAccount).triggerSync(true);
-            } catch (Throwable ignored) {}
+            backgroundArchiverActivationTime = System.currentTimeMillis() / 1000L;
+            saveLong("backgroundArchiverActivationTime", backgroundArchiverActivationTime);
+        }
+        save("backgroundArchiverEnabled", backgroundArchiverEnabled);
+        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            if (UserConfig.getInstance(a).isClientActivated()) {
+                try {
+                    if (backgroundArchiverEnabled) {
+                        HundredGramBackgroundArchiver.getInstance(a).start();
+                        if (backgroundArchiverMode == ARCHIVER_MODE_FULL_SYNC) {
+                            HundredGramBackgroundArchiver.getInstance(a).triggerSync(true);
+                        }
+                    } else {
+                        HundredGramBackgroundArchiver.getInstance(a).stop();
+                    }
+                } catch (Throwable ignored) {}
+            }
+        }
+    }
+
+    public static void setBackgroundArchiverMode(int mode) {
+        if (backgroundArchiverMode != mode) {
+            backgroundArchiverMode = mode;
+            saveInt("backgroundArchiverMode", backgroundArchiverMode);
+            if (backgroundArchiverEnabled) {
+                if (backgroundArchiverMode == ARCHIVER_MODE_FULL_SYNC) {
+                    for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                        if (UserConfig.getInstance(a).isClientActivated()) {
+                            HundredGramBackgroundArchiver.getInstance(a).triggerSync(true);
+                        }
+                    }
+                } else if (backgroundArchiverMode == ARCHIVER_MODE_NEW_ONLY) {
+                    backgroundArchiverActivationTime = System.currentTimeMillis() / 1000L;
+                    saveLong("backgroundArchiverActivationTime", backgroundArchiverActivationTime);
+                }
+            }
         }
     }
 
@@ -854,6 +908,11 @@ public class HundredGramConfig {
     public static void toggleVaultIncludeArchivedChats() {
         vaultIncludeArchivedChats = !vaultIncludeArchivedChats;
         save("vaultIncludeArchivedChats", vaultIncludeArchivedChats);
+    }
+
+    public static void toggleVaultArchiveChannelComments() {
+        vaultArchiveChannelComments = !vaultArchiveChannelComments;
+        save("vaultArchiveChannelComments", vaultArchiveChannelComments);
     }
 
     public static void setVaultTtlDays(int days) {
@@ -1006,6 +1065,15 @@ public class HundredGramConfig {
             ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
                     .edit()
                     .putString(key, val)
+                    .apply();
+        }
+    }
+
+    private static void saveLong(String key, long val) {
+        if (ApplicationLoader.applicationContext != null) {
+            ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
+                    .edit()
+                    .putLong(key, val)
                     .apply();
         }
     }
@@ -1286,11 +1354,6 @@ public class HundredGramConfig {
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 
-    public static void toggleConfirmLeaveChat() {
-        confirmLeaveChat = !confirmLeaveChat;
-        save("confirmLeaveChat", confirmLeaveChat);
-    }
-
     public static void toggleAvatarHistoryEnabled() {
         avatarHistoryEnabled = !avatarHistoryEnabled;
         save("avatarHistoryEnabled", avatarHistoryEnabled);
@@ -1484,7 +1547,7 @@ public class HundredGramConfig {
         int mode = getChatVaultMode(dialogId);
         if (mode == VAULT_MODE_NEVER) return false;
         if (mode == VAULT_MODE_ALWAYS) return true;
-        if (!autoDownloadMediaVault) return false;
+        if (!autoDownloadMediaVault && !backgroundArchiverEnabled) return false;
         if (autoDownloadOnlyWifi && ApplicationLoader.getAutodownloadNetworkType() != StatsController.TYPE_WIFI) {
             return false;
         }
@@ -1494,15 +1557,17 @@ public class HundredGramConfig {
             try {
                 d = MessagesController.getInstance(UserConfig.selectedAccount).dialogs_dict.get(dialogId);
             } catch (Throwable ignored) {}
-            if (d != null && d.folder_id == 1) {
-                return vaultIncludeArchivedChats;
+            if (d != null && d.folder_id == 1 && vaultIncludeArchivedChats) {
+                return true;
             }
-            int scope = autoDownloadChatsScope;
-            if (scope == 1) {
+            if (autoDownloadChatsScope == 2) {
+                return true;
+            }
+            if (autoDownloadChatsScope == 1) {
                 TLRPC.Chat chat = MessagesController.getInstance(UserConfig.selectedAccount).getChat(-dialogId);
                 return chat == null || !ChatObject.isChannelAndNotMegaGroup(chat);
             }
-            return scope == 2;
+            return false;
         }
         return false;
     }
@@ -1525,7 +1590,7 @@ public class HundredGramConfig {
         }
 
         if (mode == VAULT_MODE_DEFAULT) {
-            if (!autoDownloadMediaVault) {
+            if (!autoDownloadMediaVault && !backgroundArchiverEnabled) {
                 return false;
             }
             if (!vaultIncludeArchivedChats) {
@@ -1731,5 +1796,47 @@ public class HundredGramConfig {
             return currentStoryGhostSession;
         }
         return false;
+    }
+
+    public static float getStickerScale() {
+        switch (stickerSize) {
+            case MEDIA_SIZE_MINIMAL:
+                return 0.50f;
+            case MEDIA_SIZE_COMPACT:
+                return 0.75f;
+            case MEDIA_SIZE_LARGE:
+                return 1.25f;
+            case MEDIA_SIZE_HUGE:
+                return 1.50f;
+            case MEDIA_SIZE_DEFAULT:
+            default:
+                return 1.0f;
+        }
+    }
+
+    public static float getGifScale() {
+        switch (gifSize) {
+            case MEDIA_SIZE_MINIMAL:
+                return 0.50f;
+            case MEDIA_SIZE_COMPACT:
+                return 0.75f;
+            case MEDIA_SIZE_LARGE:
+                return 1.25f;
+            case MEDIA_SIZE_HUGE:
+                return 1.50f;
+            case MEDIA_SIZE_DEFAULT:
+            default:
+                return 1.0f;
+        }
+    }
+
+    public static void setStickerSize(int size) {
+        stickerSize = size;
+        saveInt("stickerSize", stickerSize);
+    }
+
+    public static void setGifSize(int size) {
+        gifSize = size;
+        saveInt("gifSize", gifSize);
     }
 }

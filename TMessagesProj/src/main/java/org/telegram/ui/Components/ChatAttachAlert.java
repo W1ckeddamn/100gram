@@ -112,6 +112,7 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.VideoEditedInfo;
 import org.telegram.messenger.utils.EphemeralMessagesHelper;
 import org.telegram.messenger.utils.FBool;
@@ -3976,6 +3977,90 @@ public class ChatAttachAlert extends BottomSheet implements NotificationCenter.N
                         shownDialog = sendPressed(false, 0, 0, effectId, isCaptionAbove());
                     } else {
                         if (!currentAttachLayout.sendSelectedItems(false, 0, 0, effectId, isCaptionAbove())) {
+                            dismiss();
+                        }
+                    }
+                    if (messageSendPreview != null) {
+                        messageSendPreview.dismiss(!shownDialog);
+                        messageSendPreview = null;
+                    }
+                });
+            }
+            boolean hasVideo = false;
+            if (photoLayout != null && photoLayout.getSelectedPhotos() != null) {
+                for (Object obj : photoLayout.getSelectedPhotos().values()) {
+                    if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
+                        hasVideo = true;
+                        break;
+                    }
+                }
+            }
+            final boolean canSendRound = chatActivity == null || chatActivity.getCurrentChat() == null || ChatObject.canSendRoundVideo(chatActivity.getCurrentChat());
+            if (editingMessageObject == null && (currentAttachLayout == photoLayout || currentAttachLayout == photoPreviewLayout) && hasVideo && canSendRound) {
+                options.add(R.drawable.photo_circle, getString(R.string.HundredGramSendAsRoundVideo), () -> {
+                    if (photoLayout != null && photoLayout.getSelectedPhotos() != null) {
+                        for (Object obj : photoLayout.getSelectedPhotos().values()) {
+                            if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
+                                MediaController.PhotoEntry pe = (MediaController.PhotoEntry) obj;
+                                pe.isRound = true;
+                                if (pe.editedInfo == null) {
+                                    VideoEditedInfo info = new VideoEditedInfo();
+                                    info.roundVideo = true;
+                                    info.fromCamera = false;
+                                    int roundRes = Math.min(480, HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : 360);
+                                    info.resultWidth = roundRes;
+                                    info.resultHeight = roundRes;
+                                    info.framerate = (HundredGramConfig.cameraRoundFps == 60) ? 60 : 30;
+                                    info.bitrate = HundredGramConfig.cameraRoundBitrate > 0 ? (HundredGramConfig.cameraRoundBitrate * 1024) : 1000000;
+                                    info.originalWidth = pe.width;
+                                    info.originalHeight = pe.height;
+                                    info.originalDuration = (long) (pe.duration * 1000L * 1000L);
+                                    info.estimatedDuration = Math.min(60000L, (long) (pe.duration * 1000L));
+                                    info.originalPath = pe.path;
+                                    if (pe.duration > 60) {
+                                        info.startTime = 0;
+                                        info.endTime = 60000L * 1000L;
+                                    }
+                                    int side = Math.min(pe.width > 0 ? pe.width : roundRes, pe.height > 0 ? pe.height : roundRes);
+                                    MediaController.CropState crop = new MediaController.CropState();
+                                    crop.cropPw = pe.width > 0 ? (float) side / pe.width : 1.0f;
+                                    crop.cropPh = pe.height > 0 ? (float) side / pe.height : 1.0f;
+                                    crop.cropPx = 0.0f;
+                                    crop.cropPy = 0.0f;
+                                    crop.transformWidth = roundRes;
+                                    crop.transformHeight = roundRes;
+                                    crop.cropScale = 1.0f;
+                                    info.cropState = crop;
+                                    pe.editedInfo = info;
+                                } else {
+                                    pe.editedInfo.roundVideo = true;
+                                    pe.editedInfo.fromCamera = false;
+                                    int roundRes = Math.min(480, HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : 360);
+                                    pe.editedInfo.resultWidth = roundRes;
+                                    pe.editedInfo.resultHeight = roundRes;
+                                    if (pe.editedInfo.cropState == null) {
+                                        int side = Math.min(pe.width > 0 ? pe.width : roundRes, pe.height > 0 ? pe.height : roundRes);
+                                        MediaController.CropState crop = new MediaController.CropState();
+                                        crop.cropPw = pe.width > 0 ? (float) side / pe.width : 1.0f;
+                                        crop.cropPh = pe.height > 0 ? (float) side / pe.height : 1.0f;
+                                        crop.transformWidth = roundRes;
+                                        crop.transformHeight = roundRes;
+                                        pe.editedInfo.cropState = crop;
+                                    } else {
+                                        pe.editedInfo.cropState.transformWidth = roundRes;
+                                        pe.editedInfo.cropState.transformHeight = roundRes;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    final long effectId = messageSendPreview != null ? messageSendPreview.getSelectedEffect() : 0;
+                    writeButton.setEffect(ChatAttachAlert.this.effectId = effectId);
+                    boolean shownDialog = false;
+                    if (currentAttachLayout == photoLayout || currentAttachLayout == photoPreviewLayout) {
+                        shownDialog = sendPressed(true, 0, 0, effectId, isCaptionAbove());
+                    } else {
+                        if (!currentAttachLayout.sendSelectedItems(true, 0, 0, effectId, isCaptionAbove())) {
                             dismiss();
                         }
                     }

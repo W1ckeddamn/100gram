@@ -288,6 +288,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
                 photoEntry.editedInfo = null;
             }
             photoEntry.editedInfo = videoEditedInfo;
+            photoEntry.isRound = videoEditedInfo != null && videoEditedInfo.roundVideo;
 
             int count = gridView.getChildCount();
             for (int a = 0; a < count; a++) {

@@ -226,11 +226,11 @@ public class HundredGramNetworkBoostActivity extends BaseFragment {
         items.add(UItem.asCustom(ITEM_SLIDER_DOWNLOAD, createDownloadSliderView(getContext())));
         String sliderSub;
         if (HundredGramConfig.downloadBoost == HundredGramConfig.DOWNLOAD_BOOST_ULTRA) {
-            sliderSub = "Режим «Ультра»: 12 параллельных потоков MTProto, чанки по 1 МБ (максимальная утилизация гигабитного канала)";
+            sliderSub = LocaleController.getString("NetworkBoostUltraDesc", R.string.NetworkBoostUltraDesc);
         } else if (HundredGramConfig.downloadBoost == HundredGramConfig.DOWNLOAD_BOOST_FAST) {
-            sliderSub = "Режим «Быстро»: 8 параллельных потоков, чанки по 512 КБ (оптимально для 4G/LTE сетей)";
+            sliderSub = LocaleController.getString("NetworkBoostFastDesc", R.string.NetworkBoostFastDesc);
         } else {
-            sliderSub = "Стандартный режим Telegram: 4 параллельных потока, чанки по 128 КБ";
+            sliderSub = LocaleController.getString("NetworkBoostStandardDesc", R.string.NetworkBoostStandardDesc);
         }
         items.add(UItem.asShadow(sliderSub));
 
@@ -322,11 +322,11 @@ public class HundredGramNetworkBoostActivity extends BaseFragment {
                 int netType = ApplicationLoader.getAutodownloadNetworkType();
                 String recommended;
                 if (netType == StatsController.TYPE_WIFI || ping < 60) {
-                    recommended = "Ультра (12 потоков, 1 МБ)";
+                    recommended = LocaleController.getString("NetworkBoostRecUltra", R.string.NetworkBoostRecUltra);
                     HundredGramConfig.setDownloadBoost(HundredGramConfig.DOWNLOAD_BOOST_ULTRA);
                     HundredGramConfig.setUploadBoost(HundredGramConfig.UPLOAD_BOOST_ULTRA);
                 } else {
-                    recommended = "Быстро (8 потоков, 512 КБ)";
+                    recommended = LocaleController.getString("NetworkBoostRecFast", R.string.NetworkBoostRecFast);
                     HundredGramConfig.setDownloadBoost(HundredGramConfig.DOWNLOAD_BOOST_FAST);
                     HundredGramConfig.setUploadBoost(HundredGramConfig.UPLOAD_BOOST_FAST);
                 }
@@ -339,7 +339,7 @@ public class HundredGramNetworkBoostActivity extends BaseFragment {
                     listView.adapter.update(true);
                 }
                 BulletinFactory.of(HundredGramNetworkBoostActivity.this)
-                        .createSimpleBulletin(R.drawable.msg_download, "Оптимальный режим сети применён: " + recommended)
+                        .createSimpleBulletin(R.drawable.msg_download, String.format(LocaleController.getString("NetworkBoostOptimalApplied", R.string.NetworkBoostOptimalApplied), recommended))
                         .show();
             });
         });

@@ -506,6 +506,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         public boolean isFiltered;
         public boolean isPainted;
         public boolean isCropped;
+        public boolean isRound;
         public int ttl;
         public long effectId;
         @Nullable
@@ -539,6 +540,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             isFiltered = false;
             isPainted = false;
             isCropped = false;
+            isRound = false;
             ttl = 0;
             mediaEntities = null;
             editedInfo = null;
@@ -569,6 +571,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             isFiltered = state.isFiltered;
             isPainted = state.isPainted;
             isCropped = state.isCropped;
+            isRound = state.isRound;
             livePhotoVideoOffset = state.livePhotoVideoOffset;
             ttl = state.ttl;
 

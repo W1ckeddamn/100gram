@@ -2753,6 +2753,10 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                 messageStringFinal = messageString;
             }
 
+            if (org.telegram.messenger.HundredGramConfig.isStreamerHideDialogMessages()) {
+                messageStringFinal = "••••••••••••••••";
+            }
+
             Layout.Alignment align = isForum && LocaleController.isRTL ? Layout.Alignment.ALIGN_OPPOSITE : Layout.Alignment.ALIGN_NORMAL;
             if ((useForceThreeLines || SharedConfig.useThreeLinesLayout) && !hasTags()) {
                 if (thumbsCount > 0 && messageNameString != null) {

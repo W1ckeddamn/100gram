@@ -10018,10 +10018,10 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void deleteDialog(final long did, int onlyHistory, boolean revoke, boolean isSelf) {
-        deleteDialog(did, 1, onlyHistory, 0, revoke, null, 0,isSelf);
+        deleteDialog(did, 1, onlyHistory, 0, revoke, null, 0, isSelf);
     }
     public void deleteDialog(final long did, int onlyHistory, boolean revoke) {
-        deleteDialog(did, 1, onlyHistory, 0, revoke, null, 0,false);
+        deleteDialog(did, 1, onlyHistory, 0, revoke, null, 0, true);
     }
 
     public void setDialogHistoryTTL(long did, int ttl) {

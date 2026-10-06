@@ -42,7 +42,6 @@ public class HundredGramCameraActivity extends BaseFragment {
     private static final int ITEM_ROUND_START_CAMERA = 10;
     private static final int ITEM_ROUND_RESOLUTION = 11;
     private static final int ITEM_ROUND_FPS = 12;
-    private static final int ITEM_ROUND_HIGH_BITRATE = 13;
     private static final int ITEM_ROUND_SQUARE = 15;
     private static final int ITEM_ROUND_DISABLE_BLUR = 16;
     private static final int ITEM_ROUND_BITRATE = 17;
@@ -122,7 +121,7 @@ public class HundredGramCameraActivity extends BaseFragment {
 
         LinearLayout row2 = new LinearLayout(context);
         row2.setOrientation(LinearLayout.HORIZONTAL);
-        row2.addView(createBadgeView(context, "Широкоугольная (0.6x)", cameraReport != null && cameraReport.wideAngleAvailable));
+        row2.addView(createBadgeView(context, LocaleController.getString("CameraBadgeWideAngle", R.string.CameraBadgeWideAngle), cameraReport != null && cameraReport.wideAngleAvailable));
         View space3 = new View(context);
         row2.addView(space3, LayoutHelper.createLinear(8, 0));
         row2.addView(createBadgeView(context, "OIS / EIS", cameraReport != null && cameraReport.stabilizationAvailable));
@@ -163,7 +162,7 @@ public class HundredGramCameraActivity extends BaseFragment {
             HundredGramConfig.setCameraFps(60);
             HundredGramConfig.setCameraRoundFps(60);
         }
-        HundredGramConfig.toggleCameraRoundHighBitrate();
+        HundredGramConfig.setCameraRoundBitrate(2000);
         if (listView != null && listView.adapter != null) {
             listView.adapter.update(true);
         }
@@ -194,11 +193,11 @@ public class HundredGramCameraActivity extends BaseFragment {
                 break;
         }
         items.add(UItem.asButton(ITEM_CAMERA_ENGINE, LocaleController.getString("CameraEngineChoose", R.string.CameraEngineChoose), engineName));
-        items.add(UItem.asShadow("Jetpack CameraX обеспечивает расширенные возможности зума, 60 FPS и широкоугольной съемки. Camera2 и Camera1 Legacy для старых смартфонов."));
+        items.add(UItem.asShadow(LocaleController.getString("CameraEngineChooseInfo", R.string.CameraEngineChooseInfo)));
 
         // CameraX Settings Section
         if (HundredGramConfig.cameraEngine == HundredGramConfig.CAMERA_ENGINE_CAMERAX) {
-            items.add(UItem.asHeader("Настройки CameraX"));
+            items.add(UItem.asHeader(LocaleController.getString("CameraXSettingsHeader", R.string.CameraXSettingsHeader)));
 
             items.add(UItem.asCheck(ITEM_PERFORMANCE_MODE, LocaleController.getString("CameraPerformanceMode", R.string.CameraPerformanceMode))
                     .setChecked(HundredGramConfig.cameraPerformanceMode));
@@ -230,13 +229,13 @@ public class HundredGramCameraActivity extends BaseFragment {
             }
             items.add(UItem.asButton(ITEM_DEFAULT_LENS, LocaleController.getString("CameraDefaultLens", R.string.CameraDefaultLens), lensName));
 
-            items.add(UItem.asCheck(ITEM_WIDE_ANGLE, "Широкоугольный объектив по умолчанию")
+            items.add(UItem.asCheck(ITEM_WIDE_ANGLE, LocaleController.getString("CameraXWideAngle", R.string.CameraXWideAngle))
                     .setChecked(HundredGramConfig.cameraXWideAngle));
-            items.add(UItem.asShadow("Автоматически включает ультраширокоугольный модуль при открытии видоискателя"));
+            items.add(UItem.asShadow(LocaleController.getString("CameraXWideAngleInfo", R.string.CameraXWideAngleInfo)));
 
-            items.add(UItem.asCheck(ITEM_ZOOM_SLIDER, "Ползунок зума")
+            items.add(UItem.asCheck(ITEM_ZOOM_SLIDER, LocaleController.getString("CameraXZoomSlider", R.string.CameraXZoomSlider))
                     .setChecked(HundredGramConfig.cameraXZoomSlider));
-            items.add(UItem.asShadow("Отображает удобный слайдер масштабирования"));
+            items.add(UItem.asShadow(LocaleController.getString("CameraXZoomSliderInfo", R.string.CameraXZoomSliderInfo)));
 
             items.add(UItem.asCheck(ITEM_STABILIZATION, LocaleController.getString("CameraStabilization", R.string.CameraStabilization))
                     .setChecked(HundredGramConfig.cameraStabilization));
@@ -270,7 +269,7 @@ public class HundredGramCameraActivity extends BaseFragment {
                 break;
         }
         items.add(UItem.asButton(ITEM_ROUND_START_CAMERA, LocaleController.getString("RoundCameraStart", R.string.RoundCameraStart), startCamName));
-        items.add(UItem.asShadow("Выбор объектива для начала записи: фронталка, задняя, быстрое меню выбора перед записью или последняя использованная"));
+        items.add(UItem.asShadow(LocaleController.getString("RoundCameraStartDesc", R.string.RoundCameraStartDesc)));
 
         // Square Video Notes
         items.add(UItem.asCheck(ITEM_ROUND_SQUARE, LocaleController.getString("RoundVideoSquare", R.string.RoundVideoSquare))
@@ -296,9 +295,9 @@ public class HundredGramCameraActivity extends BaseFragment {
 
         String resName;
         switch (HundredGramConfig.cameraRoundResolution) {
-            case 480: resName = "480p"; break;
-            case 240: resName = "240p (Эконом)"; break;
-            default: resName = "360p (Telegram)"; break;
+            case 480: resName = LocaleController.getString("RoundResolution480", R.string.RoundResolution480); break;
+            case 240: resName = LocaleController.getString("RoundResolution240", R.string.RoundResolution240); break;
+            default: resName = LocaleController.getString("RoundResolution360", R.string.RoundResolution360); break;
         }
         items.add(UItem.asButton(ITEM_ROUND_RESOLUTION, LocaleController.getString("RoundVideoResolution", R.string.RoundVideoResolution), resName));
 
@@ -371,13 +370,6 @@ public class HundredGramCameraActivity extends BaseFragment {
                 item.setChecked(targetFps == 60);
                 if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
                     ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(targetFps == 60);
-                }
-                break;
-            case ITEM_ROUND_HIGH_BITRATE:
-                HundredGramConfig.toggleCameraRoundHighBitrate();
-                item.setChecked(HundredGramConfig.cameraRoundHighBitrate);
-                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
-                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraRoundHighBitrate);
                 }
                 break;
             case ITEM_ROUND_SQUARE:
@@ -532,7 +524,11 @@ public class HundredGramCameraActivity extends BaseFragment {
     }
 
     private void showRoundResolutionDialog() {
-        CharSequence[] options = new CharSequence[]{"240p (Эконом / Слабые устройства)", "360p (Стандарт Telegram)", "480p (Высокое качество)"};
+        CharSequence[] options = new CharSequence[]{
+                LocaleController.getString("RoundResolution240", R.string.RoundResolution240),
+                LocaleController.getString("RoundResolution360", R.string.RoundResolution360),
+                LocaleController.getString("RoundResolution480", R.string.RoundResolution480)
+        };
         new AlertDialog.Builder(getParentActivity())
                 .setTitle(LocaleController.getString("RoundVideoResolution", R.string.RoundVideoResolution))
                 .setItems(options, (dialog, which) -> {

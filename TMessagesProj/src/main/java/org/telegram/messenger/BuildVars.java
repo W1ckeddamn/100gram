@@ -24,15 +24,15 @@ public class BuildVars {
     public static boolean CHECK_UPDATES = true;
     public static boolean BUILD_HOST_IS_WINDOWS = false;
     public static boolean NO_SCOPED_STORAGE = Build.VERSION.SDK_INT <= 29;
-    public static int BUILD_VERSION = 7105;
-    public static int BUILD_VERSION_FULL = 71050;
+    public static int BUILD_VERSION = 7112;
+    public static int BUILD_VERSION_FULL = 71120;
 //    public static String BUILD_VENDOR = "com.android.vending";
 //    public static String BUILD_GRAHER = "com.evildayz.code.telegraher3";
     public static String BUILD_VENDOR = "com.google.android.packageinstaller";
     public static String BUILD_DUROV = "org.telegram.messenger.web";
     public static String BUILD_DUROV_TG = "org.telegram.messenger";
     public static String BUILD_GRAHER = BUILD_DUROV_TG;
-    public static String BUILD_VERSION_STRING = "12.10.5";
+    public static String BUILD_VERSION_STRING = "12.10.6";
 
     public static final int PIN_MIN_SIZE = 4;
     public static final int PIN_MAX_SIZE = 16;

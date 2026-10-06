@@ -10577,7 +10577,8 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             return;
         }
         for (int a = 0, N = media.size(); a < N; a++) {
-            if (media.get(a).ttl > 0) {
+            final SendingMediaInfo mi = media.get(a);
+            if (mi.ttl > 0 || (mi.videoEditedInfo != null && mi.videoEditedInfo.roundVideo)) {
                 groupMedia = false;
                 break;
             }
@@ -11030,11 +11031,22 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                 }
 
                                 TLRPC.PhotoSize size = null;
+                                boolean isRound = videoEditedInfo != null && videoEditedInfo.roundVideo;
                                 if (thumb != null) {
-                                    int side = isEncrypted || info.ttl != 0 ? 90 : Math.max(thumb.getWidth(), thumb.getHeight());
-                                    size = ImageLoader.scaleAndSaveImage(null, thumb, videoEditedInfo != null && videoEditedInfo.isSticker ? Bitmap.CompressFormat.WEBP : Bitmap.CompressFormat.JPEG, false, side, side, side > 90 ? 80 : 55, isEncrypted, 0, 0, false);
-                                    if (size != null && size.location != null) {
-                                        thumbKey = getKeyForPhotoSize(accountInstance, size, null, true, false);
+                                    if (isRound) {
+                                        int roundThumbSide = isEncrypted || info.ttl != 0 ? 90 : 320;
+                                        size = ImageLoader.scaleAndSaveImage(thumb, roundThumbSide, roundThumbSide, roundThumbSide > 90 ? 80 : 55, isEncrypted);
+                                        if (size != null && size.location != null) {
+                                            thumb = Bitmap.createScaledBitmap(thumb, 90, 90, true);
+                                            Utilities.blurBitmap(thumb, isEncrypted ? 7 : 3);
+                                            thumbKey = String.format(Locale.US, "%d_%d@%d_%d_b", size.location.volume_id, size.location.local_id, (int) (AndroidUtilities.roundMessageSize / AndroidUtilities.density), (int) (AndroidUtilities.roundMessageSize / AndroidUtilities.density));
+                                        }
+                                    } else {
+                                        int side = isEncrypted || info.ttl != 0 ? 90 : Math.max(thumb.getWidth(), thumb.getHeight());
+                                        size = ImageLoader.scaleAndSaveImage(null, thumb, videoEditedInfo != null && videoEditedInfo.isSticker ? Bitmap.CompressFormat.WEBP : Bitmap.CompressFormat.JPEG, false, side, side, side > 90 ? 80 : 55, isEncrypted, 0, 0, false);
+                                        if (size != null && size.location != null) {
+                                            thumbKey = getKeyForPhotoSize(accountInstance, size, null, true, false);
+                                        }
                                     }
                                 }
                                 document = new TLRPC.TL_document();
@@ -11098,6 +11110,18 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                         document.size = (int) temp.length();
                                     }
                                     fillVideoAttribute(info.path, attributeVideo, null);
+                                }
+                                if (isRound) {
+                                    attributeVideo.round_message = true;
+                                    int roundSize = Math.min(attributeVideo.w, attributeVideo.h);
+                                    if (roundSize <= 0) {
+                                        roundSize = 360;
+                                    }
+                                    if (roundSize > 480) {
+                                        roundSize = 480;
+                                    }
+                                    attributeVideo.w = roundSize;
+                                    attributeVideo.h = roundSize;
                                 }
                             } else if (!document.thumbs.isEmpty()) {
                                 if (info.thumbPath != null) {

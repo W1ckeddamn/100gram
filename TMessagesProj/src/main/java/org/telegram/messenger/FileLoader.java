@@ -1284,24 +1284,62 @@ public class FileLoader extends BaseController {
             }
         } else {
             if (MessageObject.getMedia(message) instanceof TLRPC.TL_messageMediaDocument) {
-                return getPathToAttach(MessageObject.getMedia(message).document, null, forceCache || MessageObject.getMedia(message).ttl_seconds != 0, useFileDatabaseQueue);
+                boolean cache = forceCache || MessageObject.getMedia(message).ttl_seconds != 0;
+                File f = getPathToAttach(MessageObject.getMedia(message).document, null, cache, useFileDatabaseQueue);
+                if (f != null && f.exists() && f.length() > 0) {
+                    return f;
+                }
+                if (MessageObject.getMedia(message).ttl_seconds == 0) {
+                    File f2 = getPathToAttach(MessageObject.getMedia(message).document, null, !cache, useFileDatabaseQueue);
+                    if (f2 != null && f2.exists() && f2.length() > 0) {
+                        return f2;
+                    }
+                }
+                return f;
             } else if (MessageObject.getMedia(message) instanceof TLRPC.TL_messageMediaPhoto) {
                 ArrayList<TLRPC.PhotoSize> sizes = MessageObject.getMedia(message).photo.sizes;
                 if (sizes.size() > 0) {
                     TLRPC.PhotoSize sizeFull = getClosestPhotoSizeWithSize(sizes, AndroidUtilities.getPhotoSize(true), false, null, true);
                     if (sizeFull != null) {
-                        return getPathToAttach(sizeFull, null, forceCache || MessageObject.getMedia(message).ttl_seconds != 0, useFileDatabaseQueue);
+                        boolean cache = forceCache || MessageObject.getMedia(message).ttl_seconds != 0;
+                        File f = getPathToAttach(sizeFull, null, cache, useFileDatabaseQueue);
+                        if (f != null && f.exists() && f.length() > 0) {
+                            return f;
+                        }
+                        if (MessageObject.getMedia(message).ttl_seconds == 0) {
+                            File f2 = getPathToAttach(sizeFull, null, !cache, useFileDatabaseQueue);
+                            if (f2 != null && f2.exists() && f2.length() > 0) {
+                                return f2;
+                            }
+                        }
+                        return f;
                     }
                 }
             } else if (MessageObject.getMedia(message) instanceof TLRPC.TL_messageMediaWebPage) {
                 if (MessageObject.getMedia(message).webpage.document != null) {
-                    return getPathToAttach(MessageObject.getMedia(message).webpage.document, null, forceCache, useFileDatabaseQueue);
+                    File f = getPathToAttach(MessageObject.getMedia(message).webpage.document, null, forceCache, useFileDatabaseQueue);
+                    if (f != null && f.exists() && f.length() > 0) {
+                        return f;
+                    }
+                    File f2 = getPathToAttach(MessageObject.getMedia(message).webpage.document, null, !forceCache, useFileDatabaseQueue);
+                    if (f2 != null && f2.exists() && f2.length() > 0) {
+                        return f2;
+                    }
+                    return f;
                 } else if (MessageObject.getMedia(message).webpage.photo != null) {
                     ArrayList<TLRPC.PhotoSize> sizes = MessageObject.getMedia(message).webpage.photo.sizes;
                     if (sizes.size() > 0) {
                         TLRPC.PhotoSize sizeFull = getClosestPhotoSizeWithSize(sizes, AndroidUtilities.getPhotoSize());
                         if (sizeFull != null) {
-                            return getPathToAttach(sizeFull, null, forceCache, useFileDatabaseQueue);
+                            File f = getPathToAttach(sizeFull, null, forceCache, useFileDatabaseQueue);
+                            if (f != null && f.exists() && f.length() > 0) {
+                                return f;
+                            }
+                            File f2 = getPathToAttach(sizeFull, null, !forceCache, useFileDatabaseQueue);
+                            if (f2 != null && f2.exists() && f2.length() > 0) {
+                                return f2;
+                            }
+                            return f;
                         }
                     }
                 }

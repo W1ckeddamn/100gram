@@ -59,6 +59,7 @@ import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.FileLoader;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaController;
@@ -351,10 +352,12 @@ public class PhotoPickerActivity extends BaseFragment implements NotificationCen
                 MediaController.PhotoEntry photoEntry = selectedAlbum.photos.get(index);
                 if ((num = addToSelectedPhotos(photoEntry, -1)) == -1) {
                     photoEntry.editedInfo = videoEditedInfo;
+                    photoEntry.isRound = videoEditedInfo != null && videoEditedInfo.roundVideo;
                     num = selectedPhotosOrder.indexOf(photoEntry.imageId);
                 } else {
                     add = false;
                     photoEntry.editedInfo = null;
+                    photoEntry.isRound = false;
                 }
             } else {
                 if (index < 0 || index >= searchResult.size()) {
@@ -1134,6 +1137,80 @@ public class PhotoPickerActivity extends BaseFragment implements NotificationCen
                             } else {
                                 sendSelectedPhotos(true, 0, 0);
                             }
+                        });
+                    }
+                    boolean hasVideo = false;
+                    for (Object obj : selectedPhotos.values()) {
+                        if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
+                            hasVideo = true;
+                            break;
+                        }
+                    }
+                    boolean canSendRound = chatActivity == null || chatActivity.getCurrentChat() == null || ChatObject.canSendRoundVideo(chatActivity.getCurrentChat());
+                    if (hasVideo && canSendRound) {
+                        ActionBarMenuSubItem roundItem = new ActionBarMenuSubItem(getParentActivity(), false, false);
+                        roundItem.setTextAndIcon(LocaleController.getString(R.string.HundredGramSendAsRoundVideo), R.drawable.photo_circle);
+                        roundItem.setMinimumWidth(AndroidUtilities.dp(196));
+                        sendPopupLayout.addView(roundItem, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
+                        roundItem.setOnClickListener(v -> {
+                            if (sendPopupWindow != null && sendPopupWindow.isShowing()) {
+                                sendPopupWindow.dismiss();
+                            }
+                            for (Object obj : selectedPhotos.values()) {
+                                if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
+                                    MediaController.PhotoEntry pe = (MediaController.PhotoEntry) obj;
+                                    pe.isRound = true;
+                                    if (pe.editedInfo == null) {
+                                        VideoEditedInfo info = new VideoEditedInfo();
+                                        info.roundVideo = true;
+                                        info.fromCamera = false;
+                                        int roundRes = Math.min(480, HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : 360);
+                                        info.resultWidth = roundRes;
+                                        info.resultHeight = roundRes;
+                                        info.framerate = (HundredGramConfig.cameraRoundFps == 60) ? 60 : 30;
+                                        info.bitrate = HundredGramConfig.cameraRoundBitrate > 0 ? (HundredGramConfig.cameraRoundBitrate * 1024) : 1000000;
+                                        info.originalWidth = pe.width;
+                                        info.originalHeight = pe.height;
+                                        info.originalDuration = (long) (pe.duration * 1000L * 1000L);
+                                        info.estimatedDuration = Math.min(60000L, (long) (pe.duration * 1000L));
+                                        info.originalPath = pe.path;
+                                        if (pe.duration > 60) {
+                                            info.startTime = 0;
+                                            info.endTime = 60000L * 1000L;
+                                        }
+                                        int side = Math.min(pe.width > 0 ? pe.width : roundRes, pe.height > 0 ? pe.height : roundRes);
+                                        MediaController.CropState crop = new MediaController.CropState();
+                                        crop.cropPw = pe.width > 0 ? (float) side / pe.width : 1.0f;
+                                        crop.cropPh = pe.height > 0 ? (float) side / pe.height : 1.0f;
+                                        crop.cropPx = 0.0f;
+                                        crop.cropPy = 0.0f;
+                                        crop.transformWidth = roundRes;
+                                        crop.transformHeight = roundRes;
+                                        crop.cropScale = 1.0f;
+                                        info.cropState = crop;
+                                        pe.editedInfo = info;
+                                    } else {
+                                        pe.editedInfo.roundVideo = true;
+                                        pe.editedInfo.fromCamera = false;
+                                        int roundRes = Math.min(480, HundredGramConfig.cameraRoundResolution > 0 ? HundredGramConfig.cameraRoundResolution : 360);
+                                        pe.editedInfo.resultWidth = roundRes;
+                                        pe.editedInfo.resultHeight = roundRes;
+                                        if (pe.editedInfo.cropState == null) {
+                                            int side = Math.min(pe.width > 0 ? pe.width : roundRes, pe.height > 0 ? pe.height : roundRes);
+                                            MediaController.CropState crop = new MediaController.CropState();
+                                            crop.cropPw = pe.width > 0 ? (float) side / pe.width : 1.0f;
+                                            crop.cropPh = pe.height > 0 ? (float) side / pe.height : 1.0f;
+                                            crop.transformWidth = roundRes;
+                                            crop.transformHeight = roundRes;
+                                            pe.editedInfo.cropState = crop;
+                                        } else {
+                                            pe.editedInfo.cropState.transformWidth = roundRes;
+                                            pe.editedInfo.cropState.transformHeight = roundRes;
+                                        }
+                                    }
+                                }
+                            }
+                            sendSelectedPhotos(true, 0, 0);
                         });
                     }
                     sendPopupLayout.setupRadialSelectors(Theme.getColor(selectorKey));

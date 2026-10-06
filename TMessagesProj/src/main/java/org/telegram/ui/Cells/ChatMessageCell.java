@@ -6738,6 +6738,14 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             checkVideoPlayback(true, null);
         }
         if (messageObject != null && !messageObject.mediaExists) {
+            File attachFile = FileLoader.getInstance(currentAccount).getPathToMessage(messageObject.messageOwner);
+            if (attachFile != null && attachFile.exists() && attachFile.length() > 0) {
+                messageObject.mediaExists = true;
+                if (checkUI) {
+                    updateButtonState(false, false, false);
+                }
+                return;
+            }
             int canDownload = DownloadController.getInstance(currentAccount).canDownloadMediaType(messageObject);
             TLRPC.Document document = messageObject.getDocument();
             boolean loadDocumentFromImageReceiver = MessageObject.isStickerDocument(document) || MessageObject.isAnimatedStickerDocument(document, true) || MessageObject.isGifDocument(document) || MessageObject.isRoundVideoDocument(document) || messageObject.hasVideoQualities();
@@ -8557,11 +8565,16 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                                 } else {
                                     maxPhotoWidth = (int) (getParentWidth() * 0.5f);
                                 }
+                                if (documentAttachType == DOCUMENT_ATTACH_TYPE_STICKER) {
+                                    maxPhotoWidth = (int) (maxPhotoWidth * HundredGramConfig.getStickerScale());
+                                }
                             } else if (documentAttachType == DOCUMENT_ATTACH_TYPE_ROUND) {
                                 maxPhotoWidth = AndroidUtilities.roundMessageSize;
                                 photoImage.setAllowDecodeSingleFrame(true);
                             } else if (documentAttachType == DOCUMENT_ATTACH_TYPE_STORY) {
                                 maxPhotoWidth /= 2;
+                            } else if (documentAttachType == DOCUMENT_ATTACH_TYPE_GIF) {
+                                maxPhotoWidth = (int) (maxPhotoWidth * HundredGramConfig.getGifScale());
                             }
                             if (hasInvoicePreview && maxPhotoWidth < messageObject.textWidth) {
                                 maxPhotoWidth = messageObject.textWidth + dp(22);
@@ -9705,6 +9718,13 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     } else {
                         maxHeight = maxWidth = (int) (Math.min(getParentWidth(), AndroidUtilities.displaySize.y) * 0.5f);
                     }
+                    if (!messageObject.isAnimatedEmoji() && !messageObject.isDice()) {
+                        float stickerScale = HundredGramConfig.getStickerScale();
+                        if (stickerScale != 1.0f) {
+                            maxWidth = (int) (maxWidth * stickerScale);
+                            maxHeight = (int) (maxHeight * stickerScale);
+                        }
+                    }
                     String filter;
                     if (messageObject.isAnimatedEmoji() || messageObject.isDice()) {
                         float zoom = MessagesController.getInstance(currentAccount).animatedEmojisZoom;
@@ -9860,6 +9880,13 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                         }
                     }
                     photoHeight = photoWidth + dp(100);
+                    if (messageObject.type == MessageObject.TYPE_GIF) {
+                        float gifScale = HundredGramConfig.getGifScale();
+                        if (gifScale != 1.0f) {
+                            photoWidth = (int) (photoWidth * gifScale);
+                            photoHeight = (int) (photoHeight * gifScale);
+                        }
+                    }
                     if (!useFullWidth) {
                         if (messageObject.type != MessageObject.TYPE_ROUND_VIDEO && checkNeedDrawShareButton(messageObject)) {
                             photoWidth -= dp(20);
@@ -9932,6 +9959,13 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                         PointF point = getMessageSize(imageW, imageH, photoWidth, photoHeight);
                         w = (int) point.x;
                         h = (int) point.y;
+                        if (messageObject.type == MessageObject.TYPE_GIF) {
+                            float gifScale = HundredGramConfig.getGifScale();
+                            if (gifScale < 1.0f) {
+                                w = (int) (w * gifScale);
+                                h = (int) (h * gifScale);
+                            }
+                        }
                     }
                     if (currentPhotoObject != null && "s".equals(currentPhotoObject.type)) {
                         currentPhotoObject = null;
@@ -10285,6 +10319,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     }
 
                     int minWidth = (int) (Theme.chat_infoPaint.measureText("100%") + dp(100/*48*/)/* + timeWidth*/);
+                    if (messageObject.type == MessageObject.TYPE_GIF || documentAttachType == DOCUMENT_ATTACH_TYPE_GIF) {
+                        minWidth = (int) (minWidth * HundredGramConfig.getGifScale());
+                    }
                     if (currentMessagesGroup == null && (documentAttachType == DOCUMENT_ATTACH_TYPE_VIDEO || documentAttachType == DOCUMENT_ATTACH_TYPE_GIF) && photoWidth < minWidth) {
                         photoWidth = minWidth;
                         backgroundWidth = photoWidth + dp(8);
@@ -24120,7 +24157,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         canvas.restore();
 
         // 100gram: Draw trash icon badge for deleted (anti-delete preserved) messages
-        if (currentMessageObject != null && currentMessageObject.isDeleted()) {
+        if (currentMessageObject != null && currentMessageObject.isDeleted() && org.telegram.messenger.HundredGramConfig.highlightDeletedMessages) {
             if (deletedBadgeDrawable == null) {
                 deletedBadgeDrawable = getContext().getDrawable(R.drawable.msg_delete);
             }
