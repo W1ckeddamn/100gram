@@ -1,23 +1,15 @@
 package org.telegram.ui;
 
 import android.content.Context;
-import android.graphics.Typeface;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
-import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.ui.ActionBar.ActionBar;
-import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
-import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.UItem;
 import org.telegram.ui.Components.UniversalAdapter;
@@ -38,7 +30,6 @@ public class HundredGramSettingsActivity extends BaseFragment {
     private static final int ITEM_CATEGORY_STREAMER = 9;
     private static final int ITEM_CATEGORY_AUTOMATION = 10;
     private static final int ITEM_CATEGORY_NETWORK = 11;
-    private static final int ITEM_TRACKED_USERS = 12;
     private static final int ITEM_WHATS_NEW = 13;
     private static final int ITEM_AUTHOR = 14;
     private static final int ITEM_GITHUB = 15;
@@ -72,8 +63,8 @@ public class HundredGramSettingsActivity extends BaseFragment {
     }
 
     private void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
-        // Раздел 1: Конфиденциальность и безопасность
-        items.add(UItem.asHeader(LocaleController.getString("HundredGramSectionPrivacy", R.string.HundredGramSectionPrivacy)));
+        // Раздел 1: Невидимость
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramSectionStealth", R.string.HundredGramSectionStealth)));
 
         items.add(UItem.asButton(ITEM_CATEGORY_GHOST, R.drawable.msg_secret,
                 LocaleController.getString("HundredGramCategoryGhost", R.string.HundredGramCategoryGhost)));
@@ -86,10 +77,6 @@ public class HundredGramSettingsActivity extends BaseFragment {
         items.add(UItem.asButton(ITEM_CATEGORY_STREAMER, R.drawable.msg_channel,
                 LocaleController.getString("HundredGramCategoryStreamer", R.string.HundredGramCategoryStreamer)));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramCategoryStreamerSub", R.string.HundredGramCategoryStreamerSub)));
-
-        items.add(UItem.asButton(ITEM_CATEGORY_VAULT, R.drawable.msg_download,
-                LocaleController.getString("HundredGramCategoryVault", R.string.HundredGramCategoryVault)));
-        items.add(UItem.asShadow(LocaleController.getString("HundredGramCategoryVaultSub", R.string.HundredGramCategoryVaultSub)));
 
         // Раздел 2: Интерфейс и чаты
         items.add(UItem.asHeader(LocaleController.getString("HundredGramSectionInterface", R.string.HundredGramSectionInterface)));
@@ -113,8 +100,12 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 LocaleController.getString("CameraEngineTitle", R.string.CameraEngineTitle)));
         items.add(UItem.asShadow(LocaleController.getString("CameraEngineSub", R.string.CameraEngineSub)));
 
-        // Раздел 4: Сеть и производительность
-        items.add(UItem.asHeader(LocaleController.getString("HundredGramSectionNetwork", R.string.HundredGramSectionNetwork)));
+        // Раздел 4: Данные
+        items.add(UItem.asHeader(LocaleController.getString("HundredGramSectionData", R.string.HundredGramSectionData)));
+
+        items.add(UItem.asButton(ITEM_CATEGORY_VAULT, R.drawable.msg_download,
+                LocaleController.getString("HundredGramCategoryVault", R.string.HundredGramCategoryVault)));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramCategoryVaultSub", R.string.HundredGramCategoryVaultSub)));
 
         items.add(UItem.asButton(ITEM_CATEGORY_NETWORK, R.drawable.msg_stats,
                 LocaleController.getString("NetworkBoostTitle", R.string.NetworkBoostTitle)));
@@ -125,19 +116,13 @@ public class HundredGramSettingsActivity extends BaseFragment {
 
         items.add(UItem.asButton(ITEM_CATEGORY_TRACKER, R.drawable.msg_usersearch,
                 LocaleController.getString("HundredGramCategoryTracker", R.string.HundredGramCategoryTracker)));
-
-        int trackedCount = HundredGramConfig.trackedOnlineUsers.size();
-        String countStr = String.format(LocaleController.getString("HundredGramTrackedUsersCount", R.string.HundredGramTrackedUsersCount), trackedCount);
-        items.add(UItem.asButton(ITEM_TRACKED_USERS, R.drawable.msg_usersearch,
-                LocaleController.getString("HundredGramTrackedUsersList", R.string.HundredGramTrackedUsersList),
-                countStr));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramCategoryTrackerSub", R.string.HundredGramCategoryTrackerSub)));
 
         items.add(UItem.asButton(ITEM_CATEGORY_AUTOMATION, R.drawable.msg_bot,
                 LocaleController.getString("AutomationTitle", R.string.AutomationTitle)));
         items.add(UItem.asShadow(LocaleController.getString("AutomationSubtitle", R.string.AutomationSubtitle)));
 
-        // Раздел 6: О форке 100gram
+        // Раздел 6: О приложении
         items.add(UItem.asHeader(LocaleController.getString("HundredGramAboutSection", R.string.HundredGramAboutSection)));
 
         items.add(UItem.asButton(ITEM_WHATS_NEW, R.drawable.msg_info,
@@ -187,9 +172,6 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 break;
             case ITEM_CATEGORY_TRACKER:
                 presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_TRACKER));
-                break;
-            case ITEM_TRACKED_USERS:
-                presentFragment(new HundredGramTrackedUsersActivity());
                 break;
             case ITEM_CATEGORY_AUTOMATION:
                 presentFragment(new HundredGramAutomationActivity());

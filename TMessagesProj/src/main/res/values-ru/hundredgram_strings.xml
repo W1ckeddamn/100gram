@@ -714,4 +714,38 @@
     <string name="NetworkBoostOptimalApplied">Оптимальный режим сети применён: %1$s</string>
     <string name="NetworkBoostRecUltra">Ультра (12 потоков, 1 МБ)</string>
     <string name="NetworkBoostRecFast">Быстро (8 потоков, 512 КБ)</string>
+
+    <!-- Settings redesign — section names -->
+    <string name="HundredGramSectionStealth">Невидимость</string>
+    <string name="HundredGramSectionData">Данные</string>
+
+    <!-- What\'s New screen — version headers -->
+    <string name="WhatsNewCurrentVersion">Версия 1.2 — Текущая</string>
+    <string name="WhatsNewVersion11">Версия 1.1</string>
+    <string name="WhatsNewVersion10">Версия 1.0</string>
+    <!-- What\'s New — v1.2 items -->
+    <string name="WhatsNewStickerGifSize">Размер стикеров и GIF</string>
+    <string name="WhatsNewStickerGifSizeDesc" formatted="false">5 уровней масштабирования стикеров и GIF в чатах (50%–150%)</string>
+    <string name="WhatsNewRoundVideo">Кружочки из обычных видео</string>
+    <string name="WhatsNewRoundVideoDesc">Отправка любого видео из галереи как круглое видеосообщение в один тап</string>
+    <string name="WhatsNewLayer229">Layer 229 и инлайн-кнопки</string>
+    <string name="WhatsNewLayer229Desc">Интерактивные кнопки в тексте, Mini Apps, WebApps и уникальные подарки Layer 229</string>
+    <string name="WhatsNewSettingsAudit">Полный редизайн настроек</string>
+    <string name="WhatsNewSettingsAuditDesc">Удалён мёртвый код, подключены заглушки, настройки переструктурированы и сгруппированы</string>
+    <!-- What\'s New — v1.1 items -->
+    <string name="WhatsNewVault">Медиасейф и архиватор</string>
+    <string name="WhatsNewVaultDesc">Режимы «Только новые» и «Полная синхронизация», глубокий скан, архивация комментариев</string>
+    <string name="WhatsNewTracker">Трекер онлайна</string>
+    <string name="WhatsNewTrackerDesc">Точный учёт активности со скрытым онлайном, журнал посещений и уведомления</string>
+    <!-- What\'s New — v1.0 items -->
+    <string name="WhatsNewGhost">Режим невидимки</string>
+    <string name="WhatsNewGhostDesc">Чтение без галочек, скрытие онлайна, набора текста и просмотров историй</string>
+    <string name="WhatsNewAntiDelete">Анти-удаление и история правок</string>
+    <string name="WhatsNewAntiDeleteDesc">Сохранение удалённых сообщений и всех редакций со специальными бейджами</string>
+    <string name="WhatsNewNetworkBoost">Network Boost и CameraX 60FPS</string>
+    <string name="WhatsNewNetworkBoostDesc">Параллельная загрузка чанков, видеосообщения 60 FPS, квадратные кружочки</string>
+    <string name="WhatsNewStreamer">Режим стримера и приватность</string>
+    <string name="WhatsNewStreamerDesc">Скрытие телефонных номеров, юзернеймов, аватарок и отключение скриншотов</string>
+    <!-- What\'s New badge -->
+    <string name="WhatsNewNew">✦ НОВОЕ</string>
 </resources>

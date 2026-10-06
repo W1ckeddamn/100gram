@@ -708,4 +708,38 @@
     <string name="NetworkBoostOptimalApplied">Optimal network mode applied: %1$s</string>
     <string name="NetworkBoostRecUltra">Ultra (12 streams, 1 MB)</string>
     <string name="NetworkBoostRecFast">Fast (8 streams, 512 KB)</string>
+
+    <!-- Settings redesign — section names -->
+    <string name="HundredGramSectionStealth">Stealth</string>
+    <string name="HundredGramSectionData">Data</string>
+
+    <!-- What\'s New screen — version headers -->
+    <string name="WhatsNewCurrentVersion">Version 1.2 — Current</string>
+    <string name="WhatsNewVersion11">Version 1.1</string>
+    <string name="WhatsNewVersion10">Version 1.0</string>
+    <!-- What\'s New — v1.2 items -->
+    <string name="WhatsNewStickerGifSize">Sticker &amp; GIF Size</string>
+    <string name="WhatsNewStickerGifSizeDesc" formatted="false">5 scaling levels for stickers and GIFs in chats (50%–150%)</string>
+    <string name="WhatsNewRoundVideo">Round Video from Gallery</string>
+    <string name="WhatsNewRoundVideoDesc">Send any gallery video as a round video message in one tap</string>
+    <string name="WhatsNewLayer229">Layer 229 &amp; Inline Buttons</string>
+    <string name="WhatsNewLayer229Desc">Rich inline buttons, Mini Apps, WebApps and unique Layer 229 gifts</string>
+    <string name="WhatsNewSettingsAudit">Full Settings Redesign</string>
+    <string name="WhatsNewSettingsAuditDesc">Dead code removed, stubs connected, settings restructured and grouped</string>
+    <!-- What\'s New — v1.1 items -->
+    <string name="WhatsNewVault">Media Vault &amp; Archiver</string>
+    <string name="WhatsNewVaultDesc">New-only and full-sync modes, deep history scan, comment archiving</string>
+    <string name="WhatsNewTracker">Online Tracker</string>
+    <string name="WhatsNewTrackerDesc">Precise session tracking for hidden users, visit log and notifications</string>
+    <!-- What\'s New — v1.0 items -->
+    <string name="WhatsNewGhost">Ghost Mode</string>
+    <string name="WhatsNewGhostDesc">Read without marks, hide online status, typing and story views</string>
+    <string name="WhatsNewAntiDelete">Anti-Delete &amp; Edit History</string>
+    <string name="WhatsNewAntiDeleteDesc">Save deleted messages and all revisions with special badges</string>
+    <string name="WhatsNewNetworkBoost">Network Boost &amp; CameraX 60FPS</string>
+    <string name="WhatsNewNetworkBoostDesc">Parallel chunk loading, 60 FPS video messages, square rounds</string>
+    <string name="WhatsNewStreamer">Streamer Mode &amp; Privacy</string>
+    <string name="WhatsNewStreamerDesc">Hide phone numbers, usernames, avatars and disable screenshots</string>
+    <!-- What\'s New badge -->
+    <string name="WhatsNewNew">✦ NEW</string>
 </resources>
