@@ -293,11 +293,10 @@ public class HundredGramAvatarHistory implements NotificationCenter.Notification
     }
 
     private static void copyFile(File src, File dst) throws Exception {
-        InputStream in = new FileInputStream(src);
-        OutputStream out = new FileOutputStream(dst);
-        copyStream(in, out);
-        in.close();
-        out.close();
+        try (InputStream in = new FileInputStream(src);
+             OutputStream out = new FileOutputStream(dst)) {
+            copyStream(in, out);
+        }
     }
 
     private static void copyStream(InputStream in, OutputStream out) throws Exception {

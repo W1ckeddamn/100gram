@@ -34,7 +34,7 @@ public class HundredGramSttManager {
 
     private static volatile Model sharedModel = null;
     private static final Object modelLock = new Object();
-    private static boolean isDownloading = false;
+    private static volatile boolean isDownloading = false;
 
     public interface DownloadCallback {
         void onProgress(int percent);
