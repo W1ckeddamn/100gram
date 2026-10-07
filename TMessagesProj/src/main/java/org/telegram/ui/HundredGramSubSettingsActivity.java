@@ -908,10 +908,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 }
                 break;
             case ITEM_SHOW_ID_AND_DC:
-                HundredGramConfig.toggleShowIdAndDc();
-                if (listView != null && listView.adapter != null) {
-                    listView.adapter.update(true);
-                }
+                showIdAndDcDialog();
                 break;
             case ITEM_KEEPALIVE_FOREGROUND_SERVICE:
                 HundredGramConfig.toggleKeepAliveForegroundService();
@@ -1690,6 +1687,25 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         AlertDialog dialog = builder.create();
         dialog.show();
         dialog.redPositive();
+    }
+
+    private void showIdAndDcDialog() {
+        if (getParentActivity() == null) return;
+        String[] options = new String[] {
+            LocaleController.getString("HundredGramShowIdDisabled", R.string.HundredGramShowIdDisabled),
+            LocaleController.getString("HundredGramShowIdOnly", R.string.HundredGramShowIdOnly),
+            LocaleController.getString("HundredGramShowIdAndDcValue", R.string.HundredGramShowIdAndDcValue)
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramShowIdAndDc", R.string.HundredGramShowIdAndDc));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setShowIdAndDc(which);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
     }
 
     @Override

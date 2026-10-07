@@ -503,6 +503,12 @@ public class HundredGramConfig {
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 
+    public static void setShowIdAndDc(int value) {
+        showIdAndDc = value;
+        saveInt("showIdAndDc", showIdAndDc);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
     public static void setDoubleTapAction(int action) {
         doubleTapAction = action;
         saveInt("doubleTapAction", doubleTapAction);
