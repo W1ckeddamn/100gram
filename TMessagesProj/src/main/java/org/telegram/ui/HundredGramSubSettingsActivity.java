@@ -370,6 +370,12 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.trackOnlineStatus));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramTrackOnlineStatusInfo", R.string.HundredGramTrackOnlineStatusInfo)));
 
+        int trackedCount = HundredGramConfig.trackedOnlineUsers.size();
+        items.add(UItem.asButton(ITEM_TRACKED_USERS_LIST, R.drawable.msg_usersearch,
+                LocaleController.getString("HundredGramTrackedUsersList", R.string.HundredGramTrackedUsersList),
+                String.format(LocaleController.getString("HundredGramTrackedUsersCount", R.string.HundredGramTrackedUsersCount), trackedCount)));
+        items.add(UItem.asShadow(null));
+
         items.add(UItem.asCheck(ITEM_NOTIFY_ON_USER_ONLINE, LocaleController.getString("HundredGramNotifyUserOnline", R.string.HundredGramNotifyUserOnline))
                 .setChecked(HundredGramConfig.notifyOnUserOnline));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramNotifyUserOnlineInfo", R.string.HundredGramNotifyUserOnlineInfo)));
@@ -378,12 +384,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
             items.add(UItem.asCheck(ITEM_NOTIFY_ALL_CONTACTS_ONLINE, LocaleController.getString("HundredGramNotifyAllContactsOnline", R.string.HundredGramNotifyAllContactsOnline))
                     .setChecked(HundredGramConfig.notifyAllContactsOnline));
             items.add(UItem.asShadow(LocaleController.getString("HundredGramNotifyAllContactsOnlineInfo", R.string.HundredGramNotifyAllContactsOnlineInfo)));
-
-            int trackedCount = HundredGramConfig.trackedOnlineUsers.size();
-            items.add(UItem.asButton(ITEM_TRACKED_USERS_LIST, R.drawable.msg_usersearch,
-                    LocaleController.getString("HundredGramTrackedUsersList", R.string.HundredGramTrackedUsersList),
-                    String.format(LocaleController.getString("HundredGramTrackedUsersCount", R.string.HundredGramTrackedUsersCount), trackedCount)));
-            items.add(UItem.asShadow(LocaleController.getString("HundredGramTrackOnlineStatusInfo", R.string.HundredGramTrackOnlineStatusInfo)));
         }
 
         items.add(UItem.asCheck(ITEM_TRACK_SELF_ACTIVITY, LocaleController.getString("HundredGramTrackSelfActivity", R.string.HundredGramTrackSelfActivity))
