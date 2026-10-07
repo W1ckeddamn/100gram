@@ -777,4 +777,8 @@
     <string name="ProfileFieldGifts">Gifts</string>
     <string name="ProfileDeleteHistoryConfirm">Are you sure you want to delete profile change history?</string>
     <string name="WhatsNewProfileAuditorDesc">Automatic tracking of name, username, phone, bio, birthday and gifts changes with change log screen</string>
+    <string name="WhatsNewTrackedUsers">Tracked Contacts Management</string>
+    <string name="WhatsNewTrackedUsersDesc">Direct access to tracked contacts from settings, add users via + button, and view activity statistics regardless of notifications</string>
+    <string name="WhatsNewSaveToGallery">Save Media to Gallery</string>
+    <string name="WhatsNewSaveToGalleryDesc">Fixed saving photos and videos from media vault to device gallery and public storage</string>
 </resources>

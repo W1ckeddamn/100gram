@@ -783,4 +783,8 @@
     <string name="ProfileFieldGifts">Подарки</string>
     <string name="ProfileDeleteHistoryConfirm">Вы действительно хотите удалить историю изменений профиля?</string>
     <string name="WhatsNewProfileAuditorDesc">Автоматическое отслеживание смены имени, юзернейма, телефона, описания, дня рождения и подарков с отдельным экраном истории</string>
+    <string name="WhatsNewTrackedUsers">Управление отслеживанием контактов</string>
+    <string name="WhatsNewTrackedUsersDesc">Быстрый доступ к списку отслеживаемых из настроек, добавление по кнопке «+» и статистика активности независимо от уведомлений</string>
+    <string name="WhatsNewSaveToGallery">Сохранение медиа в Галерею</string>
+    <string name="WhatsNewSaveToGalleryDesc">Исправлен экспорт фото и видео из изолированного медиасейфа в системную галерею и память устройства</string>
 </resources>

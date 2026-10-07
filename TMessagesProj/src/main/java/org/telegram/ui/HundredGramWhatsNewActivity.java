@@ -139,7 +139,27 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
                 LocaleController.getString("WhatsNewProfileAuditorDesc", R.string.WhatsNewProfileAuditorDesc),
                 LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
                 true,
-                null
+                v -> presentFragment(new HundredGramProfileLogActivity(getUserConfig().getClientUserId()))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_usersearch,
+                LocaleController.getString("WhatsNewTrackedUsers", R.string.WhatsNewTrackedUsers),
+                LocaleController.getString("WhatsNewTrackedUsersDesc", R.string.WhatsNewTrackedUsersDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramTrackedUsersActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_download,
+                LocaleController.getString("WhatsNewSaveToGallery", R.string.WhatsNewSaveToGallery),
+                LocaleController.getString("WhatsNewSaveToGalleryDesc", R.string.WhatsNewSaveToGalleryDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_VAULT))
         )));
         items.add(UItem.asShadow(null));
 

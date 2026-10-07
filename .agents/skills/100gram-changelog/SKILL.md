@@ -173,6 +173,6 @@ powershell -ExecutionPolicy Bypass -File .agents/skills/100gram-changelog/script
 - [ ] Внесены ли изменения в [`CHANGELOG.md`](file:///D:/100gram/CHANGELOG.md) в секцию `[Unreleased]`?
 - [ ] Использованы ли корректные теги подсистем (`[UI]`, `[Camera]`, `[Tracker]`, `[Vault]`, `[Core]`)?
 - [ ] Если добавлен новый тумблер или экран — внесен ли он в [`FEATURES.md`](file:///D:/100gram/FEATURES.md)?
-- [ ] Если добавлены пользовательские функции — обновлен ли экран [`HundredGramWhatsNewActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramWhatsNewActivity.java)?
+- [ ] Если добавлены пользовательские функции — обновлен ли экран [`HundredGramWhatsNewActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramWhatsNewActivity.java) по регламенту [`100gram-whatsnew`](file:///D:/100gram/.agents/skills/100gram-whatsnew/SKILL.md)?
 - [ ] Сохранены ли ссылки на автора `@w1ckeddamn` и репозиторий `https://github.com/W1ckeddamn/100gram`?
 - [ ] Проверена ли компиляция проекта через `compileAfatDebugJavaWithJavac`?

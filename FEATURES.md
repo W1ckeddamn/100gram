@@ -484,3 +484,40 @@
   * **Особенности:** Нативное декодирование аудио `OGG Opus` в 16 кГц PCM через `MediaExtractor` / `MediaCodec`, асинхронное распознавание речи, интеграция в нативную кнопку `TranscribeButton`, сохранение результата в `MessagesStorage`.
   * **Ключевые классы:** [`HundredGramSttManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramSttManager.java), [`TranscribeButton.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/TranscribeButton.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
   * **Статус:** В релизе.
+
+---
+
+## 25. Аудит профилей и история изменений (Profile Auditor & Change Log)
+
+* **Отслеживание всех изменений профилей пользователей**:
+  * **Описание:** Автоматически фиксирует и сохраняет в SQLite базу данных любые изменения в профиле собеседника или контакта при синхронизации и просмотре.
+  * **Что отслеживается:**
+    * Смена имени и фамилии (`first_name`, `last_name`);
+    * Смена публичного юзернейма (`@username`);
+    * Изменение описания / информации о себе (`about` / Bio);
+    * Появление, скрытие или изменение номера телефона (`phone`);
+    * Изменение даты дня рождения (`birthday`);
+    * Изменение количества звездных подарков (`stargifts_count`).
+  * **Где открывается (UI):** В профиле пользователя (`ProfileActivity`) -> меню с 3 точками в правом верхнем углу -> пункт **«История профиля»** (с отображением счётчика изменений).
+  * **Экран истории:** [`HundredGramProfileLogActivity`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramProfileLogActivity.java) с наглядным сравнением старого и нового значений («Было: ...» -> «Новое значение»), датой и временем события, копированием значений по клику и кнопкой полной очистки истории.
+  * **Ключевые классы:** [`HundredGramProfileLogger.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramProfileLogger.java), [`HundredGramProfileLogActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramProfileLogActivity.java), [`MessagesController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java).
+  * **Статус:** В релизе.
+
+---
+
+## 26. Управление отслеживаемыми контактами (Tracked Users Management)
+
+* **Централизованное управление списком мониторинга активности**:
+  * **Описание:** Позволяет отслеживать активность (онлайн/оффлайн) конкретных контактов и любых пользователей без добавления всех подряд.
+  * **Где открывается (UI):**
+    1. `Настройки 100gram` -> раздел «Инструменты и утилиты» -> **«Отслеживаемые контакты»** (со счётчиком `N конт.`).
+    2. `Настройки 100gram` -> `Мониторинг активности` -> **«Отслеживаемые контакты»** (доступен всегда, независимо от включения пуш-уведомлений).
+    3. В профиле любого пользователя: тумблер **«Отслеживать активность»** или меню 3 точек -> «Уведомлять об онлайне».
+  * **Возможности экрана управления:**
+    * Добавление пользователя по кнопке **+** в ActionBar или по плавающей круглой кнопке (FAB);
+    * Кнопка «Добавить пользователя» на пустом экране со списком контактов;
+    * Просмотр аватарки, статуса последнего онлайна каждого отслеживаемого человека;
+    * Клик по пользователю открывает BottomSheet детальной истории сессий за день;
+    * Долгий тап открывает меню действий (удаление из отслеживания, переход в профиль, очистка).
+  * **Ключевые классы:** [`HundredGramTrackedUsersActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramTrackedUsersActivity.java), [`HundredGramActivityTracker.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramActivityTracker.java), [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java).
+  * **Статус:** В релизе.
