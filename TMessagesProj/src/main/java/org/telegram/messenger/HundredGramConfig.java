@@ -709,12 +709,13 @@ public class HundredGramConfig {
         }
         switch (mode) {
             case DOWNLOAD_BOOST_ULTRA:
-                return 12;
-            case DOWNLOAD_BOOST_FAST:
+                // 12 caused DC flood/reset; 8 is stable max without FLOOD_WAIT
                 return 8;
+            case DOWNLOAD_BOOST_FAST:
+                return 6;
             case DOWNLOAD_BOOST_OFF:
             default:
-                return 4;
+                return 4;  // Telegram stock
         }
     }
 
@@ -732,12 +733,14 @@ public class HundredGramConfig {
         }
         switch (mode) {
             case DOWNLOAD_BOOST_ULTRA:
-                return 1024 * 1024; // 1 MB
-            case DOWNLOAD_BOOST_FAST:
+                // Max safe limit per Telegram MTProto: 512 KB
+                // Values above 512 KB cause LIMIT_INVALID on most DCs
                 return 1024 * 512;  // 512 KB
+            case DOWNLOAD_BOOST_FAST:
+                return 1024 * 256;  // 256 KB
             case DOWNLOAD_BOOST_OFF:
             default:
-                return 1024 * 128;  // 128 KB
+                return 1024 * 128;  // 128 KB (Telegram stock)
         }
     }
 

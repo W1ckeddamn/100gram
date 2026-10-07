@@ -1269,7 +1269,7 @@ public class FileLoader extends BaseController {
             return new File("");
         }
         File vaultFile = HundredGramVaultManager.getInstance(currentAccount).getVaultFile(message);
-        if (vaultFile != null && vaultFile.exists()) {
+        if (vaultFile != null && vaultFile.exists() && vaultFile.length() > 0) {
             return vaultFile;
         }
         if (message instanceof TLRPC.TL_messageService) {
@@ -1457,7 +1457,7 @@ public class FileLoader extends BaseController {
         }
         String attachFileName = getAttachFileName(attach, ext);
         File vaultFile = HundredGramVaultManager.getInstance(currentAccount).getVaultFileByName(attachFileName);
-        if (vaultFile != null && vaultFile.exists()) {
+        if (vaultFile != null && vaultFile.exists() && vaultFile.length() > 0) {
             return vaultFile;
         }
         if (documentId != 0) {
