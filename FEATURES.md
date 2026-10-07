@@ -412,6 +412,7 @@
 | **Sticker & GIF Size** | `ChatMessageCell.java` | `stickerSize`, `gifSize` | Настройки 100gram -> Медиа -> Стикеры и GIF |
 | **Round Video from Gallery** | `PhotoViewer.java` | `roundVideoMaxSide` | Просмотрщик фото/видео, Меню кнопки отправки |
 | **What's New & About** | `HundredGramWhatsNewActivity.java` | — | Настройки 100gram -> О приложении |
+| **Local Speech-to-Text (STT)** | `HundredGramSttManager.java` | `localSttEnabled` | Настройки 100gram -> Действия и жесты -> Локальная расшифровка |
 
 ---
 
@@ -452,3 +453,14 @@
   * **Ключевые классы:** [`HundredGramWhatsNewActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramWhatsNewActivity.java), [`HundredGramSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java).
   * **Статус:** В релизе.
 
+---
+
+## 24. Локальный перевод голосовых сообщений в текст без Premium (Offline Speech-to-Text via Vosk)
+
+* **Офлайн-транскрипция голосовых сообщений (STT)**:
+  * **Описание:** Позволяет расшифровывать любые голосовые сообщения в текст прямо на устройстве пользователя с помощью встроенного движка Vosk AI без подписки Telegram Premium. Не отправляет аудио на внешние сервера (нулевой внешний трафик).
+  * **Где включается (UI):** `Настройки 100gram` -> `Действия и жесты` -> блок `Локальная расшифровка речи` -> переключатель «Локальный перевод голосовых (STT)».
+  * **Управление моделью:** Кнопка «Модель распознавания (Vosk RU)» позволяет скачивать модель (~43 МБ) по требованию или удалять её для экономии памяти. При нажатии на кнопку расшифровки («А») без скачанной модели предлагается автоматическая загрузка.
+  * **Особенности:** Нативное декодирование аудио `OGG Opus` в 16 кГц PCM через `MediaExtractor` / `MediaCodec`, асинхронное распознавание речи, интеграция в нативную кнопку `TranscribeButton`, сохранение результата в `MessagesStorage`.
+  * **Ключевые классы:** [`HundredGramSttManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramSttManager.java), [`TranscribeButton.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/TranscribeButton.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+  * **Статус:** В релизе.

@@ -730,6 +730,8 @@
     <string name="WhatsNewRoundVideoDesc">Отправка любого видео из галереи как круглое видеосообщение в один тап</string>
     <string name="WhatsNewLayer229">Layer 229 и инлайн-кнопки</string>
     <string name="WhatsNewLayer229Desc">Интерактивные кнопки в тексте, Mini Apps, WebApps и уникальные подарки Layer 229</string>
+    <string name="WhatsNewLocalStt">Офлайн-расшифровка голосовых (STT)</string>
+    <string name="WhatsNewLocalSttDesc">Бесплатный перевод голосовых в текст без Telegram Premium. 100% на устройстве через Vosk AI с динамической загрузкой модели.</string>
     <string name="WhatsNewSettingsAudit">Полный редизайн настроек</string>
     <string name="WhatsNewSettingsAuditDesc">Удалён мёртвый код, подключены заглушки, настройки переструктурированы и сгруппированы</string>
     <!-- What\'s New — v1.1 items -->

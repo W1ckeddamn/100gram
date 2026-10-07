@@ -724,6 +724,8 @@
     <string name="WhatsNewRoundVideoDesc">Send any gallery video as a round video message in one tap</string>
     <string name="WhatsNewLayer229">Layer 229 &amp; Inline Buttons</string>
     <string name="WhatsNewLayer229Desc">Rich inline buttons, Mini Apps, WebApps and unique Layer 229 gifts</string>
+    <string name="WhatsNewLocalStt">Offline Voice Transcription (STT)</string>
+    <string name="WhatsNewLocalSttDesc">Free voice-to-text without Telegram Premium. 100% on-device via Vosk AI model with dynamic download.</string>
     <string name="WhatsNewSettingsAudit">Full Settings Redesign</string>
     <string name="WhatsNewSettingsAuditDesc">Dead code removed, stubs connected, settings restructured and grouped</string>
     <!-- What\'s New — v1.1 items -->
