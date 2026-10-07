@@ -498,7 +498,9 @@
     * Появление, скрытие или изменение номера телефона (`phone`);
     * Изменение даты дня рождения (`birthday`);
     * Изменение количества звездных подарков (`stargifts_count`).
-  * **Где открывается (UI):** В профиле пользователя (`ProfileActivity`) -> меню с 3 точками в правом верхнем углу -> пункт **«История профиля»** (с отображением счётчика изменений).
+  * **Где включается (UI):** `Настройки 100gram` -> `Мониторинг активности` -> блок `История профиля` -> тумблер **«Аудит изменений профиля»**.
+  * **Где просматривается (UI):** В профиле пользователя (`ProfileActivity`) -> меню с 3 точками в правом верхнем углу -> пункт **«История профиля»** (с отображением счётчика изменений).
+  * **Ключ конфигурации:** `HundredGramConfig.profileHistoryEnabled` (`boolean`, по умолчанию `true`).
   * **Экран истории:** [`HundredGramProfileLogActivity`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramProfileLogActivity.java) с наглядным сравнением старого и нового значений («Было: ...» -> «Новое значение»), датой и временем события, копированием значений по клику и кнопкой полной очистки истории.
   * **Ключевые классы:** [`HundredGramProfileLogger.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramProfileLogger.java), [`HundredGramProfileLogActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramProfileLogActivity.java), [`MessagesController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java).
   * **Статус:** В релизе.

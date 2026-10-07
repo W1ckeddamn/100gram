@@ -100,6 +100,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_TRACK_SELF_ACTIVITY = 187;
     private static final int ITEM_MY_ACTIVITY_LOG = 188;
     private static final int ITEM_AVATAR_HISTORY_ENABLED = 97;
+    private static final int ITEM_PROFILE_HISTORY_ENABLED = 98;
 
     // Item IDs for CATEGORY_PRIVACY
     private static final int ITEM_HIDE_PHONE_NUMBER = 20;
@@ -253,10 +254,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private void fillVaultItems(ArrayList<UItem> items) {
         items.add(UItem.asHeader(LocaleController.getString("HundredGramVaultHeader", R.string.HundredGramVaultHeader)));
 
-        items.add(UItem.asButton(ITEM_VAULT_BROWSE_FILES, R.drawable.msg_folders,
-                LocaleController.getString("VaultBrowseFiles", R.string.VaultBrowseFiles)));
-        items.add(UItem.asShadow(LocaleController.getString("VaultBrowseFilesInfo", R.string.VaultBrowseFilesInfo)));
-
         items.add(UItem.asCheck(ITEM_AUTO_DOWNLOAD_MEDIA_VAULT, LocaleController.getString("HundredGramMediaVault", R.string.HundredGramMediaVault))
                 .setChecked(HundredGramConfig.autoDownloadMediaVault));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramMediaVaultInfo", R.string.HundredGramMediaVaultInfo)));
@@ -352,15 +349,11 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asHeader(LocaleController.getString("HundredGramProtectedVaultTitle", R.string.HundredGramProtectedVaultTitle)));
         long vaultSize = HundredGramVaultManager.getInstance(currentAccount).getVaultTotalSize();
         String sizeFormatted = AndroidUtilities.formatFileSize(vaultSize);
-        items.add(UItem.asButton(ITEM_PROTECTED_VAULT_SIZE, R.drawable.msg_filled_storageusage,
-                LocaleController.getString("HundredGramProtectedVaultSize", R.string.HundredGramProtectedVaultSize), sizeFormatted));
+        items.add(UItem.asButton(ITEM_PROTECTED_VAULT_SIZE, R.drawable.msg_folders,
+                LocaleController.getString("VaultBrowseFiles", R.string.VaultBrowseFiles), sizeFormatted));
         items.add(UItem.asButton(ITEM_CLEAR_PROTECTED_VAULT, R.drawable.msg_clear,
                 LocaleController.getString("HundredGramProtectedVaultClear", R.string.HundredGramProtectedVaultClear), ""));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramProtectedVaultInfo", R.string.HundredGramProtectedVaultInfo)));
-
-        items.add(UItem.asHeader(LocaleController.getString("HundredGramVaultClearHeader", R.string.HundredGramVaultClearHeader)));
-        items.add(UItem.asButton(ITEM_CLEAR_ALL_VAULT, R.drawable.msg_clear, LocaleController.getString("HundredGramVaultClearAll", R.string.HundredGramVaultClearAll), ""));
-        items.add(UItem.asShadow(LocaleController.getString("HundredGramVaultClearAllInfo", R.string.HundredGramVaultClearAllInfo)));
     }
 
     private void fillTrackerItems(ArrayList<UItem> items) {
@@ -399,6 +392,11 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_AVATAR_HISTORY_ENABLED, LocaleController.getString("AvatarHistory", R.string.AvatarHistory))
                 .setChecked(HundredGramConfig.avatarHistoryEnabled));
         items.add(UItem.asShadow(LocaleController.getString("AvatarHistoryInfo", R.string.AvatarHistoryInfo)));
+
+        items.add(UItem.asHeader(LocaleController.getString("ProfileChangeLogTitle", R.string.ProfileChangeLogTitle)));
+        items.add(UItem.asCheck(ITEM_PROFILE_HISTORY_ENABLED, LocaleController.getString("ProfileHistoryToggle", R.string.ProfileHistoryToggle))
+                .setChecked(HundredGramConfig.profileHistoryEnabled));
+        items.add(UItem.asShadow(LocaleController.getString("ProfileHistoryInfo", R.string.ProfileHistoryInfo)));
     }
 
     private void fillPrivacyItems(ArrayList<UItem> items) {
@@ -817,14 +815,10 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 }
                 break;
             case ITEM_VAULT_BROWSE_FILES:
-                presentFragment(new HundredGramVaultViewerActivity());
-                break;
-            case ITEM_CLEAR_ALL_VAULT:
-                showClearAllVaultConfirmDialog();
-                break;
             case ITEM_PROTECTED_VAULT_SIZE:
                 presentFragment(new HundredGramVaultViewerActivity());
                 break;
+            case ITEM_CLEAR_ALL_VAULT:
             case ITEM_CLEAR_PROTECTED_VAULT:
                 showClearProtectedVaultConfirmDialog();
                 break;
@@ -1091,6 +1085,13 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.avatarHistoryEnabled);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.avatarHistoryEnabled);
+                }
+                break;
+            case ITEM_PROFILE_HISTORY_ENABLED:
+                HundredGramConfig.toggleProfileHistoryEnabled();
+                item.setChecked(HundredGramConfig.profileHistoryEnabled);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.profileHistoryEnabled);
                 }
                 break;
 
@@ -1450,26 +1451,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         builder.show();
     }
 
-    private void showClearAllVaultConfirmDialog() {
-        if (getParentActivity() == null) return;
-        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-        builder.setTitle(LocaleController.getString("HundredGramVaultClearAll", R.string.HundredGramVaultClearAll));
-        builder.setMessage(LocaleController.getString("HundredGramVaultClearAllConfirm", R.string.HundredGramVaultClearAllConfirm));
-        builder.setPositiveButton(LocaleController.getString("Clear", R.string.Clear), (dialog, which) -> {
-            FileLoader.getInstance(currentAccount).cancelLoadAllFiles();
-            FileLoader.getInstance(currentAccount).getFileDatabase().clearAllVaultFiles(freedBytes -> {
-                String sizeStr = AndroidUtilities.formatFileSize(freedBytes);
-                if (BulletinFactory.canShowBulletin(HundredGramSubSettingsActivity.this)) {
-                    BulletinFactory.of(HundredGramSubSettingsActivity.this).createSimpleBulletin(R.raw.ic_delete, LocaleController.formatString("HundredGramVaultClearedAll", R.string.HundredGramVaultClearedAll, sizeStr)).show();
-                }
-            });
-        });
-        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        dialog.redPositive();
-    }
-
     private void showClearProtectedVaultConfirmDialog() {
         if (getParentActivity() == null) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
@@ -1478,6 +1459,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         builder.setPositiveButton(LocaleController.getString("Clear", R.string.Clear), (dialog, which) -> {
             long totalSize = HundredGramVaultManager.getInstance(currentAccount).getVaultTotalSize();
             String sizeStr = AndroidUtilities.formatFileSize(totalSize);
+            FileLoader.getInstance(currentAccount).cancelLoadAllFiles();
+            FileLoader.getInstance(currentAccount).getFileDatabase().clearAllVaultFiles(freedDbBytes -> {});
             HundredGramVaultManager.getInstance(currentAccount).clearVault(0, () -> {
                 if (listView != null && listView.adapter != null) {
                     listView.adapter.update(true);

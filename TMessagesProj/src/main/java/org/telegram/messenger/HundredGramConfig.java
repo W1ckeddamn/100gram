@@ -72,6 +72,7 @@ public class HundredGramConfig {
     public static boolean hideStoriesBar;
     public static boolean showSecondsInTime;
     public static boolean avatarHistoryEnabled = true;
+    public static boolean profileHistoryEnabled = true;
     public static boolean developerModeEnabled = true;
     public static boolean copyCodeButtonEnabled = true;
     public static boolean prettyJsonViewerEnabled = true;
@@ -403,6 +404,7 @@ public class HundredGramConfig {
             hideStoriesBar = preferences.getBoolean("hideStoriesBar", false);
             showSecondsInTime = preferences.getBoolean("showSecondsInTime", false);
             avatarHistoryEnabled = preferences.getBoolean("avatarHistoryEnabled", true);
+            profileHistoryEnabled = preferences.getBoolean("profileHistoryEnabled", true);
             developerModeEnabled = preferences.getBoolean("developerModeEnabled", true);
             copyCodeButtonEnabled = preferences.getBoolean("copyCodeButtonEnabled", true);
             prettyJsonViewerEnabled = preferences.getBoolean("prettyJsonViewerEnabled", true);
@@ -1348,6 +1350,11 @@ public class HundredGramConfig {
     public static void toggleAvatarHistoryEnabled() {
         avatarHistoryEnabled = !avatarHistoryEnabled;
         save("avatarHistoryEnabled", avatarHistoryEnabled);
+    }
+
+    public static void toggleProfileHistoryEnabled() {
+        profileHistoryEnabled = !profileHistoryEnabled;
+        save("profileHistoryEnabled", profileHistoryEnabled);
     }
 
     public static void toggleDeveloperMode() {

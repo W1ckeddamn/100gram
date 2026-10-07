@@ -45,6 +45,9 @@ public class HundredGramProfileLogger {
     }
 
     public void checkAndLogProfileChanges(int account, TLRPC.User oldUser, TLRPC.User newUser) {
+        if (!HundredGramConfig.profileHistoryEnabled) {
+            return;
+        }
         if (oldUser == null || newUser == null) {
             return;
         }
