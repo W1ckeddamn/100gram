@@ -406,6 +406,8 @@ public class MessagesStorage extends BaseController {
             database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_message_edits ON hundredgram_message_edits(uid, mid, edit_date);").stepThis().dispose();
             database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_vault(mid INTEGER, uid INTEGER, file_name TEXT, vault_path TEXT, PRIMARY KEY(mid, uid, file_name));").stepThis().dispose();
             database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_vault ON hundredgram_vault(uid, mid);").stepThis().dispose();
+            database.executeFast("CREATE TABLE IF NOT EXISTS profile_changes_log(user_id INTEGER, field_name TEXT, old_value TEXT, new_value TEXT, date INTEGER);").stepThis().dispose();
+            database.executeFast("CREATE INDEX IF NOT EXISTS idx_profile_changes_log ON profile_changes_log(user_id, date);").stepThis().dispose();
         } catch (Exception e) {
             FileLog.e(e);
         }
@@ -785,6 +787,8 @@ public class MessagesStorage extends BaseController {
         database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_message_edits ON hundredgram_message_edits(uid, mid, edit_date);").stepThis().dispose();
         database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_vault(mid INTEGER, uid INTEGER, file_name TEXT, vault_path TEXT, PRIMARY KEY(mid, uid, file_name));").stepThis().dispose();
         database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_vault ON hundredgram_vault(uid, mid);").stepThis().dispose();
+        database.executeFast("CREATE TABLE IF NOT EXISTS profile_changes_log(user_id INTEGER, field_name TEXT, old_value TEXT, new_value TEXT, date INTEGER);").stepThis().dispose();
+        database.executeFast("CREATE INDEX IF NOT EXISTS idx_profile_changes_log ON profile_changes_log(user_id, date);").stepThis().dispose();
 
     }
 

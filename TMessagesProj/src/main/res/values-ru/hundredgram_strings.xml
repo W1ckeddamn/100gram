@@ -768,4 +768,19 @@
     <string name="LocalSttModelDeleted">Голосовая модель удалена</string>
     <string name="LocalSttDownloadingAudio">Загрузка голосового сообщения...</string>
     <string name="LocalSttNoSpeechDetected">Речь не распознана</string>
+
+    <!-- Profile Change History -->
+    <string name="ProfileChangeLogTitle">История профиля</string>
+    <string name="ProfileChangeLogEmpty">Изменения профиля ещё не зафиксированы</string>
+    <string name="ProfileFieldName">Имя</string>
+    <string name="ProfileFieldUsername">Юзернейм</string>
+    <string name="ProfileFieldPhone">Телефон</string>
+    <string name="ProfileFieldBio">О себе</string>
+    <string name="ProfileFieldBirthday">День рождения</string>
+    <string name="ProfileChangeWas">Было:</string>
+    <string name="ProfileChangeLogMenuItem">История профиля</string>
+    <string name="ProfileChangeLogMenuCount">История профиля (%1$d)</string>
+    <string name="ProfileFieldGifts">Подарки</string>
+    <string name="ProfileDeleteHistoryConfirm">Вы действительно хотите удалить историю изменений профиля?</string>
+    <string name="WhatsNewProfileAuditorDesc">Автоматическое отслеживание смены имени, юзернейма, телефона, описания, дня рождения и подарков с отдельным экраном истории</string>
 </resources>

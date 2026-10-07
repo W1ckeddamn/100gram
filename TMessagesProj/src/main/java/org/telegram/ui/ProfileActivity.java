@@ -143,6 +143,7 @@ import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.HundredGramUtils;
 import org.telegram.messenger.HundredGramActivityTracker;
 import org.telegram.messenger.HundredGramAvatarHistory;
+import org.telegram.messenger.HundredGramProfileLogger;
 import org.telegram.messenger.FlagSecureReason;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
@@ -601,6 +602,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private final static int hundredgram_user_activity = 121;
     private final static int hundredgram_chat_settings = 122;
     private final static int hundredgram_avatar_history = 123;
+    private final static int hundredgram_profile_history = 124;
 
     private Rect rect = new Rect();
 
@@ -2811,6 +2813,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 } else if (id == hundredgram_avatar_history) {
                     long targetDialogId = dialogId != 0 ? dialogId : (userId != 0 ? userId : -chatId);
                     presentFragment(new HundredGramAvatarHistoryActivity(targetDialogId));
+                } else if (id == hundredgram_profile_history) {
+                    if (userId != 0) {
+                        presentFragment(new HundredGramProfileLogActivity(userId));
+                    }
                 } else if (id == gallery_menu_save) {
                     if (getParentActivity() == null) {
                         return;
@@ -12347,6 +12353,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         int count = HundredGramAvatarHistory.getInstance().getAvatarHistoryCount(userId);
                         String title = count > 0 ? LocaleController.formatString("AvatarHistoryCount", R.string.AvatarHistoryCount, count) : LocaleController.getString("AvatarHistoryTitle", R.string.AvatarHistoryTitle);
                         otherItem.addSubItem(hundredgram_avatar_history, R.drawable.msg_photos, title);
+                        otherItem.addSubItem(hundredgram_profile_history, R.drawable.msg_contacts, LocaleController.getString("ProfileChangeLogMenuItem", R.string.ProfileChangeLogMenuItem));
                     }
                     if (isBot) {
                         otherItem.addSubItem(bot_privacy, R.drawable.menu_privacy_policy, getString(R.string.BotPrivacyPolicy));

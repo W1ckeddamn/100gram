@@ -133,6 +133,16 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
         )));
         items.add(UItem.asShadow(null));
 
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_contacts,
+                LocaleController.getString("ProfileChangeLogTitle", R.string.ProfileChangeLogTitle),
+                LocaleController.getString("WhatsNewProfileAuditorDesc", R.string.WhatsNewProfileAuditorDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                null
+        )));
+        items.add(UItem.asShadow(null));
+
         // ==========================================
         // ВЕРСИЯ 1.1 (КАРТОЧКИ ПРЕДЫДУЩИХ ВЕРСИЙ)
         // ==========================================

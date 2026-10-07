@@ -6852,6 +6852,9 @@ public class MessagesController extends BaseController implements NotificationCe
         if (oldUser == user && !force) {
             return false;
         }
+        if (oldUser != null && !fromCache && !user.min) {
+            HundredGramProfileLogger.getInstance().checkAndLogProfileChanges(currentAccount, oldUser, user);
+        }
         if (oldUser != null && !TextUtils.isEmpty(oldUser.username)) {
             objectsByUsernames.remove(oldUser.username.toLowerCase());
         }
@@ -7860,6 +7863,10 @@ public class MessagesController extends BaseController implements NotificationCe
                             blockePeers.removeAt(index);
                             getNotificationCenter().postNotificationName(NotificationCenter.blockedUsersDidLoad);
                         }
+                    }
+                    TLRPC.UserFull oldUserFull = fullUsers.get(user.id);
+                    if (oldUserFull != null) {
+                        HundredGramProfileLogger.getInstance().checkAndLogUserFull(currentAccount, oldUserFull, userFull);
                     }
                     fullUsers.put(user.id, userFull);
                     getTranslateController().updateDialogFull(user.id);

@@ -9,6 +9,11 @@
 ## [Unreleased]
 
 ### Added
+- [Profile/Auditor] Расширенный аудит профилей (Profile Auditor & Change Log):
+  - Создан сервис отслеживания изменений профилей [`HundredGramProfileLogger`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramProfileLogger.java) с сохранением в таблицу базы данных SQLite `profile_changes_log`.
+  - Автоматическое логирование при обновлениях через `MessagesController.putUser` и `loadFullUser`: смена имени и фамилии (`first_name`, `last_name`), юзернейма (`@username`), номера телефона (появление, скрытие или изменение), описания профиля (`about` / Bio), дня рождения (`birthday`) и счетчика подарков (`stargifts_count`).
+  - Разработан специализированный экран истории профиля [`HundredGramProfileLogActivity`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramProfileLogActivity.java) с отображением старого и нового значений, форматированной даты и времени, копированием значений по клику и возможностью очистки истории.
+  - Добавлен пункт меню «История профиля» в меню три точки на экране профиля пользователя (`ProfileActivity`).
 - [Audio/STT] Локальный офлайн-перевод голосовых сообщений в текст (Speech-to-Text без Telegram Premium):
   - Интегрирована нейросетевая модель Vosk (`vosk-android:0.3.47`) для полностью локального распознавания речи на устройстве пользователя с нулевым внешним трафиком.
   - Динамическая загрузка компактной языковой модели (~43 МБ) по требованию без утяжеления установочного APK. Модель загружается в фоновом режиме с индикатором прогресса и может быть удалена в любой момент из настроек для освобождения памяти.

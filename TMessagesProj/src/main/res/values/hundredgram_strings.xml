@@ -762,4 +762,19 @@
     <string name="LocalSttModelDeleted">Voice model removed</string>
     <string name="LocalSttDownloadingAudio">Downloading voice message...</string>
     <string name="LocalSttNoSpeechDetected">No speech recognized</string>
+
+    <!-- Profile Change History -->
+    <string name="ProfileChangeLogTitle">Profile History</string>
+    <string name="ProfileChangeLogEmpty">No profile changes recorded yet</string>
+    <string name="ProfileFieldName">Name</string>
+    <string name="ProfileFieldUsername">Username</string>
+    <string name="ProfileFieldPhone">Phone</string>
+    <string name="ProfileFieldBio">Bio</string>
+    <string name="ProfileFieldBirthday">Birthday</string>
+    <string name="ProfileChangeWas">Was:</string>
+    <string name="ProfileChangeLogMenuItem">Profile History</string>
+    <string name="ProfileChangeLogMenuCount">Profile History (%1$d)</string>
+    <string name="ProfileFieldGifts">Gifts</string>
+    <string name="ProfileDeleteHistoryConfirm">Are you sure you want to delete profile change history?</string>
+    <string name="WhatsNewProfileAuditorDesc">Automatic tracking of name, username, phone, bio, birthday and gifts changes with change log screen</string>
 </resources>
