@@ -1838,6 +1838,12 @@ public class AndroidUtilities {
             if (pathString.matches(Pattern.quote(new File(ApplicationLoader.applicationContext.getCacheDir(), "voip_logs").getAbsolutePath()) + "/\\d+\\.log")) {
                 return false;
             }
+            // Allow saving vault files (hundredgram_vault) to gallery
+            // Vault is in internal storage by design, but user-initiated saves must be allowed
+            String vaultDirPath = new File(ApplicationLoader.getFilesDirFixed(), "hundredgram_vault").getAbsolutePath();
+            if (pathString.startsWith(vaultDirPath + "/")) {
+                return false;
+            }
             int tries = 0;
             while (true) {
                 if (pathString != null && pathString.length() > 4096) {
