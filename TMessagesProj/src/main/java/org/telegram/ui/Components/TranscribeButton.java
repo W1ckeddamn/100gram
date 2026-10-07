@@ -215,7 +215,7 @@ public class TranscribeButton {
         boolean processClick, toOpen = !shouldBeOpen;
         if (!shouldBeOpen) {
             processClick = !loading;
-            if ((premium || canTranscribeTrial(parent.getMessageObject())) && parent.getMessageObject().isSent()) {
+            if ((premium || org.telegram.messenger.HundredGramConfig.localSttEnabled || canTranscribeTrial(parent.getMessageObject())) && parent.getMessageObject().isSent()) {
                 setLoading(true, true);
             }
         } else {
@@ -229,9 +229,11 @@ public class TranscribeButton {
         }
         pressed = false;
         if (processClick) {
-            if (!premium && toOpen) {
-                if (canTranscribeTrial(parent.getMessageObject()) || parent.getMessageObject() != null && parent.getMessageObject().messageOwner != null && !TextUtils.isEmpty(parent.getMessageObject().messageOwner.voiceTranscription)) {
-                    transcribePressed(parent.getMessageObject(), toOpen, parent.getDelegate());
+            if (toOpen) {
+                if (parent.getMessageObject() != null && parent.getMessageObject().messageOwner != null &&
+                        !TextUtils.isEmpty(parent.getMessageObject().messageOwner.voiceTranscription) &&
+                        parent.getMessageObject().messageOwner.voiceTranscriptionFinal) {
+                    transcribePressed(parent.getMessageObject(), true, parent.getDelegate());
                 } else if (org.telegram.messenger.HundredGramConfig.localSttEnabled) {
                     if (!org.telegram.messenger.HundredGramSttManager.isModelDownloaded()) {
                         org.telegram.messenger.HundredGramSttManager.showDownloadDialog(null, () -> {
@@ -242,6 +244,9 @@ public class TranscribeButton {
                         setLoading(true, true);
                         transcribeLocally(parent.getMessageObject());
                     }
+                } else if (premium || canTranscribeTrial(parent.getMessageObject())) {
+                    clickedToOpen = true;
+                    transcribePressed(parent.getMessageObject(), true, parent.getDelegate());
                 } else {
                     if (parent.getDelegate() != null) {
                         if (MessagesController.getInstance(parent.currentAccount).transcribeAudioTrialWeeklyNumber > 0) {
@@ -252,10 +257,7 @@ public class TranscribeButton {
                     }
                 }
             } else {
-                if (toOpen) {
-                    clickedToOpen = true;
-                }
-                transcribePressed(parent.getMessageObject(), toOpen, parent.getDelegate());
+                transcribePressed(parent.getMessageObject(), false, parent.getDelegate());
             }
         }
     }
@@ -795,7 +797,16 @@ public class TranscribeButton {
             return;
         }
         int account = messageObject.currentAccount;
-        java.io.File voiceFile = org.telegram.messenger.FileLoader.getInstance(account).getPathToMessage(messageObject.messageOwner, true);
+        java.io.File voiceFile = null;
+        if (!TextUtils.isEmpty(messageObject.messageOwner.attachPath)) {
+            java.io.File f = new java.io.File(messageObject.messageOwner.attachPath);
+            if (f.exists() && f.length() > 0) {
+                voiceFile = f;
+            }
+        }
+        if (voiceFile == null) {
+            voiceFile = org.telegram.messenger.FileLoader.getInstance(account).getPathToMessage(messageObject.messageOwner, true);
+        }
         if (voiceFile == null || !voiceFile.exists()) {
             voiceFile = org.telegram.messenger.FileLoader.getInstance(account).getPathToMessage(messageObject.messageOwner, false);
         }
@@ -928,6 +939,9 @@ public class TranscribeButton {
     }
 
     public static boolean showTranscribeLock(MessageObject messageObject) {
+        if (org.telegram.messenger.HundredGramConfig.localSttEnabled) {
+            return false;
+        }
         if (messageObject == null || messageObject.messageOwner == null) {
             return false;
         }

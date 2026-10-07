@@ -12718,6 +12718,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             !currentMessageObject.isRepostPreview &&
             (!currentMessageObject.isOutOwner() || currentMessageObject.isSent()) &&
             (
+                org.telegram.messenger.HundredGramConfig.localSttEnabled
+                ||
                 UserConfig.getInstance(currentAccount).isPremium()
                 ||
                 TranscribeButton.isFreeTranscribeInChat(currentMessageObject)
@@ -12738,7 +12740,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     currentMessageObject.getDuration() >= 60
                 )
             ) && (
-                currentMessageObject.isVoice() && useSeekBarWaveform ||
+                currentMessageObject.isVoice() ||
                 currentMessageObject.isRoundVideo()
             ) && currentMessageObject.messageOwner != null && !(MessageObject.getMedia(currentMessageObject.messageOwner) instanceof TLRPC.TL_messageMediaWebPage) &&
             (currentMessageObject.messageOwner.media == null || currentMessageObject.messageOwner.media.ttl_seconds == 0)

@@ -142,7 +142,7 @@ public class HundredGramSttManager {
     }
 
     public static void showDownloadDialog(BaseFragment fragment, Runnable onSuccess) {
-        Context context = fragment != null ? fragment.getContext() : ApplicationLoader.applicationContext;
+        Context context = fragment != null && fragment.getParentActivity() != null ? fragment.getParentActivity() : (org.telegram.ui.LaunchActivity.instance != null ? org.telegram.ui.LaunchActivity.instance : (fragment != null ? fragment.getContext() : null));
         if (context == null) return;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -163,7 +163,7 @@ public class HundredGramSttManager {
         if (isDownloading) return;
         isDownloading = true;
 
-        Context context = fragment != null ? fragment.getContext() : ApplicationLoader.applicationContext;
+        Context context = fragment != null && fragment.getParentActivity() != null ? fragment.getParentActivity() : (org.telegram.ui.LaunchActivity.instance != null ? org.telegram.ui.LaunchActivity.instance : (fragment != null ? fragment.getContext() : null));
         AlertDialog progressDialog = null;
         if (context != null) {
             progressDialog = new AlertDialog(context, 3);
@@ -194,8 +194,9 @@ public class HundredGramSttManager {
                         try {
                             if (finalDialog != null) finalDialog.dismiss();
                         } catch (Exception ignore) {}
-                        if (fragment != null) {
-                            BulletinFactory.of(fragment).createSimpleBulletin(
+                        BaseFragment targetFrag = fragment != null ? fragment : (org.telegram.ui.LaunchActivity.instance != null && org.telegram.ui.LaunchActivity.instance.getActionBarLayout() != null ? org.telegram.ui.LaunchActivity.instance.getActionBarLayout().getLastFragment() : null);
+                        if (targetFrag != null) {
+                            BulletinFactory.of(targetFrag).createSimpleBulletin(
                                     R.raw.done,
                                     LocaleController.getString("LocalSttModelReady", R.string.LocalSttModelReady)
                             ).show();

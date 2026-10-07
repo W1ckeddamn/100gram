@@ -217,7 +217,7 @@ public class HundredGramConfig {
     public static boolean unlockChatTranslation = true;
 
     // Offline Voice-to-Text (STT) without Premium
-    public static boolean localSttEnabled;
+    public static boolean localSttEnabled = true;
 
     // Runtime state (current session)
     public static boolean currentStoryGhostSession;
@@ -384,7 +384,7 @@ public class HundredGramConfig {
             alwaysForwardWithoutAuthor = preferences.getBoolean("alwaysForwardWithoutAuthor", false);
             keepAliveForegroundService = preferences.getBoolean("keepAliveForegroundService", true);
             unlockChatTranslation = preferences.getBoolean("unlockChatTranslation", true);
-            localSttEnabled = preferences.getBoolean("localSttEnabled", false);
+            localSttEnabled = preferences.getBoolean("localSttEnabled", true);
 
             streamerMode = preferences.getBoolean("streamerMode", false);
             streamerFakeName = preferences.getString("streamerFakeName", "Streamer");
