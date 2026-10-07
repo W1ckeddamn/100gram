@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -339,17 +340,41 @@ public class HundredGramSttManager {
                     model = sharedModel;
                 }
 
-                // 3. Распознаем через Recognizer
+                // 3. Распознаем через Recognizer потоковыми порциями по 4096 байт с полной сборкой фраз
                 Recognizer recognizer = new Recognizer(model, 16000.0f);
-                recognizer.acceptWaveForm(pcmData, pcmData.length);
+                StringBuilder fullText = new StringBuilder();
+                byte[] chunk = new byte[4096];
+                int offset = 0;
+
+                while (offset < pcmData.length) {
+                    int len = Math.min(chunk.length, pcmData.length - offset);
+                    System.arraycopy(pcmData, offset, chunk, 0, len);
+                    if (recognizer.acceptWaveForm(chunk, len)) {
+                        String resultJson = recognizer.getResult();
+                        String phrase = extractTextFromJson(resultJson);
+                        if (!TextUtils.isEmpty(phrase)) {
+                            if (fullText.length() > 0) {
+                                fullText.append(" ");
+                            }
+                            fullText.append(phrase);
+                        }
+                    }
+                    offset += len;
+                }
+
                 String finalResultJson = recognizer.getFinalResult();
+                String finalPhrase = extractTextFromJson(finalResultJson);
+                if (!TextUtils.isEmpty(finalPhrase)) {
+                    if (fullText.length() > 0) {
+                        fullText.append(" ");
+                    }
+                    fullText.append(finalPhrase);
+                }
                 recognizer.close();
 
-                // 4. Извлекаем поле "text" из JSON ответа Vosk
-                String recognizedText = "";
-                if (!TextUtils.isEmpty(finalResultJson)) {
-                    JSONObject obj = new JSONObject(finalResultJson);
-                    recognizedText = obj.optString("text", "").trim();
+                String recognizedText = fullText.toString().trim();
+                if (recognizedText.length() > 0) {
+                    recognizedText = Character.toUpperCase(recognizedText.charAt(0)) + recognizedText.substring(1);
                 }
 
                 final String resultString = recognizedText;
@@ -428,6 +453,8 @@ public class HundredGramSttManager {
                 if (outIndex >= 0) {
                     ByteBuffer outBuffer = codec.getOutputBuffer(outIndex);
                     if (outBuffer != null && bufferInfo.size > 0) {
+                        outBuffer.position(bufferInfo.offset);
+                        outBuffer.limit(bufferInfo.offset + bufferInfo.size);
                         byte[] chunk = new byte[bufferInfo.size];
                         outBuffer.get(chunk);
                         pcmOutput.write(chunk);
@@ -448,7 +475,6 @@ public class HundredGramSttManager {
             }
 
             byte[] decodedPcm = pcmOutput.toByteArray();
-            // Преобразуем к 16000 Hz Mono если исходный поток отличается
             return convertPcmTo16kMono(decodedPcm, originalSampleRate, channelCount);
 
         } catch (Throwable e) {
@@ -468,46 +494,90 @@ public class HundredGramSttManager {
     }
 
     /**
-     * Конвертирует PCM (стерео в моно, ресемплинг до 16000 Гц при необходимости).
+     * Конвертирует PCM: стерео в моно, высококачественный ресемплинг до 16000 Гц с анти-алиасингом и нормализацию громкости (AGC).
      */
     private static byte[] convertPcmTo16kMono(byte[] pcmData, int sampleRate, int channels) {
         if (pcmData == null || pcmData.length == 0) return pcmData;
 
         // 1. Конвертируем в моно, если было 2 канала (Stereo -> Mono)
-        byte[] monoData;
+        short[] monoSamples;
         if (channels == 2) {
-            monoData = new byte[pcmData.length / 2];
-            for (int i = 0; i < monoData.length / 2; i++) {
-                int left = (pcmData[i * 4 + 1] << 8) | (pcmData[i * 4] & 0xFF);
-                int right = (pcmData[i * 4 + 3] << 8) | (pcmData[i * 4 + 2] & 0xFF);
-                int avg = (left + right) / 2;
-                monoData[i * 2] = (byte) (avg & 0xFF);
-                monoData[i * 2 + 1] = (byte) ((avg >> 8) & 0xFF);
+            int totalStereoSamples = pcmData.length / 4;
+            monoSamples = new short[totalStereoSamples];
+            ByteBuffer bb = ByteBuffer.wrap(pcmData).order(ByteOrder.LITTLE_ENDIAN);
+            for (int i = 0; i < totalStereoSamples; i++) {
+                short left = bb.getShort();
+                short right = bb.getShort();
+                monoSamples[i] = (short) (((int) left + right) / 2);
             }
         } else {
-            monoData = pcmData;
+            int totalMonoSamples = pcmData.length / 2;
+            monoSamples = new short[totalMonoSamples];
+            ByteBuffer.wrap(pcmData).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(monoSamples);
         }
 
-        // 2. Ресемплинг к 16000 Hz если исходный sampleRate другой (например 48000 Hz у Opus)
+        // 2. Ресемплинг до 16000 Hz
+        short[] resampledSamples;
         if (sampleRate == 16000) {
-            return monoData;
-        }
+            resampledSamples = monoSamples;
+        } else {
+            int numInputSamples = monoSamples.length;
+            int numOutputSamples = (int) ((long) numInputSamples * 16000 / sampleRate);
+            resampledSamples = new short[numOutputSamples];
 
-        int totalSamples = monoData.length / 2;
-        int targetSamples = (int) ((long) totalSamples * 16000 / sampleRate);
-        byte[] resampled = new byte[targetSamples * 2];
-
-        double ratio = (double) sampleRate / 16000.0;
-        for (int i = 0; i < targetSamples; i++) {
-            double srcIdx = i * ratio;
-            int srcIndexInt = (int) srcIdx;
-            if (srcIndexInt >= totalSamples - 1) {
-                srcIndexInt = totalSamples - 1;
+            if (sampleRate == 48000) {
+                // Высококачественный анти-алиасинг: 3:1 усреднение (стандарт для Telegram Opus)
+                for (int i = 0; i < numOutputSamples; i++) {
+                    int src = i * 3;
+                    if (src + 2 < numInputSamples) {
+                        resampledSamples[i] = (short) (((int) monoSamples[src] + monoSamples[src + 1] + monoSamples[src + 2]) / 3);
+                    } else {
+                        resampledSamples[i] = monoSamples[Math.min(src, numInputSamples - 1)];
+                    }
+                }
+            } else {
+                // Линейная интерполяция для произвольных частот дискретизации
+                double ratio = (double) sampleRate / 16000.0;
+                for (int i = 0; i < numOutputSamples; i++) {
+                    double srcPos = i * ratio;
+                    int index1 = (int) srcPos;
+                    int index2 = Math.min(index1 + 1, numInputSamples - 1);
+                    double frac = srcPos - index1;
+                    int s1 = monoSamples[Math.min(index1, numInputSamples - 1)];
+                    int s2 = monoSamples[index2];
+                    resampledSamples[i] = (short) (s1 + frac * (s2 - s1));
+                }
             }
-            resampled[i * 2] = monoData[srcIndexInt * 2];
-            resampled[i * 2 + 1] = monoData[srcIndexInt * 2 + 1];
         }
 
-        return resampled;
+        // 3. Автоматическая регулировка усиления (AGC) для тихих записей
+        int maxAmp = 0;
+        for (short s : resampledSamples) {
+            int abs = Math.abs(s);
+            if (abs > maxAmp) maxAmp = abs;
+        }
+        if (maxAmp > 0 && maxAmp < 16000) {
+            float gain = Math.min(24000f / maxAmp, 3.5f);
+            for (int i = 0; i < resampledSamples.length; i++) {
+                int val = Math.round(resampledSamples[i] * gain);
+                if (val > 32767) val = 32767;
+                else if (val < -32768) val = -32768;
+                resampledSamples[i] = (short) val;
+            }
+        }
+
+        byte[] outputPcm = new byte[resampledSamples.length * 2];
+        ByteBuffer.wrap(outputPcm).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(resampledSamples);
+        return outputPcm;
+    }
+
+    private static String extractTextFromJson(String json) {
+        if (TextUtils.isEmpty(json)) return "";
+        try {
+            JSONObject obj = new JSONObject(json);
+            return obj.optString("text", "").trim();
+        } catch (Exception ignore) {
+            return "";
+        }
     }
 }
