@@ -9,6 +9,7 @@ import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.R;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
@@ -104,16 +105,21 @@ public class HundredGramVaultExceptionsActivity extends BaseFragment {
             Bundle args = new Bundle();
             args.putBoolean("onlySelect", true);
             args.putBoolean("checkCanWrite", false);
+            args.putBoolean("allowMultiple", true);
             DialogsActivity activity = new DialogsActivity(args);
             activity.setDelegate((fragment, dids, message, param, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment) -> {
                 if (dids != null && !dids.isEmpty()) {
-                    long did = dids.get(0).dialogId;
                     fragment.finishFragment();
-                    new HundredGramChatVaultBottomSheet(this, did, () -> {
-                        if (listView != null && listView.adapter != null) {
-                            listView.adapter.update(true);
-                        }
-                    }).show();
+                    if (dids.size() == 1) {
+                        long did = dids.get(0).dialogId;
+                        new HundredGramChatVaultBottomSheet(this, did, () -> {
+                            if (listView != null && listView.adapter != null) {
+                                listView.adapter.update(true);
+                            }
+                        }).show();
+                    } else {
+                        showBatchVaultModeDialog(dids);
+                    }
                 }
                 return true;
             });
@@ -172,6 +178,36 @@ public class HundredGramVaultExceptionsActivity extends BaseFragment {
         });
         builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
         builder.show();
+    }
+
+    private void showBatchVaultModeDialog(ArrayList<MessagesStorage.TopicKey> dids) {
+        if (getParentActivity() == null || dids == null || dids.isEmpty()) return;
+        String[] options = new String[] {
+            LocaleController.getString("HundredGramVaultModeNever", R.string.HundredGramVaultModeNever),
+            LocaleController.getString("HundredGramVaultModeAlways", R.string.HundredGramVaultModeAlways)
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramVaultModeHeader", R.string.HundredGramVaultModeHeader));
+        builder.setItems(options, (dialog, which) -> {
+            int mode = (which == 0) ? HundredGramConfig.VAULT_MODE_NEVER : HundredGramConfig.VAULT_MODE_ALWAYS;
+            for (MessagesStorage.TopicKey key : dids) {
+                HundredGramConfig.setChatVaultMode(key.dialogId, mode);
+            }
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+            if (BulletinFactory.canShowBulletin(this)) {
+                String modeName = (which == 0)
+                        ? LocaleController.getString("HundredGramVaultModeNever", R.string.HundredGramVaultModeNever)
+                        : LocaleController.getString("HundredGramVaultModeAlways", R.string.HundredGramVaultModeAlways);
+                BulletinFactory.of(this).createSimpleBulletin(
+                        R.raw.chats_infotip,
+                        String.format(LocaleController.getString("HundredGramVaultExceptionsAddedCount", R.string.HundredGramVaultExceptionsAddedCount), dids.size(), modeName)
+                ).show();
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
     }
 
     @Override

@@ -484,6 +484,8 @@
     <string name="HundredGramTrackActivityDesc">Log online sessions and notify about activity</string>
     <string name="HundredGramTrackedUserDeleted">Contact removed from tracking</string>
     <string name="HundredGramAddTrackedUser">Add Contact</string>
+    <string name="HundredGramTrackedUsersAddedCount">Added %1$d contacts to tracking</string>
+    <string name="HundredGramVaultExceptionsAddedCount">Added %1$d exceptions (%2$s)</string>
 
     <!-- Network Boost -->
     <string name="NetworkBoostTitle">Network Boost</string>

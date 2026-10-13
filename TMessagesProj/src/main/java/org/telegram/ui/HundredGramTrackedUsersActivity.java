@@ -214,21 +214,36 @@ public class HundredGramTrackedUsersActivity extends BaseFragment implements Not
         Bundle args = new Bundle();
         args.putBoolean("onlySelect", true);
         args.putBoolean("checkCanWrite", false);
+        args.putBoolean("allowMultiple", true);
         args.putInt("dialogsType", DialogsActivity.DIALOGS_TYPE_USERS_ONLY);
         DialogsActivity fragment = new DialogsActivity(args);
         fragment.setDelegate((dialogsActivity, dids, message, param, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment) -> {
             if (dids != null && !dids.isEmpty()) {
-                long did = dids.get(0).dialogId;
-                if (did > 0 && did != UserConfig.getInstance(currentAccount).getClientUserId()) {
-                    HundredGramConfig.setTrackedUser(did, true);
+                int addedCount = 0;
+                long lastAddedDid = 0;
+                for (MessagesStorage.TopicKey topicKey : dids) {
+                    long did = topicKey.dialogId;
+                    if (did > 0 && did != UserConfig.getInstance(currentAccount).getClientUserId()) {
+                        HundredGramConfig.setTrackedUser(did, true);
+                        lastAddedDid = did;
+                        addedCount++;
+                    }
+                }
+                if (addedCount > 0) {
                     HundredGramActivityTracker.getInstance(currentAccount).requestTrackedUserStatuses(true);
                     updateRows();
                     if (BulletinFactory.canShowBulletin(HundredGramTrackedUsersActivity.this)) {
-                        TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(did);
-                        String name = user != null ? ContactsController.formatName(user) : ("ID: " + did);
+                        String text;
+                        if (addedCount == 1) {
+                            TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(lastAddedDid);
+                            String name = user != null ? ContactsController.formatName(user) : ("ID: " + lastAddedDid);
+                            text = name + " — " + LocaleController.getString("HundredGramTrackActivity", R.string.HundredGramTrackActivity);
+                        } else {
+                            text = String.format(LocaleController.getString("HundredGramTrackedUsersAddedCount", R.string.HundredGramTrackedUsersAddedCount), addedCount);
+                        }
                         BulletinFactory.of(HundredGramTrackedUsersActivity.this).createSimpleBulletin(
                                 R.raw.chats_infotip,
-                                name + " — " + LocaleController.getString("HundredGramTrackActivity", R.string.HundredGramTrackActivity)
+                                text
                         ).show();
                     }
                 }

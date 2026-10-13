@@ -9,6 +9,7 @@
 ## [Unreleased]
 
 ### Added
+- [UI/Batch] Мультивыбор чатов и контактов при добавлении в мониторинг активности ([`HundredGramTrackedUsersActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramTrackedUsersActivity.java)) и в список исключений автозагрузки сейфа ([`HundredGramVaultExceptionsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramVaultExceptionsActivity.java)): массовое добавление чатов за один раз через полноэкранный селектор с галочками и плавающей кнопкой подтверждения.
 - [Profile/Auditor] Расширенный аудит профилей (Profile Auditor & Change Log):
   - Создан сервис отслеживания изменений профилей [`HundredGramProfileLogger`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramProfileLogger.java) с сохранением в таблицу базы данных SQLite `profile_changes_log`.
   - Автоматическое логирование при обновлениях через `MessagesController.putUser` и `loadFullUser`: смена имени и фамилии (`first_name`, `last_name`), юзернейма (`@username`), номера телефона (появление, скрытие или изменение), описания профиля (`about` / Bio), дня рождения (`birthday`) и счетчика подарков (`stargifts_count`).
@@ -67,6 +68,10 @@
   - Найденный канал/чат выводится на самом верху результатов поиска с указанием `ID: -100...`, а по нажатию сразу открывается диалог.
 - [Docs] Набор руководств и навыков для ИИ-агентов в каталоге `.agents/skills/` (`100gram-architect`, `100gram-build`, `100gram-tracker-vault`, `100gram-ui-components`, `100gram-changelog`).
 ### Fixed
+- [Camera/RoundVideo] Исправлена ошибка отправки круглых видеосообщений (кружочков) с камеры ([`InstantCameraView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/InstantCameraView.java)):
+  - Восстановлен флаг `fromCamera = true` для объектов `VideoEditedInfo` при записи видеосообщений с камеры.
+  - Ранее из-за отсутствия флага кружочки с камеры ошибочно расценивались как требующие конвертации (`needConvert() == true`), что приводило к отмене потоковой отправки файла (`FileLoader.cancelFileUpload`), сбросу ключей шифрования и зависанию отправки в чатах.
+  - Сохранено корректное преобразование и нарезка обычных видео из галереи при отправке в виде кружочков (`fromCamera = false`).
 - [Core/MTProto] Синхронизированы недостающие конструкторы блоков страниц и RichMessage со схемой Layer 229 из upstream ([`TL_iv.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/tgnet/tl/TL_iv.java)):
   - Добавлен конструктор строки кнопок `pageBlockButtonRow` (`0x6D640318`) с флагами выравнивания (`align_left`, `align_center`, `align_right`) и десериализацией `TL_keyboard.PageButton`. Устранен вылет `TLParseException: can't parse magic 6d640318 in org.telegram.tgnet.tl.TL_iv$PageBlock`.
   - Добавлены конструкторы `textButton` (`0xAFC79CD6`) и `pageBlockDocument` (`0x38FA3BA3`), а также поддержка флага `compact` в `pageBlockTable`.

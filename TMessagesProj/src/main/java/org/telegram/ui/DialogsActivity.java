@@ -658,6 +658,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private boolean cantSendToChannels;
     private boolean allowSwitchAccount;
     private boolean checkCanWrite;
+    private boolean allowMultiple;
     private boolean afterSignup;
     private boolean showSetPasswordConfirm;
     private int otherwiseReloginDays;
@@ -2836,6 +2837,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
         if (arguments != null) {
             onlySelect = arguments.getBoolean("onlySelect", false);
+            allowMultiple = arguments.getBoolean("allowMultiple", false);
             canSelectTopics = arguments.getBoolean("canSelectTopics", false);
             cantSendToChannels = arguments.getBoolean("cantSendToChannels", false);
             initialDialogsType = arguments.getInt("dialogsType", DIALOGS_TYPE_DEFAULT);
@@ -3469,8 +3471,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 actionBar.setTitle(getString(R.string.QuoteTo));
             } else if (initialDialogsType == DIALOGS_TYPE_FORWARD && selectAlertString == null) {
                 actionBar.setTitle(getString(R.string.ForwardTo));
-            } else if (initialDialogsType == DIALOGS_TYPE_WIDGET) {
-                actionBar.setTitle(getString(R.string.SelectChats));
+            } else if (initialDialogsType == DIALOGS_TYPE_WIDGET || allowMultiple) {
+                actionBar.setTitle(getString(initialDialogsType == DIALOGS_TYPE_USERS_ONLY ? R.string.SelectContact : R.string.SelectChats));
             } else if (initialDialogsType == DIALOGS_TYPE_START_ATTACH_BOT) {
                 if (allowBots && !allowUsers && !allowGroups && !allowChannels) {
                     actionBar.setTitle(getString(R.string.ChooseBot));
@@ -4530,7 +4532,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     if (fragmentView != null) {
                         fragmentView.invalidate();
                     }
-                    if (initialDialogsType != DIALOGS_TYPE_WIDGET && wasManualScroll && recyclerView.getChildCount() > 0) {
+                    if (initialDialogsType != DIALOGS_TYPE_WIDGET && !allowMultiple && wasManualScroll && recyclerView.getChildCount() > 0) {
                         if (firstVisiblePosition != RecyclerView.NO_POSITION) {
                             RecyclerView.ViewHolder holder = recyclerView.findViewHolderForAdapterPosition(firstVisiblePosition);
                             if (!hasHiddenArchive() || holder != null && holder.getAdapterPosition() >= 0) {
@@ -4751,7 +4753,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 finishPreviewFragment();
                 return;
             }
-            if (initialDialogsType == DIALOGS_TYPE_WIDGET) {
+            if (initialDialogsType == DIALOGS_TYPE_WIDGET || allowMultiple) {
                 if (delegate == null || selectedDialogs.isEmpty()) {
                     return;
                 }
@@ -7433,7 +7435,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     public boolean addOrRemoveSelectedDialog(long did, View cell) {
-        if (onlySelect && getMessagesController().isForum(did)) {
+        if (onlySelect && !allowMultiple && getMessagesController().isForum(did)) {
             return false;
         }
         if (selectedDialogs.contains(did)) {
@@ -8005,13 +8007,15 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
 
 
-            if ((!getMessagesController().isForum(dialogId) && !getMessagesController().isCommunity(dialogId) || isBotForumWithEmptyTopics(dialogId)) && (!selectedDialogs.isEmpty() || (initialDialogsType == DIALOGS_TYPE_FORWARD && selectAlertString != null))) {
+            if ((!getMessagesController().isForum(dialogId) && !getMessagesController().isCommunity(dialogId) || isBotForumWithEmptyTopics(dialogId) || allowMultiple) && (!selectedDialogs.isEmpty() || (initialDialogsType == DIALOGS_TYPE_FORWARD && selectAlertString != null) || allowMultiple)) {
                 if (!selectedDialogs.contains(dialogId) && !checkCanWrite(dialogId)) {
                     return;
                 }
                 boolean checked = addOrRemoveSelectedDialog(dialogId, view);
                 if (searchViewPager != null && adapter == searchViewPager.dialogsSearchAdapter) {
-                    actionBar.closeSearchField();
+                    if (!allowMultiple) {
+                        actionBar.closeSearchField();
+                    }
                     findAndUpdateCheckBox(dialogId, checked);
                 }
                 updateSelectedCount();
@@ -8851,7 +8855,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void updateFloatingButtonVisibility(boolean animated) {
-        final boolean isVisible = !(onlySelect && initialDialogsType != 10 || folderId != 0 || communityId != 0 || inPreviewMode || (searching && !onlySelect) || floatingButtonHidden || HundredGramConfig.hideFloatingButton);
+        final boolean isVisible = !(onlySelect && initialDialogsType != 10 && !allowMultiple || folderId != 0 || communityId != 0 || inPreviewMode || (searching && !onlySelect) || floatingButtonHidden || ((initialDialogsType == 10 || allowMultiple) && selectedDialogs.isEmpty()) || (HundredGramConfig.hideFloatingButton && !onlySelect));
 
         if (floatingButton3 != null) {
             floatingButton3.setButtonVisible(isVisible, animated);
@@ -8892,7 +8896,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             return;
         }
 
-        if (initialDialogsType == DIALOGS_TYPE_WIDGET) {
+        if (initialDialogsType == DIALOGS_TYPE_WIDGET || allowMultiple) {
             floatingButton3.setImageResource(R.drawable.floating_check);
             floatingButton3.setContentDescription(LocaleController.getString(R.string.Done));
         } else {
@@ -10341,8 +10345,17 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 }
             }
             wasSelectedDialogsEmpty = selectedDialogs.isEmpty();
-        } else if (initialDialogsType == DIALOGS_TYPE_WIDGET) {
+        } else if (initialDialogsType == DIALOGS_TYPE_WIDGET || allowMultiple) {
             hideFloatingButton(selectedDialogs.isEmpty());
+            if (selectedDialogs.isEmpty()) {
+                actionBar.setTitle(LocaleController.getString(initialDialogsType == DIALOGS_TYPE_USERS_ONLY ? R.string.SelectContact : R.string.SelectChats));
+            } else {
+                if (initialDialogsType == DIALOGS_TYPE_USERS_ONLY) {
+                    actionBar.setTitle(LocaleController.formatPluralString("Users", selectedDialogs.size(), selectedDialogs.size()));
+                } else {
+                    actionBar.setTitle(LocaleController.formatPluralString("Chats", selectedDialogs.size(), selectedDialogs.size()));
+                }
+            }
         }
     }
 
@@ -13293,7 +13306,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 showPremiumBlockedToast(view, ((ProfileSearchCell) view).getDialogId());
                 return;
             }
-            if (initialDialogsType == DIALOGS_TYPE_WIDGET) {
+            if (initialDialogsType == DIALOGS_TYPE_WIDGET || allowMultiple) {
                 onItemLongClick(searchViewPager.searchListView, view, position, x, y, -1, searchViewPager.dialogsSearchAdapter);
                 return;
             }
@@ -13332,7 +13345,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     public boolean clickSelectsDialog() {
-        return initialDialogsType == DIALOGS_TYPE_WIDGET;
+        return initialDialogsType == DIALOGS_TYPE_WIDGET || allowMultiple;
     }
 
     private ImageUpdater imageUpdater;

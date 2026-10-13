@@ -12208,9 +12208,12 @@ public class ChatActivityEnterView extends FrameLayout implements
 
                                 final VideoEditedInfo videoEditedInfo = entry != null ? entry.editedInfo : null;
                                 if (videoEditedInfo != null && entry != null) {
+                                    boolean prevFromCamera = videoEditedInfo.fromCamera;
                                     videoEditedInfo.roundVideo = true;
+                                    videoEditedInfo.fromCamera = true;
                                     applyEdit = videoEditedInfo.needConvert();
                                     videoEditedInfo.roundVideo = false;
+                                    videoEditedInfo.fromCamera = prevFromCamera;
                                     videoEditedInfo.muted = true;
                                 }
                                 if (applyEdit) {

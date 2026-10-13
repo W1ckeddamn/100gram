@@ -1127,6 +1127,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 videoEditedInfo.endTime = -1;
             }
             videoEditedInfo.roundVideo = true;
+            videoEditedInfo.fromCamera = true;
             if (videoEditedInfo.needConvert()) {
                 file = null;
                 encryptedFile = null;
@@ -2959,6 +2960,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
             AndroidUtilities.runOnUIThread(() -> {
                 videoEditedInfo = new VideoEditedInfo();
                 videoEditedInfo.roundVideo = true;
+                videoEditedInfo.fromCamera = true;
                 videoEditedInfo.startTime = -1;
                 videoEditedInfo.endTime = -1;
                 videoEditedInfo.file = file;
@@ -3069,6 +3071,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                         videoEditedInfo.endTime = -1;
                         videoEditedInfo.estimatedSize = Math.max(1, size);
                         videoEditedInfo.roundVideo = true;
+                        videoEditedInfo.fromCamera = true;
                         videoEditedInfo.file = file;
                         videoEditedInfo.encryptedFile = encryptedFile;
                         videoEditedInfo.key = key;
@@ -3201,6 +3204,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                             videoEditedInfo.endTime = -1;
                         }
                         videoEditedInfo.roundVideo = true;
+                        videoEditedInfo.fromCamera = true;
                         if (videoEditedInfo.needConvert()) {
                             file = null;
                             encryptedFile = null;
@@ -3223,6 +3227,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                             videoEditedInfo.estimatedSize = Math.max(1, size);
                         }
                         videoEditedInfo.roundVideo = true;
+                        videoEditedInfo.fromCamera = true;
                         videoEditedInfo.file = file;
                         videoEditedInfo.encryptedFile = encryptedFile;
                         videoEditedInfo.key = key;
