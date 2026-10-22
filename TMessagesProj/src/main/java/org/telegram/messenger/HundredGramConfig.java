@@ -2942,6 +2942,51 @@ public class HundredGramConfig {
         save("enableNowPlaying", enableNowPlaying);
     }
 
+    // Facade helper getters for HundredGramHooks & external callers
+    public static void init(android.content.Context context) {
+        loadConfig();
+    }
+
+    public static boolean isGhostMode() {
+        return isGhostModeActive();
+    }
+
+    public static boolean isGhostReadWithoutAck() {
+        return ghostReadMessages;
+    }
+
+    public static boolean isVaultEnabled() {
+        return saveAntiDeleteText || saveEditHistory || saveMediaPhotos || saveMediaVideos || saveMediaVoiceRounds || saveMediaFiles;
+    }
+
+    public static boolean isAntiDeleteMessagesEnabled() {
+        return saveAntiDeleteText;
+    }
+
+    public static boolean isShowEditedMessageHistory() {
+        return showEditHistoryButton;
+    }
+
+    public static boolean isAllowScreenshotsInSecretChats() {
+        return SharedConfig.allowScreenCapture && !streamerBlockScreenshots;
+    }
+
+    public static boolean isHideKeyboardOnScroll() {
+        return hideKeyboardOnScroll;
+    }
+
+    public static boolean isShowDirectShareButton() {
+        return !hideShareButton;
+    }
+
+    public static int getMessageBubbleCornerRadius() {
+        return SharedConfig.bubbleRadius;
+    }
+
+    public static int getAvatarCornerRadius() {
+        return (int) avatarCorners;
+    }
+
     public static void toggleNewSliderStyle() {
         newSliderStyle = !newSliderStyle;
         save("newSliderStyle", newSliderStyle);

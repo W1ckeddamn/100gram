@@ -67,7 +67,7 @@ jobs:
           if [ ! -x "${CMAKE_DIR}/bin/cmake" ]; then install_pkg "cmake;3.22.1"; fi
           if [ ! -d "${NDK_DIR}" ]; then install_pkg "ndk;27.2.12479018"; fi
 
-          printf 'sdk.dir=%s\ncmake.dir=%s\n' "${ANDROID_HOME}" "${CMAKE_DIR}" > local.properties
+          printf 'sdk.dir=%s\ncmake.dir=%s\nndk.dir=%s\n' "${ANDROID_HOME}" "${CMAKE_DIR}" "${NDK_DIR}" > local.properties
           echo "ANDROID_NDK_HOME=${NDK_DIR}" >> "${GITHUB_ENV}"
 
       - name: Setup ccache
@@ -122,7 +122,7 @@ jobs:
 
       # ДЕБАГ: загрузка в Artifacts при обычном коммите/PR
       - name: Upload Debug Artifact
-        if: ${{ steps.config.outputs.is_release == 'false' }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.locate_apk.outputs.apk_name }}

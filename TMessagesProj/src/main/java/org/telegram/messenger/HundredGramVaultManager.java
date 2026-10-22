@@ -138,6 +138,23 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
         });
     }
 
+    public boolean shouldInterceptMessage(TLRPC.Message message) {
+        if (message == null) {
+            return false;
+        }
+        if (!HundredGramConfig.vaultSaveForBots) {
+            long fromId = MessageObject.getFromChatId(message);
+            if (fromId > 0) {
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(fromId);
+                if (user != null && user.bot) {
+                    return false;
+                }
+            }
+        }
+        long dialogId = MessageObject.getDialogId(message);
+        return HundredGramConfig.isChatAntiDelete(dialogId) || HundredGramConfig.canVaultDownload(dialogId);
+    }
+
     public void isolateMediaForMessage(MessageObject messageObject) {
         if (messageObject == null || messageObject.messageOwner == null) {
             return;
