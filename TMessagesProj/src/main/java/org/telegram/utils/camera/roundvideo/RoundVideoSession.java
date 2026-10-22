@@ -1130,12 +1130,25 @@ public final class RoundVideoSession {
         fileExecutor.execute(() -> {
             long finishStartedNs = System.nanoTime();
             try {
+                if (currentWriter == null || !currentWriter.hasValidData()) {
+                    diagnostics.log("active output has insufficient data to finalize, cancelling");
+                    if (currentWriter != null) {
+                        currentWriter.cancel();
+                    }
+                    mainHandler.post(this::cancel);
+                    return;
+                }
                 currentWriter.finish();
                 long actualDurationMs = RoundVideoRemuxer.getDurationMs(currentWriter.getFile());
                 diagnostics.log("active output finalized: size=" + currentWriter.getFile().length()
                         + ", durationMs=" + actualDurationMs
                         + ", elapsedMs=" + elapsedMs(finishStartedNs));
                 ensureNotCancelled();
+                if (actualDurationMs <= 0) {
+                    diagnostics.log("recorded video has zero duration, cancelling");
+                    mainHandler.post(this::cancel);
+                    return;
+                }
                 boolean exceedsLimit = actualDurationMs > maximumDurationMs;
                 if (includeAudio && !exceedsLimit) {
                     completeOutput(currentGeneration, currentWriter.getFile(), actualDurationMs, true);
@@ -1156,7 +1169,8 @@ public final class RoundVideoSession {
                     }
                 }
             } catch (Exception e) {
-                mainHandler.post(() -> fail(asException(e)));
+                diagnostics.error("finishActiveRecording failed", e);
+                mainHandler.post(this::cancel);
             }
         });
     }

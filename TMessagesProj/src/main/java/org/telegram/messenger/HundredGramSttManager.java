@@ -313,6 +313,9 @@ public class HundredGramSttManager {
 
     public static void transcribeVoiceAsync(File voiceFile, TranscribeCallback callback) {
         Utilities.globalQueue.postRunnable(() -> {
+            MediaExtractor extractor = null;
+            MediaCodec codec = null;
+            Recognizer recognizer = null;
             try {
                 if (voiceFile == null || !voiceFile.exists()) {
                     if (callback != null) AndroidUtilities.runOnUIThread(() -> callback.onError("Audio file not found"));
@@ -323,14 +326,32 @@ public class HundredGramSttManager {
                     return;
                 }
 
-                // 1. Декодируем Opus/OGG в PCM 16kHz Mono
-                byte[] pcmData = decodeAudioToPcm16(voiceFile);
-                if (pcmData == null || pcmData.length == 0) {
-                    if (callback != null) AndroidUtilities.runOnUIThread(() -> callback.onError("Failed to decode audio"));
+                extractor = new MediaExtractor();
+                extractor.setDataSource(voiceFile.getAbsolutePath());
+                int audioTrackIndex = -1;
+                MediaFormat format = null;
+
+                for (int i = 0; i < extractor.getTrackCount(); i++) {
+                    MediaFormat trackFormat = extractor.getTrackFormat(i);
+                    String mime = trackFormat.getString(MediaFormat.KEY_MIME);
+                    if (mime != null && mime.startsWith("audio/")) {
+                        audioTrackIndex = i;
+                        format = trackFormat;
+                        break;
+                    }
+                }
+
+                if (audioTrackIndex < 0 || format == null) {
+                    if (callback != null) AndroidUtilities.runOnUIThread(() -> callback.onError("No audio track found in file"));
                     return;
                 }
 
-                // 2. Инициализируем или берем кэшированную модель Vosk
+                extractor.selectTrack(audioTrackIndex);
+                String mime = format.getString(MediaFormat.KEY_MIME);
+                codec = MediaCodec.createDecoderByType(mime);
+                codec.configure(format, null, null, 0);
+                codec.start();
+
                 Model model;
                 synchronized (modelLock) {
                     if (sharedModel == null) {
@@ -340,37 +361,76 @@ public class HundredGramSttManager {
                     model = sharedModel;
                 }
 
-                // 3. Распознаем через Recognizer потоковыми порциями по 4096 байт с полной сборкой фраз
-                Recognizer recognizer = new Recognizer(model, 16000.0f);
-                StringBuilder fullText = new StringBuilder();
-                byte[] chunk = new byte[4096];
-                int offset = 0;
+                int sampleRate = format.containsKey(MediaFormat.KEY_SAMPLE_RATE)
+                        ? format.getInteger(MediaFormat.KEY_SAMPLE_RATE) : 48000;
+                int channelCount = format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)
+                        ? format.getInteger(MediaFormat.KEY_CHANNEL_COUNT) : 1;
 
-                while (offset < pcmData.length) {
-                    int len = Math.min(chunk.length, pcmData.length - offset);
-                    System.arraycopy(pcmData, offset, chunk, 0, len);
-                    if (recognizer.acceptWaveForm(chunk, len)) {
-                        String resultJson = recognizer.getResult();
-                        String phrase = extractTextFromJson(resultJson);
-                        if (!TextUtils.isEmpty(phrase)) {
-                            if (fullText.length() > 0) {
-                                fullText.append(" ");
+                recognizer = new Recognizer(model, 16000.0f);
+                StringBuilder fullText = new StringBuilder();
+
+                MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+                boolean isInputEOS = false;
+                boolean isOutputEOS = false;
+
+                while (!isOutputEOS) {
+                    if (!isInputEOS) {
+                        int inIndex = codec.dequeueInputBuffer(10000);
+                        if (inIndex >= 0) {
+                            ByteBuffer inBuffer = codec.getInputBuffer(inIndex);
+                            if (inBuffer != null) {
+                                int sampleSize = extractor.readSampleData(inBuffer, 0);
+                                if (sampleSize < 0) {
+                                    codec.queueInputBuffer(inIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                                    isInputEOS = true;
+                                } else {
+                                    codec.queueInputBuffer(inIndex, 0, sampleSize, extractor.getSampleTime(), 0);
+                                    extractor.advance();
+                                }
                             }
-                            fullText.append(phrase);
                         }
                     }
-                    offset += len;
+
+                    int outIndex = codec.dequeueOutputBuffer(bufferInfo, 10000);
+                    if (outIndex >= 0) {
+                        ByteBuffer outBuffer = codec.getOutputBuffer(outIndex);
+                        if (outBuffer != null && bufferInfo.size > 0) {
+                            outBuffer.position(bufferInfo.offset);
+                            outBuffer.limit(bufferInfo.offset + bufferInfo.size);
+                            byte[] chunk = new byte[bufferInfo.size];
+                            outBuffer.get(chunk);
+
+                            byte[] resampledChunk = convertPcmTo16kMono(chunk, sampleRate, channelCount);
+                            if (resampledChunk != null && resampledChunk.length > 0) {
+                                if (recognizer.acceptWaveForm(resampledChunk, resampledChunk.length)) {
+                                    String phrase = extractTextFromJson(recognizer.getResult());
+                                    if (!TextUtils.isEmpty(phrase)) {
+                                        if (fullText.length() > 0) fullText.append(" ");
+                                        fullText.append(phrase);
+                                    }
+                                }
+                            }
+                        }
+                        codec.releaseOutputBuffer(outIndex, false);
+                        if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                            isOutputEOS = true;
+                        }
+                    } else if (outIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                        MediaFormat newFormat = codec.getOutputFormat();
+                        if (newFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
+                            sampleRate = newFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+                        }
+                        if (newFormat.containsKey(MediaFormat.KEY_CHANNEL_COUNT)) {
+                            channelCount = newFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
+                        }
+                    }
                 }
 
-                String finalResultJson = recognizer.getFinalResult();
-                String finalPhrase = extractTextFromJson(finalResultJson);
+                String finalPhrase = extractTextFromJson(recognizer.getFinalResult());
                 if (!TextUtils.isEmpty(finalPhrase)) {
-                    if (fullText.length() > 0) {
-                        fullText.append(" ");
-                    }
+                    if (fullText.length() > 0) fullText.append(" ");
                     fullText.append(finalPhrase);
                 }
-                recognizer.close();
 
                 String recognizedText = fullText.toString().trim();
                 if (recognizedText.length() > 0) {
@@ -385,6 +445,19 @@ public class HundredGramSttManager {
                 FileLog.e(e);
                 if (callback != null) {
                     AndroidUtilities.runOnUIThread(() -> callback.onError(e.getMessage()));
+                }
+            } finally {
+                if (recognizer != null) {
+                    try { recognizer.close(); } catch (Throwable ignore) {}
+                }
+                if (codec != null) {
+                    try {
+                        codec.stop();
+                        codec.release();
+                    } catch (Throwable ignore) {}
+                }
+                if (extractor != null) {
+                    try { extractor.release(); } catch (Throwable ignore) {}
                 }
             }
         });

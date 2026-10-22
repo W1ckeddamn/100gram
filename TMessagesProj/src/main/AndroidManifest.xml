@@ -581,6 +581,17 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".HundredGramActivitySimulatorReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="org.telegram.messenger.ACTION_START_ACTIVITY_SIMULATION" />
+                <action android:name="org.telegram.messenger.ACTION_STOP_ACTIVITY_SIMULATION" />
+                <action android:name="org.telegram.messenger.ACTION_PING_ACTIVITY_SIMULATION" />
+            </intent-filter>
+        </receiver>
+
         <receiver android:name=".RefererReceiver" android:exported="true" android:permission="android.permission.INSTALL_PACKAGES">
             <intent-filter>
                 <action android:name="com.android.vending.INSTALL_REFERRER" />

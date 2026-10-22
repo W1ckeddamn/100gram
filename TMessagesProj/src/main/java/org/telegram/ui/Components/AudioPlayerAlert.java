@@ -82,6 +82,7 @@ import org.telegram.messenger.FileRefController;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.ImageReceiver;
+import org.telegram.messenger.HundredGramPlaylistManager;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MessageObject;
@@ -1117,6 +1118,8 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
 
         optionsButton.addSubItem(7, R.drawable.msg_delete, getString(R.string.ProfilePlaylistRemoveFromProfile));
         optionsButton.setSubItemShown(7, false);
+        optionsButton.addSubItem(15, R.drawable.msg_list, getString(R.string.Playlists));
+        optionsButton.addSubItem(16, R.drawable.msg_add, getString(R.string.AddToPlaylist));
 
         optionsButton.setShowedFromBottom(true);
         optionsButton.setOnClickListener(v -> optionsButton.toggleSubMenu());
@@ -1292,6 +1295,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         if (isMyList()) {
             addItem = menu.addItem(8, R.drawable.msg_add);
         }
+        menu.addItem(15, R.drawable.msg_list).setContentDescription(LocaleController.getString(R.string.Playlists));
         searchItem = menu.addItem(0, R.drawable.outline_header_search).setIsSearchField(true).setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
             @Override
             public void onSearchCollapse() {
@@ -1449,10 +1453,11 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
 
         containerView.addView(playerLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 179 + (!isMyList() && !noforwards ? 52 : 0), Gravity.LEFT | Gravity.BOTTOM));
         containerView.addView(playerShadow, new FrameLayout.LayoutParams(LayoutHelper.MATCH_PARENT, AndroidUtilities.getShadowHeight(), Gravity.LEFT | Gravity.BOTTOM));
-        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) playerLayout.getLayoutParams();
-        layoutParams.height = dp(179 + (!isMyList() && !noforwards ? 52 : 0));
-        layoutParams = (FrameLayout.LayoutParams) playerShadow.getLayoutParams();
-        layoutParams.bottomMargin = dp(179 + (!isMyList() && !noforwards ? 52 : 0));
+        updatePlayerLayoutHeight();
+        containerView.setOnApplyWindowInsetsListener((v, insets) -> {
+            updatePlayerLayoutHeight();
+            return insets;
+        });
         containerView.addView(actionBarShadow, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 3));
         containerView.addView(actionBar);
 
@@ -1479,6 +1484,29 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         updateTitle(false);
         updateRepeatButton();
         updateEmptyView();
+    }
+
+    private void updatePlayerLayoutHeight() {
+        if (playerLayout == null || playerShadow == null) return;
+        int bottomInset = Math.max(getBottomInset(), AndroidUtilities.navigationBarHeight);
+        playerLayout.setPadding(0, 0, 0, bottomInset);
+        int totalHeight = dp(179 + (!isMyList() && !noforwards ? 52 : 0)) + bottomInset;
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) playerLayout.getLayoutParams();
+        if (lp != null && lp.height != totalHeight) {
+            lp.height = totalHeight;
+            playerLayout.setLayoutParams(lp);
+        }
+        lp = (FrameLayout.LayoutParams) playerShadow.getLayoutParams();
+        if (lp != null && lp.bottomMargin != totalHeight) {
+            lp.bottomMargin = totalHeight;
+            playerShadow.setLayoutParams(lp);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(android.content.res.Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updatePlayerLayoutHeight();
     }
 
     @Override
@@ -1790,6 +1818,10 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
                     }));
                 });
             }, null).withoutSavedMusic().show();
+        } else if (id == 15) {
+            showPlaylistsDialog();
+        } else if (id == 16) {
+            showAddToPlaylistDialog(messageObject);
         }
     }
 
@@ -2265,14 +2297,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             );
             if (noforwards != this.noforwards) {
                 this.noforwards = noforwards;
-
-                FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) playerLayout.getLayoutParams();
-                layoutParams.height = dp(179 + (!noforwards && !isMyList() ? 52 : 0));
-                playerLayout.setLayoutParams(layoutParams);
-
-                layoutParams = (FrameLayout.LayoutParams) playerShadow.getLayoutParams();
-                layoutParams.bottomMargin = dp(179 + (!isMyList() && !noforwards ? 52 : 0));
-                playerShadow.setLayoutParams(layoutParams);
+                updatePlayerLayoutHeight();
             }
             if (noforwards) {
                 optionsButton.hideSubItem(1);
@@ -2463,7 +2488,8 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             if (playlist.size() > 1) {
                 playerLayout.setBackgroundColor(getThemedColor(Theme.key_player_background));
                 playerShadow.setVisibility(View.VISIBLE);
-                listView.setPadding(0, listView.getPaddingTop(), 0, dp(179 + 52));
+                int bottomInset = Math.max(getBottomInset(), AndroidUtilities.navigationBarHeight);
+                listView.setPadding(0, listView.getPaddingTop(), 0, dp(179 + 52) + bottomInset);
             } else {
                 playerLayout.setBackgroundColor(getThemedColor(Theme.key_player_background));
                 playerShadow.setVisibility(View.VISIBLE);
@@ -2970,8 +2996,105 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             });
         }
 
+        o.add(R.drawable.msg_list, getString(R.string.AddToPlaylist), () -> {
+            o.dismiss();
+            showAddToPlaylistDialog(messageObject);
+        });
+
         o.setGravity(LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT);
         o.show();
+    }
+
+    private void showPlaylistsDialog() {
+        if (getContext() == null) return;
+        final HundredGramPlaylistManager manager = HundredGramPlaylistManager.getInstance(currentAccount);
+        final java.util.List<HundredGramPlaylistManager.CustomPlaylist> list = manager.getPlaylists();
+
+        ItemOptions options = ItemOptions.makeOptions(container, resourcesProvider, actionBar);
+        options.add(R.drawable.msg_add, getString(R.string.NewPlaylist), () -> {
+            showCreatePlaylistDialog(null);
+        });
+
+        if (list.isEmpty()) {
+            options.addGap();
+            options.add(0, getString(R.string.NoPlaylists), null);
+        } else {
+            options.addGap();
+            for (final HundredGramPlaylistManager.CustomPlaylist pl : list) {
+                options.add(R.drawable.msg_tone_add, pl.getTitle() + " (" + pl.getTrackCount() + ")", () -> {
+                    if (pl.getTrackCount() > 0) {
+                        manager.playPlaylist(pl, 0);
+                        dismiss();
+                    } else {
+                        BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
+                            .createSimpleBulletin(R.raw.info, getString(R.string.NoPlaylists))
+                            .show();
+                    }
+                });
+            }
+        }
+        options.show();
+    }
+
+    private void showAddToPlaylistDialog(final MessageObject messageObject) {
+        if (getContext() == null || messageObject == null) return;
+        final HundredGramPlaylistManager manager = HundredGramPlaylistManager.getInstance(currentAccount);
+        final java.util.List<HundredGramPlaylistManager.CustomPlaylist> list = manager.getPlaylists();
+
+        ItemOptions options = ItemOptions.makeOptions(container, resourcesProvider, containerView);
+        options.add(R.drawable.msg_add, getString(R.string.NewPlaylist), () -> {
+            showCreatePlaylistDialog(messageObject);
+        });
+
+        if (!list.isEmpty()) {
+            options.addGap();
+            for (final HundredGramPlaylistManager.CustomPlaylist pl : list) {
+                options.add(R.drawable.msg_tone_add, pl.getTitle(), () -> {
+                    boolean added = manager.addTrackToPlaylist(pl.getId(), messageObject);
+                    if (added) {
+                        BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
+                            .createSimpleBulletin(R.raw.saved_messages, String.format(getString(R.string.TrackAddedToPlaylist), pl.getTitle()))
+                            .show();
+                    } else {
+                        BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
+                            .createSimpleBulletin(R.raw.info, getString(R.string.TrackAlreadyInPlaylist))
+                            .show();
+                    }
+                });
+            }
+        }
+        options.show();
+    }
+
+    private void showCreatePlaylistDialog(final MessageObject initialTrack) {
+        if (getContext() == null) return;
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(getContext(), resourcesProvider);
+        builder.setTitle(getString(R.string.NewPlaylist));
+
+        final EditText editText = new EditText(getContext());
+        editText.setHint(getString(R.string.EnterPlaylistName));
+        editText.setSingleLine(true);
+
+        FrameLayout containerLayout = new FrameLayout(getContext());
+        containerLayout.setPadding(AndroidUtilities.dp(20), AndroidUtilities.dp(10), AndroidUtilities.dp(20), 0);
+        containerLayout.addView(editText, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+        builder.setView(containerLayout);
+
+        builder.setPositiveButton(getString(R.string.OK), (dialog, which) -> {
+            String name = editText.getText().toString().trim();
+            if (!android.text.TextUtils.isEmpty(name)) {
+                final HundredGramPlaylistManager manager = HundredGramPlaylistManager.getInstance(currentAccount);
+                HundredGramPlaylistManager.CustomPlaylist pl = manager.createPlaylist(name);
+                if (initialTrack != null) {
+                    manager.addTrackToPlaylist(pl.getId(), initialTrack);
+                    BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
+                        .createSimpleBulletin(R.raw.saved_messages, String.format(getString(R.string.TrackAddedToPlaylist), pl.getTitle()))
+                        .show();
+                }
+            }
+        });
+        builder.setNegativeButton(getString(R.string.Cancel), null);
+        builder.show();
     }
 
     private void setVisibleInProfile(boolean visible) {

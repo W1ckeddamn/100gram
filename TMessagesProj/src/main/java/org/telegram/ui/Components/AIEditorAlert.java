@@ -1274,6 +1274,40 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
             fixedText = loadingText;
         }
 
+        if (org.telegram.messenger.ai.TelegramAiReplacement.replacesEditor()) {
+            final TL_aicompose.AiComposeTone tone = (tab == TAB_STYLE) ? styleTabs.getSelectedTone() : null;
+            org.telegram.messenger.ai.TelegramAiReplacement.compose(req, tone, to_lang, res -> {
+                loading = false;
+                actionBarTitleTextView.setRightDrawable(null);
+                showLimit = false;
+                updateButton();
+                this.lastRequest[tab] = req;
+                if (tab == TAB_TRANSLATE) {
+                    translatedTextLoading = false;
+                    translatedText = MessageObject.formatTextWithEntities(res.result_text);
+                } else if (tab == TAB_STYLE) {
+                    styledTextLoading = false;
+                    styledText = MessageObject.formatTextWithEntities(res.result_text);
+                } else if (tab == TAB_FIX) {
+                    fixedTextLoading = false;
+                    CharSequence result = MessageObject.formatTextWithEntities(res.result_text);
+                    fixedText = fixedTextToCopy = result;
+                }
+                adapter.update(true);
+            }, (code, errText) -> {
+                loading = false;
+                TLRPC.TL_error err = new TLRPC.TL_error();
+                err.text = errText;
+                BulletinFactory.of(bulletinContainer, resourcesProvider).showForError(err);
+                actionBarTitleTextView.setRightDrawable(null);
+                errored = true;
+                showLimit = false;
+                updateButton();
+            });
+            adapter.update(true);
+            return;
+        }
+
         requestId = ConnectionsManager.getInstance(currentAccount).sendRequestTyped(req, AndroidUtilities::runOnUIThread, (res, err) -> {
             requestId = -1;
 
@@ -1908,6 +1942,11 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
 
         private Long emoji_id;
 
+        private boolean localMode;
+        private boolean localEditing;
+        private boolean localPreview;
+        private Utilities.Callback3Return<String, String, Long, Boolean> onLocalSaved;
+
         private SelectAnimatedEmojiDialog.SelectAnimatedEmojiDialogWindow selectAnimatedEmojiDialog;
 
         public CreateAiStyleAlert(Context context, Theme.ResourcesProvider resourcesProvider) {
@@ -2064,6 +2103,19 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
                 }
 
                 button.setLoading(true);
+                if (localMode) {
+                    boolean success = true;
+                    if (onLocalSaved != null) {
+                        success = Boolean.TRUE.equals(onLocalSaved.run(titleCell.getText().toString(), promptCell.getText().toString(), emoji_id != null ? emoji_id : 0L));
+                    }
+                    button.setLoading(false);
+                    if (success) {
+                        dismiss();
+                    } else {
+                        AndroidUtilities.shakeView(titleCell);
+                    }
+                    return;
+                }
                 if (editing != null) {
                     final TL_aicompose.updateTone req = new TL_aicompose.updateTone();
                     req.flags |= TLObject.FLAG_0;
@@ -2119,7 +2171,7 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
         }
 
         private void openIconDialog() {
-            if (selectAnimatedEmojiDialog != null) {
+            if (localPreview || selectAnimatedEmojiDialog != null) {
                 return;
             }
             final SelectAnimatedEmojiDialog.SelectAnimatedEmojiDialogWindow[] popup = new SelectAnimatedEmojiDialog.SelectAnimatedEmojiDialogWindow[1];
@@ -2205,9 +2257,58 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
             }
         }
 
+        public CreateAiStyleAlert setLocalStyle(String title, String prompt, long emojiId, boolean isEditing, int titleLimit, int promptLimit, Utilities.Callback3Return<String, String, Long, Boolean> callback) {
+            this.localMode = true;
+            this.localEditing = isEditing;
+            this.localPreview = false;
+            this.onLocalSaved = callback;
+            this.emoji_id = emojiId != 0 ? emojiId : null;
+            updateIcon();
+            this.titleCell.setMaxLength(titleLimit);
+            this.titleCell.editText.setHint(LocaleController.getString("RoleName", R.string.RoleName));
+            this.titleCell.setText(title);
+            this.promptCell.setMaxLength(promptLimit);
+            this.promptCell.setShowLimitWhenNear(Math.max(100, promptLimit / 2));
+            this.promptCell.editText.setHint(LocaleController.getString("RolePrompt", R.string.RolePrompt));
+            this.promptCell.setText(prompt);
+            this.actionBar.setTitle(LocaleController.getString(isEditing ? "EditRole" : "NewRole", isEditing ? R.string.EditRole : R.string.NewRole));
+            this.button.setText(LocaleController.getString(isEditing ? "AIEditorStyleEdit" : "AIEditorStyleCreate", isEditing ? R.string.AIEditorStyleEdit : R.string.AIEditorStyleCreate));
+            updateButton();
+            if (this.adapter != null) {
+                this.adapter.update(false);
+            }
+            return this;
+        }
+
+        public CreateAiStyleAlert setLocalStylePreview(String title, String prompt, long emojiId, int titleLimit, int promptLimit) {
+            setLocalStyle(title, prompt, emojiId, false, titleLimit, promptLimit, null);
+            this.localPreview = true;
+            this.iconButton.setEnabled(false);
+            this.titleCell.editText.setFocusable(false);
+            this.titleCell.editText.setFocusableInTouchMode(false);
+            this.titleCell.editText.setCursorVisible(false);
+            this.promptCell.editText.setFocusable(false);
+            this.promptCell.editText.setFocusableInTouchMode(false);
+            this.promptCell.editText.setCursorVisible(false);
+            this.promptCell.editText.setMaxLines(Integer.MAX_VALUE);
+            if (this.buttonContainer != null) {
+                this.buttonContainer.setVisibility(View.GONE);
+            }
+            this.actionBar.setTitle(LocaleController.getString("Info", R.string.Info));
+            updateButton();
+            if (this.adapter != null) {
+                this.adapter.update(false);
+            }
+            return this;
+        }
+
         private void updateButton() {
+            if (localPreview) {
+                button.setEnabled(false);
+                return;
+            }
             button.setEnabled(
-                emoji_id != null &&
+                (localMode || emoji_id != null) &&
                 titleCell.getText().length() > 0 &&
                 promptCell.getText().length() > 0
             );
@@ -2233,7 +2334,9 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
                 items.add(UItem.asButton(1, getString(R.string.AIEditorDeleteStyle)).red());
                 items.add(UItem.asShadow(null));
             }
-            items.add(UItem.asCustomShadow(checkboxCell));
+            if (!localMode) {
+                items.add(UItem.asCustomShadow(checkboxCell));
+            }
         }
 
         @Override

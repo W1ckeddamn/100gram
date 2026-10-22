@@ -177,14 +177,33 @@ final class RoundVideoCodecRecorder implements RoundVideoGlProcessor.FrameTiming
             }
             stopFinalizationStarted = true;
         }
-        try {
-            videoCodec.signalEndOfInputStream();
-        } catch (IllegalStateException e) {
-            diagnostics.error("video encoder EOS failed", e);
+        if (videoCodec != null) {
+            try {
+                videoCodec.signalEndOfInputStream();
+            } catch (Exception e) {
+                diagnostics.error("video encoder EOS failed", e);
+            }
         }
         join(videoDrainThread);
         join(audioThread);
         logSummary();
+        release();
+    }
+
+    void cancel() {
+        requestStop();
+        synchronized (this) {
+            if (!prepared) return;
+            stopFinalizationStarted = true;
+        }
+        if (videoDrainThread != null) {
+            videoDrainThread.interrupt();
+        }
+        if (audioThread != null) {
+            audioThread.interrupt();
+        }
+        join(videoDrainThread);
+        join(audioThread);
         release();
     }
 
@@ -707,8 +726,8 @@ final class RoundVideoCodecRecorder implements RoundVideoGlProcessor.FrameTiming
 
     private static void releaseCodec(MediaCodec codec) {
         if (codec == null) return;
-        try { codec.stop(); } catch (IllegalStateException ignore) {}
-        codec.release();
+        try { codec.stop(); } catch (Exception ignore) {}
+        try { codec.release(); } catch (Exception ignore) {}
     }
 
     private void join(Thread thread) {

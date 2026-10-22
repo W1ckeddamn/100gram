@@ -107,18 +107,27 @@ public class HashtagSearchController {
         } else if (searchType == ChatActivity.SEARCH_CHANNEL_POSTS) {
             return localPostsSearch;
         }
-        throw new RuntimeException("Unknown search type");
+        return localPostsSearch;
     }
 
     public ArrayList<MessageObject> getMessages(int searchType) {
+        if (searchType == 4) {
+            return com.exteragram.messenger.feed.FeedController.getInstance(currentAccount).getMessages();
+        }
         return getSearchResult(searchType).messages;
     }
 
     public int getCount(int searchType) {
+        if (searchType == 4) {
+            return com.exteragram.messenger.feed.FeedController.getInstance(currentAccount).getStore().getCount();
+        }
         return getSearchResult(searchType).count;
     }
 
     public boolean isEndReached(int searchType) {
+        if (searchType == 4) {
+            return com.exteragram.messenger.feed.FeedController.getInstance(currentAccount).getStore().isEndReached();
+        }
         return getSearchResult(searchType).endReached;
     }
 

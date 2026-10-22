@@ -17,17 +17,89 @@ public class HundredGramConfig {
     private static boolean configLoaded;
 
     // Interface & Chats
+    public static boolean pillStackEnabled = true;
+    public static boolean iconPacksEnabled = true;
+    public static String selectedIconPack = "default";
     public static boolean relativeLastSeen;
     public static boolean hideArchiveFolder;
     public static boolean hideFloatingButton;
     public static boolean disableJumpToNextChannel;
     public static boolean hideKeyboardOnScroll;
     public static boolean addCommaAfterMention;
+    public static boolean disableGreetingSticker;
     public static boolean disableNumberRounding;
     public static boolean highlightDeletedMessages;
     public static float deletedMessagesAlpha = 0.65f;
+    public static final int DELETED_MARK_TRASH = 0;
+    public static final int DELETED_MARK_CROSS = 1;
+    public static final int DELETED_MARK_EYE = 2;
+    public static int deletedMarkIcon = DELETED_MARK_TRASH;
+    public static final int DELETED_MARK_COLOR_THEME = 0;
+    public static final int DELETED_MARK_COLOR_RED = 1;
+    public static int deletedMarkColor = DELETED_MARK_COLOR_THEME;
+    public static float avatarCorners = 28.0f;
+    public static boolean md3SwitchStyle;
+    public static boolean squareFab;
+    public static boolean inlineMath = true;
+    public static boolean bottomNavHideCallsTab;
+    public static boolean bottomNavHideContactsTab;
+    public static boolean bottomNavHideSettingsTab;
+    public static boolean bottomNavArchiveTab;
+    public static boolean bottomNavMusicTab;
+    public static long musicSourceDialogId;
+
+    // Batch 2: Dialogs, Media & Chat Controls
+    public static boolean senderMiniAvatars;
+    public static boolean pauseOnMinimizeVideo;
+    public static boolean pauseOnMinimizeVoice;
+    public static boolean pauseOnMinimizeRound;
+    public static boolean hideSendAsPeer;
+    public static boolean hideShareButton;
+    public static boolean hideReactionsInChannels;
+    public static boolean hideReactionsInGroups;
+
+    // Batch 3: Notifications, Gestures & Media Controls
+    public static final int CHANNEL_BOTTOM_BUTTON_HIDE = 0;
+    public static final int CHANNEL_BOTTOM_BUTTON_MUTE = 1;
+    public static final int CHANNEL_BOTTOM_BUTTON_DISCUSS = 2;
+
+    public static final int STICKER_TIME_DEFAULT = 0;
+    public static final int STICKER_TIME_SIDE = 1;
+    public static final int STICKER_TIME_HIDDEN = 2;
+
+    public static boolean disableNotificationDelay;
+    public static boolean archiveOnPull;
+    public static int channelBottomButton = CHANNEL_BOTTOM_BUTTON_MUTE;
+    public static boolean unlimitedRecentStickers;
+    public static int stickerTimeMode = STICKER_TIME_DEFAULT;
+    public static boolean rememberLastUsedCamera;
+    public static boolean preferOriginalQuality;
+
+    // Batch 4: Smart Proxy, Custom Save Path, Reply Styling & Sticker Shape
+    public static final int PROXY_DISABLE_VPN = 1;
+    public static final int PROXY_DISABLE_MOBILE = 2;
+    public static final int PROXY_DISABLE_WIFI = 4;
+    public static int proxyDisableMask;
+    public static boolean proxyDisableVpn;
+    public static boolean proxyDisableMobile;
+    public static boolean proxyDisableWifi;
+
+    public static String customSavePath = "";
+
+    // Web AdBlock (EasyList & cosmetic filters)
+    public static boolean enableAdBlock = true;
+
+    public static boolean replyBackground = true;
+    public static boolean replyColors = true;
+    public static boolean replyEmoji = true;
+
+    public static final int STICKER_SHAPE_DEFAULT = 0;
+    public static final int STICKER_SHAPE_ROUNDED = 1;
+    public static final int STICKER_SHAPE_BUBBLE = 2;
+    public static int stickerShape = STICKER_SHAPE_DEFAULT;
 
     // Privacy & Profile
+    public static boolean disableAllTelemetry = true;
     public static boolean hidePhoneNumber;
     public static boolean hideOtherPhoneNumbers;
     public static boolean hideUsername;
@@ -58,6 +130,21 @@ public class HundredGramConfig {
     public static final int DOUBLE_TAP_SAVE = 6;
     public static final int DOUBLE_TAP_DELETE = 7;
 
+    // Message Swipe actions
+    public static final int SWIPE_ACTION_REPLY = 0;
+    public static final int SWIPE_ACTION_SAVE = 1;
+    public static final int SWIPE_ACTION_COPY = 2;
+    public static final int SWIPE_ACTION_FORWARD = 3;
+    public static final int SWIPE_ACTION_EDIT = 4;
+    public static final int SWIPE_ACTION_DELETE = 5;
+
+    public static int chatMessageSwipeAction = SWIPE_ACTION_REPLY;
+
+    // Multi-action swipe system (exteraGram)
+    public static String swipeActions = "2,6,3,4,9,5,8";
+    public static boolean swipeActionsLoop = true;
+    public static boolean swipeActionsReversed = false;
+
     public static int doubleTapAction;
     public static int doubleTapActionOutOwner;
 
@@ -66,6 +153,11 @@ public class HundredGramConfig {
     public static boolean showDetailsButton;
     public static boolean showCopyPhotoButton;
     public static boolean showEditHistoryButton;
+    public static boolean showRepeatMessageButton = true;
+    public static boolean showResultsBeforeVoting;
+    public static boolean filterZalgo = true;
+    public static boolean replaceEditedWithIcon;
+    public static boolean showClearInputButton = true;
 
     // Stage 3: Interface, Navigation & Avatar History
     public static boolean hideSimilarChannels = true;
@@ -77,6 +169,59 @@ public class HundredGramConfig {
     public static boolean copyCodeButtonEnabled = true;
     public static boolean prettyJsonViewerEnabled = true;
     public static boolean showForwardWithoutAuthorButton = true;
+
+    // Package 2: Header & Tabs Customization
+    public static final int ACTION_BAR_TITLE_APP_NAME = 0;
+    public static final int ACTION_BAR_TITLE_USERNAME = 1;
+    public static final int ACTION_BAR_TITLE_NAME = 2;
+    public static final int ACTION_BAR_TITLE_FILTER_CHATS = 3;
+    public static int actionBarTitleMode = ACTION_BAR_TITLE_APP_NAME;
+
+    public static boolean centerActionBarTitle;
+
+    public static final int TAB_TITLE_STYLE_TEXT_AND_ICONS = 0;
+    public static final int TAB_TITLE_STYLE_TEXT_ONLY = 1;
+    public static final int TAB_TITLE_STYLE_ICONS_ONLY = 2;
+    public static int tabTitleStyle = TAB_TITLE_STYLE_TEXT_AND_ICONS;
+
+    public static final int TAB_COUNTER_MODE_ALL = 0;
+    public static final int TAB_COUNTER_MODE_UNMUTED = 1;
+    public static final int TAB_COUNTER_MODE_HIDE = 2;
+    public static int tabCounterMode = TAB_COUNTER_MODE_ALL;
+
+    // Package 3: Multimedia, Player Ergonomics & Bubble Tail Styling
+    public static boolean unmuteWithVolumeButtons;
+    public static boolean swipeToPip = true;
+    public static boolean removeMessageTail;
+    public static boolean widePostsInChannels;
+    public static boolean enableFeedTab = true;
+    public static boolean feedWidePosts = true;
+    public static boolean feedUnreadCounter = true;
+    public static boolean enableNowPlaying = true;
+    public static boolean newSliderStyle = true;
+
+    // Package 4: Navigation, Stickers & Gesture Safety
+    public static boolean disableUnarchiveSwipe;
+    public static boolean hideDialogsSearchBar;
+    public static boolean extendedRecentStickers = true;
+    public static boolean quickChannelTransition;
+
+    // Package 5: Media & Storage Ergonomics
+    public static boolean showForwardsCount = true;
+    public static boolean hideActionBarStatus;
+    public static int doubleTapSeekDuration = 10;
+    public static boolean quickTopicTransition;
+
+    // Redesign & Physics Enhancements
+    public static final int TRANSITION_DEFAULT = 0;
+    public static final int TRANSITION_AOSP = 1;
+    public static final int TRANSITION_SPRING = 2;
+    public static int transitionAnimation = TRANSITION_DEFAULT;
+
+    public static final int DIVIDER_LINE = 0;
+    public static final int DIVIDER_SEGMENTS = 1;
+    public static final int DIVIDER_HIDDEN = 2;
+    public static int dividerStyle = DIVIDER_LINE;
 
     // Camera & Camera Engine
     public static final int CAMERA_ENGINE_SYSTEM = 0;
@@ -112,15 +257,39 @@ public class HundredGramConfig {
     public static boolean cameraRoundSquare; // Square format for round video notes
     public static boolean cameraRoundDisableBlur; // Disable background dimming/blur during recording
     public static boolean cameraRoundSensor16to9 = true; // 16:9 vs 4:3 sensor for legacy devices
+    public static boolean cameraRoundZoomSlider = true; // Interactive camera zoom slider with stops
 
     // Media Vault & Archiver
+    public static final int PRESET_SMART = 0;          // Рекомендуемый (ЛС + группы, без каналов и ботов, фото/видео/кружки)
+    public static final int PRESET_DMS_ONLY = 1;       // Только личные сообщения (1-на-1)
+    public static final int PRESET_ALL = 2;            // Максимальный (ЛС, группы, каналы, все типы медиа)
+    public static final int PRESET_STORAGE_SAVER = 3;  // Экономия памяти (только ЛС, фото/голосовые до 5 МБ)
+    public static final int PRESET_CUSTOM = 4;         // Пользовательские настройки
+
+    public static int savePreset = PRESET_SMART;
+
+    // Scopes (Откуда сохранять)
+    public static boolean saveScopePrivate = true;
+    public static boolean saveScopeGroups = true;
+    public static boolean saveScopeChannels = false;
+    public static boolean saveScopeBots = false;
+    public static boolean saveScopeArchived = false;
+
+    // Types (Что сохранять)
+    public static boolean saveAntiDeleteText = true;
+    public static boolean saveEditHistory = true;
+    public static boolean saveMediaPhotos = true;
+    public static boolean saveMediaVoiceRounds = true;
+    public static boolean saveMediaVideos = true;
+    public static boolean saveMediaFiles = false;
+
     public static final int ARCHIVER_MODE_NEW_ONLY = 0; // Только новые сообщения (в реальном времени после включения)
     public static final int ARCHIVER_MODE_FULL_SYNC = 1; // Полная синхронизация (с недавней историей всех чатов)
     public static int backgroundArchiverMode = ARCHIVER_MODE_NEW_ONLY;
     public static long backgroundArchiverActivationTime;
     public static boolean backgroundArchiverEnabled;
-    public static boolean autoDownloadMediaVault;
-    public static int autoDownloadMaxSizeMb = 20;
+    public static boolean autoDownloadMediaVault = true;
+    public static int autoDownloadMaxSizeMb = 25;
     public static int autoDownloadChatsScope; // 0 = private chats, 1 = private & groups, 2 = all including channels
     public static boolean autoDownloadOnlyWifi;
     public static boolean vaultIncludeArchivedChats;
@@ -195,6 +364,26 @@ public class HundredGramConfig {
     public static boolean ghostOnline;
     public static boolean ghostHideReadDate = true;
 
+    // Exact Read Date Tracking (AyuGram Spy)
+    public static boolean trackReadDate = true;
+
+    // Ghost Mode Plus (AyuGram enhancements)
+    public static boolean sendOfflineAfterOnline;
+    public static boolean ghostUploadProgress;
+
+    // Activity Simulator / Online Presence Imitation
+    public static boolean activitySimulatorScheduleEnabled;
+    public static int activitySimulatorScheduleStartHour = 14;
+    public static int activitySimulatorScheduleStartMinute = 30;
+    public static int activitySimulatorScheduleDurationMinutes = 60;
+    public static int activitySimulatorScheduleRepeat = 0; // 0 = once, 1 = daily
+    public static boolean activitySimulatorMicroBreaks = true;
+    public static boolean activitySimulatorNotify = true;
+    public static int activitySimulatorQuickDurationMinutes = 60;
+
+    // Vault Smart Protection
+    public static boolean vaultSaveForBots;
+
     // Messaging & Safety
     public static boolean silentSendByDefault;
     public static boolean confirmSendStickers;
@@ -214,11 +403,37 @@ public class HundredGramConfig {
     // Keep-Alive Service
     public static boolean keepAliveForegroundService = true;
 
-    // Chat Translation
+    // Chat Translation & Multi-Provider Engine (Stage 5)
+    public static final int TRANSLATION_PROVIDER_TELEGRAM = 0;
+    public static final int TRANSLATION_PROVIDER_GOOGLE = 1;
+    public static final int TRANSLATION_PROVIDER_YANDEX = 2;
+    public static final int TRANSLATION_PROVIDER_DEEPL = 3;
+
     public static boolean unlockChatTranslation = true;
+    public static int translationProvider = TRANSLATION_PROVIDER_GOOGLE;
+    public static String sendTargetLanguage = "en";
+    public static boolean translateBeforeSend = false;
+
+    // Anti-Spam Protection (Stage 5)
+    public static final int ANTI_SPAM_ACTION_MUTE = 0;
+    public static final int ANTI_SPAM_ACTION_ARCHIVE_AND_MUTE = 1;
+    public static final int ANTI_SPAM_ACTION_BLOCK = 2;
+
+    public static boolean antiSpamEnabled = false;
+    public static boolean antiSpamBlockUnknownLinks = true;
+    public static int antiSpamAction = ANTI_SPAM_ACTION_ARCHIVE_AND_MUTE;
+    public static String antiSpamKeywords = "crypto,invest,giveaway,free ton,airdrop,casino,free bonus,заработок,инвестиции,крипт,розыгрыш,раздача";
+    public static int antiSpamBlockedCount = 0;
 
     // Offline Voice-to-Text (STT) without Premium
     public static boolean localSttEnabled = true;
+
+    // Plugins Engine (Stage: Plugins System)
+    public static boolean pluginsEngine = true;
+    public static boolean pluginsSafeMode = false;
+    public static boolean pluginsDisableArtOpts = false;
+    public static boolean pluginsInstallUnknownSources = true;
+    public static java.util.Set<String> pinnedPlugins = new java.util.HashSet<>();
 
     // Runtime state (current session)
     public static boolean currentStoryGhostSession;
@@ -238,17 +453,66 @@ public class HundredGramConfig {
             SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE);
 
             // Interface
+            pillStackEnabled = preferences.getBoolean("pillStackEnabled", true);
+            iconPacksEnabled = preferences.getBoolean("iconPacksEnabled", true);
+            selectedIconPack = preferences.getString("selectedIconPack", "default");
             relativeLastSeen = preferences.getBoolean("relativeLastSeen", true);
             hideArchiveFolder = preferences.getBoolean("hideArchiveFolder", false);
             hideFloatingButton = preferences.getBoolean("hideFloatingButton", false);
             disableJumpToNextChannel = preferences.getBoolean("disableJumpToNextChannel", true);
             hideKeyboardOnScroll = preferences.getBoolean("hideKeyboardOnScroll", true);
             addCommaAfterMention = preferences.getBoolean("addCommaAfterMention", true);
+            disableGreetingSticker = preferences.getBoolean("disableGreetingSticker", false);
             disableNumberRounding = preferences.getBoolean("disableNumberRounding", true);
             highlightDeletedMessages = preferences.getBoolean("highlightDeletedMessages", true);
             deletedMessagesAlpha = preferences.getFloat("deletedMessagesAlpha", 0.65f);
+            deletedMarkIcon = preferences.getInt("deletedMarkIcon", DELETED_MARK_TRASH);
+            deletedMarkColor = preferences.getInt("deletedMarkColor", DELETED_MARK_COLOR_THEME);
+            avatarCorners = preferences.getFloat("avatarCorners", 28.0f);
+            md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
+            squareFab = preferences.getBoolean("squareFab", false);
+            inlineMath = preferences.getBoolean("inlineMath", true);
+            bottomNavHideCallsTab = preferences.getBoolean("bottomNavHideCallsTab", false);
+            bottomNavHideContactsTab = preferences.getBoolean("bottomNavHideContactsTab", false);
+            bottomNavHideSettingsTab = preferences.getBoolean("bottomNavHideSettingsTab", false);
+            bottomNavArchiveTab = preferences.getBoolean("bottomNavArchiveTab", false);
+            bottomNavMusicTab = preferences.getBoolean("bottomNavMusicTab", false);
+            musicSourceDialogId = preferences.getLong("musicSourceDialogId", 0L);
+            senderMiniAvatars = preferences.getBoolean("senderMiniAvatars", false);
+            pauseOnMinimizeVideo = preferences.getBoolean("pauseOnMinimizeVideo", false);
+            pauseOnMinimizeVoice = preferences.getBoolean("pauseOnMinimizeVoice", false);
+            pauseOnMinimizeRound = preferences.getBoolean("pauseOnMinimizeRound", false);
+            hideSendAsPeer = preferences.getBoolean("hideSendAsPeer", false);
+            hideShareButton = preferences.getBoolean("hideShareButton", false);
+            hideReactionsInChannels = preferences.getBoolean("hideReactionsInChannels", false);
+            hideReactionsInGroups = preferences.getBoolean("hideReactionsInGroups", false);
+
+            // Batch 3: Notifications, Gestures & Media Controls
+            disableNotificationDelay = preferences.getBoolean("disableNotificationDelay", false);
+            archiveOnPull = preferences.getBoolean("archiveOnPull", false);
+            channelBottomButton = preferences.getInt("channelBottomButton", CHANNEL_BOTTOM_BUTTON_MUTE);
+            unlimitedRecentStickers = preferences.getBoolean("unlimitedRecentStickers", false);
+            stickerTimeMode = preferences.getInt("stickerTimeMode", STICKER_TIME_DEFAULT);
+            rememberLastUsedCamera = preferences.getBoolean("rememberLastUsedCamera", false);
+            preferOriginalQuality = preferences.getBoolean("preferOriginalQuality", false);
+
+            // Batch 4: Smart Proxy, Custom Save Path, Reply Styling & Sticker Shape
+            proxyDisableMask = preferences.getInt("proxyDisableMask", 0);
+            proxyDisableVpn = (proxyDisableMask & PROXY_DISABLE_VPN) != 0;
+            proxyDisableMobile = (proxyDisableMask & PROXY_DISABLE_MOBILE) != 0;
+            proxyDisableWifi = (proxyDisableMask & PROXY_DISABLE_WIFI) != 0;
+
+            customSavePath = preferences.getString("customSavePath", "");
+            if (customSavePath == null) customSavePath = "";
+
+            replyBackground = preferences.getBoolean("replyBackground", true);
+            replyColors = preferences.getBoolean("replyColors", true);
+            replyEmoji = preferences.getBoolean("replyEmoji", true);
+
+            stickerShape = preferences.getInt("stickerShape", STICKER_SHAPE_DEFAULT);
 
             // Privacy & Profile
+            disableAllTelemetry = preferences.getBoolean("disableAllTelemetry", true);
             hidePhoneNumber = preferences.getBoolean("hidePhoneNumber", false);
             hideOtherPhoneNumbers = preferences.getBoolean("hideOtherPhoneNumbers", false);
             hideUsername = preferences.getBoolean("hideUsername", false);
@@ -258,11 +522,46 @@ public class HundredGramConfig {
             // Double tap & Context menu
             doubleTapAction = preferences.getInt("doubleTapAction", DOUBLE_TAP_REACTION);
             doubleTapActionOutOwner = preferences.getInt("doubleTapActionOutOwner", DOUBLE_TAP_REACTION);
+            chatMessageSwipeAction = preferences.getInt("chatMessageSwipeAction", SWIPE_ACTION_REPLY);
+            swipeActions = preferences.getString("swipeActions", "2,6,3,4,9,5,8");
+            swipeActionsLoop = preferences.getBoolean("swipeActionsLoop", true);
+            swipeActionsReversed = preferences.getBoolean("swipeActionsReversed", false);
             showSaveMessageButton = preferences.getBoolean("showSaveMessageButton", true);
             showDetailsButton = preferences.getBoolean("showDetailsButton", true);
             showCopyPhotoButton = preferences.getBoolean("showCopyPhotoButton", true);
             showEditHistoryButton = preferences.getBoolean("showEditHistoryButton", true);
             showForwardWithoutAuthorButton = preferences.getBoolean("showForwardWithoutAuthorButton", true);
+            showRepeatMessageButton = preferences.getBoolean("showRepeatMessageButton", true);
+            showResultsBeforeVoting = preferences.getBoolean("showResultsBeforeVoting", false);
+            filterZalgo = preferences.getBoolean("filterZalgo", true);
+            replaceEditedWithIcon = preferences.getBoolean("replaceEditedWithIcon", false);
+            showClearInputButton = preferences.getBoolean("showClearInputButton", true);
+            actionBarTitleMode = preferences.getInt("actionBarTitleMode", ACTION_BAR_TITLE_APP_NAME);
+            centerActionBarTitle = preferences.getBoolean("centerActionBarTitle", false);
+            tabTitleStyle = preferences.getInt("tabTitleStyle", TAB_TITLE_STYLE_TEXT_AND_ICONS);
+            tabCounterMode = preferences.getInt("tabCounterMode", TAB_COUNTER_MODE_ALL);
+
+            // Package 3: Multimedia, Player Ergonomics & Bubble Tail Styling
+            unmuteWithVolumeButtons = preferences.getBoolean("unmuteWithVolumeButtons", false);
+            swipeToPip = preferences.getBoolean("swipeToPip", true);
+            removeMessageTail = preferences.getBoolean("removeMessageTail", false);
+            widePostsInChannels = preferences.getBoolean("widePostsInChannels", false);
+
+            // Package 4: Navigation, Stickers & Gesture Safety
+            disableUnarchiveSwipe = preferences.getBoolean("disableUnarchiveSwipe", false);
+            hideDialogsSearchBar = preferences.getBoolean("hideDialogsSearchBar", false);
+            extendedRecentStickers = preferences.getBoolean("extendedRecentStickers", true);
+            quickChannelTransition = preferences.getBoolean("quickChannelTransition", false);
+
+            // Package 5: Media & Storage Ergonomics
+            showForwardsCount = preferences.getBoolean("showForwardsCount", true);
+            hideActionBarStatus = preferences.getBoolean("hideActionBarStatus", false);
+            doubleTapSeekDuration = preferences.getInt("doubleTapSeekDuration", 10);
+            quickTopicTransition = preferences.getBoolean("quickTopicTransition", false);
+
+            // Redesign & Physics Enhancements
+            transitionAnimation = preferences.getInt("transitionAnimation", TRANSITION_DEFAULT);
+            dividerStyle = preferences.getInt("dividerStyle", DIVIDER_LINE);
 
             // Camera Engine & CameraX
             cameraEngine = preferences.getInt("cameraEngine", CAMERA_ENGINE_CAMERAX);
@@ -304,6 +603,7 @@ public class HundredGramConfig {
             cameraRoundDisableBlur = preferences.getBoolean("cameraRoundDisableBlur", false);
             cameraRoundSensor16to9 = preferences.getBoolean("cameraRoundSensor16to9", true);
             SharedConfig.roundCamera16to9 = cameraRoundSensor16to9;
+            cameraRoundZoomSlider = preferences.getBoolean("cameraRoundZoomSlider", true);
 
             // Media Vault & Archiver
             backgroundArchiverEnabled = preferences.getBoolean("backgroundArchiverEnabled", false);
@@ -313,11 +613,32 @@ public class HundredGramConfig {
                 backgroundArchiverActivationTime = System.currentTimeMillis() / 1000L;
                 saveLong("backgroundArchiverActivationTime", backgroundArchiverActivationTime);
             }
-            autoDownloadMediaVault = preferences.getBoolean("autoDownloadMediaVault", false);
-            autoDownloadMaxSizeMb = preferences.getInt("autoDownloadMaxSizeMb", 20);
+            savePreset = preferences.getInt("savePreset", PRESET_SMART);
+            saveScopePrivate = preferences.getBoolean("saveScopePrivate", true);
+            saveScopeGroups = preferences.getBoolean("saveScopeGroups", true);
+            saveScopeChannels = preferences.getBoolean("saveScopeChannels", false);
+            saveScopeBots = preferences.getBoolean("saveScopeBots", false);
+            saveScopeArchived = preferences.getBoolean("saveScopeArchived", preferences.getBoolean("vaultIncludeArchivedChats", false));
+            vaultIncludeArchivedChats = saveScopeArchived;
+            enableAdBlock = preferences.getBoolean("enableAdBlock", true);
+            enableFeedTab = preferences.getBoolean("enableFeedTab", true);
+            feedWidePosts = preferences.getBoolean("feedWidePosts", true);
+            feedUnreadCounter = preferences.getBoolean("feedUnreadCounter", true);
+            enableNowPlaying = preferences.getBoolean("enableNowPlaying", true);
+            newSliderStyle = preferences.getBoolean("newSliderStyle", true);
+
+            saveAntiDeleteText = preferences.getBoolean("saveAntiDeleteText", true);
+            saveEditHistory = preferences.getBoolean("saveEditHistory", true);
+            saveMediaPhotos = preferences.getBoolean("saveMediaPhotos", true);
+            saveMediaVoiceRounds = preferences.getBoolean("saveMediaVoiceRounds", true);
+            saveMediaVideos = preferences.getBoolean("saveMediaVideos", true);
+            saveMediaFiles = preferences.getBoolean("saveMediaFiles", false);
+
+            autoDownloadMediaVault = preferences.getBoolean("autoDownloadMediaVault", true);
+            autoDownloadMaxSizeMb = preferences.getInt("autoDownloadMaxSizeMb", 25);
+            vaultMaxAutodownloadSizeMb = autoDownloadMaxSizeMb;
             autoDownloadChatsScope = preferences.getInt("autoDownloadChatsScope", 0);
             autoDownloadOnlyWifi = preferences.getBoolean("autoDownloadOnlyWifi", false);
-            vaultIncludeArchivedChats = preferences.getBoolean("vaultIncludeArchivedChats", false);
             vaultTtlDays = preferences.getInt("vaultTtlDays", 0);
             vaultMaxSizeGb = preferences.getInt("vaultMaxSizeGb", 0);
             vaultArchiveChannelComments = preferences.getBoolean("vaultArchiveChannelComments", false);
@@ -377,6 +698,20 @@ public class HundredGramConfig {
             autoCheckDeleteForAll = preferences.getBoolean("autoCheckDeleteForAll", true);
             ghostOnline = preferences.getBoolean("ghostOnline", false);
             ghostHideReadDate = preferences.getBoolean("ghostHideReadDate", true);
+            trackReadDate = preferences.getBoolean("trackReadDate", true);
+            sendOfflineAfterOnline = preferences.getBoolean("sendOfflineAfterOnline", false);
+            ghostUploadProgress = preferences.getBoolean("ghostUploadProgress", false);
+
+            activitySimulatorScheduleEnabled = preferences.getBoolean("activitySimulatorScheduleEnabled", false);
+            activitySimulatorScheduleStartHour = preferences.getInt("activitySimulatorScheduleStartHour", 14);
+            activitySimulatorScheduleStartMinute = preferences.getInt("activitySimulatorScheduleStartMinute", 30);
+            activitySimulatorScheduleDurationMinutes = preferences.getInt("activitySimulatorScheduleDurationMinutes", 60);
+            activitySimulatorScheduleRepeat = preferences.getInt("activitySimulatorScheduleRepeat", 0);
+            activitySimulatorMicroBreaks = preferences.getBoolean("activitySimulatorMicroBreaks", true);
+            activitySimulatorNotify = preferences.getBoolean("activitySimulatorNotify", true);
+            activitySimulatorQuickDurationMinutes = preferences.getInt("activitySimulatorQuickDurationMinutes", 60);
+
+            vaultSaveForBots = preferences.getBoolean("vaultSaveForBots", false);
             silentSendByDefault = preferences.getBoolean("silentSendByDefault", false);
             confirmSendStickers = preferences.getBoolean("confirmSendStickers", false);
             confirmSendGifs = preferences.getBoolean("confirmSendGifs", false);
@@ -385,7 +720,28 @@ public class HundredGramConfig {
             alwaysForwardWithoutAuthor = preferences.getBoolean("alwaysForwardWithoutAuthor", false);
             keepAliveForegroundService = preferences.getBoolean("keepAliveForegroundService", true);
             unlockChatTranslation = preferences.getBoolean("unlockChatTranslation", true);
+            translationProvider = preferences.getInt("translationProvider", TRANSLATION_PROVIDER_GOOGLE);
+            sendTargetLanguage = preferences.getString("sendTargetLanguage", "en");
+            translateBeforeSend = preferences.getBoolean("translateBeforeSend", false);
+
+            antiSpamEnabled = preferences.getBoolean("antiSpamEnabled", false);
+            antiSpamBlockUnknownLinks = preferences.getBoolean("antiSpamBlockUnknownLinks", true);
+            antiSpamAction = preferences.getInt("antiSpamAction", ANTI_SPAM_ACTION_ARCHIVE_AND_MUTE);
+            antiSpamKeywords = preferences.getString("antiSpamKeywords", "crypto,invest,giveaway,free ton,airdrop,casino,free bonus,заработок,инвестиции,крипт,розыгрыш,раздача");
+            antiSpamBlockedCount = preferences.getInt("antiSpamBlockedCount", 0);
+
             localSttEnabled = preferences.getBoolean("localSttEnabled", true);
+
+            pluginsEngine = preferences.getBoolean("pluginsEngine", true);
+            pluginsSafeMode = preferences.getBoolean("pluginsSafeMode", false);
+            pluginsDisableArtOpts = preferences.getBoolean("pluginsDisableArtOpts", false);
+            pluginsInstallUnknownSources = preferences.getBoolean("pluginsInstallUnknownSources", true);
+            java.util.Set<String> savedPinned = preferences.getStringSet("pinnedPlugins", null);
+            if (savedPinned != null) {
+                pinnedPlugins = new java.util.HashSet<>(savedPinned);
+            } else {
+                pinnedPlugins = new java.util.HashSet<>();
+            }
 
             streamerMode = preferences.getBoolean("streamerMode", false);
             streamerFakeName = preferences.getString("streamerFakeName", "Streamer");
@@ -418,6 +774,77 @@ public class HundredGramConfig {
             NotificationCenter.getInstance(a).postNotificationName(id, args);
         }
         NotificationCenter.getGlobalInstance().postNotificationName(id, args);
+    }
+
+    public static void togglePillStackEnabled() {
+        pillStackEnabled = !pillStackEnabled;
+        save("pillStackEnabled", pillStackEnabled);
+        postNotificationToAllAccounts(NotificationCenter.pillStackSettingsChanged);
+    }
+
+    public static void setSelectedIconPack(String packId) {
+        selectedIconPack = packId != null ? packId : "default";
+        saveString("selectedIconPack", selectedIconPack);
+        postNotificationToAllAccounts(NotificationCenter.didUpdateIconPack);
+    }
+
+    public static void toggleIconPacksEnabled() {
+        iconPacksEnabled = !iconPacksEnabled;
+        save("iconPacksEnabled", iconPacksEnabled);
+        postNotificationToAllAccounts(NotificationCenter.didUpdateIconPack);
+    }
+
+    public static void toggleDisableAllTelemetry() {
+        disableAllTelemetry = !disableAllTelemetry;
+        save("disableAllTelemetry", disableAllTelemetry);
+        postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);
+    }
+
+    public static void setTranslationProvider(int provider) {
+        translationProvider = provider;
+        saveInt("translationProvider", translationProvider);
+        postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);
+    }
+
+    public static void setSendTargetLanguage(String lang) {
+        sendTargetLanguage = lang != null ? lang : "en";
+        saveString("sendTargetLanguage", sendTargetLanguage);
+    }
+
+    public static void toggleTranslateBeforeSend() {
+        translateBeforeSend = !translateBeforeSend;
+        save("translateBeforeSend", translateBeforeSend);
+    }
+
+    public static void toggleAntiSpamEnabled() {
+        antiSpamEnabled = !antiSpamEnabled;
+        save("antiSpamEnabled", antiSpamEnabled);
+        postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);
+    }
+
+    public static void toggleAntiSpamBlockUnknownLinks() {
+        antiSpamBlockUnknownLinks = !antiSpamBlockUnknownLinks;
+        save("antiSpamBlockUnknownLinks", antiSpamBlockUnknownLinks);
+    }
+
+    public static void setAntiSpamAction(int action) {
+        antiSpamAction = action;
+        saveInt("antiSpamAction", antiSpamAction);
+    }
+
+    public static void setAntiSpamKeywords(String keywords) {
+        antiSpamKeywords = keywords != null ? keywords : "";
+        saveString("antiSpamKeywords", antiSpamKeywords);
+    }
+
+    public static void incrementAntiSpamBlockedCount() {
+        antiSpamBlockedCount++;
+        saveInt("antiSpamBlockedCount", antiSpamBlockedCount);
+    }
+
+    public static void resetAntiSpamBlockedCount() {
+        antiSpamBlockedCount = 0;
+        saveInt("antiSpamBlockedCount", 0);
     }
 
     public static void toggleRelativeLastSeen() {
@@ -453,6 +880,11 @@ public class HundredGramConfig {
         save("addCommaAfterMention", addCommaAfterMention);
     }
 
+    public static void toggleDisableGreetingSticker() {
+        disableGreetingSticker = !disableGreetingSticker;
+        save("disableGreetingSticker", disableGreetingSticker);
+    }
+
     public static void toggleDisableNumberRounding() {
         disableNumberRounding = !disableNumberRounding;
         save("disableNumberRounding", disableNumberRounding);
@@ -469,6 +901,100 @@ public class HundredGramConfig {
         deletedMessagesAlpha = alpha;
         saveFloat("deletedMessagesAlpha", alpha);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static boolean isDeletedMessagesTransparent() {
+        return deletedMessagesAlpha < 0.99f;
+    }
+
+    public static void toggleDeletedMessagesTransparent() {
+        setDeletedMessagesAlpha(isDeletedMessagesTransparent() ? 1.0f : 0.65f);
+    }
+
+    public static void setDeletedMarkIcon(int iconType) {
+        deletedMarkIcon = iconType;
+        saveInt("deletedMarkIcon", iconType);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setDeletedMarkColor(int colorType) {
+        deletedMarkColor = colorType;
+        saveInt("deletedMarkColor", colorType);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static int getAvatarCorners(float sizeDp) {
+        return getAvatarCorners(sizeDp, false, false);
+    }
+
+    public static int getAvatarCorners(float sizeDp, boolean isPixels, boolean isForum) {
+        if (avatarCorners >= 28.0f && !isForum) {
+            float radius = sizeDp / 2.0f;
+            return isPixels ? Math.round(radius) : AndroidUtilities.dp(radius);
+        }
+        if (avatarCorners <= 0.0f) {
+            return 0;
+        }
+        float corners = (avatarCorners * sizeDp) / 56.0f;
+        if (isForum) {
+            corners = (corners * 40.0f) / 72.0f;
+        }
+        return isPixels ? Math.max((int) Math.ceil(corners), 0) : Math.max((int) Math.ceil(AndroidUtilities.dp(corners)), 0);
+    }
+
+    public static void setAvatarCorners(float value) {
+        avatarCorners = Math.max(0.0f, Math.min(28.0f, value));
+        saveFloat("avatarCorners", avatarCorners);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleMd3SwitchStyle() {
+        md3SwitchStyle = !md3SwitchStyle;
+        save("md3SwitchStyle", md3SwitchStyle);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleSquareFab() {
+        squareFab = !squareFab;
+        save("squareFab", squareFab);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleBottomNavHideCallsTab() {
+        bottomNavHideCallsTab = !bottomNavHideCallsTab;
+        save("bottomNavHideCallsTab", bottomNavHideCallsTab);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleBottomNavHideContactsTab() {
+        bottomNavHideContactsTab = !bottomNavHideContactsTab;
+        save("bottomNavHideContactsTab", bottomNavHideContactsTab);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleBottomNavHideSettingsTab() {
+        bottomNavHideSettingsTab = !bottomNavHideSettingsTab;
+        save("bottomNavHideSettingsTab", bottomNavHideSettingsTab);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleBottomNavArchiveTab() {
+        bottomNavArchiveTab = !bottomNavArchiveTab;
+        save("bottomNavArchiveTab", bottomNavArchiveTab);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.feedTabVisibleToggled);
+    }
+
+    public static void toggleBottomNavMusicTab() {
+        bottomNavMusicTab = !bottomNavMusicTab;
+        save("bottomNavMusicTab", bottomNavMusicTab);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.feedTabVisibleToggled);
+    }
+
+    public static void setMusicSourceDialogId(long dialogId) {
+        musicSourceDialogId = dialogId;
+        saveLong("musicSourceDialogId", musicSourceDialogId);
     }
 
     public static void toggleHidePhoneNumber() {
@@ -519,6 +1045,38 @@ public class HundredGramConfig {
         saveInt("doubleTapActionOutOwner", doubleTapActionOutOwner);
     }
 
+    public static void setChatMessageSwipeAction(int action) {
+        chatMessageSwipeAction = action;
+        saveInt("chatMessageSwipeAction", chatMessageSwipeAction);
+    }
+
+    public static String getSwipeActions() {
+        return swipeActions != null ? swipeActions : "2,6,3,4,9,5,8";
+    }
+
+    public static void setSwipeActions(String actions) {
+        swipeActions = actions;
+        saveString("swipeActions", swipeActions);
+    }
+
+    public static boolean getSwipeActionsLoop() {
+        return swipeActionsLoop;
+    }
+
+    public static void setSwipeActionsLoop(boolean loop) {
+        swipeActionsLoop = loop;
+        save("swipeActionsLoop", swipeActionsLoop);
+    }
+
+    public static boolean getSwipeActionsReversed() {
+        return swipeActionsReversed;
+    }
+
+    public static void setSwipeActionsReversed(boolean reversed) {
+        swipeActionsReversed = reversed;
+        save("swipeActionsReversed", swipeActionsReversed);
+    }
+
     public static void toggleShowSaveMessageButton() {
         showSaveMessageButton = !showSaveMessageButton;
         save("showSaveMessageButton", showSaveMessageButton);
@@ -542,6 +1100,134 @@ public class HundredGramConfig {
     public static void toggleShowForwardWithoutAuthorButton() {
         showForwardWithoutAuthorButton = !showForwardWithoutAuthorButton;
         save("showForwardWithoutAuthorButton", showForwardWithoutAuthorButton);
+    }
+
+    public static void toggleShowRepeatMessageButton() {
+        showRepeatMessageButton = !showRepeatMessageButton;
+        save("showRepeatMessageButton", showRepeatMessageButton);
+    }
+
+    public static void toggleShowResultsBeforeVoting() {
+        showResultsBeforeVoting = !showResultsBeforeVoting;
+        save("showResultsBeforeVoting", showResultsBeforeVoting);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleFilterZalgo() {
+        filterZalgo = !filterZalgo;
+        save("filterZalgo", filterZalgo);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleReplaceEditedWithIcon() {
+        replaceEditedWithIcon = !replaceEditedWithIcon;
+        save("replaceEditedWithIcon", replaceEditedWithIcon);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleShowClearInputButton() {
+        showClearInputButton = !showClearInputButton;
+        save("showClearInputButton", showClearInputButton);
+    }
+
+    public static void setActionBarTitleMode(int mode) {
+        actionBarTitleMode = mode;
+        saveInt("actionBarTitleMode", actionBarTitleMode);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleCenterActionBarTitle() {
+        centerActionBarTitle = !centerActionBarTitle;
+        save("centerActionBarTitle", centerActionBarTitle);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setTabTitleStyle(int style) {
+        tabTitleStyle = style;
+        saveInt("tabTitleStyle", tabTitleStyle);
+        postNotificationToAllAccounts(NotificationCenter.dialogFiltersUpdated, 0);
+    }
+
+    public static void setTabCounterMode(int mode) {
+        tabCounterMode = mode;
+        saveInt("tabCounterMode", tabCounterMode);
+        postNotificationToAllAccounts(NotificationCenter.dialogFiltersUpdated, 0);
+    }
+
+    public static void toggleUnmuteWithVolumeButtons() {
+        unmuteWithVolumeButtons = !unmuteWithVolumeButtons;
+        save("unmuteWithVolumeButtons", unmuteWithVolumeButtons);
+    }
+
+    public static void toggleSwipeToPip() {
+        swipeToPip = !swipeToPip;
+        save("swipeToPip", swipeToPip);
+    }
+
+    public static void toggleRemoveMessageTail() {
+        removeMessageTail = !removeMessageTail;
+        save("removeMessageTail", removeMessageTail);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleWidePostsInChannels() {
+        widePostsInChannels = !widePostsInChannels;
+        save("widePostsInChannels", widePostsInChannels);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleDisableUnarchiveSwipe() {
+        disableUnarchiveSwipe = !disableUnarchiveSwipe;
+        save("disableUnarchiveSwipe", disableUnarchiveSwipe);
+    }
+
+    public static void toggleHideDialogsSearchBar() {
+        hideDialogsSearchBar = !hideDialogsSearchBar;
+        save("hideDialogsSearchBar", hideDialogsSearchBar);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleExtendedRecentStickers() {
+        extendedRecentStickers = !extendedRecentStickers;
+        save("extendedRecentStickers", extendedRecentStickers);
+    }
+
+    public static void toggleQuickChannelTransition() {
+        quickChannelTransition = !quickChannelTransition;
+        save("quickChannelTransition", quickChannelTransition);
+    }
+
+    public static void toggleShowForwardsCount() {
+        showForwardsCount = !showForwardsCount;
+        save("showForwardsCount", showForwardsCount);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleHideActionBarStatus() {
+        hideActionBarStatus = !hideActionBarStatus;
+        save("hideActionBarStatus", hideActionBarStatus);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setDoubleTapSeekDuration(int seconds) {
+        doubleTapSeekDuration = seconds;
+        saveInt("doubleTapSeekDuration", doubleTapSeekDuration);
+    }
+
+    public static void toggleQuickTopicTransition() {
+        quickTopicTransition = !quickTopicTransition;
+        save("quickTopicTransition", quickTopicTransition);
+    }
+
+    public static void setTransitionAnimation(int style) {
+        transitionAnimation = style;
+        saveInt("transitionAnimation", transitionAnimation);
+    }
+
+    public static void setDividerStyle(int style) {
+        dividerStyle = style;
+        saveInt("dividerStyle", dividerStyle);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 
     public static void toggleCameraXEnabled() {
@@ -672,6 +1358,11 @@ public class HundredGramConfig {
         try {
             MessagesController.getGlobalMainSettings().edit().putBoolean("roundCamera16to9", cameraRoundSensor16to9).apply();
         } catch (Exception ignored) {}
+    }
+
+    public static void toggleCameraRoundZoomSlider() {
+        cameraRoundZoomSlider = !cameraRoundZoomSlider;
+        save("cameraRoundZoomSlider", cameraRoundZoomSlider);
     }
 
     /**
@@ -903,6 +1594,7 @@ public class HundredGramConfig {
 
     public static void setAutoDownloadMaxSizeMb(int mb) {
         autoDownloadMaxSizeMb = mb;
+        vaultMaxAutodownloadSizeMb = mb;
         saveInt("autoDownloadMaxSizeMb", autoDownloadMaxSizeMb);
     }
 
@@ -1044,7 +1736,7 @@ public class HundredGramConfig {
                 .apply();
     }
 
-    private static void save(String key, boolean val) {
+    public static void save(String key, boolean val) {
         if (ApplicationLoader.applicationContext != null) {
             ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
                     .edit()
@@ -1053,7 +1745,7 @@ public class HundredGramConfig {
         }
     }
 
-    private static void saveInt(String key, int val) {
+    public static void saveInt(String key, int val) {
         if (ApplicationLoader.applicationContext != null) {
             ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
                     .edit()
@@ -1080,7 +1772,7 @@ public class HundredGramConfig {
         }
     }
 
-    private static void saveLong(String key, long val) {
+    public static void saveLong(String key, long val) {
         if (ApplicationLoader.applicationContext != null) {
             ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
                     .edit()
@@ -1411,9 +2103,19 @@ public class HundredGramConfig {
     }
 
     public static boolean isChatAntiDelete(long dialogId) {
+        if (!saveAntiDeleteText) {
+            return false;
+        }
         int val = getChatOverride(dialogId, "anti_delete");
+        if (val == OVERRIDE_ENABLED) return true;
         if (val == OVERRIDE_DISABLED) return false;
-        return true;
+
+        int folderId = getDialogFolderId(dialogId);
+        if (folderId == 1 && !saveScopeArchived) {
+            return false;
+        }
+
+        return isDialogInSaveScope(dialogId);
     }
 
     public static boolean isChatSilentSend(long dialogId) {
@@ -1541,6 +2243,67 @@ public class HundredGramConfig {
         return result;
     }
 
+    private static final androidx.collection.LongSparseArray<Integer> dialogFolderCache = new androidx.collection.LongSparseArray<>();
+
+    public static void setDialogFolder(long dialogId, int folderId) {
+        synchronized (dialogFolderCache) {
+            dialogFolderCache.put(dialogId, folderId);
+        }
+    }
+
+    public static int getDialogFolderId(long dialogId) {
+        synchronized (dialogFolderCache) {
+            Integer fid = dialogFolderCache.get(dialogId);
+            if (fid != null) {
+                return fid;
+            }
+        }
+        try {
+            TLRPC.Dialog d = MessagesController.getInstance(UserConfig.selectedAccount).dialogs_dict.get(dialogId);
+            if (d != null) {
+                synchronized (dialogFolderCache) {
+                    dialogFolderCache.put(dialogId, d.folder_id);
+                }
+                return d.folder_id;
+            }
+        } catch (Throwable ignored) {}
+        return 0;
+    }
+
+    public static boolean isGroupDialog(long dialogId) {
+        if (dialogId >= 0) {
+            return false;
+        }
+        try {
+            TLRPC.Chat chat = MessagesController.getInstance(UserConfig.selectedAccount).getChat(-dialogId);
+            if (chat != null) {
+                return !ChatObject.isChannelAndNotMegaGroup(chat);
+            }
+        } catch (Throwable ignored) {}
+        return true;
+    }
+
+    public static boolean isDialogInSaveScope(long dialogId) {
+        if (dialogId > 0) {
+            if (!saveScopeBots) {
+                TLRPC.User user = MessagesController.getInstance(UserConfig.selectedAccount).getUser(dialogId);
+                if (user != null && user.bot) {
+                    return false;
+                }
+            }
+            return saveScopePrivate;
+        } else if (dialogId < 0) {
+            try {
+                TLRPC.Chat chat = MessagesController.getInstance(UserConfig.selectedAccount).getChat(-dialogId);
+                if (chat != null && ChatObject.isChannelAndNotMegaGroup(chat)) {
+                    return saveScopeChannels;
+                }
+            } catch (Throwable ignored) {}
+            return saveScopeGroups;
+        }
+        return false;
+    }
+
     public static boolean canVaultDownload(long dialogId) {
         int mode = getChatVaultMode(dialogId);
         if (mode == VAULT_MODE_NEVER) return false;
@@ -1549,25 +2312,13 @@ public class HundredGramConfig {
         if (autoDownloadOnlyWifi && ApplicationLoader.getAutodownloadNetworkType() != StatsController.TYPE_WIFI) {
             return false;
         }
-        if (dialogId > 0) return true;
-        if (dialogId < 0) {
-            TLRPC.Dialog d = null;
-            try {
-                d = MessagesController.getInstance(UserConfig.selectedAccount).dialogs_dict.get(dialogId);
-            } catch (Throwable ignored) {}
-            if (d != null && d.folder_id == 1 && vaultIncludeArchivedChats) {
-                return true;
-            }
-            if (autoDownloadChatsScope == 2) {
-                return true;
-            }
-            if (autoDownloadChatsScope == 1) {
-                TLRPC.Chat chat = MessagesController.getInstance(UserConfig.selectedAccount).getChat(-dialogId);
-                return chat == null || !ChatObject.isChannelAndNotMegaGroup(chat);
-            }
+
+        int folderId = getDialogFolderId(dialogId);
+        if (folderId == 1 && !saveScopeArchived) {
             return false;
         }
-        return false;
+
+        return isDialogInSaveScope(dialogId);
     }
 
     public static boolean canVaultDownload(long dialogId, TLRPC.Message message) {
@@ -1575,7 +2326,11 @@ public class HundredGramConfig {
     }
 
     public static boolean canVaultDownload(long dialogId, TLRPC.Message message, int folderId) {
-        if (message == null || message.media == null) {
+        if (message == null || message.media == null || message.media instanceof TLRPC.TL_messageMediaEmpty) {
+            return false;
+        }
+        // Exclude stickers and animated stickers from media vault auto-download to avoid group chat noise
+        if (MessageObject.isStickerMessage(message) || MessageObject.isAnimatedStickerMessage(message)) {
             return false;
         }
         if (autoDownloadOnlyWifi && ApplicationLoader.getAutodownloadNetworkType() != StatsController.TYPE_WIFI) {
@@ -1591,49 +2346,34 @@ public class HundredGramConfig {
             if (!autoDownloadMediaVault && !backgroundArchiverEnabled) {
                 return false;
             }
-            if (!vaultIncludeArchivedChats) {
-                if (folderId == -1) {
-                    try {
-                        TLRPC.Dialog d = MessagesController.getInstance(UserConfig.selectedAccount).dialogs_dict.get(dialogId);
-                        if (d != null) {
-                            folderId = d.folder_id;
-                        }
-                    } catch (Throwable ignored) {}
-                }
-                if (folderId == 1) {
+            if (folderId == -1) {
+                folderId = getDialogFolderId(dialogId);
+            }
+            if (folderId == 1 && !saveScopeArchived) {
+                return false;
+            }
+
+            if (!isDialogInSaveScope(dialogId)) {
+                return false;
+            }
+
+            // Check media type filter
+            if (MessageObject.isPhoto(message)) {
+                if (!saveMediaPhotos || !isChatVaultTypeAllowed(dialogId, VAULT_TYPE_PHOTO)) {
                     return false;
                 }
-            }
-            int scope = autoDownloadChatsScope;
-            boolean inScope;
-            if (scope == 0) {
-                inScope = dialogId > 0 || (message.peer_id != null && message.peer_id.user_id != 0);
-            } else if (scope == 1) {
-                inScope = dialogId > 0 || (message.peer_id != null && (message.peer_id.user_id != 0 || message.peer_id.chat_id != 0 || (message.peer_id.channel_id != 0 && !message.post)));
-            } else {
-                inScope = true;
-            }
-            if (!inScope) {
-                return false;
-            }
-        }
-
-        // Check media type filter
-        if (MessageObject.isPhoto(message)) {
-            if (!isChatVaultTypeAllowed(dialogId, VAULT_TYPE_PHOTO)) {
-                return false;
-            }
-        } else if (MessageObject.isVideoMessage(message)) {
-            if (!isChatVaultTypeAllowed(dialogId, VAULT_TYPE_VIDEO)) {
-                return false;
-            }
-        } else if (MessageObject.isVoiceMessage(message) || MessageObject.isRoundVideoMessage(message)) {
-            if (!isChatVaultTypeAllowed(dialogId, VAULT_TYPE_VOICE_ROUND)) {
-                return false;
-            }
-        } else if (message.media instanceof TLRPC.TL_messageMediaDocument) {
-            if (!isChatVaultTypeAllowed(dialogId, VAULT_TYPE_DOCUMENT)) {
-                return false;
+            } else if (MessageObject.isVideoMessage(message)) {
+                if (!saveMediaVideos || !isChatVaultTypeAllowed(dialogId, VAULT_TYPE_VIDEO)) {
+                    return false;
+                }
+            } else if (MessageObject.isVoiceMessage(message) || MessageObject.isRoundVideoMessage(message)) {
+                if (!saveMediaVoiceRounds || !isChatVaultTypeAllowed(dialogId, VAULT_TYPE_VOICE_ROUND)) {
+                    return false;
+                }
+            } else if (message.media instanceof TLRPC.TL_messageMediaDocument) {
+                if (!saveMediaFiles || !isChatVaultTypeAllowed(dialogId, VAULT_TYPE_DOCUMENT)) {
+                    return false;
+                }
             }
         }
 
@@ -1651,6 +2391,166 @@ public class HundredGramConfig {
         }
 
         return true;
+    }
+
+    public static void setSavePreset(int preset) {
+        savePreset = preset;
+        if (preset == PRESET_SMART) {
+            saveScopePrivate = true;
+            saveScopeGroups = true;
+            saveScopeChannels = false;
+            saveScopeBots = false;
+            saveScopeArchived = false;
+            saveAntiDeleteText = true;
+            saveEditHistory = true;
+            saveMediaPhotos = true;
+            saveMediaVoiceRounds = true;
+            saveMediaVideos = true;
+            saveMediaFiles = false;
+            autoDownloadMaxSizeMb = 25;
+            autoDownloadMediaVault = true;
+        } else if (preset == PRESET_DMS_ONLY) {
+            saveScopePrivate = true;
+            saveScopeGroups = false;
+            saveScopeChannels = false;
+            saveScopeBots = false;
+            saveScopeArchived = false;
+            saveAntiDeleteText = true;
+            saveEditHistory = true;
+            saveMediaPhotos = true;
+            saveMediaVoiceRounds = true;
+            saveMediaVideos = true;
+            saveMediaFiles = true;
+            autoDownloadMaxSizeMb = 50;
+            autoDownloadMediaVault = true;
+        } else if (preset == PRESET_ALL) {
+            saveScopePrivate = true;
+            saveScopeGroups = true;
+            saveScopeChannels = true;
+            saveScopeBots = false;
+            saveScopeArchived = true;
+            saveAntiDeleteText = true;
+            saveEditHistory = true;
+            saveMediaPhotos = true;
+            saveMediaVoiceRounds = true;
+            saveMediaVideos = true;
+            saveMediaFiles = true;
+            autoDownloadMaxSizeMb = 100;
+            autoDownloadMediaVault = true;
+        } else if (preset == PRESET_STORAGE_SAVER) {
+            saveScopePrivate = true;
+            saveScopeGroups = false;
+            saveScopeChannels = false;
+            saveScopeBots = false;
+            saveScopeArchived = false;
+            saveAntiDeleteText = true;
+            saveEditHistory = true;
+            saveMediaPhotos = true;
+            saveMediaVoiceRounds = true;
+            saveMediaVideos = false;
+            saveMediaFiles = false;
+            autoDownloadMaxSizeMb = 5;
+            autoDownloadMediaVault = true;
+        }
+        vaultIncludeArchivedChats = saveScopeArchived;
+        vaultSaveForBots = saveScopeBots;
+        saveInt("savePreset", savePreset);
+        save("saveScopePrivate", saveScopePrivate);
+        save("saveScopeGroups", saveScopeGroups);
+        save("saveScopeChannels", saveScopeChannels);
+        save("saveScopeBots", saveScopeBots);
+        save("saveScopeArchived", saveScopeArchived);
+        save("vaultIncludeArchivedChats", vaultIncludeArchivedChats);
+        save("vaultSaveForBots", vaultSaveForBots);
+        save("saveAntiDeleteText", saveAntiDeleteText);
+        save("saveEditHistory", saveEditHistory);
+        save("saveMediaPhotos", saveMediaPhotos);
+        save("saveMediaVoiceRounds", saveMediaVoiceRounds);
+        save("saveMediaVideos", saveMediaVideos);
+        save("saveMediaFiles", saveMediaFiles);
+        saveInt("autoDownloadMaxSizeMb", autoDownloadMaxSizeMb);
+        save("autoDownloadMediaVault", autoDownloadMediaVault);
+    }
+
+    public static void toggleSaveScopePrivate() {
+        saveScopePrivate = !saveScopePrivate;
+        save("saveScopePrivate", saveScopePrivate);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveScopeGroups() {
+        saveScopeGroups = !saveScopeGroups;
+        save("saveScopeGroups", saveScopeGroups);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveScopeChannels() {
+        saveScopeChannels = !saveScopeChannels;
+        save("saveScopeChannels", saveScopeChannels);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveScopeBots() {
+        saveScopeBots = !saveScopeBots;
+        vaultSaveForBots = saveScopeBots;
+        save("saveScopeBots", saveScopeBots);
+        save("vaultSaveForBots", vaultSaveForBots);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveScopeArchived() {
+        saveScopeArchived = !saveScopeArchived;
+        vaultIncludeArchivedChats = saveScopeArchived;
+        save("saveScopeArchived", saveScopeArchived);
+        save("vaultIncludeArchivedChats", vaultIncludeArchivedChats);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveAntiDeleteText() {
+        saveAntiDeleteText = !saveAntiDeleteText;
+        save("saveAntiDeleteText", saveAntiDeleteText);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveEditHistory() {
+        saveEditHistory = !saveEditHistory;
+        save("saveEditHistory", saveEditHistory);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveMediaPhotos() {
+        saveMediaPhotos = !saveMediaPhotos;
+        save("saveMediaPhotos", saveMediaPhotos);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveMediaVoiceRounds() {
+        saveMediaVoiceRounds = !saveMediaVoiceRounds;
+        save("saveMediaVoiceRounds", saveMediaVoiceRounds);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveMediaVideos() {
+        saveMediaVideos = !saveMediaVideos;
+        save("saveMediaVideos", saveMediaVideos);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
+    }
+
+    public static void toggleSaveMediaFiles() {
+        saveMediaFiles = !saveMediaFiles;
+        save("saveMediaFiles", saveMediaFiles);
+        savePreset = PRESET_CUSTOM;
+        saveInt("savePreset", savePreset);
     }
 
     public static void toggleAlwaysHighQualityPhotos() {
@@ -1748,6 +2648,59 @@ public class HundredGramConfig {
     public static void toggleGhostHideReadDate() {
         ghostHideReadDate = !ghostHideReadDate;
         save("ghostHideReadDate", ghostHideReadDate);
+    }
+
+    public static void toggleTrackReadDate() {
+        trackReadDate = !trackReadDate;
+        save("trackReadDate", trackReadDate);
+    }
+
+    public static void toggleSendOfflineAfterOnline() {
+        sendOfflineAfterOnline = !sendOfflineAfterOnline;
+        save("sendOfflineAfterOnline", sendOfflineAfterOnline);
+    }
+
+    public static void toggleGhostUploadProgress() {
+        ghostUploadProgress = !ghostUploadProgress;
+        save("ghostUploadProgress", ghostUploadProgress);
+    }
+
+    public static void toggleActivitySimulatorMicroBreaks() {
+        activitySimulatorMicroBreaks = !activitySimulatorMicroBreaks;
+        save("activitySimulatorMicroBreaks", activitySimulatorMicroBreaks);
+    }
+
+    public static void toggleActivitySimulatorNotify() {
+        activitySimulatorNotify = !activitySimulatorNotify;
+        save("activitySimulatorNotify", activitySimulatorNotify);
+    }
+
+    public static void setActivitySimulatorQuickDuration(int minutes) {
+        activitySimulatorQuickDurationMinutes = minutes;
+        saveInt("activitySimulatorQuickDurationMinutes", activitySimulatorQuickDurationMinutes);
+    }
+
+    public static void setActivitySimulatorSchedule(boolean enabled, int startHour, int startMinute, int durationMinutes, int repeatMode) {
+        activitySimulatorScheduleEnabled = enabled;
+        activitySimulatorScheduleStartHour = startHour;
+        activitySimulatorScheduleStartMinute = startMinute;
+        activitySimulatorScheduleDurationMinutes = durationMinutes;
+        activitySimulatorScheduleRepeat = repeatMode;
+        save("activitySimulatorScheduleEnabled", activitySimulatorScheduleEnabled);
+        saveInt("activitySimulatorScheduleStartHour", activitySimulatorScheduleStartHour);
+        saveInt("activitySimulatorScheduleStartMinute", activitySimulatorScheduleStartMinute);
+        saveInt("activitySimulatorScheduleDurationMinutes", activitySimulatorScheduleDurationMinutes);
+        saveInt("activitySimulatorScheduleRepeat", activitySimulatorScheduleRepeat);
+    }
+
+    public static void setActivitySimulatorScheduleEnabled(boolean enabled) {
+        activitySimulatorScheduleEnabled = enabled;
+        save("activitySimulatorScheduleEnabled", activitySimulatorScheduleEnabled);
+    }
+
+    public static void toggleVaultSaveForBots() {
+        vaultSaveForBots = !vaultSaveForBots;
+        save("vaultSaveForBots", vaultSaveForBots);
     }
 
     public static void toggleSilentSendByDefault() {
@@ -1849,4 +2802,149 @@ public class HundredGramConfig {
         gifSize = size;
         saveInt("gifSize", gifSize);
     }
+
+    public static void togglePluginsEngine() {
+        pluginsEngine = !pluginsEngine;
+        save("pluginsEngine", pluginsEngine);
+    }
+
+    public static void togglePluginsSafeMode() {
+        pluginsSafeMode = !pluginsSafeMode;
+        save("pluginsSafeMode", pluginsSafeMode);
+    }
+
+    public static void togglePluginsDisableArtOpts() {
+        pluginsDisableArtOpts = !pluginsDisableArtOpts;
+        save("pluginsDisableArtOpts", pluginsDisableArtOpts);
+    }
+
+    public static void togglePluginsInstallUnknownSources() {
+        pluginsInstallUnknownSources = !pluginsInstallUnknownSources;
+        save("pluginsInstallUnknownSources", pluginsInstallUnknownSources);
+    }
+
+    public static void savePinnedPlugins() {
+        if (ApplicationLoader.applicationContext == null) return;
+        ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
+                .edit()
+                .putStringSet("pinnedPlugins", pinnedPlugins)
+                .apply();
+    }
+
+    public static void toggleInlineMath() {
+        inlineMath = !inlineMath;
+        save("inlineMath", inlineMath);
+    }
+
+    public static void toggleDisableNotificationDelay() {
+        disableNotificationDelay = !disableNotificationDelay;
+        save("disableNotificationDelay", disableNotificationDelay);
+    }
+
+    public static void toggleArchiveOnPull() {
+        archiveOnPull = !archiveOnPull;
+        save("archiveOnPull", archiveOnPull);
+    }
+
+    public static void setChannelBottomButton(int mode) {
+        channelBottomButton = mode;
+        saveInt("channelBottomButton", channelBottomButton);
+    }
+
+    public static void toggleUnlimitedRecentStickers() {
+        unlimitedRecentStickers = !unlimitedRecentStickers;
+        save("unlimitedRecentStickers", unlimitedRecentStickers);
+    }
+
+    public static void setStickerTimeMode(int mode) {
+        stickerTimeMode = mode;
+        saveInt("stickerTimeMode", stickerTimeMode);
+    }
+
+    public static void toggleRememberLastUsedCamera() {
+        rememberLastUsedCamera = !rememberLastUsedCamera;
+        save("rememberLastUsedCamera", rememberLastUsedCamera);
+    }
+
+    public static void togglePreferOriginalQuality() {
+        preferOriginalQuality = !preferOriginalQuality;
+        save("preferOriginalQuality", preferOriginalQuality);
+    }
+
+    // ── Batch 4: Smart Proxy ──────────────────────────────────────────────────
+
+    public static void setProxyDisableMask(int mask) {
+        proxyDisableMask = mask;
+        proxyDisableVpn = (mask & PROXY_DISABLE_VPN) != 0;
+        proxyDisableMobile = (mask & PROXY_DISABLE_MOBILE) != 0;
+        proxyDisableWifi = (mask & PROXY_DISABLE_WIFI) != 0;
+        saveInt("proxyDisableMask", mask);
+    }
+
+    public static boolean isProxyDisabledOn(int flag) {
+        return (proxyDisableMask & flag) != 0;
+    }
+
+    // ── Batch 4: Custom Save Path ─────────────────────────────────────────────
+
+    public static void setCustomSavePath(String path) {
+        customSavePath = path != null ? path : "";
+        saveString("customSavePath", customSavePath);
+    }
+
+    // ── Batch 4: Reply Styling ────────────────────────────────────────────────
+
+    public static void toggleReplyBackground() {
+        replyBackground = !replyBackground;
+        save("replyBackground", replyBackground);
+    }
+
+    public static void toggleReplyColors() {
+        replyColors = !replyColors;
+        save("replyColors", replyColors);
+    }
+
+    public static void toggleReplyEmoji() {
+        replyEmoji = !replyEmoji;
+        save("replyEmoji", replyEmoji);
+    }
+
+    // ── Batch 4: Sticker Shape ────────────────────────────────────────────────
+
+    public static void setStickerShape(int shape) {
+        stickerShape = shape;
+        saveInt("stickerShape", stickerShape);
+    }
+
+    public static void toggleEnableAdBlock() {
+        enableAdBlock = !enableAdBlock;
+        save("enableAdBlock", enableAdBlock);
+        com.exteragram.messenger.adblock.backend.AdBlockManager.setEnabled(enableAdBlock, null);
+    }
+
+    public static void toggleEnableFeedTab() {
+        enableFeedTab = !enableFeedTab;
+        save("enableFeedTab", enableFeedTab);
+    }
+
+    public static void toggleFeedWidePosts() {
+        feedWidePosts = !feedWidePosts;
+        save("feedWidePosts", feedWidePosts);
+    }
+
+    public static void toggleFeedUnreadCounter() {
+        feedUnreadCounter = !feedUnreadCounter;
+        save("feedUnreadCounter", feedUnreadCounter);
+    }
+
+    public static void toggleEnableNowPlaying() {
+        enableNowPlaying = !enableNowPlaying;
+        save("enableNowPlaying", enableNowPlaying);
+    }
+
+    public static void toggleNewSliderStyle() {
+        newSliderStyle = !newSliderStyle;
+        save("newSliderStyle", newSliderStyle);
+    }
 }
+

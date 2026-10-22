@@ -915,6 +915,26 @@ public class DialogStoriesCell extends FrameLayout implements NotificationCenter
             canvas.clipRect(0, 0, clipWidth, getHeight());
         }
 
+        if (org.telegram.messenger.HundredGramConfig.centerActionBarTitle) {
+            int availableW = getWidth();
+            float logoTotalW = telegramLogoView.getMeasuredWidth();
+            if (emojiStatusView != null && emojiStatusView.getVisibility() == VISIBLE) {
+                logoTotalW += emojiStatusView.getMeasuredWidth() - dpf2(3.33f);
+            }
+            float centerLogoX = (availableW - logoTotalW) / 2f;
+            telegramLogoView.setTranslationX(centerLogoX);
+            if (emojiStatusView != null) {
+                emojiStatusView.setTranslationX(centerLogoX - dpf2(3.33f) + telegramLogoView.getMeasuredWidth());
+            }
+            if (titleView != null && titleView.getDrawable() != null) {
+                titleView.setTranslationX((availableW - titleView.getDrawable().getCurrentWidth()) / 2f);
+                titleView.getDrawable().setRightPadding(0);
+            }
+            if (subtitleOverlayContainer != null) {
+                subtitleOverlayContainer.setTranslationX((availableW - subtitleOverlayContainer.getMeasuredWidth()) / 2f);
+            }
+        }
+
         if (progress != 0) {
             final float translationOffset = subtitleOverlayContainer.getTotalVisibility() * -dp(10);
 
@@ -925,17 +945,25 @@ public class DialogStoriesCell extends FrameLayout implements NotificationCenter
             titleView.setTranslationY(bottomY + dp(14) - offset + dp(FAKE_TOP_PADDING) - dp(6) * subtitleOverlayContainer.getTotalVisibility());
             int cellWidth = dp(72);
             lastViewRight += -cellWidth + getAvatarRight(cellWidth, collapsedProgress) + dp(12);
-            titleView.setTranslationX(lastViewRight);
-            titleView.getDrawable().setRightPadding(lastViewRight - dp(12) + actionBar.menu.getVisibleItemsMeasuredWidthWithAlpha() * progress);
+            if (org.telegram.messenger.HundredGramConfig.centerActionBarTitle) {
+                telegramLogoView.setTranslationY(bottomY + dp(14 + FAKE_TOP_PADDING + 4.333f) + translationOffset);
+                if (emojiStatusView != null) {
+                    emojiStatusView.setTranslationY(bottomY + dp(14 - 11 + FAKE_TOP_PADDING + 4.333f) + translationOffset);
+                }
+                subtitleOverlayContainer.setTranslationY(bottomY + dp(15 + FAKE_TOP_PADDING + 4.333f + 8));
+            } else {
+                titleView.setTranslationX(lastViewRight);
+                titleView.getDrawable().setRightPadding(lastViewRight - dp(12) + actionBar.menu.getVisibleItemsMeasuredWidthWithAlpha() * progress);
 
-            telegramLogoView.setTranslationX(titleView.getTranslationX() + dp(1));
-            telegramLogoView.setTranslationY(bottomY + dp(14 + FAKE_TOP_PADDING + 4.333f) + translationOffset /*titleView.getTranslationY() + dpf2(37.33f)*/);
+                telegramLogoView.setTranslationX(titleView.getTranslationX() + dp(1));
+                telegramLogoView.setTranslationY(bottomY + dp(14 + FAKE_TOP_PADDING + 4.333f) + translationOffset /*titleView.getTranslationY() + dpf2(37.33f)*/);
 
-            emojiStatusView.setTranslationX(titleView.getTranslationX() - dpf2(3.33f) + telegramLogoView.getMeasuredWidth());
-            emojiStatusView.setTranslationY(bottomY + dp(14 - 11 + FAKE_TOP_PADDING + 4.333f) + translationOffset);
+                emojiStatusView.setTranslationX(titleView.getTranslationX() - dpf2(3.33f) + telegramLogoView.getMeasuredWidth());
+                emojiStatusView.setTranslationY(bottomY + dp(14 - 11 + FAKE_TOP_PADDING + 4.333f) + translationOffset);
 
-            subtitleOverlayContainer.setTranslationX(titleView.getTranslationX());
-            subtitleOverlayContainer.setTranslationY(bottomY + dp(15 + FAKE_TOP_PADDING + 4.333f + 8));
+                subtitleOverlayContainer.setTranslationX(titleView.getTranslationX());
+                subtitleOverlayContainer.setTranslationY(bottomY + dp(15 + FAKE_TOP_PADDING + 4.333f + 8));
+            }
         }
 
         super.dispatchDraw(canvas);

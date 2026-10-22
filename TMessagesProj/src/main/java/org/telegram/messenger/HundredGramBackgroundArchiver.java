@@ -194,9 +194,13 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
             try {
                 cursor = MessagesStorage.getInstance(currentAccount).getDatabase().queryFinalized("SELECT did, folder_id, last_mid FROM dialogs ORDER BY date DESC");
                 while (cursor.next()) {
-                    dids.add(cursor.longValue(0));
-                    folderIds.add(cursor.intValue(1));
-                    topMessages.add(cursor.intValue(2));
+                    long did = cursor.longValue(0);
+                    int fid = cursor.intValue(1);
+                    int lastMid = cursor.intValue(2);
+                    dids.add(did);
+                    folderIds.add(fid);
+                    topMessages.add(lastMid);
+                    HundredGramConfig.setDialogFolder(did, fid);
                 }
             } catch (Throwable e) {
                 FileLog.e(e);
@@ -283,6 +287,7 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
         if (d == null || queuedSet.contains(d.id) || DialogObject.isFolderDialogId(d.id)) {
             return;
         }
+        HundredGramConfig.setDialogFolder(d.id, d.folder_id);
         if (d.folder_id == 1 && !HundredGramConfig.vaultIncludeArchivedChats) {
             return;
         }
@@ -350,6 +355,12 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
             return;
         }
 
+        // Backpressure: If 50+ media items are currently downloading, pause to avoid flooding FileLoader
+        if (pendingArchiverDownloads.size() >= 50) {
+            AndroidUtilities.runOnUIThread(processQueueRunnable, 3000);
+            return;
+        }
+
         long dialogId = queue.remove(0);
         MessagesController controller = MessagesController.getInstance(currentAccount);
 
@@ -409,7 +420,11 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
                         ArrayList<TLRPC.Message> postsWithComments = new ArrayList<>();
                         for (int m = 0; m < res.messages.size(); m++) {
                             TLRPC.Message msg = res.messages.get(m);
-                            if (checkMediaAndDownload(msg, dialogId, false)) {
+                            if (msg != null && msg.dialog_id == 0) {
+                                msg.dialog_id = dialogId;
+                            }
+                            // Cap max new downloads per dialog pass to 15 to ensure fair scheduling across groups
+                            if (mediaCount < 15 && checkMediaAndDownload(msg, dialogId, false)) {
                                 mediaCount++;
                             }
                             if (HundredGramConfig.vaultArchiveChannelComments && msg != null && msg.replies != null && msg.replies.replies > 0 && postsWithComments.size() < 2) {
@@ -453,6 +468,13 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
         if (DialogObject.isFolderDialogId(dialogId)) {
             return;
         }
+        if (msg.dialog_id == 0) {
+            msg.dialog_id = dialogId;
+        }
+        int folderId = HundredGramConfig.getDialogFolderId(dialogId);
+        if (folderId == 1 && !HundredGramConfig.vaultIncludeArchivedChats) {
+            return;
+        }
         int archiveOverride = HundredGramConfig.getChatOverride(dialogId, "auto_archive");
         if (archiveOverride == HundredGramConfig.OVERRIDE_DISABLED) {
             return;
@@ -467,7 +489,7 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
                 return;
             }
         }
-        if (mode == HundredGramConfig.VAULT_MODE_ALWAYS || archiveOverride == HundredGramConfig.OVERRIDE_ENABLED || HundredGramConfig.canVaultDownload(dialogId, msg)) {
+        if (mode == HundredGramConfig.VAULT_MODE_ALWAYS || archiveOverride == HundredGramConfig.OVERRIDE_ENABLED || HundredGramConfig.canVaultDownload(dialogId, msg, folderId)) {
             checkMediaAndDownload(msg, dialogId, false);
         }
     }
@@ -483,6 +505,13 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
 
     private boolean checkMediaAndDownload(TLRPC.Message msg, long dialogId, boolean force) {
         if (msg == null || msg.media == null || msg.media instanceof TLRPC.TL_messageMediaEmpty) {
+            return false;
+        }
+        if (msg.dialog_id == 0) {
+            msg.dialog_id = dialogId;
+        }
+        // Skip stickers and animated stickers entirely
+        if (MessageObject.isStickerMessage(msg) || MessageObject.isAnimatedStickerMessage(msg)) {
             return false;
         }
         if (!force && !HundredGramConfig.canVaultDownload(dialogId, msg)) {
@@ -564,8 +593,12 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
         }
         // 2. Documents, Voice, Round Video, Video
         else if (msg.media.document != null) {
-            long maxLimit = (HundredGramConfig.vaultMaxAutodownloadSizeMb > 0 && !force)
-                    ? (long) HundredGramConfig.vaultMaxAutodownloadSizeMb * 1024L * 1024L
+            int maxMb = HundredGramConfig.getChatVaultMaxSizeMb(dialogId);
+            if (maxMb == 0) {
+                maxMb = HundredGramConfig.autoDownloadMaxSizeMb;
+            }
+            long maxLimit = (maxMb > 0 && !force)
+                    ? (long) maxMb * 1024L * 1024L
                     : Long.MAX_VALUE;
             if (msg.media.document.size <= maxLimit) {
                 String attachName = FileLoader.getAttachFileName(msg.media.document);
@@ -758,8 +791,11 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
             try {
                 cursor = MessagesStorage.getInstance(currentAccount).getDatabase().queryFinalized("SELECT did, folder_id FROM dialogs");
                 while (cursor.next()) {
-                    dids.add(cursor.longValue(0));
-                    folderIds.add(cursor.intValue(1));
+                    long did = cursor.longValue(0);
+                    int fid = cursor.intValue(1);
+                    dids.add(did);
+                    folderIds.add(fid);
+                    HundredGramConfig.setDialogFolder(did, fid);
                 }
             } catch (Throwable e) {
                 FileLog.e(e);
@@ -799,6 +835,7 @@ public class HundredGramBackgroundArchiver implements NotificationCenter.Notific
                     for (int i = 0; i < controller.dialogs_dict.size(); i++) {
                         TLRPC.Dialog d = controller.dialogs_dict.valueAt(i);
                         if (d != null && !addedSet.contains(d.id) && !DialogObject.isFolderDialogId(d.id)) {
+                            HundredGramConfig.setDialogFolder(d.id, d.folder_id);
                             if (d.folder_id == 1 && !HundredGramConfig.vaultIncludeArchivedChats) {
                                 continue;
                             }

@@ -299,6 +299,10 @@ public class SimpleTextView extends View implements Drawable.Callback {
         gravity = value;
     }
 
+    public int getGravity() {
+        return gravity;
+    }
+
     public void setTypeface(Typeface typeface) {
         textPaint.setTypeface(typeface);
     }

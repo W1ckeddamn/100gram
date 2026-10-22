@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ContactsController;
+import org.telegram.messenger.HundredGramReadHistoryManager;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
@@ -100,6 +101,25 @@ public class MessageSeenView extends FrameLayout {
 
         avatarsImageView.setAlpha(0);
         titleView.setAlpha(0);
+
+        if (chat == null) {
+            long peerId = messageObject.getDialogId();
+            if (peerId > 0) {
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(peerId);
+                if (user != null) {
+                    int readDate = HundredGramReadHistoryManager.getInstance(currentAccount).getMessageReadDate(peerId, messageObject.getId());
+                    peerIds.add(peerId);
+                    dates.add(readDate);
+                    users.add(user);
+                    updateView();
+                    flickerLoadingView.setVisibility(View.GONE);
+                }
+            }
+            setBackground(Theme.createRadSelectorDrawable(Theme.getColor(Theme.key_dialogButtonSelector), 6, 0));
+            setEnabled(!users.isEmpty());
+            return;
+        }
+
         long fromId = 0;
         if (messageObject.messageOwner.from_id != null) {
             fromId = messageObject.messageOwner.from_id.user_id;
@@ -147,6 +167,24 @@ public class MessageSeenView extends FrameLayout {
                                 unknownChats.add(peerId);
                             } else {
                                 usersLocal.put(peerId, chat1);
+                            }
+                        }
+                    }
+                }
+
+                if (!allPeers.isEmpty()) {
+                    HundredGramReadHistoryManager.getInstance(currentAccount).saveGroupReadDates(messageObject.getDialogId(), messageObject.getId(), allPeers);
+                } else {
+                    ArrayList<Pair<Long, Integer>> cached = HundredGramReadHistoryManager.getInstance(currentAccount).getGroupReadDates(messageObject.getDialogId(), messageObject.getId());
+                    if (cached != null && !cached.isEmpty()) {
+                        for (Pair<Long, Integer> pair : cached) {
+                            if (finalFromId == pair.first) continue;
+                            allPeers.add(pair);
+                            TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(pair.first);
+                            if (user != null) {
+                                usersLocal.put(pair.first, user);
+                            } else {
+                                unknownUsers.add(pair.first);
                             }
                         }
                     }
@@ -207,6 +245,16 @@ public class MessageSeenView extends FrameLayout {
                     }
                 }
             } else {
+                ArrayList<Pair<Long, Integer>> cached = HundredGramReadHistoryManager.getInstance(currentAccount).getGroupReadDates(messageObject.getDialogId(), messageObject.getId());
+                if (cached != null && !cached.isEmpty()) {
+                    for (Pair<Long, Integer> pair : cached) {
+                        if (finalFromId == pair.first) continue;
+                        peerIds.add(pair.first);
+                        dates.add(pair.second);
+                        TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(pair.first);
+                        users.add(user);
+                    }
+                }
                 updateView();
             }
         }));

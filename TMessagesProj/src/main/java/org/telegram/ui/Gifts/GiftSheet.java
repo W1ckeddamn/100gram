@@ -68,6 +68,7 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SvgHelper;
@@ -1169,8 +1170,14 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                 if (userGift != null && userGift.unsaved) {
                     sb.append(", ").append(getString(R.string.Gift2FilterHidden));
                 }
-                if (userGift != null && !(userGift.gift instanceof TL_stars.TL_starGiftUnique) && !userGift.name_hidden && avatarView != null && avatarView.getVisibility() == View.VISIBLE) {
-                    final long fromDialogId = DialogObject.getPeerDialogId(userGift.from_id);
+                if (userGift != null && !userGift.name_hidden && avatarView != null && avatarView.getVisibility() == View.VISIBLE) {
+                    long fromDialogId = DialogObject.getPeerDialogId(userGift.from_id);
+                    if (fromDialogId == 0 && userGift.gift instanceof TL_stars.TL_starGiftUnique) {
+                        final TL_stars.starGiftAttributeOriginalDetails originalDetails = findAttribute(userGift.gift.attributes, TL_stars.starGiftAttributeOriginalDetails.class);
+                        if (originalDetails != null && originalDetails.sender_id != null) {
+                            fromDialogId = DialogObject.getPeerDialogId(originalDetails.sender_id);
+                        }
+                    }
                     if (fromDialogId != 0) {
                         CharSequence fromName = null;
                         if (fromDialogId > 0) {
@@ -1275,7 +1282,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
 
             if (avatarView.getVisibility() == View.VISIBLE && avatarView.getAlpha() > 0) {
                 canvas.save();
-                canvas.translate(cardBackgroundPadding.left + dp(2), cardBackgroundPadding.top + dp(2));
+                canvas.translate(cardBackgroundPadding.left + dp(2) + avatarView.getTranslationX(), cardBackgroundPadding.top + dp(2));
                 avatarView.draw(canvas);
                 canvas.restore();
             }
@@ -1342,11 +1349,17 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                         if (!pin) pinnedView.setVisibility(View.GONE);
                     })
                     .start();
+                if (avatarView != null) {
+                    avatarView.animate().translationX(pin ? dp(22) : 0).setDuration(200).start();
+                }
             } else {
                 pinnedView.setVisibility(pin ? View.VISIBLE : View.GONE);
                 pinnedView.setAlpha(pin ? 1.0f : 0.0f);
                 pinnedView.setScaleX(pin ? 1.0f : 0.3f);
                 pinnedView.setScaleY(pin ? 1.0f : 0.3f);
+                if (avatarView != null) {
+                    avatarView.setTranslationX(pin ? dp(22) : 0);
+                }
             }
             setShowPinIcon(!pinned && reordering && !inCollection && (userGift != null && userGift.gift instanceof TL_stars.TL_starGiftUnique), animated);
             updateRibbonText();
@@ -1713,34 +1726,56 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
             final boolean unique = userGift.gift instanceof TL_stars.TL_starGiftUnique;
             avatarView.setColorFilter(null);
             avatarView.setLayoutParams(avatarViewLayout1);
-            if (unique) {
-                avatarView.setVisibility(View.GONE);
-            } else if (userGift.name_hidden) {
+            avatarView.setTranslationX(userGift.pinned_to_top ? dp(22) : 0);
+
+            long dialogId = 0;
+            boolean isAnonymous = userGift.name_hidden;
+            if (userGift.from_id != null) {
+                dialogId = DialogObject.getPeerDialogId(userGift.from_id);
+            } else if (unique) {
+                final TL_stars.starGiftAttributeOriginalDetails originalDetails = findAttribute(userGift.gift.attributes, TL_stars.starGiftAttributeOriginalDetails.class);
+                if (originalDetails != null && originalDetails.sender_id != null) {
+                    dialogId = DialogObject.getPeerDialogId(originalDetails.sender_id);
+                }
+            }
+
+            if (isAnonymous) {
                 avatarView.setVisibility(View.VISIBLE);
                 CombinedDrawable iconDrawable = getPlatformDrawable("anonymous");
                 iconDrawable.setIconSize(dp(16), dp(16));
                 avatarView.setImageDrawable(iconDrawable);
-            } else {
-                final long dialogId = DialogObject.getPeerDialogId(userGift.from_id);
-                if (dialogId > 0) {
-                    final TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(dialogId);
+            } else if (dialogId > 0) {
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(dialogId);
+                if (user == null) {
+                    user = MessagesStorage.getInstance(currentAccount).getUser(dialogId);
                     if (user != null) {
-                        avatarView.setVisibility(View.VISIBLE);
-                        avatarDrawable.setInfo(user);
-                        avatarView.setForUserOrChat(user, avatarDrawable);
-                    } else {
-                        avatarView.setVisibility(View.GONE);
-                    }
-                } else {
-                    final TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-dialogId);
-                    if (chat != null) {
-                        avatarView.setVisibility(View.VISIBLE);
-                        avatarDrawable.setInfo(chat);
-                        avatarView.setForUserOrChat(chat, avatarDrawable);
-                    } else {
-                        avatarView.setVisibility(View.GONE);
+                        MessagesController.getInstance(currentAccount).putUser(user, true);
                     }
                 }
+                if (user != null) {
+                    avatarView.setVisibility(View.VISIBLE);
+                    avatarDrawable.setInfo(user);
+                    avatarView.setForUserOrChat(user, avatarDrawable);
+                } else {
+                    avatarView.setVisibility(View.GONE);
+                }
+            } else if (dialogId < 0) {
+                TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-dialogId);
+                if (chat == null) {
+                    chat = MessagesStorage.getInstance(currentAccount).getChat(-dialogId);
+                    if (chat != null) {
+                        MessagesController.getInstance(currentAccount).putChat(chat, true);
+                    }
+                }
+                if (chat != null) {
+                    avatarView.setVisibility(View.VISIBLE);
+                    avatarDrawable.setInfo(chat);
+                    avatarView.setForUserOrChat(chat, avatarDrawable);
+                } else {
+                    avatarView.setVisibility(View.GONE);
+                }
+            } else {
+                avatarView.setVisibility(View.GONE);
             }
 
             if (backdrop != null && userGift.gift.resell_amount != null) {

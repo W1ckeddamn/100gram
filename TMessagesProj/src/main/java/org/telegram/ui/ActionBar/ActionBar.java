@@ -460,7 +460,7 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
             return;
         }
         subtitleTextView = new SimpleTextView(getContext());
-        subtitleTextView.setGravity(Gravity.LEFT);
+        subtitleTextView.setGravity(org.telegram.messenger.HundredGramConfig.centerActionBarTitle || isCenterTitle ? Gravity.CENTER : Gravity.LEFT);
         subtitleTextView.setVisibility(GONE);
         subtitleTextView.setTextColor(getThemedColor(Theme.key_actionBarDefaultSubtitle));
         addView(subtitleTextView, 0, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP));
@@ -471,7 +471,7 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
             return;
         }
         additionalSubtitleTextView = new SimpleTextView(getContext());
-        additionalSubtitleTextView.setGravity(Gravity.LEFT);
+        additionalSubtitleTextView.setGravity(org.telegram.messenger.HundredGramConfig.centerActionBarTitle || isCenterTitle ? Gravity.CENTER : Gravity.LEFT);
         additionalSubtitleTextView.setVisibility(GONE);
         additionalSubtitleTextView.setTextColor(getThemedColor(Theme.key_actionBarDefaultSubtitle));
         addView(additionalSubtitleTextView, 0, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP));
@@ -505,7 +505,12 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
                 subtitleTextView.setText(value);
             }
             subtitle = value;
+            subtitleTextView.requestLayout();
         }
+        if (titlesContainer != null) {
+            titlesContainer.requestLayout();
+        }
+        requestLayout();
     }
 
     private void createTitleTextView(int i) {
@@ -513,7 +518,7 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
             return;
         }
         titleTextView[i] = new SimpleTextView(getContext());
-        titleTextView[i].setGravity(isCenterTitle ? Gravity.CENTER : Gravity.LEFT | Gravity.CENTER_VERTICAL);
+        titleTextView[i].setGravity(org.telegram.messenger.HundredGramConfig.centerActionBarTitle || isCenterTitle ? Gravity.CENTER : Gravity.LEFT | Gravity.CENTER_VERTICAL);
         if (titleColorToSet != 0) {
             titleTextView[i].setTextColor(titleColorToSet);
         } else {
@@ -539,9 +544,22 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
             for (int a = 0; a < titleTextView.length; a++) {
                 if (titleTextView[a] != null) {
                     titleTextView[a].setGravity(Gravity.CENTER);
+                    titleTextView[a].requestLayout();
                 }
             }
         }
+        if (subtitleTextView != null) {
+            subtitleTextView.setGravity(Gravity.CENTER);
+            subtitleTextView.requestLayout();
+        }
+        if (additionalSubtitleTextView != null) {
+            additionalSubtitleTextView.setGravity(Gravity.CENTER);
+            additionalSubtitleTextView.requestLayout();
+        }
+        if (titlesContainer != null) {
+            titlesContainer.requestLayout();
+        }
+        requestLayout();
     }
 
     public void setTitleRightMargin(int value) {
@@ -567,8 +585,13 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
                 ((AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable) lastRightDrawable).setParentView(titleTextView[0]);
             }
             titleTextView[0].setRightDrawableOnClick(rightDrawableOnClickListener);
+            titleTextView[0].requestLayout();
         }
         fromBottom = false;
+        if (titlesContainer != null) {
+            titlesContainer.requestLayout();
+        }
+        requestLayout();
     }
 
     public void setRightDrawableOnClick(OnClickListener onClickListener) {
@@ -1423,9 +1446,31 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
 
         }
 
+        boolean centerTitle = org.telegram.messenger.HundredGramConfig.centerActionBarTitle || isCenterTitle;
+        int targetTitleGravity = centerTitle ? Gravity.CENTER : (Gravity.LEFT | Gravity.CENTER_VERTICAL);
+        int targetSubtitleGravity = centerTitle ? Gravity.CENTER : Gravity.LEFT;
+        for (int i = 0; i < 2; i++) {
+            if (titleTextView[i] != null && titleTextView[i].getGravity() != targetTitleGravity) {
+                titleTextView[i].setGravity(targetTitleGravity);
+            }
+        }
+        if (subtitleTextView != null && subtitleTextView.getGravity() != targetSubtitleGravity) {
+            subtitleTextView.setGravity(targetSubtitleGravity);
+        }
+        if (additionalSubtitleTextView != null && additionalSubtitleTextView.getGravity() != targetSubtitleGravity) {
+            additionalSubtitleTextView.setGravity(targetSubtitleGravity);
+        }
+
         for (int i = 0; i < 2; i++) {
             if (titleTextView[0] != null && titleTextView[0].getVisibility() != GONE || subtitleTextView != null && subtitleTextView.getVisibility() != GONE) {
-                int availableWidth = width - (menu != null ? menu.getMeasuredWidth() : 0) - dp(16) - textLeft - titleRightMargin;
+                int availableWidth;
+                if (centerTitle) {
+                    int rightBound = (menu != null && menu.getVisibility() != GONE ? menu.getMeasuredWidth() : 0) + dp(16) + titleRightMargin;
+                    int maxSide = Math.max(textLeft, rightBound);
+                    availableWidth = Math.max(0, width - 2 * maxSide);
+                } else {
+                    availableWidth = width - (menu != null ? menu.getMeasuredWidth() : 0) - dp(16) - textLeft - titleRightMargin;
+                }
 
                 if (((fromBottom && i == 0) || (!fromBottom && i == 1)) && overlayTitleAnimation && titleAnimationRunning) {
                     titleTextView[i].setTextSize(glassMode ? 17 : !AndroidUtilities.isTablet() && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 18 : 20);
@@ -1531,21 +1576,37 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
                         textTop = (getCurrentActionBarHeight() - titleTextView[i].getTextHeight()) / 2;
                     }
                 }
-                titleTextView[i].layout(textLeft, additionalTop + textTop - titleTextView[i].getPaddingTop(), textLeft + titleTextView[i].getMeasuredWidth(), additionalTop + textTop + titleTextView[i].getTextHeight() - titleTextView[i].getPaddingTop() + titleTextView[i].getPaddingBottom());
+                int curTextLeft = textLeft;
+                if (org.telegram.messenger.HundredGramConfig.centerActionBarTitle || isCenterTitle) {
+                    curTextLeft = (getMeasuredWidth() - titleTextView[i].getMeasuredWidth()) / 2;
+                }
+                titleTextView[i].layout(curTextLeft, additionalTop + textTop - titleTextView[i].getPaddingTop(), curTextLeft + titleTextView[i].getMeasuredWidth(), additionalTop + textTop + titleTextView[i].getTextHeight() - titleTextView[i].getPaddingTop() + titleTextView[i].getPaddingBottom());
             }
         }
         if (additionalSubTitleOverlayContainer != null) {
             int textTop = getCurrentActionBarHeight() / 2 + (getCurrentActionBarHeight() / 2 - additionalSubTitleOverlayContainer.getMeasuredHeight()) / 2 - dp(2);
-            additionalSubTitleOverlayContainer.layout(textLeft, additionalTop + textTop, textLeft + additionalSubTitleOverlayContainer.getMeasuredWidth(), additionalTop + textTop + additionalSubTitleOverlayContainer.getMeasuredHeight());
+            int curTextLeft = textLeft;
+            if (org.telegram.messenger.HundredGramConfig.centerActionBarTitle || isCenterTitle) {
+                curTextLeft = (getMeasuredWidth() - additionalSubTitleOverlayContainer.getMeasuredWidth()) / 2;
+            }
+            additionalSubTitleOverlayContainer.layout(curTextLeft, additionalTop + textTop, curTextLeft + additionalSubTitleOverlayContainer.getMeasuredWidth(), additionalTop + textTop + additionalSubTitleOverlayContainer.getMeasuredHeight());
         }
         if (subtitleTextView != null && subtitleTextView.getVisibility() != GONE) {
             int textTop = getCurrentActionBarHeight() / 2 + (getCurrentActionBarHeight() / 2 - subtitleTextView.getTextHeight()) / 2 - dp(2);
-            subtitleTextView.layout(textLeft, additionalTop + textTop, textLeft + subtitleTextView.getMeasuredWidth(), additionalTop + textTop + subtitleTextView.getTextHeight());
+            int curTextLeft = textLeft;
+            if (org.telegram.messenger.HundredGramConfig.centerActionBarTitle || isCenterTitle) {
+                curTextLeft = (getMeasuredWidth() - subtitleTextView.getMeasuredWidth()) / 2;
+            }
+            subtitleTextView.layout(curTextLeft, additionalTop + textTop, curTextLeft + subtitleTextView.getMeasuredWidth(), additionalTop + textTop + subtitleTextView.getTextHeight());
         }
 
         if (additionalSubtitleTextView != null && additionalSubtitleTextView.getVisibility() != GONE) {
             int textTop = getCurrentActionBarHeight() / 2 + (getCurrentActionBarHeight() / 2 - additionalSubtitleTextView.getTextHeight()) / 2 - dp(!AndroidUtilities.isTablet() && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 1 : 1);
-            additionalSubtitleTextView.layout(textLeft, additionalTop + textTop, textLeft + additionalSubtitleTextView.getMeasuredWidth(), additionalTop + textTop + additionalSubtitleTextView.getTextHeight());
+            int curTextLeft = textLeft;
+            if (org.telegram.messenger.HundredGramConfig.centerActionBarTitle || isCenterTitle) {
+                curTextLeft = (getMeasuredWidth() - additionalSubtitleTextView.getMeasuredWidth()) / 2;
+            }
+            additionalSubtitleTextView.layout(curTextLeft, additionalTop + textTop, curTextLeft + additionalSubtitleTextView.getMeasuredWidth(), additionalTop + textTop + additionalSubtitleTextView.getTextHeight());
         }
 
         if (avatarSearchImageView != null) {

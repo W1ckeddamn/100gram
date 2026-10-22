@@ -38,7 +38,7 @@ public class ChatActivityContainer extends FrameLayout {
         Bundle args
     ) {
         super(context);
-        this.parentLayout = parentLayout;
+        this.parentLayout = parentLayout != null ? parentLayout : (LaunchActivity.instance != null ? LaunchActivity.instance.getActionBarLayout() : null);
 
         chatActivity = new ChatActivity(args) {
             @Override

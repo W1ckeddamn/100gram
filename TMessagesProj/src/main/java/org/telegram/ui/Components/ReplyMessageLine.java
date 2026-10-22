@@ -21,6 +21,7 @@ import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
@@ -430,8 +431,23 @@ public class ReplyMessageLine {
             backgroundColor = Theme.multAlpha(color3, dark ? 0.12f : 0.10f);
             nameColor = Theme.getColor(Theme.key_chat_outReplyNameText, resourcesProvider);
         }
+        // 100gram: replyColors — if disabled, use theme defaults for colors and nameColor
+        if (!HundredGramConfig.replyColors && type == TYPE_REPLY) {
+            hasColor2 = false;
+            hasColor3 = false;
+            color1 = color2 = color3 = Theme.getColor(Theme.key_chat_inReplyLine, resourcesProvider);
+            nameColor = Theme.getColor(messageObject.isOutOwner() ? Theme.key_chat_outReplyNameText : Theme.key_chat_inReplyNameText, resourcesProvider);
+        }
+        // 100gram: replyBackground — if disabled, clear background
+        if (!HundredGramConfig.replyBackground && type == TYPE_REPLY) {
+            backgroundColor = Color.TRANSPARENT;
+        }
         if ((type == TYPE_REPLY || type == TYPE_LINK || type == TYPE_CONTACT) && messageObject != null && messageObject.overrideLinkEmoji != -1) {
             emojiDocumentId = messageObject.overrideLinkEmoji;
+        }
+        // 100gram: replyEmoji — if disabled, suppress custom emoji in reply headers
+        if (!HundredGramConfig.replyEmoji && type == TYPE_REPLY) {
+            emojiDocumentId = 0L;
         }
         if (emojiDocumentId != 0 && emoji == null && parentView != null) {
             emoji = new AnimatedEmojiDrawable.SwapAnimatedEmojiDrawable(parentView, false, dp(20), AnimatedEmojiDrawable.CACHE_TYPE_ALERT_PREVIEW_STATIC);

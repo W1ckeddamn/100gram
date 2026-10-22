@@ -303,11 +303,20 @@ public class HundredGramChatSettingsBottomSheet extends BottomSheetWithRecyclerL
     private String getVaultMaxSizeSubtitle() {
         int customMb = HundredGramConfig.getChatVaultMaxSizeMb(dialogId);
         if (customMb == 0) {
-            return String.format(LocaleController.getString("HundredGramVaultSizeDefault", R.string.HundredGramVaultSizeDefault), HundredGramConfig.autoDownloadMaxSizeMb);
+            if (HundredGramConfig.autoDownloadMaxSizeMb <= 0) {
+                return LocaleController.getString("HundredGramVaultSizeDefaultUnlimited", R.string.HundredGramVaultSizeDefaultUnlimited);
+            } else if (HundredGramConfig.autoDownloadMaxSizeMb >= 1024 && HundredGramConfig.autoDownloadMaxSizeMb % 1024 == 0) {
+                return String.format(LocaleController.getString("HundredGramVaultSizeDefault", R.string.HundredGramVaultSizeDefault), HundredGramConfig.autoDownloadMaxSizeMb / 1024)
+                        .replace(LocaleController.getString("HundredGramMB", R.string.HundredGramMB), LocaleController.getString("HundredGramGB", R.string.HundredGramGB));
+            } else {
+                return String.format(LocaleController.getString("HundredGramVaultSizeDefault", R.string.HundredGramVaultSizeDefault), HundredGramConfig.autoDownloadMaxSizeMb);
+            }
         } else if (customMb == -1) {
             return LocaleController.getString("HundredGramVaultSizeUnlimited", R.string.HundredGramVaultSizeUnlimited);
+        } else if (customMb >= 1024 && customMb % 1024 == 0) {
+            return (customMb / 1024) + " " + LocaleController.getString("HundredGramGB", R.string.HundredGramGB);
         } else {
-            return customMb + " МБ";
+            return customMb + " " + LocaleController.getString("HundredGramMB", R.string.HundredGramMB);
         }
     }
 
@@ -412,13 +421,24 @@ public class HundredGramChatSettingsBottomSheet extends BottomSheetWithRecyclerL
         Context context = getContext();
         if (context == null) return;
         final int[] values = { 0, 10, 50, 100, 500, 1024, -1 };
+        String defaultOption;
+        if (HundredGramConfig.autoDownloadMaxSizeMb <= 0) {
+            defaultOption = LocaleController.getString("HundredGramVaultSizeDefaultUnlimited", R.string.HundredGramVaultSizeDefaultUnlimited);
+        } else if (HundredGramConfig.autoDownloadMaxSizeMb >= 1024 && HundredGramConfig.autoDownloadMaxSizeMb % 1024 == 0) {
+            defaultOption = String.format(LocaleController.getString("HundredGramVaultSizeDefault", R.string.HundredGramVaultSizeDefault), HundredGramConfig.autoDownloadMaxSizeMb / 1024)
+                    .replace(LocaleController.getString("HundredGramMB", R.string.HundredGramMB), LocaleController.getString("HundredGramGB", R.string.HundredGramGB));
+        } else {
+            defaultOption = String.format(LocaleController.getString("HundredGramVaultSizeDefault", R.string.HundredGramVaultSizeDefault), HundredGramConfig.autoDownloadMaxSizeMb);
+        }
+        String mb = LocaleController.getString("HundredGramMB", R.string.HundredGramMB);
+        String gb = LocaleController.getString("HundredGramGB", R.string.HundredGramGB);
         CharSequence[] items = new CharSequence[] {
-                String.format(LocaleController.getString("HundredGramVaultSizeDefault", R.string.HundredGramVaultSizeDefault), HundredGramConfig.autoDownloadMaxSizeMb),
-                "10 МБ",
-                "50 МБ",
-                "100 МБ",
-                "500 МБ",
-                "1 ГБ",
+                defaultOption,
+                "10 " + mb,
+                "50 " + mb,
+                "100 " + mb,
+                "500 " + mb,
+                "1 " + gb,
                 LocaleController.getString("HundredGramVaultSizeUnlimited", R.string.HundredGramVaultSizeUnlimited)
         };
         AlertDialog.Builder builder = new AlertDialog.Builder(context, resourcesProvider);

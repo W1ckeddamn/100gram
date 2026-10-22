@@ -42,7 +42,17 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Adapters.FiltersView;
 import org.telegram.ui.Components.blur3.drawable.BlurredBackgroundDrawable;
 
+import org.telegram.messenger.HundredGramConfig;
+import org.telegram.ui.Components.PillStack.BasePill;
+import org.telegram.ui.Components.PillStack.CachePill;
+import org.telegram.ui.Components.PillStack.PillRegistry;
+import org.telegram.ui.Components.PillStack.PillStackConfig;
+import org.telegram.ui.Components.PillStack.PillStackView;
+import org.telegram.ui.Components.PillStack.PillType;
+import org.telegram.ui.Components.PillStack.ProxyPill;
+
 import java.util.ArrayList;
+import java.util.List;
 
 import me.vkryl.android.AnimatorUtils;
 import me.vkryl.android.animator.BoolAnimator;
@@ -66,6 +76,9 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
     private boolean closeButtonForcedVisible;
     public final EditTextBoldCursor editText;
     private BlurredBackgroundDrawable blurredBackgroundDrawable;
+
+    private PillStackView pillStackView;
+    private boolean showPillStack = true;
 
     public FragmentSearchField(Context context, Theme.ResourcesProvider resourcesProvider) {
         super(context);
@@ -172,6 +185,9 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
         setWillNotDraw(false);
         checkUi_editTextPaddings();
         updateColors();
+        if (HundredGramConfig.pillStackEnabled) {
+            post(this::showPillStack);
+        }
     }
 
     public void addAdditionalIcon(View icon) {
@@ -239,7 +255,10 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
     private void checkUi_editTextPaddings() {
         final int filtersWidth = (int) animatorSearchFiltersWidth.getFactor() + dp(6); //searchFilterLayout.getWidth();
         final int pStart = Math.max(filtersWidth, dp(48));
-        final int pEnd = dp(48) + additionalIconsLayout.getMeasuredWidth();
+        int pEnd = dp(48) + additionalIconsLayout.getMeasuredWidth();
+        if (pillStackView != null && pillStackView.getVisibility() == View.VISIBLE) {
+            pEnd += pillStackView.getMeasuredWidth() + dp(4);
+        }
 
         final int pLeft = LocaleController.isRTL ? pEnd : pStart;
         final int pRight = LocaleController.isRTL ? pStart : pEnd;
@@ -299,6 +318,9 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
                 ((ActionBarMenuItem.SearchFilterView) searchFilterLayout.getChildAt(i)).updateColors();
             }
         }
+        if (pillStackView != null) {
+            pillStackView.updateColors();
+        }
 
         invalidate();
     }
@@ -331,11 +353,82 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
         if (id == ANIMATOR_ID_CLOSE_BUTTON_VISIBLE) {
             FragmentFloatingButton.setAnimatedVisibility(closeIcon, factor);
             closeIcon.setRotation((1 - factor) * 90);
+            if (pillStackView != null) {
+                pillStackView.setVisibilityFactor(1.0f - factor);
+            }
         } else if (id == ANIMATOR_ID_SEARCH_ICON_VISIBLE) {
             FragmentFloatingButton.setAnimatedVisibility(searchIcon, factor);
         } else if (id == ANIMATOR_ID_SEARCH_FILTERS_WIDTH) {
             checkUi_editTextPaddings();
         }
+    }
+
+    public void showPillStack() {
+        this.showPillStack = true;
+        post(() -> updatePillStack(true));
+    }
+
+    public void updatePillStack(boolean animated) {
+        if (!HundredGramConfig.pillStackEnabled) {
+            if (pillStackView != null) {
+                removeView(pillStackView);
+                pillStackView = null;
+            }
+            return;
+        }
+        if (showPillStack && !PillStackConfig.getActivePills().isEmpty()) {
+            boolean isNew = false;
+            if (pillStackView == null) {
+                pillStackView = new PillStackView(getContext());
+                addView(pillStackView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.CENTER_VERTICAL, 6.0f, 0.0f, 6.0f, 0.0f));
+                isNew = true;
+            }
+            final PillStackView stack = pillStackView;
+            if (isNew) {
+                if (animated) {
+                    stack.setAlpha(0.0f);
+                    stack.setScaleX(0.6f);
+                    stack.setScaleY(0.6f);
+                    stack.animate().alpha(1.0f).scaleX(1.0f).scaleY(1.0f).setDuration(250L).setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT).withEndAction(() -> {
+                        if (pillStackView == stack) {
+                            stack.setVisibilityFactor(1.0f - animatorCloseIconVisible.getFloatValue());
+                        }
+                    }).start();
+                } else {
+                    stack.setVisibilityFactor(1.0f - animatorCloseIconVisible.getFloatValue());
+                }
+            }
+            stack.clearPills();
+            int activeIndex = 0;
+            List<Integer> activeList = PillStackConfig.getActivePills();
+            for (int i = 0; i < activeList.size(); i++) {
+                int pillType = activeList.get(i);
+                BasePill pill = createPill(pillType);
+                if (pill != null) {
+                    stack.addPill(pill);
+                    if (pillType == PillStackConfig.getLastActivePillId()) {
+                        activeIndex = stack.getPillsCount() - 1;
+                    }
+                }
+            }
+            if (stack.getPillsCount() == 0) {
+                if (pillStackView == stack) {
+                    pillStackView = null;
+                }
+                removeView(stack);
+                return;
+            }
+            stack.setCurrentIndex(activeIndex);
+            return;
+        }
+        if (pillStackView != null) {
+            removeView(pillStackView);
+            pillStackView = null;
+        }
+    }
+
+    private BasePill createPill(int type) {
+        return PillRegistry.create(type, getContext(), resourcesProvider);
     }
 
 

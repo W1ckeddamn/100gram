@@ -406,6 +406,8 @@ public class MessagesStorage extends BaseController {
             database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_message_edits ON hundredgram_message_edits(uid, mid, edit_date);").stepThis().dispose();
             database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_vault(mid INTEGER, uid INTEGER, file_name TEXT, vault_path TEXT, PRIMARY KEY(mid, uid, file_name));").stepThis().dispose();
             database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_vault ON hundredgram_vault(uid, mid);").stepThis().dispose();
+            database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_read_dates(mid INTEGER, uid INTEGER, read_date INTEGER, PRIMARY KEY(mid, uid));").stepThis().dispose();
+            database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_read_dates ON hundredgram_read_dates(uid, mid);").stepThis().dispose();
             database.executeFast("CREATE TABLE IF NOT EXISTS profile_changes_log(user_id INTEGER, field_name TEXT, old_value TEXT, new_value TEXT, date INTEGER);").stepThis().dispose();
             database.executeFast("CREATE INDEX IF NOT EXISTS idx_profile_changes_log ON profile_changes_log(user_id, date);").stepThis().dispose();
         } catch (Exception e) {
@@ -787,6 +789,8 @@ public class MessagesStorage extends BaseController {
         database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_message_edits ON hundredgram_message_edits(uid, mid, edit_date);").stepThis().dispose();
         database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_vault(mid INTEGER, uid INTEGER, file_name TEXT, vault_path TEXT, PRIMARY KEY(mid, uid, file_name));").stepThis().dispose();
         database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_vault ON hundredgram_vault(uid, mid);").stepThis().dispose();
+        database.executeFast("CREATE TABLE IF NOT EXISTS hundredgram_read_dates(mid INTEGER, uid INTEGER, read_date INTEGER, PRIMARY KEY(mid, uid));").stepThis().dispose();
+        database.executeFast("CREATE INDEX IF NOT EXISTS idx_hundredgram_read_dates ON hundredgram_read_dates(uid, mid);").stepThis().dispose();
         database.executeFast("CREATE TABLE IF NOT EXISTS profile_changes_log(user_id INTEGER, field_name TEXT, old_value TEXT, new_value TEXT, date INTEGER);").stepThis().dispose();
         database.executeFast("CREATE INDEX IF NOT EXISTS idx_profile_changes_log ON profile_changes_log(user_id, date);").stepThis().dispose();
 
@@ -13901,16 +13905,72 @@ public class MessagesStorage extends BaseController {
                 state = null;
             }
             if (!isEmpty(outbox)) {
+                int now = getConnectionsManager().getCurrentTime();
                 for (int b = 0; b < outbox.size(); b++) {
                     long key = outbox.keyAt(b);
                     int messageId = outbox.get(key);
+                    if (HundredGramConfig.trackReadDate) {
+                        SQLiteCursor cursorRead = null;
+                        SQLitePreparedStatement pState = null;
+                        try {
+                            cursorRead = database.queryFinalized(String.format(Locale.US, "SELECT mid FROM messages_v2 WHERE uid = %d AND mid > 0 AND mid <= %d AND read_state IN(0,2) AND out = 1", key, messageId));
+                            if (cursorRead != null) {
+                                pState = database.executeFast("INSERT OR IGNORE INTO hundredgram_read_dates VALUES(?, ?, ?)");
+                                while (cursorRead.next()) {
+                                    int m = cursorRead.intValue(0);
+                                    pState.requery();
+                                    pState.bindInteger(1, m);
+                                    pState.bindLong(2, key);
+                                    pState.bindInteger(3, now);
+                                    pState.step();
+                                    messageReadDatesCache.put(key + "_" + m, now);
+                                }
+                            }
+                        } catch (Exception ignore) {
+                        } finally {
+                            if (pState != null) {
+                                pState.dispose();
+                            }
+                            if (cursorRead != null) {
+                                cursorRead.dispose();
+                            }
+                        }
+                    }
                     database.executeFast(String.format(Locale.US, "UPDATE messages_v2 SET read_state = read_state | 1 WHERE uid = %d AND mid > 0 AND mid <= %d AND read_state IN(0,2) AND out = 1", key, messageId)).stepThis().dispose();
                 }
             }
             if (encryptedMessages != null && !isEmpty(encryptedMessages)) {
+                int now = getConnectionsManager().getCurrentTime();
                 for (int a = 0; a < encryptedMessages.size(); a++) {
                     long dialogId = DialogObject.makeEncryptedDialogId(encryptedMessages.keyAt(a));
                     int max_date = encryptedMessages.valueAt(a);
+                    if (HundredGramConfig.trackReadDate) {
+                        SQLiteCursor cursorRead = null;
+                        SQLitePreparedStatement pState = null;
+                        try {
+                            cursorRead = database.queryFinalized(String.format(Locale.US, "SELECT mid FROM messages_v2 WHERE uid = %d AND date <= %d AND read_state IN(0,2) AND out = 1", dialogId, max_date));
+                            if (cursorRead != null) {
+                                pState = database.executeFast("INSERT OR IGNORE INTO hundredgram_read_dates VALUES(?, ?, ?)");
+                                while (cursorRead.next()) {
+                                    int m = cursorRead.intValue(0);
+                                    pState.requery();
+                                    pState.bindInteger(1, m);
+                                    pState.bindLong(2, dialogId);
+                                    pState.bindInteger(3, now);
+                                    pState.step();
+                                    messageReadDatesCache.put(dialogId + "_" + m, now);
+                                }
+                            }
+                        } catch (Exception ignore) {
+                        } finally {
+                            if (pState != null) {
+                                pState.dispose();
+                            }
+                            if (cursorRead != null) {
+                                cursorRead.dispose();
+                            }
+                        }
+                    }
                     state = database.executeFast("UPDATE messages_v2 SET read_state = read_state | 1 WHERE uid = ? AND date <= ? AND read_state IN(0,2) AND out = 1");
                     state.requery();
                     state.bindLong(1, dialogId);
@@ -13933,6 +13993,27 @@ public class MessagesStorage extends BaseController {
         SQLiteCursor cursor = null;
         try {
             String midsStr = TextUtils.join(",", mids);
+            if (HundredGramConfig.trackReadDate && mids != null && !mids.isEmpty()) {
+                int now = getConnectionsManager().getCurrentTime();
+                SQLitePreparedStatement pState = null;
+                try {
+                    pState = database.executeFast("INSERT OR IGNORE INTO hundredgram_read_dates VALUES(?, ?, ?)");
+                    for (int i = 0; i < mids.size(); i++) {
+                        int m = mids.get(i);
+                        pState.requery();
+                        pState.bindInteger(1, m);
+                        pState.bindLong(2, dialogId);
+                        pState.bindInteger(3, now);
+                        pState.step();
+                        messageReadDatesCache.put(dialogId + "_" + m, now);
+                    }
+                } catch (Exception ignore) {
+                } finally {
+                    if (pState != null) {
+                        pState.dispose();
+                    }
+                }
+            }
             database.executeFast(String.format(Locale.US, "UPDATE messages_v2 SET read_state = read_state | 2 WHERE mid IN (%s) AND uid = %d", midsStr, dialogId)).stepThis().dispose();
 //            if (date != 0) {
 //                cursor = database.queryFinalized(String.format(Locale.US, "SELECT mid, ttl FROM messages_v2 WHERE mid IN (%s) AND uid = %d AND ttl > 0", midsStr, dialogId));
@@ -14729,6 +14810,12 @@ public class MessagesStorage extends BaseController {
                     long did = cursor.longValue(0);
                     int mid = cursor.intValue(1);
                     if (HundredGramConfig.isChatAntiDelete(did)) {
+                        if (!HundredGramConfig.vaultSaveForBots && did > 0) {
+                            TLRPC.User botUser = MessagesController.getInstance(currentAccount).getUser(did);
+                            if (botUser != null && botUser.bot) {
+                                continue;
+                            }
+                        }
                         long now = System.currentTimeMillis() / 1000L;
                         database.executeFast(String.format(Locale.US, "INSERT OR REPLACE INTO telegraher_message_deletions (mid, uid, isdel, deleted_date) VALUES (%d, %d, 1, %d);", mid, did, now)).stepThis().dispose();
                         NativeByteBuffer data = cursor.byteBufferValue(2);
@@ -18952,10 +19039,16 @@ public class MessagesStorage extends BaseController {
         if (msg == null || database == null) {
             return;
         }
+        if (!HundredGramConfig.saveEditHistory) {
+            return;
+        }
+        long dialogId = MessageObject.getDialogId(msg);
+        if (!HundredGramConfig.isDialogInSaveScope(dialogId)) {
+            return;
+        }
         NativeByteBuffer buf = null;
         SQLitePreparedStatement state = null;
         try {
-            long dialogId = MessageObject.getDialogId(msg);
             if (versionDate == 0) {
                 versionDate = msg.edit_date != 0 ? msg.edit_date : msg.date;
             }
@@ -18982,7 +19075,7 @@ public class MessagesStorage extends BaseController {
         }
 
         try {
-            long dialogId = MessageObject.getDialogId(msg);
+            dialogId = MessageObject.getDialogId(msg);
             String query = String.format(Locale.US,
                     "INSERT OR REPLACE INTO telegraher_message_history VALUES(%d, %d, %d, '%s');",
                     msg.id,
@@ -19170,6 +19263,175 @@ public class MessagesStorage extends BaseController {
                 database.executeFast("DELETE FROM hundredgram_vault").stepThis().dispose();
             } catch (Exception e) {
                 checkSQLException(e);
+            }
+        });
+    }
+
+    public final ConcurrentHashMap<String, Integer> messageReadDatesCache = new ConcurrentHashMap<>();
+
+    public int getMessageReadDateSync(long dialogId, int messageId) {
+        String key = dialogId + "_" + messageId;
+        Integer cached = messageReadDatesCache.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        SQLiteCursor cursor = null;
+        try {
+            cursor = database.queryFinalized("SELECT read_date FROM hundredgram_read_dates WHERE uid = " + dialogId + " AND mid = " + messageId);
+            if (cursor.next()) {
+                int readDate = cursor.intValue(0);
+                messageReadDatesCache.put(key, readDate);
+                return readDate;
+            }
+        } catch (Exception e) {
+            checkSQLException(e);
+        } finally {
+            if (cursor != null) {
+                cursor.dispose();
+            }
+        }
+        return 0;
+    }
+
+    public void getMessageReadDate(long dialogId, int messageId, Utilities.Callback<Integer> callback) {
+        String key = dialogId + "_" + messageId;
+        Integer cached = messageReadDatesCache.get(key);
+        if (cached != null) {
+            if (callback != null) {
+                callback.run(cached);
+            }
+            return;
+        }
+        storageQueue.postRunnable(() -> {
+            int readDate = 0;
+            SQLiteCursor cursor = null;
+            try {
+                cursor = database.queryFinalized("SELECT read_date FROM hundredgram_read_dates WHERE uid = " + dialogId + " AND mid = " + messageId);
+                if (cursor.next()) {
+                    readDate = cursor.intValue(0);
+                    messageReadDatesCache.put(key, readDate);
+                }
+            } catch (Exception e) {
+                checkSQLException(e);
+            } finally {
+                if (cursor != null) {
+                    cursor.dispose();
+                }
+            }
+            final int result = readDate;
+            if (callback != null) {
+                AndroidUtilities.runOnUIThread(() -> callback.run(result));
+            }
+        });
+    }
+
+    public void clearAllReadDates() {
+        storageQueue.postRunnable(() -> {
+            try {
+                database.executeFast("DELETE FROM hundredgram_read_dates").stepThis().dispose();
+                messageReadDatesCache.clear();
+            } catch (Exception e) {
+                checkSQLException(e);
+            }
+        });
+    }
+
+    public void searchMessagesByRegex(long dialogId, String regexPattern, int maxCount, Utilities.Callback<ArrayList<MessageObject>> callback) {
+        storageQueue.postRunnable(() -> {
+            ArrayList<MessageObject> result = new ArrayList<>();
+            if (database == null || TextUtils.isEmpty(regexPattern)) {
+                if (callback != null) {
+                    AndroidUtilities.runOnUIThread(() -> callback.run(result));
+                }
+                return;
+            }
+            java.util.regex.Pattern pattern;
+            try {
+                pattern = java.util.regex.Pattern.compile(regexPattern, java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE | java.util.regex.Pattern.MULTILINE);
+            } catch (Throwable e) {
+                if (callback != null) {
+                    AndroidUtilities.runOnUIThread(() -> callback.run(result));
+                }
+                return;
+            }
+
+            LongSparseArray<TLRPC.User> usersDict = new LongSparseArray<>();
+            LongSparseArray<TLRPC.Chat> chatsDict = new LongSparseArray<>();
+            ArrayList<Long> usersToLoad = new ArrayList<>();
+            ArrayList<Long> chatsToLoad = new ArrayList<>();
+
+            SQLiteCursor cursor = null;
+            try {
+                int limit = maxCount > 0 ? maxCount : 3000;
+                cursor = database.queryFinalized(String.format(Locale.US, "SELECT mid, data, read_state, send_state, date FROM messages_v2 WHERE uid = %d ORDER BY mid DESC LIMIT %d", dialogId, limit));
+                while (cursor.next()) {
+                    NativeByteBuffer data = cursor.byteBufferValue(1);
+                    if (data != null) {
+                        try {
+                            TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
+                            if (message != null) {
+                                message.readAttachPath(data, getUserConfig().clientUserId);
+                                MessageObject.setUnreadFlags(message, cursor.intValue(2));
+                                message.id = cursor.intValue(0);
+                                message.send_state = cursor.intValue(3);
+                                message.dialog_id = dialogId;
+
+                                boolean matches = false;
+                                if (!TextUtils.isEmpty(message.message) && pattern.matcher(message.message).find()) {
+                                    matches = true;
+                                } else if (message.media != null && message.media.document != null) {
+                                    String fileName = FileLoader.getDocumentFileName(message.media.document);
+                                    if (!TextUtils.isEmpty(fileName) && pattern.matcher(fileName).find()) {
+                                        matches = true;
+                                    }
+                                }
+
+                                if (matches) {
+                                    addUsersAndChatsFromMessage(message, usersToLoad, chatsToLoad, null);
+                                    MessageObject messageObject = new MessageObject(currentAccount, message, usersDict, chatsDict, false, true);
+                                    result.add(messageObject);
+                                }
+                            }
+                        } catch (Throwable e) {
+                            FileLog.e(e);
+                        } finally {
+                            data.reuse();
+                        }
+                    }
+                }
+                cursor.dispose();
+                cursor = null;
+
+                if (!usersToLoad.isEmpty()) {
+                    ArrayList<TLRPC.User> loadedUsers = new ArrayList<>();
+                    getUsersInternal(usersToLoad, loadedUsers);
+                    for (int i = 0; i < loadedUsers.size(); i++) {
+                        TLRPC.User u = loadedUsers.get(i);
+                        usersDict.put(u.id, u);
+                    }
+                }
+                if (!chatsToLoad.isEmpty()) {
+                    ArrayList<TLRPC.Chat> loadedChats = new ArrayList<>();
+                    getChatsInternal(TextUtils.join(",", chatsToLoad), loadedChats);
+                    for (int i = 0; i < loadedChats.size(); i++) {
+                        TLRPC.Chat c = loadedChats.get(i);
+                        chatsDict.put(c.id, c);
+                    }
+                }
+                for (int i = 0; i < result.size(); i++) {
+                    MessageObject obj = result.get(i);
+                    obj.generateLayout(null);
+                }
+            } catch (Throwable e) {
+                FileLog.e(e);
+            } finally {
+                if (cursor != null) {
+                    cursor.dispose();
+                }
+            }
+
+            if (callback != null) {
+                AndroidUtilities.runOnUIThread(() -> callback.run(result));
             }
         });
     }

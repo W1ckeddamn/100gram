@@ -590,6 +590,9 @@ public class UniversalAdapter extends AdapterWithDiffUtils {
     }
 
     private boolean hasDivider(int position) {
+        if (org.telegram.messenger.HundredGramConfig.dividerStyle == org.telegram.messenger.HundredGramConfig.DIVIDER_HIDDEN) {
+            return false;
+        }
         UItem item = getItem(position);
         UItem nextItem = getItem(position + 1);
         return item != null && !item.hideDivider && nextItem != null && isShadow(nextItem.viewType) == isShadow(item.viewType);

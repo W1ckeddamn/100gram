@@ -37,6 +37,7 @@ import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.ImageLocation;
+import org.telegram.messenger.HundredGramMentionController;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessageObject;
@@ -1302,6 +1303,22 @@ public class MentionsAdapter extends RecyclerListView.SelectionAdapter implement
                 threadId = 0;
             }
             TLRPC.User me = UserConfig.getInstance(currentAccount).getCurrentUser();
+            if (chat != null && (!ChatObject.isChannel(chat) || chat.megagroup) && !forSearch && !usernameOnly) {
+                if (usernameString.isEmpty() || "all".startsWith(usernameString) || "everyone".startsWith(usernameString)) {
+                    newResult.add(new HundredGramMentionController.MentionAction(
+                        HundredGramMentionController.MentionAction.ACTION_ALL,
+                        LocaleController.getString("MentionAll", R.string.MentionAll),
+                        "@all"
+                    ));
+                }
+                if (usernameString.isEmpty() || "admins".startsWith(usernameString) || "admin".startsWith(usernameString)) {
+                    newResult.add(new HundredGramMentionController.MentionAction(
+                        HundredGramMentionController.MentionAction.ACTION_ADMINS,
+                        LocaleController.getString("MentionAdmins", R.string.MentionAdmins),
+                        "@admins"
+                    ));
+                }
+            }
             if (chat != null && info != null && info.participants != null && (!ChatObject.isChannel(chat) || chat.megagroup)) {
                 for (int a = -2; a < info.participants.participants.size(); a++) {
                     String username;
@@ -1419,32 +1436,39 @@ public class MentionsAdapter extends RecyclerListView.SelectionAdapter implement
                 private long getId(TLObject object) {
                     if (object instanceof TLRPC.User) {
                         return ((TLRPC.User) object).id;
-                    } else {
+                    }
+                    if (object instanceof TLRPC.Chat) {
                         return -((TLRPC.Chat) object).id;
                     }
+                    return 0;
                 }
 
                 @Override
                 public int compare(TLObject lhs, TLObject rhs) {
+                    if (lhs instanceof HundredGramMentionController.MentionAction) {
+                        return (rhs instanceof HundredGramMentionController.MentionAction) ? 0 : -1;
+                    }
+                    if (rhs instanceof HundredGramMentionController.MentionAction) {
+                        return 1;
+                    }
                     long id1 = getId(lhs);
                     long id2 = getId(rhs);
-                    if (newMap.indexOfKey(id1) >= 0 && newMap.indexOfKey(id2) >= 0) {
+                    if (id1 == id2) {
                         return 0;
-                    } else if (newMap.indexOfKey(id1) >= 0) {
-                        return -1;
-                    } else if (newMap.indexOfKey(id2) >= 0) {
-                        return 1;
+                    }
+                    boolean has1 = newMap.indexOfKey(id1) >= 0;
+                    boolean has2 = newMap.indexOfKey(id2) >= 0;
+                    if (has1 != has2) {
+                        return has1 ? -1 : 1;
                     }
                     int lhsNum = users.indexOf(id1);
                     int rhsNum = users.indexOf(id2);
-                    if (lhsNum != -1 && rhsNum != -1) {
-                        return lhsNum < rhsNum ? -1 : (lhsNum == rhsNum ? 0 : 1);
-                    } else if (lhsNum != -1 && rhsNum == -1) {
-                        return -1;
-                    } else if (lhsNum == -1 && rhsNum != -1) {
-                        return 1;
+                    if (lhsNum != rhsNum) {
+                        if (lhsNum == -1) return 1;
+                        if (rhsNum == -1) return -1;
+                        return Integer.compare(lhsNum, rhsNum);
                     }
-                    return 0;
+                    return Long.compare(id1, id2);
                 }
             });
             searchResultHashtags = null;
@@ -2024,7 +2048,10 @@ public class MentionsAdapter extends RecyclerListView.SelectionAdapter implement
             MentionCell cell = (MentionCell) holder.itemView;
             if (searchResultUsernames != null) {
                 TLObject object = searchResultUsernames.get(position);
-                if (object instanceof TLRPC.User) {
+                if (object instanceof HundredGramMentionController.MentionAction) {
+                    HundredGramMentionController.MentionAction action = (HundredGramMentionController.MentionAction) object;
+                    cell.setCustom(action.title, action.tag, action.action == HundredGramMentionController.MentionAction.ACTION_ALL ? R.drawable.msg_groups : R.drawable.msg_admins);
+                } else if (object instanceof TLRPC.User) {
                     cell.setUser((TLRPC.User) object);
                 } else if (object instanceof TLRPC.Chat) {
                     cell.setChat((TLRPC.Chat) object);

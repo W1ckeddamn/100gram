@@ -21,10 +21,11 @@ public class ChatActivityEnterViewAnimatedIconView extends RLottieImageView {
         @Override
         public RLottieDrawable get(@Nullable Object key) {
             RLottieDrawable obj = super.get(key);
-            if (obj == null) {
+            if (obj == null && key instanceof TransitState) {
                 TransitState state = (TransitState) key;
                 int res = state.resource;
-                return new RLottieDrawable(res, String.valueOf(res), AndroidUtilities.dp(sizeDp), AndroidUtilities.dp(sizeDp));
+                obj = new RLottieDrawable(res, String.valueOf(res), AndroidUtilities.dp(sizeDp), AndroidUtilities.dp(sizeDp));
+                put(state, obj);
             }
             return obj;
         }

@@ -278,6 +278,9 @@ public class NotificationCenter {
     public static final int joinedGroup = totalEvents++;
     public static final int loadedAiComposeTones = totalEvents++;
     public static final int updatedChatbot = totalEvents++;
+    public static final int feedNeedReload = totalEvents++;
+    public static final int feedTabVisibleToggled = totalEvents++;
+    public static final int activitySimulationUpdated = totalEvents++;
 
     //global
     public static final int activeAccountChanged = totalEvents++;
@@ -376,6 +379,13 @@ public class NotificationCenter {
     public static final int webBrowserSettingsUpdate = totalEvents++;
     public static final int communityPendingRequestsUpdate = totalEvents++;
     public static final int communitySwitchedCollapsed = totalEvents++;
+    public static final int pillStackSettingsChanged = totalEvents++;
+    public static final int didUpdateIconPack = totalEvents++;
+    public static final int didUpdateConfig = totalEvents++;
+    public static final int pluginsUpdated = totalEvents++;
+    public static final int pluginMenuItemsUpdated = totalEvents++;
+    public static final int aiServicesUpdated = totalEvents++;
+    public static final int aiRolesUpdated = totalEvents++;
 
     public static boolean alreadyLogged;
 

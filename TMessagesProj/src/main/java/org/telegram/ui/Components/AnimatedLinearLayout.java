@@ -65,18 +65,22 @@ public class AnimatedLinearLayout extends LinearLayout {
         }
 
         final Holder holder = viewHolders.get(child);
-        if (holder != null && holder.isVisible != visible) {
-            holder.isVisible = visible;
-            if (visible) {
-                holder.view.setVisibility(VISIBLE);
+        if (holder != null) {
+            if (holder.isVisible != visible) {
+                holder.isVisible = visible;
+                if (visible) {
+                    holder.view.setVisibility(VISIBLE);
+                } else {
+                    holder.view.setVisibility(GONE);
+                }
+                if (!animated) {
+                    skipNextAnimation = true;
+                }
+                requestLayout();
+            } else if (holder.view.getVisibility() != (visible ? VISIBLE : GONE)) {
+                holder.view.setVisibility(visible ? VISIBLE : GONE);
+                requestLayout();
             }
-            if (!visible && !holder.hasInAnimator){
-                holder.view.setVisibility(GONE);
-            }
-            if (!animated) {
-                skipNextAnimation = true;
-            }
-            requestLayout();
         }
     }
 

@@ -445,9 +445,14 @@ public class Switch extends View {
             paint.setColor(color);
             paint2.setColor(color);
 
-            rectF.set(x, y, x + width, y + AndroidUtilities.dpf2(14));
-            canvasToDraw.drawRoundRect(rectF, AndroidUtilities.dpf2(7), AndroidUtilities.dpf2(7), paint);
-            canvasToDraw.drawCircle(tx, ty, AndroidUtilities.dpf2(10), paint);
+            boolean md3 = org.telegram.messenger.HundredGramConfig.md3SwitchStyle;
+            float trackHeight = md3 ? AndroidUtilities.dpf2(22) : AndroidUtilities.dpf2(14);
+            float trackRadius = md3 ? AndroidUtilities.dpf2(11) : AndroidUtilities.dpf2(7);
+            float trackY = md3 ? y - AndroidUtilities.dpf2(4) : y;
+
+            rectF.set(x, trackY, x + width, trackY + trackHeight);
+            canvasToDraw.drawRoundRect(rectF, trackRadius, trackRadius, paint);
+            canvasToDraw.drawCircle(tx, ty, md3 ? AndroidUtilities.dpf2(12) : AndroidUtilities.dpf2(10), paint);
 
             if (a == 0 && rippleDrawable != null) {
                 rippleDrawable.setBounds(tx - AndroidUtilities.dp(18), ty - AndroidUtilities.dp(18), tx + AndroidUtilities.dp(18), ty + AndroidUtilities.dp(18));
@@ -494,7 +499,25 @@ public class Switch extends View {
             alpha = (int) (a1 + (a2 - a1) * colorProgress);
             paint.setColor(((alpha & 0xff) << 24) | ((red & 0xff) << 16) | ((green & 0xff) << 8) | (blue & 0xff));
 
-            canvasToDraw.drawCircle(tx, ty, AndroidUtilities.dp(8), paint);
+            boolean md3 = org.telegram.messenger.HundredGramConfig.md3SwitchStyle;
+            float thumbR = md3 ? AndroidUtilities.dpf2(10.5f) : AndroidUtilities.dp(8);
+            canvasToDraw.drawCircle(tx, ty, thumbR, paint);
+
+            if (a == 0 && md3 && iconDrawable == null && drawIconType == 0) {
+                paint2.setColor(Theme.getColor(progress > 0.5f ? Theme.key_switchTrackBlue : Theme.key_windowBackgroundWhite, resourcesProvider));
+                paint2.setStrokeWidth(AndroidUtilities.dpf2(1.5f));
+                paint2.setStyle(Paint.Style.STROKE);
+                paint2.setStrokeCap(Paint.Cap.ROUND);
+                paint2.setStrokeJoin(Paint.Join.ROUND);
+                if (progress > 0.5f) {
+                    canvasToDraw.drawLine(tx - AndroidUtilities.dpf2(3.5f), ty, tx - AndroidUtilities.dpf2(1.0f), ty + AndroidUtilities.dpf2(2.5f), paint2);
+                    canvasToDraw.drawLine(tx - AndroidUtilities.dpf2(1.0f), ty + AndroidUtilities.dpf2(2.5f), tx + AndroidUtilities.dpf2(3.5f), ty - AndroidUtilities.dpf2(2.0f), paint2);
+                } else {
+                    canvasToDraw.drawLine(tx - AndroidUtilities.dpf2(2.2f), ty - AndroidUtilities.dpf2(2.2f), tx + AndroidUtilities.dpf2(2.2f), ty + AndroidUtilities.dpf2(2.2f), paint2);
+                    canvasToDraw.drawLine(tx - AndroidUtilities.dpf2(2.2f), ty + AndroidUtilities.dpf2(2.2f), tx + AndroidUtilities.dpf2(2.2f), ty - AndroidUtilities.dpf2(2.2f), paint2);
+                }
+                paint2.setStyle(Paint.Style.FILL);
+            }
 
             if (a == 0) {
                 if (iconDrawable != null) {

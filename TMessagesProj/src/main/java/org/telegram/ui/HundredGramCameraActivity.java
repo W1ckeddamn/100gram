@@ -2,12 +2,17 @@ package org.telegram.ui;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.HundredGramConfig;
@@ -42,10 +47,12 @@ public class HundredGramCameraActivity extends BaseFragment {
     private static final int ITEM_ROUND_START_CAMERA = 10;
     private static final int ITEM_ROUND_RESOLUTION = 11;
     private static final int ITEM_ROUND_FPS = 12;
+    private static final int ITEM_REMEMBER_LAST_USED_CAMERA = 13;
     private static final int ITEM_ROUND_SQUARE = 15;
     private static final int ITEM_ROUND_DISABLE_BLUR = 16;
     private static final int ITEM_ROUND_BITRATE = 17;
     private static final int ITEM_ROUND_SENSOR_RATIO = 18;
+    private static final int ITEM_ROUND_ZOOM_SLIDER = 19;
 
     private UniversalRecyclerView listView;
     private CameraXUtils.CameraReport cameraReport;
@@ -84,13 +91,22 @@ public class HundredGramCameraActivity extends BaseFragment {
 
     private View createBadgeView(Context context, String text, boolean supported) {
         TextView badge = new TextView(context);
-        badge.setText((supported ? "✓ " : "✕ ") + text);
+        badge.setText(text);
         badge.setTextSize(12);
         badge.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        badge.setTextColor(supported ? Color.parseColor("#4CAF50") : Color.parseColor("#9E9E9E"));
+        int color = supported ? Color.parseColor("#4CAF50") : Color.parseColor("#9E9E9E");
+        badge.setTextColor(color);
         badge.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(6),
                 supported ? Color.parseColor("#1A4CAF50") : Color.parseColor("#15000000")));
-        badge.setPadding(AndroidUtilities.dp(8), AndroidUtilities.dp(4), AndroidUtilities.dp(8), AndroidUtilities.dp(4));
+        badge.setPadding(AndroidUtilities.dp(6), AndroidUtilities.dp(4), AndroidUtilities.dp(8), AndroidUtilities.dp(4));
+        Drawable icon = ContextCompat.getDrawable(context, supported ? R.drawable.msg_check_s : R.drawable.msg_close);
+        if (icon != null) {
+            icon = icon.mutate();
+            icon.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
+            icon.setBounds(0, 0, AndroidUtilities.dp(12), AndroidUtilities.dp(12));
+            badge.setCompoundDrawables(icon, null, null, null);
+            badge.setCompoundDrawablePadding(AndroidUtilities.dp(4));
+        }
         return badge;
     }
 
@@ -135,11 +151,19 @@ public class HundredGramCameraActivity extends BaseFragment {
         btnLayout.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(10), Theme.getColor(Theme.key_featuredStickers_addButton), Theme.getColor(Theme.key_featuredStickers_addButtonPressed)));
         btnLayout.setPadding(AndroidUtilities.dp(12), AndroidUtilities.dp(8), AndroidUtilities.dp(12), AndroidUtilities.dp(8));
         TextView btnText = new TextView(context);
-        btnText.setText("🎯 " + LocaleController.getString("CameraAutoTune", R.string.CameraAutoTune));
+        btnText.setText(LocaleController.getString("CameraAutoTune", R.string.CameraAutoTune));
         btnText.setTextSize(13);
         btnText.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         btnText.setTextColor(Color.WHITE);
         btnText.setGravity(Gravity.CENTER);
+        Drawable tuneIcon = ContextCompat.getDrawable(context, R.drawable.msg_customize);
+        if (tuneIcon != null) {
+            tuneIcon = tuneIcon.mutate();
+            tuneIcon.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
+            tuneIcon.setBounds(0, 0, AndroidUtilities.dp(16), AndroidUtilities.dp(16));
+            btnText.setCompoundDrawables(tuneIcon, null, null, null);
+            btnText.setCompoundDrawablePadding(AndroidUtilities.dp(6));
+        }
         btnLayout.addView(btnText, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
         btnLayout.setOnClickListener(v -> autoTuneSettings());
         card.addView(btnLayout, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
@@ -269,7 +293,14 @@ public class HundredGramCameraActivity extends BaseFragment {
                 break;
         }
         items.add(UItem.asButton(ITEM_ROUND_START_CAMERA, LocaleController.getString("RoundCameraStart", R.string.RoundCameraStart), startCamName));
-        items.add(UItem.asShadow(LocaleController.getString("RoundCameraStartDesc", R.string.RoundCameraStartDesc)));
+        items.add(UItem.asCheck(ITEM_REMEMBER_LAST_USED_CAMERA, LocaleController.getString("RememberLastUsedCamera", R.string.RememberLastUsedCamera))
+                .setChecked(HundredGramConfig.rememberLastUsedCamera));
+        items.add(UItem.asShadow(LocaleController.getString("RememberLastUsedCameraInfo", R.string.RememberLastUsedCameraInfo)));
+
+        // Round Zoom Slider
+        items.add(UItem.asCheck(ITEM_ROUND_ZOOM_SLIDER, LocaleController.getString("CameraXZoomSlider", R.string.CameraXZoomSlider))
+                .setChecked(HundredGramConfig.cameraRoundZoomSlider));
+        items.add(UItem.asShadow(LocaleController.getString("CameraXZoomSliderInfo", R.string.CameraXZoomSliderInfo)));
 
         // Square Video Notes
         items.add(UItem.asCheck(ITEM_ROUND_SQUARE, LocaleController.getString("RoundVideoSquare", R.string.RoundVideoSquare))
@@ -361,6 +392,13 @@ public class HundredGramCameraActivity extends BaseFragment {
             case ITEM_ROUND_START_CAMERA:
                 showRoundStartCameraDialog();
                 break;
+            case ITEM_REMEMBER_LAST_USED_CAMERA:
+                HundredGramConfig.toggleRememberLastUsedCamera();
+                item.setChecked(HundredGramConfig.rememberLastUsedCamera);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.rememberLastUsedCamera);
+                }
+                break;
             case ITEM_ROUND_RESOLUTION:
                 showRoundResolutionDialog();
                 break;
@@ -370,6 +408,13 @@ public class HundredGramCameraActivity extends BaseFragment {
                 item.setChecked(targetFps == 60);
                 if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
                     ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(targetFps == 60);
+                }
+                break;
+            case ITEM_ROUND_ZOOM_SLIDER:
+                HundredGramConfig.toggleCameraRoundZoomSlider();
+                item.setChecked(HundredGramConfig.cameraRoundZoomSlider);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraRoundZoomSlider);
                 }
                 break;
             case ITEM_ROUND_SQUARE:
@@ -511,9 +556,15 @@ public class HundredGramCameraActivity extends BaseFragment {
                 LocaleController.getString("RoundCameraMenu", R.string.RoundCameraMenu),
                 LocaleController.getString("RoundCameraLast", R.string.RoundCameraLast)
         };
+        int[] icons = new int[]{
+                R.drawable.camera_revert1,
+                R.drawable.msg_rear_camera,
+                R.drawable.msg_list,
+                R.drawable.msg_retry
+        };
         new AlertDialog.Builder(getParentActivity())
                 .setTitle(LocaleController.getString("RoundCameraStart", R.string.RoundCameraStart))
-                .setItems(options, (dialog, which) -> {
+                .setItems(options, icons, (dialog, which) -> {
                     HundredGramConfig.setCameraRoundStartCamera(which);
                     if (listView != null && listView.adapter != null) {
                         listView.adapter.update(true);

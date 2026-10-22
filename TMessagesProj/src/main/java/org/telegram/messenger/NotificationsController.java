@@ -1009,6 +1009,15 @@ public class NotificationsController extends BaseController implements Notificat
         }
 
         if (messageObjects != null) {
+            if (HundredGramContentFilterController.isFilterEnabled()) {
+                for (int i = 0; i < messageObjects.size(); ++i) {
+                    final MessageObject messageObject = messageObjects.get(i);
+                    if (HundredGramContentFilterController.isMessageFiltered(messageObject)) {
+                        messageObjects.remove(i);
+                        --i;
+                    }
+                }
+            }
             for (int i = 0; i < messageObjects.size(); ++i) {
                 final MessageObject messageObject = messageObjects.get(i);
                 if (messageObject != null && messageObject.messageOwner != null&& !messageObject.isOutOwner() && messageObject.messageOwner.action instanceof TLRPC.TL_messageActionConferenceCall) {
@@ -1711,7 +1720,7 @@ public class NotificationsController extends BaseController implements Notificat
             if (!UserConfig.getInstance(a).isClientActivated()) {
                 continue;
             }
-            if (!SharedConfig.showNotificationsForAllAccounts && UserConfig.selectedAccount != a) {
+            if (!HundredGramAccountNotifications.shouldShow(a)) {
                 continue;
             }
 
@@ -3367,6 +3376,14 @@ public class NotificationsController extends BaseController implements Notificat
     }
 
     private void scheduleNotificationDelay(boolean onlineReason) {
+        if (HundredGramConfig.disableNotificationDelay) {
+            if (delayedPushMessages.isEmpty()) {
+                return;
+            }
+            showOrUpdateNotification(true);
+            delayedPushMessages.clear();
+            return;
+        }
         try {
             if (BuildVars.LOGS_ENABLED) {
                 FileLog.d("delay notification start, onlineReason = " + onlineReason);
@@ -4090,7 +4107,7 @@ public class NotificationsController extends BaseController implements Notificat
     }
 
     private void showOrUpdateNotification(boolean notifyAboutLast) {
-        if (!getUserConfig().isClientActivated() || pushMessages.isEmpty() && storyPushMessages.isEmpty() || !SharedConfig.showNotificationsForAllAccounts && currentAccount != UserConfig.selectedAccount) {
+        if (!getUserConfig().isClientActivated() || pushMessages.isEmpty() && storyPushMessages.isEmpty() || !HundredGramAccountNotifications.shouldShow(currentAccount)) {
             dismissNotification();
             return;
         }

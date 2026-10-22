@@ -65,6 +65,8 @@ import android.media.MediaCodecList;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -108,6 +110,10 @@ import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+
+import com.exteragram.messenger.nowplaying.ui.components.NowPlayingCard;
+import com.exteragram.messenger.nowplaying.ui.components.NowPlayingCardData;
+import com.exteragram.messenger.nowplaying.NowPlayingController;
 import androidx.core.graphics.ColorUtils;
 import androidx.core.math.MathUtils;
 import androidx.core.view.NestedScrollingParent3;
@@ -144,6 +150,7 @@ import org.telegram.messenger.HundredGramUtils;
 import org.telegram.messenger.HundredGramActivityTracker;
 import org.telegram.messenger.HundredGramAvatarHistory;
 import org.telegram.messenger.HundredGramProfileLogger;
+import org.telegram.messenger.HundredGramRegDateController;
 import org.telegram.messenger.FlagSecureReason;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
@@ -603,10 +610,19 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private final static int hundredgram_chat_settings = 122;
     private final static int hundredgram_avatar_history = 123;
     private final static int hundredgram_profile_history = 124;
+    private final static int hundredgram_shadowban = 125;
 
     private Rect rect = new Rect();
 
     private TextCell setAvatarCell;
+
+    private NowPlayingCardData nowPlayingCardData;
+    private int nowPlayingRow = -1;
+    private int nowPlayingSectionRow = -1;
+    private boolean nowPlayingLoading;
+    private Handler nowPlayingHandler;
+    private Runnable nowPlayingRunnable;
+    private static final long NOW_PLAYING_UPDATE_INTERVAL = 10000L;
 
     private int rowCount;
 
@@ -2302,7 +2318,71 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         additionNavigationBarHeight = hasMainTabs ? dp(DialogsActivity.MAIN_TABS_HEIGHT_WITH_MARGINS) : 0;
         additionFloatingButtonOffset = hasMainTabs ? dp(DialogsActivity.MAIN_TABS_HEIGHT + DialogsActivity.MAIN_TABS_MARGIN) : 0;
 
+        this.nowPlayingHandler = new Handler(Looper.getMainLooper());
+        this.nowPlayingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                checkNowPlaying(false);
+                if (nowPlayingHandler != null) {
+                    nowPlayingHandler.postDelayed(this, NOW_PLAYING_UPDATE_INTERVAL);
+                }
+            }
+        };
+        checkNowPlaying(true);
+
         return true;
+    }
+
+    public void checkNowPlaying(boolean force) {
+        if (!HundredGramConfig.enableNowPlaying) {
+            if (nowPlayingCardData != null) {
+                nowPlayingCardData = null;
+                updateRowsIds();
+                if (listAdapter != null) {
+                    listAdapter.notifyDataSetChanged();
+                }
+            }
+            return;
+        }
+        if (userId == 0 || (nowPlayingLoading && !force)) {
+            return;
+        }
+        TLRPC.User user = getMessagesController().getUser(userId);
+        if (user != null && user.bot) {
+            return;
+        }
+        nowPlayingLoading = true;
+        TLRPC.Document savedMusic = (userInfo != null) ? userInfo.saved_music : null;
+        NowPlayingController.getCurrentPlayingTrack(userId, savedMusic, false, (nowPlayingDTO, delay) -> {
+            AndroidUtilities.runOnUIThread(() -> {
+                nowPlayingLoading = false;
+                if (nowPlayingDTO == null || !nowPlayingDTO.isPlaying()) {
+                    if (nowPlayingCardData != null) {
+                        nowPlayingCardData = null;
+                        updateRowsIds();
+                        if (listAdapter != null) {
+                            listAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    return;
+                }
+                if (nowPlayingCardData != null
+                        && TextUtils.equals(nowPlayingCardData.getNowPlayingDTO().getTrackName(), nowPlayingDTO.getTrackName())
+                        && ((nowPlayingCardData.getNowPlayingDTO().getArtists() == null && nowPlayingDTO.getArtists() == null)
+                            || (nowPlayingCardData.getNowPlayingDTO().getArtists() != null && nowPlayingCardData.getNowPlayingDTO().getArtists().equals(nowPlayingDTO.getArtists())))) {
+                    return;
+                }
+                NowPlayingCardData.create(nowPlayingDTO, savedMusic, cardData -> {
+                    AndroidUtilities.runOnUIThread(() -> {
+                        nowPlayingCardData = cardData;
+                        updateRowsIds();
+                        if (listAdapter != null) {
+                            listAdapter.notifyDataSetChanged();
+                        }
+                    });
+                });
+            });
+        });
     }
 
     private void setActionsMode() {
@@ -2359,6 +2439,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onFragmentDestroy() {
         super.onFragmentDestroy();
+        if (nowPlayingHandler != null && nowPlayingRunnable != null) {
+            nowPlayingHandler.removeCallbacks(nowPlayingRunnable);
+            nowPlayingHandler = null;
+        }
         if (sharedMediaLayout != null) {
             sharedMediaLayout.onDestroy();
         }
@@ -2816,6 +2900,28 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 } else if (id == hundredgram_profile_history) {
                     if (userId != 0) {
                         presentFragment(new HundredGramProfileLogActivity(userId));
+                    }
+                } else if (id == hundredgram_shadowban) {
+                    long targetId = userId != 0 ? userId : -chatId;
+                    if (targetId != 0) {
+                        boolean newStatus = org.telegram.messenger.HundredGramShadowbanController.toggleShadowBan(targetId);
+                        String name = "";
+                        if (targetId > 0) {
+                            TLRPC.User u = getMessagesController().getUser(targetId);
+                            name = u != null ? ContactsController.formatName(u.first_name, u.last_name) : ("User " + targetId);
+                        } else {
+                            TLRPC.Chat c = getMessagesController().getChat(-targetId);
+                            name = c != null ? c.title : ("Channel " + (-targetId));
+                        }
+                        BulletinFactory.of(ProfileActivity.this).createSimpleBulletin(
+                                R.drawable.msg_block2,
+                                LocaleController.formatString(newStatus ? "ShadowbanAddedToast" : "ShadowbanRemovedToast",
+                                        newStatus ? R.string.ShadowbanAddedToast : R.string.ShadowbanRemovedToast,
+                                        name)
+                        ).show();
+                        if (otherItem != null) {
+                            otherItem.setSubItemText(hundredgram_shadowban, LocaleController.getString(newStatus ? "ShadowbanRemove" : "ShadowbanAdd", newStatus ? R.string.ShadowbanRemove : R.string.ShadowbanAdd));
+                        }
                     }
                 } else if (id == gallery_menu_save) {
                     if (getParentActivity() == null) {
@@ -9728,11 +9834,21 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         }
         updateItemsUsername();
         needLayout(false);
+
+        if (HundredGramConfig.enableNowPlaying) {
+            checkNowPlaying(false);
+            if (nowPlayingHandler != null && nowPlayingRunnable != null) {
+                nowPlayingHandler.postDelayed(nowPlayingRunnable, 350L);
+            }
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        if (nowPlayingHandler != null && nowPlayingRunnable != null) {
+            nowPlayingHandler.removeCallbacks(nowPlayingRunnable);
+        }
         if (undoView != null) {
             undoView.hide(true, 0);
         }
@@ -10593,6 +10709,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         bioRow = -1;
         channelRow = -1;
         channelDividerRow = -1;
+        nowPlayingRow = -1;
+        nowPlayingSectionRow = -1;
         phoneSuggestionSectionRow = -1;
         phoneSuggestionRow = -1;
         passwordSuggestionSectionRow = -1;
@@ -10750,7 +10868,14 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 }
             }
 
-            killMeLabelRow = rowCount++;
+            if ((myProfile || UserObject.isUserSelf(user)) && BuildVars.DEBUG_VERSION) {
+                killMeLabelRow = rowCount++;
+            }
+
+            if (HundredGramConfig.enableNowPlaying && nowPlayingCardData != null) {
+                nowPlayingRow = rowCount++;
+                nowPlayingSectionRow = rowCount++;
+            }
 
             if (UserObject.isUserSelf(user) && !myProfile) {
                 if (avatarBig == null && (user.photo == null || !(user.photo.photo_big instanceof TLRPC.TL_fileLocation_layer97) && !(user.photo.photo_big instanceof TLRPC.TL_fileLocationToBeDeprecated)) && (avatarsViewPager == null || avatarsViewPager.getRealCount() == 0)) {
@@ -12354,6 +12479,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         String title = count > 0 ? LocaleController.formatString("AvatarHistoryCount", R.string.AvatarHistoryCount, count) : LocaleController.getString("AvatarHistoryTitle", R.string.AvatarHistoryTitle);
                         otherItem.addSubItem(hundredgram_avatar_history, R.drawable.msg_photos, title);
                         otherItem.addSubItem(hundredgram_profile_history, R.drawable.msg_contacts, LocaleController.getString("ProfileChangeLogMenuItem", R.string.ProfileChangeLogMenuItem));
+                        boolean isBanned = org.telegram.messenger.HundredGramShadowbanController.isShadowBanned(userId);
+                        otherItem.addSubItem(hundredgram_shadowban, R.drawable.msg_block2, LocaleController.getString(isBanned ? "ShadowbanRemove" : "ShadowbanAdd", isBanned ? R.string.ShadowbanRemove : R.string.ShadowbanAdd));
                     }
                     if (isBot) {
                         otherItem.addSubItem(bot_privacy, R.drawable.menu_privacy_policy, getString(R.string.BotPrivacyPolicy));
@@ -12467,6 +12594,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     int channelAvatarCount = HundredGramAvatarHistory.getInstance().getAvatarHistoryCount(targetChannelDialogId);
                     String channelAvatarTitle = channelAvatarCount > 0 ? LocaleController.formatString("AvatarHistoryCount", R.string.AvatarHistoryCount, channelAvatarCount) : LocaleController.getString("AvatarHistoryTitle", R.string.AvatarHistoryTitle);
                     otherItem.addSubItem(hundredgram_avatar_history, R.drawable.msg_photos, channelAvatarTitle);
+                    if (!currentChat.creator) {
+                        boolean isChannelBanned = org.telegram.messenger.HundredGramShadowbanController.isShadowBanned(targetChannelDialogId);
+                        otherItem.addSubItem(hundredgram_shadowban, R.drawable.msg_block2, LocaleController.getString(isChannelBanned ? "ShadowbanRemove" : "ShadowbanAdd", isChannelBanned ? R.string.ShadowbanRemove : R.string.ShadowbanAdd));
+                    }
                     if (currentChat.creator) {
                         otherItem.addColoredGap();
                         otherItem.addSubItem(leave_group, R.drawable.msg_leave, getString(R.string.LeaveChannel));
@@ -13299,7 +13430,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 VIEW_TYPE_EMPTY2 = 31,
                 VIEW_TYPE_TEXT2 = 32,
                 VIEW_TYPE_LINKED_COMMUNITY = 33,
-                VIEW_TYPE_TRACK_ACTIVITY = 34
+                VIEW_TYPE_TRACK_ACTIVITY = 34,
+                VIEW_TYPE_NOW_PLAYING = 35
                         ;
 
         private Context mContext;
@@ -13385,6 +13517,22 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 case VIEW_TYPE_NOTIFICATIONS_CHECK_SIMPLE:
                 case VIEW_TYPE_TRACK_ACTIVITY: {
                     view = new TextCheckCell(mContext, 18, false, resourcesProvider);
+                    break;
+                }
+                case VIEW_TYPE_NOW_PLAYING: {
+                    NowPlayingCard card = new NowPlayingCard(mContext, resourcesProvider) {
+                        @Override
+                        public void onSavedMusicClick() {
+                            if (userInfo != null && userInfo.saved_music != null) {
+                                Bundle args = new Bundle();
+                                args.putLong("dialog_id", userId);
+                                args.putInt("start_from", SharedMediaLayout.TAB_SAVED_MESSAGES);
+                                MediaActivity fragment = new MediaActivity(args, null);
+                                presentFragment(fragment);
+                            }
+                        }
+                    };
+                    view = card;
                     break;
                 }
                 case VIEW_TYPE_SHADOW: {
@@ -13797,10 +13945,12 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     } else if (position == idDcRow) {
                         long id = 0;
                         String dc = "";
+                        final String regDateInfo;
                         if (userId != 0) {
                             TLRPC.User user = getMessagesController().getUser(userId);
                             id = userId;
                             dc = HundredGramUtils.getDC(user);
+                            regDateInfo = HundredGramRegDateController.getInstance(currentAccount).getUserRegistrationDate(userId);
                         } else if (chatId != 0) {
                             TLRPC.Chat chat = getMessagesController().getChat(chatId);
                             if (chat != null && HundredGramConfig.showIdAndDc == 2) {
@@ -13813,8 +13963,27 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                                 id = chatId;
                             }
                             dc = HundredGramUtils.getDC(chat);
+                            regDateInfo = HundredGramRegDateController.getInstance(currentAccount).getChatCreationDate(chat);
+                        } else {
+                            regDateInfo = null;
                         }
                         detailCell.setTextAndValue(String.valueOf(id), dc == null ? "ID" : dc, true);
+                        if (regDateInfo != null) {
+                            android.graphics.drawable.Drawable calDrawable = getContext().getResources().getDrawable(R.drawable.msg_calendar2).mutate();
+                            calDrawable.setColorFilter(new android.graphics.PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon, resourcesProvider), android.graphics.PorterDuff.Mode.MULTIPLY));
+                            detailCell.setImage(calDrawable);
+                            detailCell.setImageClickListener(v -> {
+                                try {
+                                    BulletinFactory.of(ProfileActivity.this).createSimpleBulletin(
+                                        getContext().getResources().getDrawable(R.drawable.msg_calendar2),
+                                        AndroidUtilities.replaceTags(regDateInfo)
+                                    ).show();
+                                } catch (Exception ignore) {}
+                            });
+                        } else {
+                            detailCell.setImage(null);
+                            detailCell.setImageClickListener(null);
+                        }
                     } else if (position == setUsernameRow) {
                         TLRPC.User user = UserConfig.getInstance(currentAccount).getCurrentUser();
                         String text = "";
@@ -14410,6 +14579,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     break;
                 case VIEW_TYPE_MUSIC:
                     break;
+                case VIEW_TYPE_NOW_PLAYING:
+                    if (nowPlayingCardData != null && holder.itemView instanceof NowPlayingCard) {
+                        ((NowPlayingCard) holder.itemView).set(nowPlayingCardData);
+                    }
+                    break;
             }
         }
 
@@ -14540,7 +14714,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 }
             }
             int type = holder.getItemViewType();
-            return type != VIEW_TYPE_HEADER && type != VIEW_TYPE_DIVIDER && type != VIEW_TYPE_SHADOW &&
+            return type != VIEW_TYPE_NOW_PLAYING && type != VIEW_TYPE_HEADER && type != VIEW_TYPE_DIVIDER && type != VIEW_TYPE_SHADOW &&
                     type != VIEW_TYPE_EMPTY && type != VIEW_TYPE_EMPTY2 && type != VIEW_TYPE_HEADER_EMPTY && type != VIEW_TYPE_BOTTOM_PADDING && type != VIEW_TYPE_SHARED_MEDIA &&
                     type != 9 && type != 10 && type != VIEW_TYPE_BOT_APP && type != VIEW_TYPE_TEXT2; // These are legacy ones, left for compatibility
         }
@@ -14590,9 +14764,12 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     position == helpSectionCell || position == setAvatarSectionRow || position == passwordSuggestionSectionRow ||
                     position == phoneSuggestionSectionRow || position == premiumSectionsRow || position == reportDividerRow ||
                     position == channelDividerRow || position == graceSuggestionSectionRow || position == balanceDividerRow ||
-                    position == botPermissionsDivider || position == channelBalanceSectionRow || position == unofficialSecurityRiskDividerRow
+                    position == botPermissionsDivider || position == channelBalanceSectionRow || position == unofficialSecurityRiskDividerRow ||
+                    position == nowPlayingSectionRow
             ) {
                 return VIEW_TYPE_SHADOW;
+            } else if (position == nowPlayingRow) {
+                return VIEW_TYPE_NOW_PLAYING;
             } else if (position >= membersStartRow && position < membersEndRow) {
                 return VIEW_TYPE_USER;
             } else if (position == emptyRow) {
@@ -15042,6 +15219,14 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     new SearchResult(402, getString(R.string.AskAQuestion), getString(R.string.SettingsHelp), R.drawable.msg2_help, () -> f.showDialog(AlertsCreator.createSupportAlert(f, null))).withLink("tg://settings/ask-question"),
                     new SearchResult(403, getString(R.string.TelegramFAQ), getString(R.string.SettingsHelp), R.drawable.msg2_help, () -> Browser.openUrl(f.getParentActivity(), getString(R.string.TelegramFaqUrl))).withLink("tg://settings/faq"),
                     new SearchResult(404, getString(R.string.PrivacyPolicy), getString(R.string.SettingsHelp), R.drawable.msg2_help, () -> Browser.openUrl(f.getParentActivity(), getString(R.string.PrivacyPolicyUrl))).withLink("tg://settings/privacy-policy"),
+                    new SearchResult(10001, LocaleController.getString("HundredGramSettings", R.string.HundredGramSettings), R.drawable.msg_settings, () -> f.presentFragment(new HundredGramSettingsActivity())),
+                    new SearchResult(10002, LocaleController.getString("HundredGramCategoryGhost", R.string.HundredGramCategoryGhost), LocaleController.getString("HundredGramSettings", R.string.HundredGramSettings), R.drawable.msg_secret, () -> f.presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_GHOST))),
+                    new SearchResult(10003, LocaleController.getString("HundredGramCategoryVault", R.string.HundredGramCategoryVault), LocaleController.getString("HundredGramSettings", R.string.HundredGramSettings), R.drawable.msg_archive, () -> f.presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_VAULT))),
+                    new SearchResult(10004, LocaleController.getString("HundredGramCategoryInterface", R.string.HundredGramCategoryInterface), LocaleController.getString("HundredGramSettings", R.string.HundredGramSettings), R.drawable.msg_discussion, () -> f.presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))),
+                    new SearchResult(10005, LocaleController.getString("NetworkBoostTitle", R.string.NetworkBoostTitle), LocaleController.getString("HundredGramSettings", R.string.HundredGramSettings), R.drawable.msg_stats, () -> f.presentFragment(new HundredGramNetworkBoostActivity())),
+                    new SearchResult(10006, LocaleController.getString("ActivitySimulatorTitle", R.string.ActivitySimulatorTitle), LocaleController.getString("HundredGramSettings", R.string.HundredGramSettings), R.drawable.msg_usersearch, () -> f.presentFragment(new HundredGramActivitySimulatorActivity())),
+                    new SearchResult(10007, LocaleController.getString("AiSettingsTitle", R.string.AiSettingsTitle), LocaleController.getString("HundredGramSettings", R.string.HundredGramSettings), R.drawable.msg_bot, () -> f.presentFragment(new HundredGramAiSettingsActivity())),
+                    new SearchResult(10008, LocaleController.getString("Plugins", R.string.Plugins), LocaleController.getString("HundredGramSettings", R.string.HundredGramSettings), R.drawable.msg_bot, () -> f.presentFragment(new HundredGramPluginsActivity())),
             };
         }
 

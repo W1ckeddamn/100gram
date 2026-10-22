@@ -5,3 +5,7 @@
 *.json text eol=lf
 *.txt text eol=lf
 *.html text eol=lf
+
+# Защита локальных нативных исходников C++ NDK и .gitmodules от удаления апстримом (DrKLO)
+TMessagesProj/jni/** merge=ours
+.gitmodules merge=ours

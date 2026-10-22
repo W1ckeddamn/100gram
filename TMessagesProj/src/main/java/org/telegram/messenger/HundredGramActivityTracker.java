@@ -16,6 +16,7 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
     public static final int TRIGGER_TYPING = 2;
     public static final int TRIGGER_MESSAGE = 3;
     public static final int TRIGGER_APP_OPEN = 4;
+    public static final int TRIGGER_REACTION = 5;
 
     public static class ActivityEntry {
         public final long timeStart;
@@ -110,6 +111,8 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
             onUserTyping(userId);
         } else if (triggerType == TRIGGER_MESSAGE) {
             onUserMessage(userId);
+        } else if (triggerType == TRIGGER_REACTION) {
+            onUserReaction(userId);
         } else {
             onUserAction(userId, triggerType);
         }
@@ -122,6 +125,11 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
     public void onUserMessage(long userId) {
         cancelTypingTimeout(userId);
         onUserAction(userId, TRIGGER_MESSAGE);
+    }
+
+    public void onUserReaction(long userId) {
+        cancelTypingTimeout(userId);
+        onUserAction(userId, TRIGGER_REACTION);
     }
 
     public void onUserAction(long userId, int triggerType) {

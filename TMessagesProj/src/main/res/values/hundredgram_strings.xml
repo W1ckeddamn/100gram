@@ -142,7 +142,9 @@
     <string name="HundredGramVaultAddException">Add Exception</string>
     <string name="HundredGramVaultExceptionsEmpty">You don\'t have any chat exceptions yet</string>
     <string name="HundredGramVaultSizeDefault">Default (%1$d MB)</string>
+    <string name="HundredGramVaultSizeDefaultUnlimited">Default (Unlimited)</string>
     <string name="HundredGramVaultSizeUnlimited">Unlimited</string>
+    <string name="HundredGramGB">GB</string>
     <string name="HundredGramVaultSaved">Chat settings saved</string>
     <string name="HundredGramVaultDeleted">Exception removed</string>
     <string name="HundredGramVaultDeleteConfirm">Remove exception for chat \"%1$s\"?</string>
@@ -540,13 +542,15 @@
     <string name="CameraEngineCamera1Legacy">Camera1 Legacy (Older devices)</string>
 
     <!-- Round Video Messages (Кружочки) -->
+    <string name="FrontCamera">Front Camera</string>
+    <string name="RearCamera">Rear Camera</string>
     <string name="RoundVideoHeader">Round Video Messages</string>
-    <string name="RoundCameraStart">Starting camera for round video</string>
-    <string name="RoundCameraFront">🤳 Front camera</string>
-    <string name="RoundCameraBack">📷 Rear (main) camera</string>
-    <string name="RoundCameraWide">🔍 Ultra-wide (0.6x)</string>
-    <string name="RoundCameraMenu">📋 Menu upon recording</string>
-    <string name="RoundCameraLast">🔄 Last used</string>
+    <string name="RoundCameraStart">Starting camera</string>
+    <string name="RoundCameraFront">Front</string>
+    <string name="RoundCameraBack">Rear</string>
+    <string name="RoundCameraWide">Ultra-wide (0.6x)</string>
+    <string name="RoundCameraMenu">Selection menu</string>
+    <string name="RoundCameraLast">Last used</string>
     <string name="RoundCameraMenuPrompt">Which camera to record with?</string>
     <string name="RoundVideoSquare">Square Format ("Square Video Notes")</string>
     <string name="RoundVideoSquareInfo">Record and view video messages in modern square format with rounded corners</string>
@@ -594,6 +598,7 @@
     <string name="HundredGramVaultSaveGallery">Save to Gallery</string>
     <string name="HundredGramVaultSaveDownloads">Save to Downloads</string>
     <string name="HundredGramVaultGoToMessage">Go to message</string>
+    <string name="HundredGramVaultDetails">Details</string>
     <string name="HundredGramVaultDelete">Delete from Vault</string>
     <string name="HundredGramVaultDeleteFileConfirm">Delete this file from Vault?</string>
     <string name="HundredGramVaultDeletedFile">File deleted from Vault</string>
@@ -602,6 +607,34 @@
     <string name="HundredGramVaultTabVoice">Voice</string>
     <string name="HundredGramVaultTabFiles">Files</string>
     <string name="HundredGramVaultFileSaved">File saved</string>
+    <string name="HundredGramVaultSelectMode">Select</string>
+    <string name="HundredGramVaultSelectAll">Select All</string>
+    <string name="HundredGramVaultDeselectAll">Deselect All</string>
+    <string name="HundredGramVaultSaveAll">Save Selected</string>
+    <string name="HundredGramVaultExportZip">Export as ZIP</string>
+    <string name="HundredGramVaultExportingZip">Exporting ZIP archive…</string>
+    <string name="HundredGramVaultZipSuccess">ZIP archive created successfully</string>
+    <string name="HundredGramVaultBatchDeleteConfirm">Delete %1$d selected files from Vault?</string>
+    <string name="HundredGramVaultBatchDeleted">Deleted %1$d files from Vault</string>
+    <string name="HundredGramVaultBatchSaved">Saved %1$d files</string>
+    <string name="HundredGramVaultSort">Sort by</string>
+    <string name="HundredGramVaultSortDateDesc">Date: Newest first</string>
+    <string name="HundredGramVaultSortDateAsc">Date: Oldest first</string>
+    <string name="HundredGramVaultSortSizeDesc">Size: Largest first</string>
+    <string name="HundredGramVaultSortSizeAsc">Size: Smallest first</string>
+    <string name="HundredGramVaultSortNameAsc">Name: A to Z</string>
+    <string name="HundredGramVaultFilterSize">Filter by size</string>
+    <string name="HundredGramVaultFilterSizeAll">All sizes</string>
+    <string name="HundredGramVaultFilterSize10Mb">Larger than 10 MB</string>
+    <string name="HundredGramVaultFilterSize50Mb">Larger than 50 MB</string>
+    <string name="HundredGramVaultFilterSize100Mb">Larger than 100 MB</string>
+    <string name="HundredGramVaultPruneOrphans">Clean broken database entries</string>
+    <string name="HundredGramVaultPruneOrphansDone">Cleaned %1$d broken vault records</string>
+    <string name="HundredGramVaultExportAllZip">Export all files as ZIP</string>
+    <string name="HundredGramVaultStorageAndFilters">Storage &amp; Filters</string>
+    <string name="HundredGramVaultByChats">Storage by Chat</string>
+    <string name="HundredGramVaultChatSpace">%1$d files • %2$s</string>
+    <string name="HundredGramVaultTotalStats">Total in Vault: %1$s (%2$d files)</string>
 
     <!-- Deep Scan -->
     <string name="HundredGramDeepScanMedia">Deep media sync</string>
@@ -676,6 +709,8 @@
     <string name="HundredGramDisableNumberRounding">Exact member &amp; view counts</string>
     <string name="HundredGramDisableNumberRoundingInfo">Shows exact numbers with commas (e.g. 1,234,567 instead of 1.2M)</string>
     <string name="HundredGramMainScreenSection">Main Screen</string>
+    <string name="HundredGramPillStack">Info Widgets (PillStack)</string>
+    <string name="HundredGramPillStackInfo">Shows proxy ping and cache size stack widgets with vertical swipe gesture</string>
     <string name="HundredGramHideArchiveFolder">Hide archive folder</string>
     <string name="HundredGramHideArchiveFolderInfo">Hides the &quot;Archived Chats&quot; item from the main dialog list</string>
     <string name="HundredGramHideFloatingButton">Hide floating action button (FAB)</string>
@@ -684,6 +719,9 @@
     <string name="DoubleTapHeader">Double Tap</string>
     <string name="DoubleTapActionIncomingDesc">Action on double-tapping an incoming message</string>
     <string name="DoubleTapActionOutgoingDesc">Action on double-tapping an outgoing message</string>
+    <string name="SwipeActionHeader">Message Swipe Action</string>
+    <string name="ChatMessageSwipeAction">Swipe action</string>
+    <string name="ChatMessageSwipeActionDesc">Action triggered when swiping a message to the left</string>
     <string name="MessageMenuSection">Message Menu</string>
     <string name="ShowSaveMessageButtonInfo">Adds a quick Save to Saved Messages item to message menu</string>
     <string name="ShowDetailsButtonInfo">Shows detailed message metadata (ID, author, date, media, DC)</string>
@@ -745,7 +783,7 @@
     <string name="WhatsNewStreamer">Streamer Mode &amp; Privacy</string>
     <string name="WhatsNewStreamerDesc">Hide phone numbers, usernames, avatars and disable screenshots</string>
     <!-- What\'s New badge -->
-    <string name="WhatsNewNew">✦ NEW</string>
+    <string name="WhatsNewNew">NEW</string>
 
     <!-- Offline Speech-to-Text (STT) without Premium -->
     <string name="LocalSttHeader">Voice-to-Text (Offline STT)</string>
@@ -785,4 +823,804 @@
     <string name="WhatsNewSaveToGalleryDesc">Fixed saving photos and videos from media vault to device gallery and public storage</string>
     <string name="ProfileHistoryToggle">Profile Change Log</string>
     <string name="ProfileHistoryInfo">Automatically record changes to users\' name, username, phone, bio, birthday and gifts</string>
+
+    <!-- Icon Packs -->
+    <string name="HundredGramIconPacks">Icon Packs</string>
+    <string name="HundredGramIconPacksSub">Custom vector and raster interface icon sets</string>
+    <string name="HundredGramIconPacksHeader">Installed Packs</string>
+    <string name="HundredGramIconPacksEnable">Enable Icon Replacement</string>
+    <string name="HundredGramIconPacksEnableSub">Dynamically replace application UI icons with the selected pack</string>
+    <string name="HundredGramInstallIconPack">Install Pack (.icons / .zip)</string>
+    <string name="HundredGramInstallIconPackSub">Import icon pack archive from device storage</string>
+    <string name="HundredGramIconPackInstalled">Icon pack \"%1$s\" installed successfully</string>
+    <string name="HundredGramIconPackInstallFailed">Failed to install icon pack</string>
+    <string name="HundredGramIconPackDeleteConfirm">Are you sure you want to delete icon pack \"%1$s\"?</string>
+    <string name="HundredGramIconPackDeleted">Icon pack deleted</string>
+
+    <!-- Backup & Restore -->
+    <string name="HundredGramBackupTitle">Backup &amp; Restore</string>
+    <string name="HundredGramBackupSubtitle">Export and restore fork configuration in JSON format</string>
+    <string name="HundredGramExportSettings">Export Settings to JSON</string>
+    <string name="HundredGramExportSettingsSub">Save current configuration or share to Saved Messages</string>
+    <string name="HundredGramImportSettings">Import Settings from File</string>
+    <string name="HundredGramImportSettingsSub">Restore configuration from previously exported JSON file</string>
+    <string name="HundredGramResetSettings">Reset 100gram Settings</string>
+    <string name="HundredGramResetSettingsSub">Reset all fork modifications to factory defaults</string>
+    <string name="HundredGramResetSettingsConfirm">Are you sure you want to reset all 100gram settings? This will restore defaults for all fork preferences.</string>
+    <string name="HundredGramImportSuccess">Settings restored successfully</string>
+    <string name="HundredGramImportFailed">Failed to load settings from selected file</string>
+    <string name="HundredGramSettingsResetDone">All 100gram settings restored to defaults</string>
+
+    <!-- PillStack & Weather & Crypto -->
+    <string name="WeatherPill">Weather</string>
+    <string name="WeatherLocationPermissionGrant">Grant Permission</string>
+    <string name="WeatherLocationServicesEnable">Enable Location</string>
+    <string name="WeatherLocationPermissionNo">100gram needs access to your location to display the current weather.</string>
+    <string name="CryptoPillTargetCurrency">Display Currency</string>
+    <string name="PillStackPills">Search Pills</string>
+    <string name="PillStackPillsInfo">Interactive widgets in search bar: weather, crypto, proxy, cache</string>
+    <string name="PillStackInfiniteScrolling">Infinite Scrolling</string>
+    <string name="PillStackInfiniteScrollingSub">Allow looping through pills continuously</string>
+    <string name="PillStackActivePills">Active Pills</string>
+    <string name="PillStackHiddenPills">Hidden Pills</string>
+    <string name="PillStackTapToHide">Active</string>
+    <string name="PillStackTapToShow">Hidden</string>
+    <string name="PillStackPillsSettingsInfo">Tap pills to move between active and hidden. Order determines display sequence.</string>
+    <string name="PillStackResetConfirm">Reset all search pills layout and currency preferences to default?</string>
+    <string name="PillStackResetDone">Search pills reset to defaults</string>
+
+    <!-- Currencies -->
+    <string name="CryptoCurrencyUsd">US Dollar</string>
+    <string name="CryptoCurrencyEur">Euro</string>
+    <string name="CryptoCurrencyRub">Russian Ruble</string>
+    <string name="CryptoCurrencyGbp">British Pound</string>
+    <string name="CryptoCurrencyKzt">Kazakhstani Tenge</string>
+    <string name="CryptoCurrencyTry">Turkish Lira</string>
+    <string name="CryptoCurrencyUah">Ukrainian Hryvnia</string>
+    <string name="CryptoCurrencyPln">Polish Zloty</string>
+    <string name="CryptoCurrencyAed">UAE Dirham</string>
+    <string name="CryptoCurrencyCny">Chinese Yuan</string>
+    <string name="CryptoCurrencyJpy">Japanese Yen</string>
+    <string name="CryptoCurrencyByn">Belarusian Ruble</string>
+    <string name="CryptoCurrencyIls">Israeli New Shekel</string>
+    <string name="CryptoCurrencyCzk">Czech Koruna</string>
+    <string name="CryptoCurrencyInr">Indian Rupee</string>
+
+    <!-- Telemetry Killswitch -->
+    <string name="HundredGramTelemetrySection">Telemetry &amp; Diagnostics</string>
+    <string name="HundredGramDisableTelemetry">Disable all telemetry</string>
+    <string name="HundredGramDisableTelemetryInfo">Blocks analytics collection, crash reporting, and diagnostic data transmission.</string>
+
+    <!-- What's New -->
+    <string name="WhatsNewPillStackWidgets">New Search Pills: Weather &amp; Crypto</string>
+    <string name="WhatsNewPillStackWidgetsDesc">Real-time weather forecast and live TON, BTC, USD exchange rates directly in the search bar</string>
+    <string name="WhatsNewTelemetryKillswitch">Telemetry Killswitch</string>
+    <string name="WhatsNewTelemetryKillswitchDesc">Full suppression of diagnostic telemetry and analytics for complete privacy</string>
+    <string name="WhatsNewAvatarCornersAndNav">Avatar Shape &amp; Navigation Tabs</string>
+    <string name="WhatsNewAvatarCornersAndNavDesc">Full slider control over avatar corner radius (square to circle), Material Design 3 switches, and toggleable Calls/Contacts tabs</string>
+
+    <!-- Interface & Customization (Stage 3) -->
+    <string name="HundredGramAppearanceSection">Appearance &amp; Avatars</string>
+    <string name="AvatarCorners">Avatar corner radius</string>
+    <string name="AvatarCornersLeft">Square</string>
+    <string name="AvatarCornersRight">Circle</string>
+    <string name="AvatarCornersInfo">Adjusts the corner radius for profile photos and chat avatars across the entire application.</string>
+    <string name="Md3SwitchStyle">Material 3 switch style</string>
+    <string name="Md3SwitchStyleInfo">Uses enlarged switch tracks with animated checkmark and cross indicators.</string>
+    <string name="BottomNavHeader">Bottom Navigation Bar</string>
+    <string name="BottomNavHideContacts">Hide Contacts tab</string>
+    <string name="BottomNavHideContactsInfo">Removes the contacts tab from the bottom navigation bar.</string>
+    <string name="BottomNavHideSettings">Hide Settings tab</string>
+    <string name="BottomNavHideSettingsInfo">Removes the settings tab from the bottom navigation bar.</string>
+    <string name="BottomNavShowCalls">Show Calls tab instead of Settings</string>
+    <string name="BottomNavShowCallsInfo">Displays call logs instead of settings on the third bottom bar tab.</string>
+    <string name="BottomNavHideCalls">Hide Calls tab</string>
+    <string name="BottomNavHideCallsInfo">Removes the calls tab from the bottom navigation bar.</string>
+    <string name="BottomNavSectionInfo">Customize tab visibility for the floating bottom navigation bar (Liquid Glass) on the main screen.</string>
+
+    <!-- AI Assistant (Stage 4) -->
+    <string name="AiSettingsTitle">AI Assistant</string>
+    <string name="AiSettingsSubtitle">Google Gemini, OpenAI ChatGPT, message summaries &amp; rewrite</string>
+    <string name="AiGeneralSection">General</string>
+    <string name="AiEnable">Enable AI Assistant</string>
+    <string name="AiEnableInfo">Allows asking AI to summarize messages, fix grammar, rewrite text, and chat directly in Telegram.</string>
+    <string name="AiProviderSection">AI Provider</string>
+    <string name="AiProvider">Active Provider</string>
+    <string name="AiApiKey">API Key</string>
+    <string name="AiKeyNotSet">Not set</string>
+    <string name="AiModel">Model</string>
+    <string name="AiCustomEndpoint">Custom Endpoint URL</string>
+    <string name="AiGetApiKey">Get free API Key</string>
+    <string name="AiGetApiKeySub">Open Google AI Studio or OpenAI developer console</string>
+    <string name="AiProviderInfo">Your API key is stored locally on your device and sent directly to the AI provider.</string>
+    <string name="AiGenerationSection">Generation Parameters</string>
+    <string name="AiStreaming">Stream responses</string>
+    <string name="AiStreamingInfo">Displays AI responses in real-time as words are generated.</string>
+    <string name="AiSaveHistory">Save conversation context</string>
+    <string name="ClearConversationHistoryInfo">Clear all messages from AI conversation history?</string>
+    <string name="HundredGramAiHistoryCleared">AI history cleared</string>
+
+    <string name="AIChatInfo2">Generate text from messages or before sending.</string>
+    <string name="Services">Services</string>
+    <string name="ServicesInfo">Choose or configure an AI service for interacting with language models.</string>
+    <string name="NewService">New Service</string>
+    <string name="EditService">Edit Service</string>
+    <string name="DeleteService">Delete Service</string>
+    <string name="DeleteServiceInfo">Are you sure you want to delete this service?</string>
+    <string name="ServicePreset">Preset</string>
+    <string name="ServicePresetCustom">Custom (OpenAI-compatible)</string>
+    <string name="ServiceName">Service Name</string>
+    <string name="ServiceUrl">Endpoint URL</string>
+    <string name="ServiceModel">Model</string>
+    <string name="ServiceKey">API Key</string>
+    <string name="ServiceReasoning">Reasoning / Thinking</string>
+    <string name="ServiceReasoningInfo">Allows supported models (o1, Flash Thinking) to spend extra tokens thinking before answering.</string>
+    <string name="TestAndSave">Test &amp; Save</string>
+    <string name="TestingService">Testing connection…</string>
+    <string name="TestSuccess">Service connected successfully!</string>
+    <string name="TestFailed">Connection failed: %1$s</string>
+    <string name="Roles">Roles</string>
+    <string name="RolesInfo">Create or select system roles and personas for your specific needs.</string>
+    <string name="NewRole">New Role</string>
+    <string name="EditRole">Edit Role</string>
+    <string name="DeleteRole">Delete Role</string>
+    <string name="DeleteRoleInfo">Are you sure you want to delete the role &quot;%1$s&quot;?</string>
+    <string name="RoleName">Role Name</string>
+    <string name="RolePrompt">System Prompt</string>
+    <string name="AITemperature">Temperature</string>
+    <string name="AITemperatureInfo">Temperature controls response randomness: higher values are more creative, lower values are more focused.</string>
+    <string name="ShowResponseOnly">Show response only</string>
+    <string name="ShowResponseOnlyInfo">Do not repeat the user prompt in the generated text.</string>
+    <string name="InsertResponseAsQuote">Insert response as quote</string>
+    <string name="InsertResponseAsQuoteInfo">Format the generated response as a blockquote.</string>
+    <string name="MessageHistory">Message History</string>
+    <string name="HistoryInfo">Stores recent AI queries and responses for context and review.</string>
+    <string name="HistoryEmpty">History is empty</string>
+    <string name="Suggestions">Suggested Roles</string>
+    <string name="AIReplaceTelegram">Telegram AI</string>
+    <string name="AIFeaturesEditor">Editor</string>
+    <string name="AIReplaceTelegramEditorInfo">Translate, restyle and proofread drafts</string>
+    <string name="AIFeaturesSummaries">Summaries</string>
+    <string name="AIReplaceTelegramSummariesInfo">Summarize long messages and posts</string>
+    <string name="AIReplaceTelegramInfo">Selected features use your AI service instead of Telegram servers, without Premium limits.</string>
+    <string name="AIGeneration">Generation</string>
+    <string name="ResponseStreaming">Response Streaming</string>
+    <string name="ResponseStreamingInfo">Ensures smoother and faster display of responses.</string>
+    <string name="AiIntegrationSection">Telegram AI Integration</string>
+    <string name="AiReplaceEditor">Replace Telegram AI Composer</string>
+    <string name="AiReplaceEditorInfo">Uses your configured AI in the Telegram text editor without Telegram Premium.</string>
+    <string name="AiReplaceSummaries">Replace Telegram AI Summaries</string>
+    <string name="AiReplaceSummariesInfo">Summarizes long channel posts using your configured AI.</string>
+    <string name="AskAi">Ask AI</string>
+    <string name="AiPromptHint">Ask a question about this message…</string>
+    <string name="AskAssistant">Ask</string>
+    <string name="SummarizeThisMessage">Summarize this message briefly</string>
+    <string name="ProofreadThisMessage">Fix grammar and improve readability</string>
+    <string name="TranslateThisMessage">Translate this message</string>
+    <string name="WhatsNewAiAssistant">AI Assistant (Gemini &amp; ChatGPT)</string>
+    <string name="WhatsNewAiAssistantDesc">Smart message summaries, grammar proofreading, text rewriting and AI chat powered by Google Gemini and OpenAI without Telegram Premium</string>
+
+    <string name="AiChipSummarize">Summarize</string>
+    <string name="AiChipProofread">Proofread</string>
+    <string name="AiChipTranslate">Translate</string>
+    <string name="AiGenerate">Generate</string>
+    <string name="HundredGramSettingsSaved">Settings saved</string>
+
+    <!-- Services & Translation (Stage 5) -->
+    <string name="ServicesSettingsTitle">Services &amp; Tools</string>
+    <string name="ServicesSettingsSubtitle">Multi-provider translator, anti-spam &amp; message protection</string>
+    <string name="TranslatorSection">Translation Engines</string>
+    <string name="TranslationProvider">Translation Provider</string>
+    <string name="TranslationTargetLang">Target Language</string>
+    <string name="TranslateBeforeSend">Translate before send</string>
+    <string name="TranslatorSectionInfo">Switch between Google Translate, Yandex, DeepL and Telegram without Telegram Premium restrictions.</string>
+    <string name="AntiSpamSection">Anti-Spam &amp; Protection</string>
+    <string name="AntiSpamEnable">Enable Anti-Spam in PM</string>
+    <string name="AntiSpamBlockLinks">Filter links from non-contacts</string>
+    <string name="AntiSpamAction">Action on Spam</string>
+    <string name="AntiSpamActionMute">Mute &amp; mark read</string>
+    <string name="AntiSpamActionArchive">Move to Archive &amp; mute</string>
+    <string name="AntiSpamActionBlock">Block user &amp; delete chat</string>
+    <string name="AntiSpamKeywords">Spam keywords &amp; stop-words</string>
+    <string name="AntiSpamBlockedCount">Blocked spam messages: %1$d</string>
+    <string name="AntiSpamSectionInfo">Automatically protects your direct messages from scam bots, unsolicited promotional links, and casino/crypto spam.</string>
+    <string name="AntiSpamBlockedAlert">100gram Anti-Spam: Blocked message from %1$s</string>
+    <string name="WhatsNewServices">Translators &amp; Anti-Spam Shield</string>
+    <string name="WhatsNewServicesDesc">Multi-engine translation (Google, Yandex, DeepL) without limits and automated anti-spam protection in direct messages</string>
+
+    <!-- General Helpers -->
+    <string name="Auto">Auto</string>
+    <string name="ResetSettings">Reset settings</string>
+
+    <!-- Plugins System (Stage: Plugins & ExteraGram Compatibility) -->
+    <string name="Plugins">Plugins</string>
+    <string name="PluginsSubtitle">Custom extensions &amp; exteraGram plugins</string>
+    <string name="PluginsEngine">Plugins Engine</string>
+    <string name="PluginsEngineInfo">Allows running lightweight native and exteraGram plugins</string>
+    <string name="PluginsSafeMode">Safe Mode</string>
+    <string name="PluginsSafeModeInfo">All plugins are disabled to recover from crashes</string>
+    <string name="PluginsSafeModeInfo2">In Safe Mode, all plugins are inactive. This allows you to safely find and disable a problematic plugin.</string>
+    <string name="PluginsDisableArt">Compatibility Mode</string>
+    <string name="PluginsDisableArtInfo">Prevents plugin hook failures by disabling ART Profile Saver</string>
+    <string name="PluginsInstallUnknown">Allow unknown sources</string>
+    <string name="PluginsInstallUnknownInfo">Allow installing plugins directly from chats and storage</string>
+    <string name="InstallPlugin">Install Plugin</string>
+    <string name="PluginInstalled">Plugin %1$s installed successfully</string>
+    <string name="PluginUpdated">Plugin %1$s updated successfully</string>
+    <string name="PluginInstallError">Failed to install plugin %1$s</string>
+    <string name="PluginEnableError">Failed to enable %1$s</string>
+    <string name="PluginDisableError">Failed to disable %1$s</string>
+    <string name="PluginDelete">Delete Plugin</string>
+    <string name="PluginDeleteInfo">Are you sure you want to delete %1$s?</string>
+    <string name="PluginNotFound">Plugin %1$s not found</string>
+    <string name="PluginNoDescription">No description provided</string>
+    <string name="PluginNoAuthor">Unknown author</string>
+    <string name="PluginVersion">Version</string>
+    <string name="PluginVersionValue">Version %1$s</string>
+    <string name="PluginHasNoSettings">%1$s has no settings</string>
+    <string name="PluginEngineNotEnabled">Enable Plugins Engine to configure %1$s</string>
+    <string name="PluginRequirements">Requirements</string>
+    <string name="PluginRequired">Required Plugins</string>
+    <string name="PluginsNotFound">No plugins installed</string>
+    <string name="PluginsInfo">You can install plugins (.100p, .plugin, .elyx) from files or chats</string>
+    <string name="WhatsNewPlugins">Plugins &amp; exteraGram Extensions</string>
+    <string name="WhatsNewPluginsDesc">Extensible plugin system supporting native Dex extensions and exteraGram plugins with custom menus, hooks and settings</string>
+
+    <!-- Package 1: Chats & Input Experience -->
+    <string name="RepeatMessage">Repeat</string>
+    <string name="MessageRepeated">Message repeated</string>
+    <string name="ShowRepeatMessageButton">Repeat message button</string>
+    <string name="ShowRepeatMessageButtonInfo">Show «Repeat» in message context menu to resend directly</string>
+    <string name="ShowResultsBeforeVoting">Show results before voting in polls</string>
+    <string name="ShowResultsBeforeVotingInfo">View poll percentages and voter numbers without submitting a vote</string>
+    <string name="ShowClearInputButton">Clear input button</string>
+    <string name="ShowClearInputButtonInfo">Show quick clear (✕) button in message input box when text is typed</string>
+    <string name="ClearInputConfirmTitle">Clear message?</string>
+    <string name="ClearInputConfirmMessage">Are you sure you want to clear the entire message?</string>
+    <string name="ClearInputCleared">Message cleared</string>
+    <string name="FilterZalgo">Filter Zalgo text</string>
+    <string name="FilterZalgoInfo">Strip excessive combining Unicode diacritics that glitch chat messages</string>
+    <string name="ReplaceEditedWithIcon">Show pencil icon for edited messages</string>
+    <string name="ReplaceEditedWithIconInfo">Replace the «edited» text with a compact pencil icon next to message timestamp</string>
+    <string name="WhatsNewChatsInput">Chats &amp; Input Experience</string>
+    <string name="WhatsNewChatsInputDesc">Repeat messages from context menu, preview poll results before voting, fast clear button in input field, Zalgo text filtering, and compact pencil icon for edited messages</string>
+
+    <!-- Package 2: Header & Tabs Customization -->
+    <string name="ActionBarTitleMode">Action bar title</string>
+    <string name="ActionBarTitleModeInfo">Choose what is displayed as the header on the main screen</string>
+    <string name="ActionBarTitleAppName">App name (100gram)</string>
+    <string name="ActionBarTitleUsername">Username (@username)</string>
+    <string name="ActionBarTitleName">Profile name</string>
+    <string name="ActionBarTitleFilterChats">Active folder</string>
+
+    <string name="CenterActionBarTitle">Center action bar title</string>
+    <string name="CenterActionBarTitleInfo">Center the title and subtitle in the top bar of the main screen and chat headers</string>
+
+    <string name="TabTitleStyle">Folder tabs style</string>
+    <string name="TabTitleStyleInfo">Choose how folder tabs are displayed above the chat list</string>
+    <string name="TabTitleStyleTextAndIcons">Text and icons</string>
+    <string name="TabTitleStyleTextOnly">Text only</string>
+    <string name="TabTitleStyleIconsOnly">Icons only</string>
+
+    <string name="TabCounterMode">Folder tab counters</string>
+    <string name="TabCounterModeInfo">Choose unread message badge counting behavior for folder tabs</string>
+    <string name="TabCounterModeAll">All unread</string>
+    <string name="TabCounterModeUnmuted">Unmuted only</string>
+    <string name="TabCounterModeHide">Hide counters</string>
+
+    <string name="WhatsNewHeaderTabs">Header &amp; Tabs Customization</string>
+    <string name="WhatsNewHeaderTabsDesc">Action bar title modes (app name, username, profile name, active folder), centered headers, folder tab styles (text, icons, text+icons), and smart unread tab counters</string>
+
+    <!-- Package 3: Multimedia, Player Ergonomics & Bubble Tail Styling -->
+    <string name="UnmuteWithVolumeButtons">Unmute with volume buttons</string>
+    <string name="UnmuteWithVolumeButtonsInfo">Pressing physical Volume Up or Down unmutes the video player when viewing muted videos</string>
+    <string name="SwipeToPip">Swipe to Picture-in-Picture</string>
+    <string name="SwipeToPipInfo">Swiping up on the fullscreen video player smoothly transitions to Picture-in-Picture overlay</string>
+    <string name="RemoveMessageTail">Hide message tails</string>
+    <string name="RemoveMessageTailInfo">Remove the bottom tail from incoming and outgoing message bubbles for a modern, flat aesthetic</string>
+    <string name="WidePostsInChannels">Wide media posts in channels</string>
+    <string name="WidePostsInChannelsInfo">Display channel photos and videos at full screen width without excessive side padding</string>
+
+    <string name="WhatsNewMediaAndBubbles">Multimedia &amp; Bubble Styling</string>
+    <string name="WhatsNewMediaAndBubblesDesc">Unmute videos with volume keys, swipe up to Picture-in-Picture overlay, modern flat message bubbles without tails, and wide full-width media posts in channels</string>
+
+    <!-- Package 4: Navigation, Stickers & Gesture Safety -->
+    <string name="DisableUnarchiveSwipe">Disable unarchive on swipe</string>
+    <string name="DisableUnarchiveSwipeInfo">Prevents accidental unarchiving of chats when swiping horizontally inside the Archive folder</string>
+    <string name="HideDialogsSearchBar">Hide chats search bar</string>
+    <string name="HideDialogsSearchBarInfo">Hides the persistent search bar above chats to reclaim vertical screen space. Search is accessed via the top bar icon</string>
+    <string name="ExtendedRecentStickers">Extended recent stickers</string>
+    <string name="ExtendedRecentStickersInfo">Increases recent stickers storage pool up to 100 stickers instead of default 20</string>
+    <string name="QuickChannelTransition">Quick channel transition</string>
+    <string name="QuickChannelTransitionInfo">Accelerates the transition animation when pulling up to open the next unread channel</string>
+
+    <string name="WhatsNewNavigationAndStickers">Navigation, Stickers &amp; Gesture Safety</string>
+    <string name="WhatsNewNavigationAndStickersDesc">Disable accidental unarchive swipe, hide chats search bar to save vertical space, expand recent stickers pool to 100, and ultra-fast next unread channel transition</string>
+
+    <!-- Package 5: Media & Storage Ergonomics -->
+    <string name="ShowForwardsCount">Show forwards count</string>
+    <string name="ShowForwardsCountInfo">Display forwards count alongside views on channel messages</string>
+    <string name="HideActionBarStatus">Hide subtitle in chat bar</string>
+    <string name="HideActionBarStatusInfo">Hides online status, member count, and typing indicators in the top action bar for clean screenshots and streaming privacy</string>
+    <string name="DoubleTapSeekDuration">Double tap seek duration</string>
+    <string name="DoubleTapSeekDurationInfo">Interval skipped when double-tapping left or right sides of the video player</string>
+    <string name="DoubleTapSeekSeconds">%1$d s</string>
+    <string name="QuickTopicTransition">Quick topic transition</string>
+    <string name="QuickTopicTransitionInfo">Accelerates transition and pull-to-switch animations between forum topics</string>
+
+    <string name="WhatsNewMediaAndStorageErgonomics">Media &amp; Storage Ergonomics</string>
+    <string name="WhatsNewMediaAndStorageErgonomicsDesc">Forward count indicator on channel messages, action bar subtitle privacy mode, customizable double-tap video seek duration, and instant forum topic switching</string>
+
+    <!-- Package 6: Interactive Settings Redesign, Live Previews & Spring Transitions -->
+    <string name="SwipeActionPreviewTitle">Swipe left to test</string>
+    <string name="SwipeActionPreviewSub">Current action: %1$s</string>
+    <string name="BubblePreviewInText">100gram — new bubble design 🔥</string>
+    <string name="BubblePreviewOutText">With message tail</string>
+    <string name="BubblePreviewOutFlat">Clean flat look without tails!</string>
+    <string name="BubblePreviewEdited">edited</string>
+    <string name="HundredGramVaultCardTitle">100gram Media Vault</string>
+    <string name="HundredGramVaultQuotaInfo">Quota limit: %1$d MB</string>
+    <string name="HundredGramVaultManage">Manage</string>
+    <string name="HundredGramSectionAppearance">Appearance &amp; Style</string>
+    <string name="HundredGramSectionChatsMedia">Chats, Media &amp; Camera</string>
+    <string name="HundredGramSectionSmartTools">Smart Tools &amp; Plugins</string>
+    <string name="TransitionsAndDividersSection">Transitions &amp; Dividers</string>
+    <string name="TransitionAnimation">Transition Animation</string>
+    <string name="TransitionAnimationInfo">Animation style when opening and closing screens</string>
+    <string name="TransitionDefault">Default (Telegram)</string>
+    <string name="TransitionAosp">AOSP (Android)</string>
+    <string name="TransitionSpring">Spring (Physics)</string>
+    <string name="DividerStyle">Divider Style</string>
+    <string name="DividerStyleInfo">Appearance of dividers between list items</string>
+    <string name="DividerStyleLine">Classic Line</string>
+    <string name="DividerStyleSegments">Card Segments</string>
+    <string name="DividerStyleHidden">Hidden (Flat)</string>
+    <string name="WhatsNewSettingsRedesign">Interactive Settings Redesign</string>
+    <string name="WhatsNewSettingsRedesignDesc">New settings hub with Hero profile card, live swipe &amp; bubble previews, spring physics transitions, and storage widget</string>
+    <string name="HundredGramMessageBubblesSection">Message Bubbles</string>
+    <string name="HundredGramChatBehaviorSection">Chat Behavior</string>
+    <string name="MessageBubblePreviewInfo">Customize bubble tails, edited pencil indicators, seconds in timestamps, and forward counters with real-time preview.</string>
+    <string name="TransitionsAndDividersInfo">Physics-based Spring transitions and customizable divider styles across all settings and chat lists.</string>
+
+    <!-- Swipe Actions (ported from exteraGram) -->
+    <string name="SwipeActions">Swipe Actions</string>
+    <string name="SwipeActionsInfo">Swipe a message to the left and, without lifting your finger, move up or down to pick an action.</string>
+    <string name="SwipeActionsBehavior">Behavior</string>
+    <string name="SwipeActionsLoop">Loop Actions</string>
+    <string name="SwipeActionsReversed">Reverse Scrolling</string>
+    <string name="SwipeActionsBehaviorInfo">With looping, the first action comes right after the last one. Reverse scrolling makes the list move with your finger.</string>
+    <string name="SwipeActionsEnabled">Actions</string>
+    <string name="SwipeActionsDisabled">Disabled</string>
+    <string name="SwipeActionsOrderInfo">Tap an action to turn it on or off, drag to reorder. The topmost action runs on a plain swipe.</string>
+    <string name="SwipeActionsPreviewReply">what if i slip and delete it?</string>
+    <string name="SwipeActionsPreviewMessage">fear is the mind-killer. drag slower</string>
+
+    <string name="WhatsNewSwipeActions">Multi-Slot Swipe Actions &amp; Forwards Count</string>
+    <string name="WhatsNewSwipeActionsDesc">Configurable multi-action swipe menu with interactive preview, drag-and-drop reordering, reverse scroll, and mirrored vector forwards counter on channel messages</string>
+
+    <!-- Registration Date & Chat Creation Date -->
+    <string name="CreationDateUserLater">**%1$s** created their account later than **%2$s**.</string>
+    <string name="CreationDateUserEarlier">**%1$s** created their account earlier than **%2$s**.</string>
+    <string name="CreationDateUserApproximately">**%1$s** created their account approximately on **%2$s**.</string>
+    <string name="CreationDateSelfLater">You created your account later than **%1$s**.</string>
+    <string name="CreationDateSelfEarlier">You created your account earlier than **%1$s**.</string>
+    <string name="CreationDateSelfApproximately">You created your account approximately on **%1$s**.</string>
+    <string name="CreationDateChat">**%1$s** was created on **%2$s**.</string>
+    <string name="DisableGreetingSticker">Disable greeting sticker</string>
+    <string name="DisableGreetingStickerInfo">Hides the animated waving hand sticker in empty direct chats</string>
+    <string name="WhatsNewExteraFeatures">Account Registration Date &amp; Clean Chat Start</string>
+    <string name="WhatsNewExteraFeaturesDesc">Exact registration date estimate in user profile with calendar badge, and option to disable greeting sticker in new empty chats</string>
+    <!-- Selective Account Notifications & Square FAB -->
+    <string name="AccountNotifications">Accounts</string>
+    <string name="AccountNotificationsInfo">Unchecked accounts don\'t show notifications while you\'re using another account.</string>
+    <string name="AccountNotificationsCurrent">Notifications from the current account are always shown.</string>
+    <string name="AccountNotificationsCount">%1$d of %2$d</string>
+    <string name="SquareFab">Square FAB</string>
+    <string name="SquareFabInfo">Use Material 3 rounded square floating action buttons instead of round circles</string>
+    <string name="WhatsNewAccountNotifications">Selective Account Notifications &amp; Square FAB</string>
+    <string name="WhatsNewAccountNotificationsDesc">Granular multi-account push notification toggles, active account safety lock, Material 3 square floating buttons, and Zalgo spam filter</string>
+
+    <!-- IP Address Inspector & Proxy Details -->
+    <string name="CopyIpAddress">Copy IP address</string>
+    <string name="IpInfoCountry">Location</string>
+    <string name="IpInfoIsp">Provider (ISP)</string>
+    <string name="IpInfoOrganization">Organization</string>
+    <string name="IpInfoDomain">Domain</string>
+    <string name="IpInfoTimezone">Timezone</string>
+    <string name="IpInfoUnavailable">Information about this IP is unavailable.</string>
+
+    <!-- Inline Math Calculation -->
+    <string name="InlineMathResult">Inline math calculation</string>
+    <string name="InlineMathResultInfo">Live calculation of arithmetic and mathematical expressions right in the message input field (press space or = to apply)</string>
+    <string name="InlineMathResultHint">Press space or = to insert calculation</string>
+    <string name="InlineMathResultAnnouncement">Math result: %1$s</string>
+    <string name="WhatsNewInlineMathAndIp">Inline Math &amp; IP Inspector</string>
+    <string name="WhatsNewInlineMathAndIpDesc">Instant mathematical evaluation directly in chat input, and interactive IP address lookup inspector in message links</string>
+
+    <!-- Batch 2: Dialogs, Media & Chat Controls -->
+    <string name="SenderMiniAvatars">Sender Avatars in Dialogs</string>
+    <string name="SenderMiniAvatarsInfo">Show miniature avatars of senders next to message previews in chat lists</string>
+    <string name="PauseOnMinimize">Pause Media on Minimize</string>
+    <string name="PauseOnMinimizeVideo">Pause Video</string>
+    <string name="PauseOnMinimizeVideoInfo">Automatically pause video playback when leaving or minimizing the app</string>
+    <string name="PauseOnMinimizeVoice">Pause Voice Messages</string>
+    <string name="PauseOnMinimizeVoiceInfo">Automatically pause voice messages when the app is placed in background</string>
+    <string name="PauseOnMinimizeRound">Pause Video Messages</string>
+    <string name="PauseOnMinimizeRoundInfo">Automatically pause round video notes when the app is placed in background</string>
+    <string name="HideSendAsPeer">Hide \"Send As\" Button</string>
+    <string name="HideSendAsPeerInfo">Hides channel avatar button beside input field. Long tap emoji button to change sender</string>
+    <string name="HideShareButton">Hide Channel Share Button</string>
+    <string name="HideShareButtonInfo">Removes the quick forward arrow icon on channel messages</string>
+    <string name="HideReactionsInChannels">Hide Reactions in Channels</string>
+    <string name="HideReactionsInChannelsInfo">Do not display reaction counters and badges in channel posts</string>
+    <string name="HideReactionsInGroups">Hide Reactions in Groups</string>
+    <string name="HideReactionsInGroupsInfo">Do not display reaction counters and badges in group chats</string>
+    <string name="WhatsNewBatch2Features">Dialog Avatars &amp; Ergonomics</string>
+    <string name="WhatsNewBatch2FeaturesDesc">Mini avatars in chat list, background media pause controls, hide Send As and share buttons, and reaction filtering</string>
+
+    <!-- Batch 3: Notifications, Gestures & Media Controls -->
+    <string name="DisableNotificationDelay">Disable Notification Delay</string>
+    <string name="DisableNotificationDelayInfo">Bypass 1-3 second delay when receiving notifications to show alerts instantly</string>
+    <string name="ArchiveOnPull">Open Archive on Pull</string>
+    <string name="ArchiveOnPullInfo">Immediately open Archived Chats when pulling down the chat list</string>
+    <string name="ChannelBottomButton">Channel Bottom Button</string>
+    <string name="ChannelBottomButtonHide">Hidden</string>
+    <string name="ChannelBottomButtonMute">Mute / Unmute</string>
+    <string name="ChannelBottomButtonDiscuss">Discussion</string>
+    <string name="UnlimitedRecentStickers">Unlimited Recent Stickers</string>
+    <string name="UnlimitedRecentStickersInfo">Show all recent stickers without the 20 sticker limit</string>
+    <string name="StickerTimeMode">Sticker Timestamp</string>
+    <string name="StickerTimeModeDefault">Default</string>
+    <string name="StickerTimeModeSide">Beside Sticker</string>
+    <string name="StickerTimeModeHidden">Hidden</string>
+    <string name="RememberLastUsedCamera">Remember Camera</string>
+    <string name="RememberLastUsedCameraInfo">Remember front or rear camera when recording video messages</string>
+    <string name="PreferOriginalQuality">Prefer Original Video Quality</string>
+    <string name="PreferOriginalQualityInfo">Automatically select original quality when playing videos with multiple streams</string>
+    <string name="WhatsNewBatch3Features">Instant Alerts &amp; Chat Controls</string>
+    <string name="WhatsNewBatch3FeaturesDesc">Instant push notifications, pull-down to open archive, channel action bar customization, unlimited recent stickers, flexible sticker timestamps, and original video quality</string>
+
+    <!-- Batch 4: Smart Proxy, Custom Save Path, Reply Styling & Sticker Shape -->
+    <string name="ProxyDisableOn">Disable Proxy On</string>
+    <string name="ProxyDisableOnVpn">VPN</string>
+    <string name="ProxyDisableOnMobileData">Mobile Data</string>
+    <string name="ProxyDisableOnWiFi">Wi-Fi</string>
+    <string name="ProxyDisableOnNever">Never</string>
+    <string name="ProxyDisableOnAlways">Always</string>
+    <string name="ProxyDisableNever">Never</string>
+    <string name="ProxyDisableAlways">Always</string>
+    <string name="ProxyDisableOnInfo">Automatically deactivate proxy when specific network interfaces are connected</string>
+
+    <string name="CustomSavePath">Custom Save Folder</string>
+    <string name="CustomSavePathInfo">Subdirectory in device media folders for saved pictures, videos and files</string>
+    <string name="CustomSavePathDialogTitle">Save Subfolder Name</string>
+    <string name="CustomSavePathDefault">Default (Telegram)</string>
+
+    <string name="ReplyStylingHeader">Reply &amp; Quote Styling</string>
+    <string name="ReplyBackground">Reply Background</string>
+    <string name="ReplyBackgroundInfo">Display translucent colored background behind replied message previews</string>
+    <string name="ReplyColors">Author Colors in Replies</string>
+    <string name="ReplyColorsInfo">Use author account colors for reply bar and name instead of default theme color</string>
+    <string name="ReplyEmoji">Custom Emoji in Replies</string>
+    <string name="ReplyEmojiInfo">Display custom status and quote emoji icons in reply headers</string>
+
+    <string name="StickerShape">Sticker Corners</string>
+    <string name="StickerShapeDefault">Default (Sharp)</string>
+    <string name="StickerShapeRounded">Rounded (4dp)</string>
+    <string name="StickerShapeBubble">Message Bubble Radius</string>
+
+    <string name="WhatsNewBatch4Features">Smart Proxy &amp; Visual Customization</string>
+    <string name="WhatsNewBatch4FeaturesDesc">Auto-disable proxy on VPN/cellular/Wi-Fi, custom save folders, reply styling controls, and customizable sticker shapes</string>
+
+    <string name="Shadowban">Shadowban</string>
+    <string name="ShadowbanAdd">Add to Shadowban</string>
+    <string name="ShadowbanRemove">Remove from Shadowban</string>
+    <string name="ShadowbanAddedToast">%1$s has been added to Shadowban</string>
+    <string name="ShadowbanRemovedToast">%1$s has been removed from Shadowban</string>
+    <string name="ShadowbanDesc">Locally hide all messages from specific users in groups and comments without banning them in Telegram</string>
+    <string name="ShadowbanEmpty">No users in Shadowban</string>
+    <string name="ShadowbanClearAll">Clear All</string>
+    <string name="ShadowbanClearAllAlert">Are you sure you want to clear all users from the shadowban list?</string>
+    <string name="ShadowbanUsersCount_one">%1$d user</string>
+    <string name="ShadowbanUsersCount_other">%1$d users</string>
+    <string name="WhatsNewShadowban">Local Shadowban</string>
+    <string name="WhatsNewShadowbanDesc">Locally mute and hide annoying users or channels across all groups and comments without blocking them on Telegram servers</string>
+
+    <string name="ActivityTriggerReaction">Reaction</string>
+
+    <string name="Enabled">Enabled</string>
+    <string name="Disabled">Disabled</string>
+
+    <string name="DeletedMarkIcon">Deleted message icon</string>
+    <string name="DeletedMarkColor">Deleted badge color</string>
+    <string name="DeletedMarkColorTheme">As time text (Subtle)</string>
+    <string name="DeletedMarkColorRed">Red accent (Danger)</string>
+    <string name="DeletedMarkTrash">Trash bin</string>
+    <string name="DeletedMarkCross">Cross</string>
+    <string name="DeletedMarkEye">Crossed eye</string>
+    <string name="DeletedMessagesTransparent">Semi-transparent deleted messages</string>
+
+    <string name="EditHistoryDiff">Diff</string>
+    <string name="EditHistoryPlain">Plain</string>
+    <string name="EditHistoryDiffLegend">🟢 added · 🔴 deleted</string>
+
+    <string name="ContentFilterTitle">Content Filter</string>
+    <string name="ContentFilterGeneral">General Settings</string>
+    <string name="ContentFilterEnable">Enable content filter</string>
+    <string name="ContentFilterEnableDesc">Automatically suppresses spam, scam, and custom keyword messages in channels and groups locally.</string>
+    <string name="ContentFilterScope">Filter Scope</string>
+    <string name="ContentFilterChannels">In channels</string>
+    <string name="ContentFilterGroups">In groups</string>
+    <string name="ContentFilterDMs">In direct messages</string>
+    <string name="ContentFilterPresets">Presets</string>
+    <string name="ContentFilterPresetCrypto">Crypto scam &amp; casino</string>
+    <string name="ContentFilterPresetLinks">Spam links &amp; invites</string>
+    <string name="ContentFilterPresetsDesc">Quick filters to suppress crypto giveaways, casino ads, and referral/invite links.</string>
+    <string name="ContentFilterRules">Custom Rules</string>
+    <string name="ContentFilterAddKeyword">Add keyword...</string>
+    <string name="ContentFilterAddRegex">Add Regex pattern...</string>
+    <string name="ContentFilterAddRuleTitle">Add Rule</string>
+    <string name="ContentFilterAddKeywordTitle">Add Keyword</string>
+    <string name="ContentFilterKeywordHint">e.g. crypto, airdrop, casino</string>
+    <string name="ContentFilterAddRegexTitle">Add Regex Pattern</string>
+    <string name="ContentFilterRegexHint">e.g. (?i).*(crypto|casino).*</string>
+    <string name="ContentFilterRegexErrorTitle">Invalid Regex</string>
+    <string name="ContentFilterDeleteRuleTitle">Delete rule?</string>
+    <string name="ContentFilterKeywordType">Keyword</string>
+    <string name="ContentFilterRegexType">Regex pattern</string>
+    <string name="ContentFilterNoRules">No custom rules added yet</string>
+    <string name="ContentFilterRuleClickDesc">Tap a rule to delete it. Long-press also triggers deletion.</string>
+    <string name="ContentFilterStats">Statistics</string>
+    <string name="ContentFilterStatsCount_one">%1$d message filtered</string>
+    <string name="ContentFilterStatsCount_other">%1$d messages filtered</string>
+    <string name="ContentFilterResetStats">Reset statistics</string>
+    <string name="ContentFilterStatsResetToast">Statistics reset</string>
+    <string name="ContentFilterRulesCount_one">%1$d rule</string>
+    <string name="ContentFilterRulesCount_other">%1$d rules</string>
+    <string name="ContentFilterDesc">Block channels and groups spam, crypto-scams, and custom keywords locally.</string>
+    <string name="WhatsNewContentFilter">Content &amp; Keyword Filter</string>
+    <string name="WhatsNewContentFilterDesc">Locally hide spam, crypto scams, referral links, and stop-words in channels and groups.</string>
+    <string name="WhatsNewDeletedMark">Deleted Message Badges</string>
+    <string name="WhatsNewDeletedMarkDesc">Choose your deleted message icon (trash bin, cross, or eye) and toggle semi-transparent deleted messages.</string>
+    <string name="WhatsNewEditHistoryDiff">Visual Diff in Edit History</string>
+    <string name="WhatsNewEditHistoryDiffDesc">Word-level diff highlighting additions and deletions, instant toggle between diff and plain text, and relative time deltas.</string>
+
+    <!-- AyuGram Enhancements -->
+    <string name="MessageReadDate">Read</string>
+    <string name="TrackReadDate">Track read timestamp</string>
+    <string name="TrackReadDateInfo">Records the exact date and time when your outgoing message was read by the recipient.</string>
+    <string name="SendOfflineAfterOnline">Instant offline after sending</string>
+    <string name="SendOfflineAfterOnlineInfo">Immediately sends an offline status packet after you send a message, preventing the 5-15 second online pulse.</string>
+    <string name="GhostUploadProgress">Hide upload progress</string>
+    <string name="GhostUploadProgressInfo">Do not show upload indicators (uploading photo, video, or file) to other users.</string>
+    <string name="VaultSaveForBots">Save media for bots</string>
+    <string name="VaultSaveForBotsInfo">Allow saving media and messages from bots to the Media Vault and Anti-Delete history.</string>
+    <string name="WhatsNewAyuGramSpyGhost">Exact Read Timestamps &amp; Instant Offline</string>
+    <string name="WhatsNewAyuGramSpyGhostDesc">Track exact seconds when outgoing messages are read in message details, instant offline status upon sending messages, and upload indicator suppression.</string>
+
+    <!-- Save Presets & Scopes System -->
+    <string name="SavePreset">Saving Preset</string>
+    <string name="SavePresetTitle">Select Saving Preset</string>
+    <string name="SavePresetSmart">Smart (Recommended)</string>
+    <string name="SavePresetSmartDesc">Saves DMs and groups: photos, voice, video notes, and videos up to 25 MB. Channels and bots are excluded.</string>
+    <string name="SavePresetDMsOnly">Direct Messages Only</string>
+    <string name="SavePresetDMsOnlyDesc">Strictly 1-on-1 private chats only. All media up to 50 MB. No groups, channels, or bots.</string>
+    <string name="SavePresetAll">Maximum Archive</string>
+    <string name="SavePresetAllDesc">Saves everything from DMs, groups, and channels. All media up to 100 MB.</string>
+    <string name="SavePresetStorageSaver">Storage Saver</string>
+    <string name="SavePresetStorageSaverDesc">Only DMs: text, photos, and voice notes up to 5 MB. No videos or large files.</string>
+    <string name="SavePresetCustom">Custom</string>
+    <string name="SavePresetCustomDesc">Custom configuration adjusted below.</string>
+
+    <string name="SaveScopeHeader">Where to Save</string>
+    <string name="SaveScopeHeaderInfo">Specify which chats and dialog types are monitored for anti-delete and media saving.</string>
+    <string name="SaveScopePrivate">Private Chats (DMs)</string>
+    <string name="SaveScopeGroups">Groups &amp; Supergroups</string>
+    <string name="SaveScopeChannels">Channels</string>
+    <string name="SaveScopeBots">Bots &amp; Bot Messages</string>
+    <string name="SaveScopeArchived">Archived Chats</string>
+
+    <string name="SaveTypesHeader">What to Save</string>
+    <string name="SaveTypesHeaderInfo">Choose message components and media types to keep in the local vault.</string>
+    <string name="SaveAntiDeleteText">Deleted Messages (Anti-Delete)</string>
+    <string name="SaveEditHistory">Message Edit History</string>
+    <string name="SaveMediaPhotos">Photos</string>
+    <string name="SaveMediaVoiceRounds">Voice &amp; Video Notes</string>
+    <string name="SaveMediaVideos">Videos</string>
+    <string name="SaveMediaFiles">Files &amp; Documents</string>
+    <string name="WhatsNewSavePresets">Intelligent Saving Presets &amp; Scopes</string>
+    <string name="WhatsNewSavePresetsDesc">Easily choose where and what to save: Smart Preset, DMs Only, Everything, or Storage Saver with granular toggles for chats, groups, channels, and media types.</string>
+
+    <!-- Regex Search -->
+    <string name="RegexSearch">Regex Search</string>
+    <string name="RegexSearchToggle">Regex Mode</string>
+    <string name="RegexSearchPresets">Regex Templates</string>
+    <string name="RegexSearchEnabled">Regex search enabled</string>
+    <string name="RegexSearchDisabled">Regex search disabled</string>
+    <string name="RegexCustomTemplates">Custom Templates</string>
+    <string name="RegexAddCustom">Add Template</string>
+    <string name="RegexTemplateName">Template Name</string>
+    <string name="RegexTemplatePattern">Regular Expression</string>
+    <string name="RegexSave">Save</string>
+    <string name="RegexDelete">Delete</string>
+    <string name="RegexSyntaxError">Invalid regular expression</string>
+    <string name="RegexPresetPhone">Phone Numbers</string>
+    <string name="RegexPresetPhoneDesc">International and local phone formats</string>
+    <string name="RegexPresetCards">Bank Cards</string>
+    <string name="RegexPresetCardsDesc">16-digit payment card numbers</string>
+    <string name="RegexPresetBtc">Bitcoin (BTC)</string>
+    <string name="RegexPresetBtcDesc">Legacy, SegWit and Bech32 Bitcoin addresses</string>
+    <string name="RegexPresetEth">Ethereum / EVM</string>
+    <string name="RegexPresetEthDesc">0x... Ethereum, BSC, Polygon addresses</string>
+    <string name="RegexPresetTon">TON Wallets</string>
+    <string name="RegexPresetTonDesc">EQ... and UQ... The Open Network addresses</string>
+    <string name="RegexPresetUsdt">USDT (TRC20 / Tron)</string>
+    <string name="RegexPresetUsdtDesc">T... Tron network USDT addresses</string>
+    <string name="RegexPresetUrls">Links &amp; URLs</string>
+    <string name="RegexPresetUrlsDesc">Web addresses (http and https)</string>
+    <string name="RegexPresetEmail">Email Addresses</string>
+    <string name="RegexPresetEmailDesc">Standard electronic mail addresses</string>
+    <string name="RegexPresetIpv4">IPv4 Addresses</string>
+    <string name="RegexPresetIpv4Desc">Standard IPv4 network addresses</string>
+    <string name="RegexPresetDates">Dates</string>
+    <string name="RegexPresetDatesDesc">Date patterns (DD.MM.YYYY, etc.)</string>
+    <string name="RegexSearching">Searching with Regex...</string>
+    <string name="RegexMatchesCount">%1$d matches found</string>
+
+    <!-- Mention All (@all / @everyone / @admins) -->
+    <string name="MentionAll">Mention Everyone</string>
+    <string name="MentionAllSub">Tag all members in this group</string>
+    <string name="MentionAdmins">Mention Admins</string>
+    <string name="MentionAdminsSub">Tag only group administrators</string>
+    <string name="MentionAllTitle">Mention Members</string>
+    <string name="MentionAllAudienceSection">Audience</string>
+    <string name="MentionAllStyleSection">Style</string>
+    <string name="MentionAllTargetAll">All Members (%1$d)</string>
+    <string name="MentionAllTargetOnline">Online / Recent (%1$d)</string>
+    <string name="MentionAllTargetAdmins">Admins Only (%1$d)</string>
+    <string name="MentionAllStyleHidden">Hidden (Clean)</string>
+    <string name="MentionAllStyleHiddenDesc">Invisible links without cluttering the chat with long text</string>
+    <string name="MentionAllStyleVisible">Visible List</string>
+    <string name="MentionAllStyleVisibleDesc">Mentions formatted as visible @usernames and names</string>
+    <string name="MentionAllInsert">Insert into Message</string>
+    <string name="MentionAllSend">Send Tag</string>
+    <string name="MentionAllNoMembers">No members to mention</string>
+    <string name="MentionAllBatchesNotice">Will be sent in %1$d messages</string>
+
+    <!-- What's New -->
+    <string name="WhatsNewRegexAndMention">Regex Search &amp; @all Mentions</string>
+    <string name="WhatsNewRegexAndMentionDesc">Search chat history with regular expressions and presets (wallets, cards, phones). Tag all group members or admins with one tap.</string>
+
+    <!-- AdBlock -->
+    <string name="PageBlocked">Page blocked</string>
+    <string name="PageBlockedDescription">100gram blocked the following page from loading:\n**%1$s**</string>
+    <string name="PageBlockedGoBack">Go Back</string>
+    <string name="PageBlockedProceed">Proceed</string>
+    <string name="BlockAds">Block Ads</string>
+    <string name="BlockAdsInfo">Blocks banners, popups, and intrusive ads in built-in browser using EasyList &amp; uBlock rules</string>
+    <string name="BlockedRequests_one">%1$d blocked</string>
+    <string name="BlockedRequests_few">%1$d blocked</string>
+    <string name="BlockedRequests_many">%1$d blocked</string>
+    <string name="AdBlockFiltersLoading">Loading filters…</string>
+
+    <!-- Feed / Channels Feed -->
+    <string name="Feed">Feed</string>
+    <string name="FeedTitle">Channels Feed</string>
+    <string name="FeedSettings">Feed Settings</string>
+    <string name="FeedBottomTab">Bottom bar tab</string>
+    <string name="FeedBottomTabInfo">Show feed tab in the bottom navigation bar</string>
+    <string name="WidePostsInFeed">Wide posts in feed</string>
+    <string name="FeedUnreadCounter">Unread counter</string>
+    <string name="FeedIncludeArchived">Include archived channels</string>
+    <string name="FeedIncludeArchivedInfo">Posts from archived channels will also appear in the feed</string>
+    <string name="FeedShownChannels">Shown channels</string>
+    <string name="FeedHiddenChannels">Hidden channels</string>
+    <string name="FeedChannelsInfo">You can exclude specific channels from the aggregated feed</string>
+    <string name="FeedHideChannel">Hide from feed</string>
+    <string name="FeedChannelHidden">Channel %1$s hidden from feed</string>
+    <string name="FeedMarkAllRead">Mark all as read</string>
+    <string name="FeedMarkAllReadConfirm">Are you sure you want to mark all channel posts in the feed as read?</string>
+    <string name="FeedMarkAllReadDone">All posts marked as read</string>
+
+    <!-- Now Playing -->
+    <string name="NowPlaying">Now Playing</string>
+    <string name="NowPlayingInfo">Show now playing or saved music card in user profile</string>
+    <string name="WhatsNewBatch5Title">AdBlock, Now Playing &amp; Channels Feed</string>
+    <string name="WhatsNewBatch5Desc">Built-in AdBlock for browser with EasyList filters, music status card in profiles with iTunes previews, and unified Channels Feed.</string>
+
+    <!-- Batch 6: Custom Feeds, Playlists, Bottom Nav, Read History, Quick Ban -->
+    <string name="CustomFeeds">Custom Feeds</string>
+    <string name="AllChannels">All Channels</string>
+    <string name="CreateCustomFeed">Create Feed</string>
+    <string name="EnterFeedName">Feed name</string>
+    <string name="EditCustomFeed">Edit Feed</string>
+    <string name="DeleteCustomFeed">Delete Feed</string>
+    <string name="DeleteFeedConfirm">Are you sure you want to delete this feed?</string>
+    <string name="CustomFeedChannels">Selected Channels</string>
+    <string name="CustomFeedChannelsCount">%1$d channels</string>
+    <string name="SelectChannelsForFeed">Select Channels</string>
+
+    <string name="BottomNavArchive">Archive</string>
+    <string name="BottomNavFeed">Feed</string>
+    <string name="BottomNavShowArchive">Archive tab in bottom bar</string>
+    <string name="BottomNavShowFeed">Feed tab in bottom bar</string>
+    <string name="BottomNavShowMusic">Music tab in bottom bar</string>
+
+    <string name="Playlists">Playlists</string>
+    <string name="AddToPlaylist">Add to Playlist</string>
+    <string name="NewPlaylist">New Playlist</string>
+    <string name="EnterPlaylistName">Playlist name</string>
+    <string name="TrackAddedToPlaylist">Added to playlist \"%1$s\"</string>
+    <string name="TrackAlreadyInPlaylist">Already in playlist</string>
+    <string name="DeletePlaylist">Delete Playlist</string>
+    <string name="DeletePlaylistConfirm">Are you sure you want to delete this playlist?</string>
+    <string name="RenamePlaylist">Rename Playlist</string>
+    <string name="NoPlaylists">No playlists yet</string>
+
+    <string name="ReadDate">Read %1$s</string>
+    <string name="ReadAt">Read at %1$s</string>
+    <string name="ReadHistoryForever">Keep Read Dates in Groups</string>
+    <string name="ReadHistoryForeverInfo">Preserve group message read timestamps locally forever, bypassing Telegram\'s 7-day server limit</string>
+
+    <string name="QuickBanUser">Quick Ban</string>
+    <string name="QuickBanUserConfirm">Ban %1$s?</string>
+    <string name="QuickBanDeleteAllMessages">Delete all messages from this user</string>
+    <string name="QuickBanSuccess">User banned</string>
+
+    <string name="WhatsNewBatch6Title">Custom Feeds, Playlists &amp; Read History</string>
+    <string name="WhatsNewBatch6Desc">Custom channel feeds, bottom bar tabs for Archive &amp; Feed, music playlists in audio player, permanent group read receipts and quick ban.</string>
+
+    <string name="ActivitySimulatorTitle">Activity Simulation</string>
+    <string name="ActivitySimulatorSubtitle">Online presence emulation &amp; session scheduler</string>
+    <string name="ActivitySimulatorActiveBadge">ONLINE (SIMULATED)</string>
+    <string name="ActivitySimulatorInactiveBadge">INACTIVE</string>
+    <string name="ActivitySimulatorOnlineEmulation">Maintaining «Online» presence</string>
+    <string name="ActivitySimulatorReady">Ready to start</string>
+    <string name="ActivitySimulatorScheduledAt">Scheduled at %1$s (for %2$s)</string>
+    <string name="ActivitySimulatorRemaining">Remaining: %1$s</string>
+    <string name="ActivitySimulatorMicroBreak">Short micro-break (1.5 min)</string>
+    <string name="ActivitySimulatorStop">Stop Simulation</string>
+    <string name="ActivitySimulatorStartNow">Start Simulation Now</string>
+    <string name="ActivitySimulatorStartQuickBtn">Start Now (for %1$s)</string>
+    <string name="ActivitySimulatorStarted">Activity simulation started</string>
+    <string name="ActivitySimulatorStopped">Activity simulation stopped</string>
+    <string name="ActivitySimulatorCompleted">Activity simulation session completed</string>
+    <string name="ActivitySimulatorQuickSection">Quick Launch</string>
+    <string name="ActivitySimulatorDuration">Session Duration</string>
+    <string name="ActivitySimulatorCustomDuration">Custom Duration (in minutes)</string>
+    <string name="ActivitySimulatorQuickInfo">The app will maintain an «Online» status for the chosen duration and then automatically restore your regular status.</string>
+    <string name="ActivitySimulatorScheduleSection">Session Scheduler</string>
+    <string name="ActivitySimulatorScheduleToggle">Schedule Online Session</string>
+    <string name="ActivitySimulatorScheduleTime">Session Start Time</string>
+    <string name="ActivitySimulatorScheduleDuration">Stay Online Duration</string>
+    <string name="ActivitySimulatorScheduleRepeat">Repeat</string>
+    <string name="ActivitySimulatorRepeatOnce">Once</string>
+    <string name="ActivitySimulatorRepeatDaily">Daily</string>
+    <string name="ActivitySimulatorScheduleEnabledAlert">Online session scheduled</string>
+    <string name="ActivitySimulatorScheduleDisabledAlert">Scheduled session cancelled</string>
+    <string name="ActivitySimulatorScheduleEnabledShort">Scheduled</string>
+    <string name="ActivitySimulatorScheduleInfo">The app will automatically connect at the scheduled time, maintain «Online» presence for the chosen duration, and then return offline.</string>
+    <string name="ActivitySimulatorBehaviorSection">Behavior &amp; Realism</string>
+    <string name="ActivitySimulatorMicroBreaksToggle">Natural Micro-Breaks</string>
+    <string name="ActivitySimulatorMicroBreaksInfo">Periodically take short 1–2 minute pauses every 15 minutes to mimic natural human behavior.</string>
+    <string name="ActivitySimulatorNotifyToggle">Session Notifications</string>
+    <string name="WhatsNewActivitySimulatorTitle">Activity Simulation &amp; Online Scheduler</string>
+    <string name="WhatsNewActivitySimulatorDesc">Simulate online presence for a custom duration (e.g. 1 hour) or schedule automatic online sessions at specified times.</string>
+    <string name="SettingsSearchHint">Search 100gram settings…</string>
+    <string name="SettingsSearchNoResults">No settings found</string>
+    <string name="SettingsSearchNoResultsSub">Try changing your search query or selecting another category</string>
+    <string name="SettingsSearchRecent">Recent searches</string>
+    <string name="SettingsSearchClearRecent">Clear</string>
+    <string name="SettingsSearchChipAll">All</string>
+    <string name="SettingsSearchChipGhost">Ghost</string>
+    <string name="SettingsSearchChipVault">Vault</string>
+    <string name="SettingsSearchChipInterface">Interface</string>
+    <string name="SettingsSearchChipNetwork">Network</string>
+    <string name="SettingsSearchChipSimulator">Simulator</string>
+    <string name="SettingsSearchChipAI">AI</string>
+    <string name="SettingsSearchFoundCount">Found: %1$d</string>
+    <string name="WhatsNewUiElevationAndSearchTitle">Settings Search &amp; UI Redesign 2.0</string>
+    <string name="WhatsNewUiElevationAndSearchDesc">Universal instant search across all fork settings with deep navigation and pulse highlight, grouped card sections, enhanced status dashboard, and tactile Liquid Glass haptics.</string>
 </resources>
+
+

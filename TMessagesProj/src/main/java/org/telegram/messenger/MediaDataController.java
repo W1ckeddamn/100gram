@@ -834,7 +834,8 @@ public class MediaDataController extends BaseController {
         if (type == TYPE_PREMIUM_STICKERS) {
             return new ArrayList<>(recentStickers[type]);
         }
-        ArrayList<TLRPC.Document> result = new ArrayList<>(arrayList.subList(0, Math.min(arrayList.size(), 20)));
+        int maxLimit = HundredGramConfig.unlimitedRecentStickers ? Integer.MAX_VALUE : 20;
+        ArrayList<TLRPC.Document> result = new ArrayList<>(arrayList.subList(0, Math.min(arrayList.size(), maxLimit)));
         if (firstEmpty && !result.isEmpty() && !StickersAlert.DISABLE_STICKER_EDITOR) {
             result.add(0, new TLRPC.TL_documentEmpty());
         }
@@ -938,7 +939,7 @@ public class MediaDataController extends BaseController {
                     }
                 });
             }
-            maxCount = getMessagesController().maxRecentStickersCount;
+            maxCount = HundredGramConfig.extendedRecentStickers ? Math.max(100, getMessagesController().maxRecentStickersCount) : getMessagesController().maxRecentStickersCount;
         }
         if (recentStickers[type].size() > maxCount || remove) {
             TLRPC.Document old = remove ? document : recentStickers[type].remove(recentStickers[type].size() - 1);
@@ -1222,7 +1223,7 @@ public class MediaDataController extends BaseController {
                 }
             }
             if (document != null) {
-                Drawable thumbDrawable = DocumentObject.getSvgThumb(document, Theme.key_windowBackgroundWhiteGrayIcon, 0.2f, 1f, null);
+                Drawable thumbDrawable = DocumentObject.getSvgThumb(document, Theme.key_windowBackgroundWhiteBlueIcon, 0.2f, 1f, null);
                 imageView.setImage(ImageLocation.getForDocument(document), filter, thumbDrawable, 0, document);
                 imageView.invalidate();
             }
@@ -2013,7 +2014,7 @@ public class MediaDataController extends BaseController {
                         } else if (type == TYPE_FAVE) {
                             maxCount = getMessagesController().maxFaveStickersCount;
                         } else {
-                            maxCount = getMessagesController().maxRecentStickersCount;
+                            maxCount = HundredGramConfig.extendedRecentStickers ? Math.max(100, getMessagesController().maxRecentStickersCount) : getMessagesController().maxRecentStickersCount;
                         }
                     }
                     database.beginTransaction();

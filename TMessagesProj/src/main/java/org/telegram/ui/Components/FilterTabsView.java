@@ -161,13 +161,11 @@ public class FilterTabsView extends FrameLayout {
         }
 
         public boolean setTitle(String newTitle, ArrayList<TLRPC.MessageEntity> newEntities, boolean noanimate) {
-            if (TextUtils.equals(title, newTitle)) {
+            CharSequence formatted = text(newTitle, newEntities);
+            if (TextUtils.equals(title, formatted)) {
                 return false;
             }
-            title = new SpannableStringBuilder(newTitle);
-            title = Emoji.replaceEmoji(title, textPaint.getFontMetricsInt(), false);
-//            MessageObject.addEntitiesToText(title, newEntities, false, false, false, true);
-            title = MessageObject.replaceAnimatedEmoji(title, newEntities, textPaint.getFontMetricsInt());
+            title = formatted;
             this.noanimate = noanimate;
             return true;
         }
@@ -1253,7 +1251,49 @@ public class FilterTabsView extends FrameLayout {
     }
 
     public CharSequence text(String t, ArrayList<TLRPC.MessageEntity> e)  {
-        CharSequence title = new SpannableStringBuilder(t);
+        if (org.telegram.messenger.HundredGramConfig.tabTitleStyle == org.telegram.messenger.HundredGramConfig.TAB_TITLE_STYLE_TEXT_ONLY) {
+            String stripped = t != null ? t.replaceAll("[\\p{So}\\p{Cn}\\uD83C-\\uDBFF\\uDC00-\\uDFFF]", "").trim() : "";
+            if (TextUtils.isEmpty(stripped)) {
+                stripped = t != null ? t : "";
+            }
+            return stripped;
+        } else if (org.telegram.messenger.HundredGramConfig.tabTitleStyle == org.telegram.messenger.HundredGramConfig.TAB_TITLE_STYLE_ICONS_ONLY) {
+            if (e != null && !e.isEmpty()) {
+                for (int i = 0; i < e.size(); i++) {
+                    TLRPC.MessageEntity ent = e.get(i);
+                    if (ent instanceof TLRPC.TL_messageEntityCustomEmoji) {
+                        SpannableStringBuilder ssb = new SpannableStringBuilder(" ");
+                        ArrayList<TLRPC.MessageEntity> singleEntity = new ArrayList<>();
+                        TLRPC.TL_messageEntityCustomEmoji copy = new TLRPC.TL_messageEntityCustomEmoji();
+                        copy.offset = 0;
+                        copy.length = 1;
+                        copy.document_id = ((TLRPC.TL_messageEntityCustomEmoji) ent).document_id;
+                        singleEntity.add(copy);
+                        return MessageObject.replaceAnimatedEmoji(ssb, singleEntity, textPaint.getFontMetricsInt());
+                    }
+                }
+            }
+            if (t != null) {
+                CharSequence replaced = Emoji.replaceEmoji(new SpannableStringBuilder(t), textPaint.getFontMetricsInt(), false);
+                if (replaced instanceof SpannableStringBuilder) {
+                    SpannableStringBuilder ssb = (SpannableStringBuilder) replaced;
+                    Emoji.EmojiSpan[] spans = ssb.getSpans(0, ssb.length(), Emoji.EmojiSpan.class);
+                    if (spans != null && spans.length > 0) {
+                        int start = ssb.getSpanStart(spans[0]);
+                        int end = ssb.getSpanEnd(spans[0]);
+                        if (start >= 0 && end > start) {
+                            return ssb.subSequence(start, end);
+                        }
+                    }
+                }
+            }
+            SpannableStringBuilder ssb = new SpannableStringBuilder(" ");
+            ColoredImageSpan span = new ColoredImageSpan(R.drawable.msg_folders, ColoredImageSpan.ALIGN_CENTER);
+            ssb.setSpan(span, 0, 1, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return ssb;
+        }
+
+        CharSequence title = new SpannableStringBuilder(t != null ? t : "");
         title = Emoji.replaceEmoji(title, textPaint.getFontMetricsInt(), false);
         title = MessageObject.replaceAnimatedEmoji(title, e, textPaint.getFontMetricsInt());
         return title;
@@ -1358,6 +1398,14 @@ public class FilterTabsView extends FrameLayout {
 
     public int getCurrentTabId() {
         return selectedTabId;
+    }
+
+    public CharSequence getTabTitle(int id) {
+        int position = idToPosition.get(id, -1);
+        if (position >= 0 && position < tabs.size()) {
+            return tabs.get(position).title;
+        }
+        return null;
     }
 
     public int getFirstTabId() {

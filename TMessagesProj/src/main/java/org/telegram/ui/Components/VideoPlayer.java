@@ -10,6 +10,8 @@ package org.telegram.ui.Components;
 
 import static org.telegram.messenger.LocaleController.getString;
 
+import org.telegram.messenger.HundredGramConfig;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -435,6 +437,14 @@ public class VideoPlayer implements Player.Listener, VideoListener, AnalyticsLis
     }
 
     public static Quality getSavedQuality(ArrayList<Quality> qualities, MessageObject messageObject) {
+        if (HundredGramConfig.preferOriginalQuality && qualities != null) {
+            for (int i = 0; i < qualities.size(); i++) {
+                Quality quality = qualities.get(i);
+                if (quality != null && quality.original) {
+                    return quality;
+                }
+            }
+        }
         if (messageObject == null) return null;
         return getSavedQuality(qualities, messageObject.getDialogId(), messageObject.getId());
     }

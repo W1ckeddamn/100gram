@@ -1,7 +1,10 @@
 package org.telegram.ui;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
 import android.view.View;
@@ -84,6 +87,286 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
         items.add(UItem.asHeader(LocaleController.getString("WhatsNewCurrentVersion", R.string.WhatsNewCurrentVersion)));
 
         items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_settings,
+                LocaleController.getString("WhatsNewUiElevationAndSearchTitle", R.string.WhatsNewUiElevationAndSearchTitle),
+                LocaleController.getString("WhatsNewUiElevationAndSearchDesc", R.string.WhatsNewUiElevationAndSearchDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSettingsActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_usersearch,
+                LocaleController.getString("WhatsNewActivitySimulatorTitle", R.string.WhatsNewActivitySimulatorTitle),
+                LocaleController.getString("WhatsNewActivitySimulatorDesc", R.string.WhatsNewActivitySimulatorDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramActivitySimulatorActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_folders,
+                LocaleController.getString("WhatsNewBatch6Title", R.string.WhatsNewBatch6Title),
+                LocaleController.getString("WhatsNewBatch6Desc", R.string.WhatsNewBatch6Desc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_channel,
+                LocaleController.getString("WhatsNewBatch5Title", R.string.WhatsNewBatch5Title),
+                LocaleController.getString("WhatsNewBatch5Desc", R.string.WhatsNewBatch5Desc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> com.exteragram.messenger.feed.ui.FeedActivity.presentFeed(this)
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.outline_header_search,
+                LocaleController.getString("WhatsNewRegexAndMention", R.string.WhatsNewRegexAndMention),
+                LocaleController.getString("WhatsNewRegexAndMentionDesc", R.string.WhatsNewRegexAndMentionDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                null
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_folders,
+                LocaleController.getString("WhatsNewSavePresets", R.string.WhatsNewSavePresets),
+                LocaleController.getString("WhatsNewSavePresetsDesc", R.string.WhatsNewSavePresetsDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_VAULT))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_views,
+                LocaleController.getString("WhatsNewAyuGramSpyGhost", R.string.WhatsNewAyuGramSpyGhost),
+                LocaleController.getString("WhatsNewAyuGramSpyGhostDesc", R.string.WhatsNewAyuGramSpyGhostDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_GHOST))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.menu_tag_filter,
+                LocaleController.getString("WhatsNewContentFilter", R.string.WhatsNewContentFilter),
+                LocaleController.getString("WhatsNewContentFilterDesc", R.string.WhatsNewContentFilterDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramContentFilterActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_clear_input,
+                LocaleController.getString("WhatsNewDeletedMark", R.string.WhatsNewDeletedMark),
+                LocaleController.getString("WhatsNewDeletedMarkDesc", R.string.WhatsNewDeletedMarkDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_edit,
+                LocaleController.getString("WhatsNewEditHistoryDiff", R.string.WhatsNewEditHistoryDiff),
+                LocaleController.getString("WhatsNewEditHistoryDiffDesc", R.string.WhatsNewEditHistoryDiffDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_PRIVACY))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_block2,
+                LocaleController.getString("WhatsNewShadowban", R.string.WhatsNewShadowban),
+                LocaleController.getString("WhatsNewShadowbanDesc", R.string.WhatsNewShadowbanDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramShadowbanActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_channel,
+                LocaleController.getString("WhatsNewBatch4Features", R.string.WhatsNewBatch4Features),
+                LocaleController.getString("WhatsNewBatch4FeaturesDesc", R.string.WhatsNewBatch4FeaturesDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_notifications,
+                LocaleController.getString("WhatsNewBatch3Features", R.string.WhatsNewBatch3Features),
+                LocaleController.getString("WhatsNewBatch3FeaturesDesc", R.string.WhatsNewBatch3FeaturesDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_openprofile,
+                LocaleController.getString("WhatsNewBatch2Features", R.string.WhatsNewBatch2Features),
+                LocaleController.getString("WhatsNewBatch2FeaturesDesc", R.string.WhatsNewBatch2FeaturesDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_bot,
+                LocaleController.getString("WhatsNewInlineMathAndIp", R.string.WhatsNewInlineMathAndIp),
+                LocaleController.getString("WhatsNewInlineMathAndIpDesc", R.string.WhatsNewInlineMathAndIpDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_notifications,
+                LocaleController.getString("WhatsNewAccountNotifications", R.string.WhatsNewAccountNotifications),
+                LocaleController.getString("WhatsNewAccountNotificationsDesc", R.string.WhatsNewAccountNotificationsDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new NotificationsSettingsActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_calendar2,
+                LocaleController.getString("WhatsNewExteraFeatures", R.string.WhatsNewExteraFeatures),
+                LocaleController.getString("WhatsNewExteraFeaturesDesc", R.string.WhatsNewExteraFeaturesDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.menu_reply,
+                LocaleController.getString("WhatsNewSwipeActions", R.string.WhatsNewSwipeActions),
+                LocaleController.getString("WhatsNewSwipeActionsDesc", R.string.WhatsNewSwipeActionsDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSwipeActionsActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_theme,
+                LocaleController.getString("WhatsNewSettingsRedesign", R.string.WhatsNewSettingsRedesign),
+                LocaleController.getString("WhatsNewSettingsRedesignDesc", R.string.WhatsNewSettingsRedesignDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSettingsActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_channel,
+                LocaleController.getString("WhatsNewMediaAndStorageErgonomics", R.string.WhatsNewMediaAndStorageErgonomics),
+                LocaleController.getString("WhatsNewMediaAndStorageErgonomicsDesc", R.string.WhatsNewMediaAndStorageErgonomicsDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_archive,
+                LocaleController.getString("WhatsNewNavigationAndStickers", R.string.WhatsNewNavigationAndStickers),
+                LocaleController.getString("WhatsNewNavigationAndStickersDesc", R.string.WhatsNewNavigationAndStickersDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_video,
+                LocaleController.getString("WhatsNewMediaAndBubbles", R.string.WhatsNewMediaAndBubbles),
+                LocaleController.getString("WhatsNewMediaAndBubblesDesc", R.string.WhatsNewMediaAndBubblesDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_MEDIA))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_folders,
+                LocaleController.getString("WhatsNewHeaderTabs", R.string.WhatsNewHeaderTabs),
+                LocaleController.getString("WhatsNewHeaderTabsDesc", R.string.WhatsNewHeaderTabsDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_edit,
+                LocaleController.getString("WhatsNewChatsInput", R.string.WhatsNewChatsInput),
+                LocaleController.getString("WhatsNewChatsInputDesc", R.string.WhatsNewChatsInputDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_ACTIONS))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_bot,
+                LocaleController.getString("WhatsNewPlugins", R.string.WhatsNewPlugins),
+                LocaleController.getString("WhatsNewPluginsDesc", R.string.WhatsNewPluginsDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramPluginsActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_translate,
+                LocaleController.getString("WhatsNewServices", R.string.WhatsNewServices),
+                LocaleController.getString("WhatsNewServicesDesc", R.string.WhatsNewServicesDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramServicesSettingsActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_bot,
+                LocaleController.getString("WhatsNewAiAssistant", R.string.WhatsNewAiAssistant),
+                LocaleController.getString("WhatsNewAiAssistantDesc", R.string.WhatsNewAiAssistantDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramAiSettingsActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_theme,
+                LocaleController.getString("WhatsNewAvatarCornersAndNav", R.string.WhatsNewAvatarCornersAndNav),
+                LocaleController.getString("WhatsNewAvatarCornersAndNavDesc", R.string.WhatsNewAvatarCornersAndNavDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
                 R.drawable.msg_allowspeak,
                 LocaleController.getString("WhatsNewLocalStt", R.string.WhatsNewLocalStt),
                 LocaleController.getString("WhatsNewLocalSttDesc", R.string.WhatsNewLocalSttDesc),
@@ -99,7 +382,7 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
                 LocaleController.getString("WhatsNewStickerGifSizeDesc", R.string.WhatsNewStickerGifSizeDesc),
                 LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
                 true,
-                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_MEDIA))
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
         )));
         items.add(UItem.asShadow(null));
 
@@ -124,12 +407,12 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
         items.add(UItem.asShadow(null));
 
         items.add(UItem.asCustom(createFeatureCard(context,
-                R.drawable.msg_permissions,
-                LocaleController.getString("WhatsNewSettingsAudit", R.string.WhatsNewSettingsAudit),
-                LocaleController.getString("WhatsNewSettingsAuditDesc", R.string.WhatsNewSettingsAuditDesc),
+                R.drawable.msg_archive,
+                LocaleController.getString("HundredGramBackupTitle", R.string.HundredGramBackupTitle),
+                LocaleController.getString("HundredGramBackupSubtitle", R.string.HundredGramBackupSubtitle),
                 LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
                 true,
-                null
+                v -> presentFragment(new HundredGramBackupActivity())
         )));
         items.add(UItem.asShadow(null));
 
@@ -154,12 +437,32 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
         items.add(UItem.asShadow(null));
 
         items.add(UItem.asCustom(createFeatureCard(context,
-                R.drawable.msg_download,
-                LocaleController.getString("WhatsNewSaveToGallery", R.string.WhatsNewSaveToGallery),
-                LocaleController.getString("WhatsNewSaveToGalleryDesc", R.string.WhatsNewSaveToGalleryDesc),
+                R.drawable.msg_theme,
+                LocaleController.getString("HundredGramIconPacks", R.string.HundredGramIconPacks),
+                LocaleController.getString("HundredGramIconPacksSub", R.string.HundredGramIconPacksSub),
                 LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
                 true,
-                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_VAULT))
+                v -> presentFragment(new HundredGramIconPacksActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.weather_cloudy,
+                LocaleController.getString("WhatsNewPillStackWidgets", R.string.WhatsNewPillStackWidgets),
+                LocaleController.getString("WhatsNewPillStackWidgetsDesc", R.string.WhatsNewPillStackWidgetsDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramPillStackSettingsActivity())
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_permissions,
+                LocaleController.getString("WhatsNewTelemetryKillswitch", R.string.WhatsNewTelemetryKillswitch),
+                LocaleController.getString("WhatsNewTelemetryKillswitchDesc", R.string.WhatsNewTelemetryKillswitchDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_PRIVACY))
         )));
         items.add(UItem.asShadow(null));
 
@@ -295,6 +598,14 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
             if (isNew) {
                 badgeBg.setColor(accentColor);
                 badge.setTextColor(Theme.getColor(Theme.key_featuredStickers_buttonText));
+                Drawable star = context.getResources().getDrawable(R.drawable.input_ai_star);
+                if (star != null) {
+                    star = star.mutate();
+                    star.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_featuredStickers_buttonText), PorterDuff.Mode.SRC_IN));
+                    star.setBounds(0, 0, AndroidUtilities.dp(10), AndroidUtilities.dp(10));
+                    badge.setCompoundDrawables(star, null, null, null);
+                    badge.setCompoundDrawablePadding(AndroidUtilities.dp(4));
+                }
             } else {
                 badgeBg.setColor(Theme.multAlpha(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon), 0.15f));
                 badge.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2));
@@ -319,11 +630,19 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
         // Если элемент кликабельный, показываем стрелочку перехода внизу
         if (clickListener != null) {
             TextView actionHint = new TextView(context);
-            actionHint.setText(LocaleController.getString("Settings", R.string.Settings) + " →");
+            actionHint.setText(LocaleController.getString("Settings", R.string.Settings));
             actionHint.setTextSize(12.5f);
             actionHint.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
             actionHint.setTextColor(accentColor);
-            actionHint.setGravity(Gravity.RIGHT);
+            actionHint.setGravity(Gravity.RIGHT | Gravity.CENTER_VERTICAL);
+            Drawable arrow = context.getResources().getDrawable(R.drawable.msg_arrowright);
+            if (arrow != null) {
+                arrow = arrow.mutate();
+                arrow.setColorFilter(new PorterDuffColorFilter(accentColor, PorterDuff.Mode.SRC_IN));
+                arrow.setBounds(0, 0, AndroidUtilities.dp(12), AndroidUtilities.dp(12));
+                actionHint.setCompoundDrawables(null, null, arrow, null);
+                actionHint.setCompoundDrawablePadding(AndroidUtilities.dp(4));
+            }
             card.addView(actionHint, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 8, 0, 0));
         }
 

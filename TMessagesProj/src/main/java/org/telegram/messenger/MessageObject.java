@@ -6041,6 +6041,8 @@ public class MessageObject {
 
         if (messageText == null) {
             messageText = "";
+        } else {
+            messageText = AndroidUtilities.filterZalgo(messageText);
         }
 
         isEmbedVideoCached = null;
@@ -9845,6 +9847,10 @@ public class MessageObject {
 
     public int getRealId() {
         return messageOwner.realId != 0 ? messageOwner.realId : messageOwner.id;
+    }
+
+    public int getFeedRealId() {
+        return this.searchType == 4 ? getRealId() : getId();
     }
 
     public static long getMessageSize(TLRPC.Message message) {

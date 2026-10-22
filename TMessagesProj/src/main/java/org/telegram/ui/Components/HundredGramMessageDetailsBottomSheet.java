@@ -118,6 +118,19 @@ public class HundredGramMessageDetailsBottomSheet extends BottomSheetWithRecycle
             items.add(UItem.asButton(4, R.drawable.msg_calendar2, LocaleController.getString("Date", R.string.Date), LocaleController.formatDateTime(messageObject.messageOwner.date, false)));
         }
 
+        // Exact Read Date (AyuGram Spy)
+        if (messageObject.isOutOwner() && !messageObject.isUnread()) {
+            int readDate = org.telegram.messenger.MessagesStorage.getInstance(currentAccount).getMessageReadDateSync(dialogId, messageObject.getId());
+            if (readDate > 0) {
+                String readText = LocaleController.formatDateTime(readDate, false);
+                int delta = readDate - messageObject.messageOwner.date;
+                if (delta > 0) {
+                    readText += " (+" + formatDeltaTime(delta) + ")";
+                }
+                items.add(UItem.asButton(18, R.drawable.msg_views, LocaleController.getString("MessageReadDate", R.string.MessageReadDate), readText));
+            }
+        }
+
         // Edited Date
         if (messageObject.messageOwner.edit_date > 0 && messageObject.messageOwner.edit_date != messageObject.messageOwner.date && !messageObject.messageOwner.edit_hide) {
             items.add(UItem.asButton(5, R.drawable.msg_edit, LocaleController.getString("EditedDate", R.string.EditedDate), LocaleController.formatDateTime(messageObject.messageOwner.edit_date, false)));
@@ -236,5 +249,24 @@ public class HundredGramMessageDetailsBottomSheet extends BottomSheetWithRecycle
         }
 
         items.add(UItem.asShadow(null));
+    }
+
+    private String formatDeltaTime(int seconds) {
+        if (seconds < 60) {
+            return seconds + "s";
+        }
+        int minutes = seconds / 60;
+        if (minutes < 60) {
+            int remSec = seconds % 60;
+            return remSec > 0 ? (minutes + "m " + remSec + "s") : (minutes + "m");
+        }
+        int hours = minutes / 60;
+        int remMin = minutes % 60;
+        if (hours < 24) {
+            return remMin > 0 ? (hours + "h " + remMin + "m") : (hours + "h");
+        }
+        int days = hours / 24;
+        int remHours = hours % 24;
+        return remHours > 0 ? (days + "d " + remHours + "h") : (days + "d");
     }
 }

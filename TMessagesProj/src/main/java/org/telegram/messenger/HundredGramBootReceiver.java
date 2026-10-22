@@ -18,6 +18,7 @@ public class HundredGramBootReceiver extends BroadcastReceiver {
                     || "android.intent.action.QUICKBOOT_POWERON".equals(action)
                     || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action)) {
                 ApplicationLoader.postInitApplication();
+                HundredGramActivitySimulator.onBoot();
                 if (HundredGramConfig.isPersistentBackgroundEnabled()) {
                     Intent serviceIntent = new Intent(context, NotificationsService.class);
                     ContextCompat.startForegroundService(context, serviceIntent);

@@ -2,13 +2,18 @@ package org.telegram.ui;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -136,9 +141,17 @@ public class HundredGramNetworkBoostActivity extends BaseFragment {
         LinearLayout thCol = new LinearLayout(context);
         thCol.setOrientation(LinearLayout.VERTICAL);
         TextView thLabel = new TextView(context);
-        thLabel.setText("⚡ " + LocaleController.getString("NetworkBoostActiveThreads", R.string.NetworkBoostActiveThreads));
+        thLabel.setText(LocaleController.getString("NetworkBoostActiveThreads", R.string.NetworkBoostActiveThreads));
         thLabel.setTextSize(12);
         thLabel.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2));
+        Drawable thIcon = ContextCompat.getDrawable(context, R.drawable.msg_instant);
+        if (thIcon != null) {
+            thIcon = thIcon.mutate();
+            thIcon.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2), PorterDuff.Mode.SRC_IN));
+            thIcon.setBounds(0, 0, AndroidUtilities.dp(12), AndroidUtilities.dp(12));
+            thLabel.setCompoundDrawables(thIcon, null, null, null);
+            thLabel.setCompoundDrawablePadding(AndroidUtilities.dp(4));
+        }
         activeThreadsText = new TextView(context);
         activeThreadsText.setText("0");
         activeThreadsText.setTextSize(16);
@@ -155,11 +168,19 @@ public class HundredGramNetworkBoostActivity extends BaseFragment {
         btnLayout.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(10), Theme.getColor(Theme.key_featuredStickers_addButton), Theme.getColor(Theme.key_featuredStickers_addButtonPressed)));
         btnLayout.setPadding(AndroidUtilities.dp(12), AndroidUtilities.dp(10), AndroidUtilities.dp(12), AndroidUtilities.dp(10));
         TextView btnText = new TextView(context);
-        btnText.setText("⚡ " + LocaleController.getString("NetworkBoostSpeedTest", R.string.NetworkBoostSpeedTest));
+        btnText.setText(LocaleController.getString("NetworkBoostSpeedTest", R.string.NetworkBoostSpeedTest));
         btnText.setTextSize(14);
         btnText.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         btnText.setTextColor(Color.WHITE);
         btnText.setGravity(Gravity.CENTER);
+        Drawable speedIcon = ContextCompat.getDrawable(context, R.drawable.msg_instant);
+        if (speedIcon != null) {
+            speedIcon = speedIcon.mutate();
+            speedIcon.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
+            speedIcon.setBounds(0, 0, AndroidUtilities.dp(16), AndroidUtilities.dp(16));
+            btnText.setCompoundDrawables(speedIcon, null, null, null);
+            btnText.setCompoundDrawablePadding(AndroidUtilities.dp(6));
+        }
         btnLayout.addView(btnText, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
         speedTestButton = btnLayout;
         speedTestButton.setOnClickListener(v -> runSpeedTest());

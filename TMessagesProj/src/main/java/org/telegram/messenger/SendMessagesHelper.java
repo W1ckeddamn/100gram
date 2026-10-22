@@ -1751,6 +1751,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         if (prevSize != 0 && unsentMessages.size() == 0) {
             checkUnsentMessages();
         }
+        if (HundredGramConfig.ghostOnline && HundredGramConfig.sendOfflineAfterOnline && !HundredGramActivitySimulator.getInstance(currentAccount).isSimulationActive()) {
+            MessagesController.getInstance(currentAccount).sendOffline();
+        }
     }
 
     public void processForwardFromMyName(MessageObject messageObject, long did, long payStars, long monoForumPeerId, MessageSuggestionParams suggestionParams) {
@@ -4184,6 +4187,12 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
     }
 
     public void sendMessage(SendMessageParams sendMessageParams) {
+        if (sendMessageParams != null) {
+            SendMessageParams hookedParams = org.telegram.messenger.plugins.PluginsController.getInstance().executeSendMessageHook(currentAccount, sendMessageParams);
+            if (hookedParams == null) {
+                return;
+            }
+        }
         if (HundredGramConfig.ghostReadMessages && HundredGramConfig.ghostReadOnReply && sendMessageParams != null && sendMessageParams.peer != 0) {
             getMessagesController().markIncomingDialogMessagesAsReadServer(sendMessageParams.peer);
         }
@@ -11031,7 +11040,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                 }
 
                                 TLRPC.PhotoSize size = null;
-                                boolean isRound = videoEditedInfo != null && videoEditedInfo.roundVideo;
+                                boolean isRound = (videoEditedInfo != null && videoEditedInfo.roundVideo) || (info.path != null && (info.path.contains("camera_tmp") || info.path.contains("roundVideo") || info.path.contains("round_")));
                                 if (thumb != null) {
                                     if (isRound) {
                                         int roundThumbSide = isEncrypted || info.ttl != 0 ? 90 : 320;
@@ -11619,6 +11628,25 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                     attributeVideo.h = temp;
                 }
             }
+            if ((videoEditedInfo != null && videoEditedInfo.roundVideo) || (videoPath != null && (videoPath.contains("camera_tmp") || videoPath.contains("roundVideo") || videoPath.contains("round_")))) {
+                attributeVideo.round_message = true;
+                int roundSize = Math.min(attributeVideo.w, attributeVideo.h);
+                if (roundSize <= 0) {
+                    roundSize = 360;
+                }
+                if (roundSize > 480) {
+                    roundSize = 480;
+                }
+                attributeVideo.w = roundSize;
+                attributeVideo.h = roundSize;
+                if (videoEditedInfo != null) {
+                    videoEditedInfo.rotationValue = 0;
+                    videoEditedInfo.resultWidth = roundSize;
+                    videoEditedInfo.resultHeight = roundSize;
+                    videoEditedInfo.originalWidth = roundSize;
+                    videoEditedInfo.originalHeight = roundSize;
+                }
+            }
             infoObtained = true;
         } catch (Exception e) {
             FileLog.e(e);
@@ -11824,7 +11852,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
 
             boolean isEncrypted = DialogObject.isEncryptedDialog(dialogId);
 
-            boolean isRound = videoEditedInfo != null && videoEditedInfo.roundVideo;
+            boolean isRound = (videoEditedInfo != null && videoEditedInfo.roundVideo) || (videoPath != null && (videoPath.contains("camera_tmp") || videoPath.contains("roundVideo") || videoPath.contains("round_")));
             Bitmap thumb = null;
             String thumbKey = null;
 

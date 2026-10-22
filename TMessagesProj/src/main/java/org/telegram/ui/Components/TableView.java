@@ -35,6 +35,7 @@ import org.telegram.messenger.Emoji;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserObject;
@@ -180,11 +181,23 @@ public class TableView extends TableLayout {
             iconDrawable.setIconSize(dp(16), dp(16));
             avatarSpan.setImageDrawable(iconDrawable);
         } else if (did >= 0) {
-            final TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(did);
+            TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(did);
+            if (user == null) {
+                user = MessagesStorage.getInstance(currentAccount).getUser(did);
+                if (user != null) {
+                    MessagesController.getInstance(currentAccount).putUser(user, true);
+                }
+            }
             username = UserObject.getUserName(user);
             avatarSpan.setUser(user);
         } else {
-            final TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-did);
+            TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-did);
+            if (chat == null) {
+                chat = MessagesStorage.getInstance(currentAccount).getChat(-did);
+                if (chat != null) {
+                    MessagesController.getInstance(currentAccount).putChat(chat, true);
+                }
+            }
             username = chat == null ? "" : chat.title;
             avatarSpan.setChat(chat);
         }
@@ -295,12 +308,24 @@ public class TableView extends TableLayout {
         } else if (did >= 0) {
             unknown = false;
             TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(did);
+            if (user == null) {
+                user = MessagesStorage.getInstance(currentAccount).getUser(did);
+                if (user != null) {
+                    MessagesController.getInstance(currentAccount).putUser(user, true);
+                }
+            }
             deleted = user == null;
             username = UserObject.getUserName(user);
             avatarSpan.setUser(user);
         } else {
             unknown = false;
             TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-did);
+            if (chat == null) {
+                chat = MessagesStorage.getInstance(currentAccount).getChat(-did);
+                if (chat != null) {
+                    MessagesController.getInstance(currentAccount).putChat(chat, true);
+                }
+            }
             deleted = chat == null;
             username = chat == null ? "" : chat.title;
             avatarSpan.setChat(chat);

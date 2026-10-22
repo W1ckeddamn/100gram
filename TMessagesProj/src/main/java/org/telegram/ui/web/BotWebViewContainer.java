@@ -38,6 +38,7 @@ import android.os.Environment;
 import android.os.Message;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
+import com.exteragram.messenger.adblock.WebAdBlocker;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.TypedValue;
@@ -3699,6 +3700,7 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
     }
 
     public static class MyWebView extends WebView {
+        public final WebAdBlocker adBlocker;
         private final int tag = tags++;
         private boolean isPageLoaded;
         private Runnable whenPageLoaded;
@@ -3745,6 +3747,7 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
             super(context);
             this.bot = bot;
             d("created new webview " + this);
+            this.adBlocker = bot ? null : new WebAdBlocker(this);
 
             setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
@@ -3955,6 +3958,12 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
                         }
                     }
                     firstRequest = false;
+                    if (adBlocker != null && request != null) {
+                        WebResourceResponse intercepted = adBlocker.interceptRequest(request);
+                        if (intercepted != null) {
+                            return intercepted;
+                        }
+                    }
                     return super.shouldInterceptRequest(view, request);
                 }
 
@@ -3973,6 +3982,9 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
                     } else {
                         injectedJS = true;
                         evaluateJS(readRes(R.raw.webview_app_ext).replace("$DEBUG$", "" + BuildVars.DEBUG_VERSION));
+                    }
+                    if (adBlocker != null) {
+                        adBlocker.injectCosmetics(url);
                     }
                     super.onPageCommitVisible(view, url);
                 }
@@ -4134,8 +4146,11 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
                     lastBackgroundColorGot = false;
                     lastFaviconGot = false;
                     d("onPageStarted " + url);
+                    if (adBlocker != null) {
+                        adBlocker.onPageStarted(url);
+                    }
                     if (botWebViewContainer != null && errorShown && (errorShownAt == null || !TextUtils.equals(errorShownAt, url))) {
-                        AndroidUtilities.runOnUIThread(resetErrorRunnable, 40);
+                        AndroidUtilities.runOnUIThread(resetErrorRunnable, (adBlocker == null || !adBlocker.consumePageBlocked()) ? 40 : 540);
                     }
                     if (botWebViewContainer != null) {
                         botWebViewContainer.onURLChanged(dangerousUrl ? urlFallback : url, !canGoBack(), !canGoForward());
@@ -4761,6 +4776,9 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
                     @Override
                     public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
                         d("onDownloadStart " + url + " " + userAgent + " " + contentDisposition + " " + mimeType + " " + contentLength);
+                        if (adBlocker != null) {
+                            adBlocker.onDownloadStart();
+                        }
                         try {
                             if (url.startsWith("blob:")) {
                                 // we can't get blob binary from webview :(

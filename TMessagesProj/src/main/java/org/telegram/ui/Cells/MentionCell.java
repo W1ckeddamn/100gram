@@ -164,6 +164,23 @@ public class MentionCell extends LinearLayout {
         nameTextView.setText(text);
     }
 
+    public void setCustom(String name, String username, int iconRes) {
+        resetEmojiSuggestion();
+        if (iconRes != 0) {
+            imageView.setImageResource(iconRes);
+            imageView.setVisibility(VISIBLE);
+        } else {
+            imageView.setVisibility(INVISIBLE);
+        }
+        nameTextView.setText(name);
+        if (!TextUtils.isEmpty(username)) {
+            usernameTextView.setText(username);
+            usernameTextView.setVisibility(VISIBLE);
+        } else {
+            usernameTextView.setVisibility(INVISIBLE);
+        }
+    }
+
     @Override
     public void invalidate() {
         super.invalidate();

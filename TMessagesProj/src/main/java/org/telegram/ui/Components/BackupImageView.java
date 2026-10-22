@@ -49,6 +49,11 @@ public class BackupImageView extends View {
     protected boolean hasBlur;
     protected boolean blurAllowed;
     public boolean drawFromStart;
+    private boolean isAvatar;
+
+    public void setAvatar(boolean avatar) {
+        this.isAvatar = avatar;
+    }
 
     public BackupImageView(Context context) {
         super(context);
@@ -162,11 +167,13 @@ public class BackupImageView extends View {
     }
 
     public void setForUserOrChat(TLObject object, AvatarDrawable avatarDrawable) {
+        isAvatar = true;
         imageReceiver.setForUserOrChat(object, avatarDrawable);
         onNewImageSet();
     }
 
     public void setForUserOrChat(TLObject object, AvatarDrawable avatarDrawable, Object parent) {
+        isAvatar = true;
         imageReceiver.setForUserOrChat(object, avatarDrawable, parent);
         onNewImageSet();
     }
@@ -256,6 +263,9 @@ public class BackupImageView extends View {
     }
 
     public void setRoundRadius(int value) {
+        if (isAvatar && org.telegram.messenger.HundredGramConfig.avatarCorners < 28.0f) {
+            value = Math.round((org.telegram.messenger.HundredGramConfig.avatarCorners / 28.0f) * value);
+        }
         imageReceiver.setRoundRadius(value);
         if (blurAllowed) {
             blurImageReceiver.setRoundRadius(value);

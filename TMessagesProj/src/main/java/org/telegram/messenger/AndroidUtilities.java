@@ -424,6 +424,65 @@ public class AndroidUtilities {
         }
     }
 
+    public static CharSequence filterZalgo(CharSequence text) {
+        if (!HundredGramConfig.filterZalgo || text == null || text.length() < 3) {
+            return text;
+        }
+        int len = text.length();
+        int consecutiveMarks = 0;
+        boolean hasExcessive = false;
+        for (int i = 0; i < len; i++) {
+            char c = text.charAt(i);
+            int type = Character.getType(c);
+            if (type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK || type == Character.ENCLOSING_MARK) {
+                consecutiveMarks++;
+                if (consecutiveMarks > 2) {
+                    hasExcessive = true;
+                    break;
+                }
+            } else {
+                consecutiveMarks = 0;
+            }
+        }
+        if (!hasExcessive) {
+            return text;
+        }
+        if (text instanceof android.text.Spannable) {
+            android.text.SpannableStringBuilder ssb = new android.text.SpannableStringBuilder(text);
+            consecutiveMarks = 0;
+            for (int i = ssb.length() - 1; i >= 0; i--) {
+                char c = ssb.charAt(i);
+                int type = Character.getType(c);
+                if (type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK || type == Character.ENCLOSING_MARK) {
+                    consecutiveMarks++;
+                    if (consecutiveMarks > 2) {
+                        ssb.delete(i, i + 1);
+                    }
+                } else {
+                    consecutiveMarks = 0;
+                }
+            }
+            return ssb;
+        } else {
+            StringBuilder sb = new StringBuilder(len);
+            consecutiveMarks = 0;
+            for (int i = 0; i < len; i++) {
+                char c = text.charAt(i);
+                int type = Character.getType(c);
+                if (type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK || type == Character.ENCLOSING_MARK) {
+                    consecutiveMarks++;
+                    if (consecutiveMarks <= 2) {
+                        sb.append(c);
+                    }
+                } else {
+                    consecutiveMarks = 0;
+                    sb.append(c);
+                }
+            }
+            return sb.toString();
+        }
+    }
+
     public static CharSequence ellipsizeCenterEnd(CharSequence str, String query, int availableWidth, TextPaint textPaint, int maxSymbols) {
         try {
             int lastIndex = str.length();

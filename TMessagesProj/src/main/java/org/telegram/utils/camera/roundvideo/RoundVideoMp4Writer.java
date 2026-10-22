@@ -63,6 +63,14 @@ final class RoundVideoMp4Writer {
         return file;
     }
 
+    synchronized boolean isInitialized() {
+        return builder != null;
+    }
+
+    synchronized boolean hasValidData() {
+        return builder != null && videoSamples > 0 && (!includeAudio || audioSamples > 0);
+    }
+
     synchronized void setTrackFormat(boolean video, @NonNull MediaFormat format) throws IOException {
         if (finished) return;
         if (builder != null) {
@@ -134,6 +142,22 @@ final class RoundVideoMp4Writer {
         }
     }
 
+    synchronized void cancel() {
+        if (finished) return;
+        finished = true;
+        pendingSamples.clear();
+        if (builder != null) {
+            try {
+                builder.finishMovie();
+            } catch (Exception ignore) {
+            }
+            builder = null;
+        }
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
     synchronized void closeForReplacement() throws IOException {
         suppressAvailableNotifications = true;
         try {
@@ -148,6 +172,7 @@ final class RoundVideoMp4Writer {
         Mp4Movie movie = new Mp4Movie();
         movie.setCacheFile(file);
         movie.setSize(outputSize, outputSize);
+        movie.setRotation(0);
         try {
             builder = new MP4Builder().createMovie(movie, true, false);
             videoTrack = builder.addTrack(videoFormat, false);

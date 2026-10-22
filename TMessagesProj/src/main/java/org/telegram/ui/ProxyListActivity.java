@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Keep;
@@ -44,6 +45,8 @@ import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
+import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ProxyRotationController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
@@ -56,6 +59,7 @@ import org.telegram.ui.ActionBar.BackDrawable;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
+import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Cells.ShadowSectionCell;
 import org.telegram.ui.Cells.TextCheckCell;
@@ -104,6 +108,8 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
     private int rotationTimeoutInfoRow;
     private int callsDetailRow;
     private int deleteAllRow;
+    private int proxyDisableRow;
+    private int proxyDisableShadowRow;
 
     private ItemTouchHelper itemTouchHelper;
     private NumberTextView selectedCountTextView;
@@ -496,6 +502,51 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
                 ConnectionsManager.setProxySettings(useProxySettings, SharedConfig.currentProxy.address, SharedConfig.currentProxy.port, SharedConfig.currentProxy.username, SharedConfig.currentProxy.password, SharedConfig.currentProxy.secret);
             } else if (position == proxyAddRow) {
                 presentFragment(new ProxySettingsActivity());
+            } else if (position == proxyDisableRow) {
+                if (getParentActivity() == null) {
+                    return;
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                builder.setTitle(getString(R.string.ProxyDisableOn));
+
+                final LinearLayout linearLayout = new LinearLayout(getParentActivity());
+                linearLayout.setOrientation(LinearLayout.VERTICAL);
+
+                final String[] labels = {
+                    getString(R.string.ProxyDisableOnVpn),
+                    getString(R.string.ProxyDisableOnMobileData),
+                    getString(R.string.ProxyDisableOnWiFi)
+                };
+                final boolean[] checked = {
+                    HundredGramConfig.proxyDisableVpn,
+                    HundredGramConfig.proxyDisableMobile,
+                    HundredGramConfig.proxyDisableWifi
+                };
+
+                for (int i = 0; i < labels.length; i++) {
+                    CheckBoxCell checkBoxCell = new CheckBoxCell(getParentActivity(), 4, 21, null);
+                    checkBoxCell.setText(labels[i], null, checked[i], i < labels.length - 1);
+                    checkBoxCell.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector), 2));
+                    final int index = i;
+                    checkBoxCell.setOnClickListener(v -> {
+                        checkBoxCell.setChecked(!checkBoxCell.isChecked(), true);
+                        checked[index] = checkBoxCell.isChecked();
+                    });
+                    linearLayout.addView(checkBoxCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+                }
+
+                builder.setView(linearLayout);
+                builder.setNegativeButton(getString(R.string.Cancel), null);
+                builder.setPositiveButton(getString(R.string.OK), (dialog, which) -> {
+                    int mask = 0;
+                    if (checked[0]) mask |= HundredGramConfig.PROXY_DISABLE_VPN;
+                    if (checked[1]) mask |= HundredGramConfig.PROXY_DISABLE_MOBILE;
+                    if (checked[2]) mask |= HundredGramConfig.PROXY_DISABLE_WIFI;
+                    HundredGramConfig.setProxyDisableMask(mask);
+                    ApplicationLoader.checkProxyForNetworkState();
+                    listAdapter.notifyItemChanged(proxyDisableRow);
+                });
+                showDialog(builder.create());
             } else if (position == deleteAllRow) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
                 builder.setMessage(getString(R.string.DeleteAllProxiesConfirm));
@@ -648,6 +699,8 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
             useProxyShadowRow = -1;
         }
         connectionsHeaderRow = rowCount++;
+        proxyDisableRow = rowCount++;
+        proxyDisableShadowRow = rowCount++;
 
         if (notify) {
             proxyList.clear();
@@ -894,6 +947,8 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
                     } else if (position == deleteAllRow) {
                         textCell.setTextColor(Theme.getColor(Theme.key_text_RedRegular));
                         textCell.setText(getString(R.string.DeleteAllProxies), false);
+                    } else if (position == proxyDisableRow) {
+                        textCell.setTextAndValue(getString(R.string.ProxyDisableOn), getProxyDisableValue(), false);
                     }
                     break;
                 }
@@ -996,7 +1051,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int position = holder.getAdapterPosition();
-            return position == useProxyRow || position == rotationRow || position == callsRow || position == proxyAddRow || position == deleteAllRow || position >= proxyStartRow && position < proxyEndRow;
+            return position == useProxyRow || position == rotationRow || position == callsRow || position == proxyAddRow || position == deleteAllRow || position == proxyDisableRow || position >= proxyStartRow && position < proxyEndRow;
         }
 
         @Override
@@ -1058,6 +1113,10 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
                 return -10;
             } else if (position == rotationTimeoutInfoRow) {
                 return -11;
+            } else if (position == proxyDisableRow) {
+                return -12;
+            } else if (position == proxyDisableShadowRow) {
+                return -17;
             } else if (position >= proxyStartRow && position < proxyEndRow) {
                 return proxyList.get(position - proxyStartRow).hashCode();
             } else {
@@ -1067,9 +1126,9 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
 
         @Override
         public int getItemViewType(int position) {
-            if (position == useProxyShadowRow || position == proxyShadowRow) {
+            if (position == useProxyShadowRow || position == proxyShadowRow || position == proxyDisableShadowRow) {
                 return VIEW_TYPE_SHADOW;
-            } else if (position == proxyAddRow || position == deleteAllRow) {
+            } else if (position == proxyAddRow || position == deleteAllRow || position == proxyDisableRow) {
                 return VIEW_TYPE_TEXT_SETTING;
             } else if (position == useProxyRow || position == rotationRow || position == callsRow) {
                 return VIEW_TYPE_TEXT_CHECK;
@@ -1123,5 +1182,29 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
         themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{TextInfoPrivacyCell.class}, new String[]{"textView"}, null, null, null, Theme.key_windowBackgroundWhiteGrayText4));
 
         return themeDescriptions;
+    }
+
+    private String getProxyDisableValue() {
+        int mask = HundredGramConfig.proxyDisableMask;
+        if (mask == 0) {
+            return getString(R.string.ProxyDisableOnNever);
+        }
+        int all = HundredGramConfig.PROXY_DISABLE_VPN | HundredGramConfig.PROXY_DISABLE_MOBILE | HundredGramConfig.PROXY_DISABLE_WIFI;
+        if ((mask & all) == all) {
+            return getString(R.string.ProxyDisableOnAlways);
+        }
+        StringBuilder sb = new StringBuilder();
+        if ((mask & HundredGramConfig.PROXY_DISABLE_VPN) != 0) {
+            sb.append(getString(R.string.ProxyDisableOnVpn));
+        }
+        if ((mask & HundredGramConfig.PROXY_DISABLE_MOBILE) != 0) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(getString(R.string.ProxyDisableOnMobileData));
+        }
+        if ((mask & HundredGramConfig.PROXY_DISABLE_WIFI) != 0) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(getString(R.string.ProxyDisableOnWiFi));
+        }
+        return sb.toString();
     }
 }

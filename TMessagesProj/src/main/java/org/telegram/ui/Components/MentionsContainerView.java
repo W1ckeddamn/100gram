@@ -40,10 +40,12 @@ import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.VideoEditedInfo;
+import org.telegram.messenger.HundredGramMentionController;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Adapters.MentionsAdapter;
+import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Adapters.PaddedListAdapter;
 import org.telegram.ui.Business.QuickRepliesActivity;
 import org.telegram.ui.Cells.ContextLinkCell;
@@ -631,6 +633,14 @@ public class MentionsContainerView extends FrameLayout implements NotificationCe
                 Object parent = getAdapter().getItemParent(position);
                 String query = MessageObject.findAnimatedEmojiEmoticon(document);
                 delegate.onStickerSelected(document, query, parent);
+            } else if (object instanceof HundredGramMentionController.MentionAction) {
+                HundredGramMentionController.MentionAction action = (HundredGramMentionController.MentionAction) object;
+                delegate.replaceText(start, len, "", false);
+                BaseFragment fragment = getAdapter().parentFragment;
+                if (fragment instanceof ChatActivity) {
+                    ((ChatActivity) fragment).openMentionAllSheet(action.action == HundredGramMentionController.MentionAction.ACTION_ADMINS ? HundredGramMentionController.TARGET_ADMINS : HundredGramMentionController.TARGET_ALL);
+                }
+                return;
             } else if (object instanceof TLRPC.Chat) {
                 TLRPC.Chat chat = (TLRPC.Chat) object;
                 String username = ChatObject.getPublicUsername(chat);

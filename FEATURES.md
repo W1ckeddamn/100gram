@@ -25,6 +25,10 @@
     * Самоуничтожающиеся фото и видео («с горящим таймером») в личных и секретных чатах расшифровываются из временного кэша (`.enc` + `.enc.key` через AES-CTR) и могут быть экспортированы и сохранены навсегда.
 * **Защита от удалений и бан-чатов (Anti-Delete)**:
   * Сообщения, удалённые собеседником или администратором, помечаются как удалённые («delete marks»), а не исчезают бесследно.
+  * **Кастомизация метки удалённых сообщений**:
+    * Выбор значка: Корзина (`msg_delete`), Крестик (`msg_clear_input`), Перечеркнутый глаз (`msg_archive_hide`);
+    * Выбор цвета метки: неброский цвет времени темы (`DELETED_MARK_COLOR_THEME`) или яркий красный акцент (`DELETED_MARK_COLOR_RED`);
+    * Опция «Полупрозрачные удалённые сообщения» (альфа 0.65f) для визуального выделения удалённых сообщений в ленте переписки;
   * Сохранение кэшированной переписки и возможность оставаться в чатах даже после бана/исключения из них.
 
 ---
@@ -52,8 +56,9 @@
 
 * **Снятие ограничения на 3 аккаунта**:
   * Полностью убран дефолтный лимит официального клиента (до 3 аккаунтов). Пул активных аккаунтов управляется динамически через `SharedConfig.activeAccounts`.
-* **Авторизация под одним номером несколько раз**:
-  * Возможность залогиниться в несколько аккаунтов/сессий, привязанных к одному и тому же телефонному номеру, внутри одного клиента.
+* **Выборочные push-уведомления для каждого аккаунта (`HundredGramAccountNotifications`)**:
+  * Вместо жесткого глобального выбора «уведомления для всех аккаунтов или только активного», реализована гибкая настройка: пользователь может сам отметить чекбоксами конкретные аккаунты, от которых нужно получать уведомления в фоновом режиме.
+  * Специализированный экран управления ([`HundredGramAccountNotificationsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramAccountNotificationsActivity.java)) со списком подключенных профилей, их аватарами и защитой от отключения активной сессии (с пружинной анимацией встряхивания и виброоткликом).
 
 ---
 
@@ -99,6 +104,20 @@
 
 ## 6. Клиентские функции 100gram (Портировано из exteraGram)
 
+* **Автоматическое отключение прокси по типу сети (`proxyDisableMask`)**:
+  * В настройках прокси добавлена строка «Отключать прокси при» с выбором условий (VPN / Мобильный интернет / Wi-Fi);
+  * При срабатывании условия прокси автоматически деактивируется; при устранении условия — восстанавливается.
+* **Пользовательская папка сохранения медиафайлов (`customSavePath`)**:
+  * Позволяет задать произвольное имя подпапки в системных медиакаталогах (Изображения, Видео, Загрузки, Музыка) вместо стандартного «Telegram»;
+  * Настройка доступна в разделе «Медиа».
+* **Оформление цитат и ответов** (`replyBackground`, `replyColors`, `replyEmoji`):
+  * **Фон ответа** — показывать / скрывать полупрозрачный цветной фон за цитируемым сообщением;
+  * **Цвет автора в ответах** — использовать персональный цвет автора или нейтральный цвет темы;
+  * **Эмодзи в ответах** — отображать / скрывать кастомное эмодзи в заголовке ответа;
+  * Три переключателя в разделе «Интерфейс» → «Оформление ответов».
+* **Форма углов стикеров (`stickerShape`)**:
+  * Выбор из трёх вариантов: острые (по умолчанию), скруглённые (4 dp), радиус пузыря сообщения;
+  * Настройка в разделе «Интерфейс» → «Стикеры и GIF».
 * **Модернизированная камера и кружки (CameraX)**:
   * Полноценный видеомодуль CameraX для круглых видеосообщений:
     * Плавная запись с частотой **60 FPS** (на поддерживаемых сенсорах);
@@ -119,6 +138,12 @@
     * ID сообщения, ID чата и имя;
     * Отправитель (имя и ID пользователя);
     * Точная дата и время отправки, дата и время редактирования;
+    * **Точная дата и время прочтения сообщения собеседником** (AyuGram Spy) с дельтой `(+Xs, +Xm)` и копированием по тапу;
+* **Режим невидимки плюс (Ghost Mode Plus из AyuGram)**:
+  * **Мгновенный офлайн после отправки** (`sendOfflineAfterOnline`): немедленно отправляет сетевой пакет оффлайн-статуса после отправки сообщения, предотвращая кратковременное появление онлайна на 5–15 секунд;
+  * **Скрытие прогресса загрузки файлов** (`ghostUploadProgress`): подавляет индикаторы загрузки файлов, фотографий, видео и голосовых заметок для других пользователей (`upload_photo`, `upload_video`);
+* **Защита хранилища Vault от спама ботов** (`vaultSaveForBots`):
+  * Исключает сохранение одноразовых сообщений, клавиатур и медиа ботов в локальное хранилище Media Vault и базу удалённых сообщений.
     * Информация о пересылке (исходный автор и дата);
     * Количество просмотров и пересылок (без округлений);
     * Характеристики медиа: тип, имя файла, точный размер, MIME-тип, разрешение (Ш x В), длительность, датацентр (DC), локальный путь к файлу на устройстве;
@@ -150,6 +175,17 @@
   * **Запятая после упоминания**: автоподстановка запятой при выборе пользователя через `@username`.
   * **Скрытие папки «Архив»**: возможность убрать закреплённую строчку архива из основного списка чатов.
   * **Скрытие кнопки создания чата (FAB)**: скрытие круглой плавающей кнопки создания сообщений.
+  * **Мини-аватары отправителей в списке чатов (Sender Mini Avatars)**:
+    * В списке диалогов ([`DialogCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/DialogCell.java)) в групповых чатах и каналах рядом с именем автора последнего сообщения отрисовывается миниатюрная круглая аватарка пользователя, позволяя мгновенно идентифицировать собеседника без входа в чат.
+  * **Приостановка медиа при сворачивании приложения (Pause Media on Minimize)**:
+    * Независимые переключатели для автоматической паузы воспроизведения видео в просмотрщике ([`PhotoViewer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/PhotoViewer.java)), голосовых сообщений и круглых видеозаписей ([`MediaController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MediaController.java)) при сворачивании клиента или переключении на другое приложение.
+  * **Скрытие кнопки «Отправить от имени» (Hide Send As)**:
+    * В поле ввода сообщений ([`ChatActivityEnterView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java)) скрывается постоянная кнопка выбора канала/профиля отправителя, освобождая место для текста.
+    * Выбор профиля отправки по-прежнему доступен по долгому нажатию на кнопку эмодзи/стикеров.
+  * **Скрытие стрелки «Поделиться» у постов каналов (Hide Share Button)**:
+    * Возможность скрыть круглую кнопку быстрой пересылки рядом с постами в каналах ([`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java)) для защиты от случайных нажатий при быстром чтении.
+  * **Скрытие блока реакций в чатах (Hide Reactions)**:
+    * Раздельное отключение плашки реакций под сообщениями для каналов и групп/супергрупп ([`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java)) и скрытие кнопки перехода к непрочитанным реакциям ([`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java)).
 * **Выделенный раздел настроек**:
   * Пункт **«Настройки 100gram»** вынесен в отдельный самостоятельный блок на самом верху главного меню настроек (отделен разделителем/тенью от стандартных блоков Telegram) для максимального удобства.
 
@@ -188,7 +224,9 @@
 * **Шторка просмотра истории изменений (`HundredGramEditHistoryBottomSheet`)**:
   * Каждая редакция отображается в виде отдельной стилизованной карточки:
     * **Бейджи версий**: «ТЕКУЩАЯ», «ИСХОДНАЯ», «РЕДАКЦИЯ #N» и «УДАЛЕНО» (яркий красный бейдж для удалённых сообщений);
-    * Точные дата и время каждой редакции;
+    * **Относительный таймлайн (Time Delta)**: рядом со временем отображается дельта относительно момента создания исходного сообщения (`+15s`, `+2m`, `+3h`, `+2d`);
+    * **Визуальный Diff (LCS-based Word Diff)**: встроенный алгоритм сравнения версий текста на уровне слов. Добавленный текст выделяется мягким зелёным цветом, удалённый — зачёркнутым красным (с оптимизацией под темную/светлую тему оформления);
+    * **Переключатель вида «Diff» / «Обычный»**: кнопка-чип в заголовке каждой карточки с легендой `🟢 добавлено · 🔴 удалено` для мгновенного переключения между подсвеченной разницей и чистым текстом;
     * Полный текст с форматированием (жирный, курсив, моноширинный, спойлеры);
     * Указание на тип медиа (фото, видео, кружочек, аудио, документ с именем файла);
     * Кнопка быстрого копирования текста любой редакции в буфер обмена с всплывающим уведомлением.
@@ -308,10 +346,39 @@
 * **Быстрые действия и полная очистка**:
   * **Долгое нажатие по чату**: модальное окно для моментальной очистки всего архива выбранного чата в 1 клик.
   * **Кнопка в панели ActionBar**: диалог подтверждения полной очистки всего архива по всем чатам с освобождением занятого места на диске устройства.
+* **Расширенная аналитика хранилища, единая фильтрация и жестовый мультивыбор (`VaultEdgeDragSelector`)**:
+  * **Контекстное меню элементов**: Долгое нажатие на любую карточку (или кнопка «три точки» на файле/голосовом) открывает полнофункциональное меню: открытие, сохранение в Галерею/Загрузки, переход к сообщению в чате, отправка через системный диалог, просмотр подробных метаданных, удаление и переход в режим выбора.
+  * **Разбивка занятого места по типам данных**: Точный объём в МБ/ГБ выводится в названиях табов (`Фото (XX МБ)`, `Видео (XX МБ)`, `Голосовые (XX МБ)`, `Файлы (XX МБ)`) и в верхней информационной полосе быстрого обзора.
+  * **Единый экран статистики чатов и фильтрации**: Устранены вложенные и дублирующие диалоги. Открывается единая шторка с аналитикой хранилища, быстрыми фильтрами по размеру (>10 МБ, >50 МБ, >100 МБ) и списком всех чатов с сортировкой по убыванию объёма (с указанием точного размера каждого диалога и количества файлов).
+  * **Жестовый мультивыбор вдоль края (Edge Drag-to-Select)**: Реализован специализированный тач-слушатель `VaultEdgeDragSelector`: при смахивании строки к правому краю и движении вверх/вниз вдоль края происходит плавный авто-выбор строк с тактильной виброотдачей (`vibrateCursor`) и поддержкой автоскролла в крайних зонах.
 
 ---
 
 ## 14. Интеллектуальный фоновый архиватор и доработки интерфейса
+
+* **Интеллектуальные пресеты и гранулярная система сохранения данных (Save Presets, Scopes & Data Types)**:
+  * **Устранение неконтролируемого накопления файлов**: Ранее проверка `isChatAntiDelete` возвращала `true` для любого чата, из-за чего удалённые медиафайлы и сообщения со всех каналов и публичных чатов неконтролируемо изолировались в Vault. Теперь действует строгая фильтрация по типу чата `isDialogInSaveScope(dialogId)`.
+  * **Пресеты сохранения в 1 клик (`savePreset`)**:
+    * **«Умный (Рекомендуется)»** (`PRESET_SMART`): ЛС и группы: анти-удаление, история правок, фото, видео и кружочки. Каналы и боты отключены;
+    * **«Только личные чаты»** (`PRESET_DMS_ONLY`): строго диалоги 1-на-1. Никаких групп, каналов и ботов. Идеально для приватности;
+    * **«Максимальный архив»** (`PRESET_ALL`): сохранять абсолютно всё из ЛС, групп и каналов, включая файлы и архивы;
+    * **«Экономия памяти»** (`PRESET_STORAGE_SAVER`): только текст удалённых сообщений и правок в ЛС без тяжелых медиафайлов;
+    * **«Пользовательский»** (`PRESET_CUSTOM`): ручная комбинация любых параметров.
+  * **Гранулярный выбор источников (Scopes)**:
+    * Личные сообщения (`saveScopePrivate`);
+    * Группы и супергруппы (`saveScopeGroups`);
+    * Каналы (`saveScopeChannels`);
+    * Сообщения ботов (`saveScopeBots`);
+    * Архивированные чаты (`saveScopeArchived`).
+  * **Гранулярный выбор типов данных (Data Types)**:
+    * Удалённые сообщения / Anti-Delete (`saveAntiDeleteText`);
+    * История изменений / Anti-Edit (`saveEditHistory`);
+    * Фотографии (`saveMediaPhotos`);
+    * Кружочки и голосовые (`saveMediaVoiceRounds`);
+    * Видео (`saveMediaVideos`);
+    * Файлы и документы (`saveMediaFiles`).
+  * **Полностью реорганизованный экран настроек**: Интуитивное разделение меню «Хранилище медиа (Vault)» в [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java) на секции пресетов, источников, типов данных, лимитов Media Vault, фонового архиватора, TTL/квот и действий с защищённым хранилищем.
+  * **Опция максимального размера без ограничений**: Добавлена опция «Без ограничений» (Unlimited) для максимального размера сохраняемых медиафайлов как в общих настройках (`autoDownloadMaxSizeMb`), так и в персональных переопределениях чатов (`HundredGramChatVaultBottomSheet` / `HundredGramChatSettingsBottomSheet`), позволяющая сохранять любые тяжёлые файлы без отсечения по размеру.
 
 * **Фоновый архиватор чатов и папки «Архив» (`HundredGramBackgroundArchiver`)**:
   * **Автоматическая синхронизация папки «Архив»**: Telegram по умолчанию не загружает чаты из системной папки «Архив» (`folder_id == 1`) до ручного открытия пользователем. Фоновый архиватор автоматически загружает список архивных чатов (`controller.loadDialogs(1, 0, 100, true)`).
@@ -522,4 +589,857 @@
     * Клик по пользователю открывает BottomSheet детальной истории сессий за день;
     * Долгий тап открывает меню действий (удаление из отслеживания, переход в профиль, очистка).
   * **Ключевые классы:** [`HundredGramTrackedUsersActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramTrackedUsersActivity.java), [`HundredGramActivityTracker.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramActivityTracker.java), [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java).
+  * **Статус:** В релизе.
+
+---
+
+## 27. Информационные плашки PillStack, кастомизация свайпов и надежность видеосообщений
+
+* **Интерактивные виджеты PillStack в поисковой строке**:
+  * **Описание:** Компактный стек плашек в строке поиска (`FragmentSearchField`) с переключением вертикальным свайпом:
+    * `ProxyPill`: отображает статус прокси-подключения и измеренный пинг (мс) с быстрым переходом в `ProxyListActivity`;
+    * `CachePill`: выводит общий размер кэша приложения с круговым индикатором `StorageProgressDrawable` и переходом в `CacheControlActivity`.
+  * **Где включается (UI):** `Настройки 100gram` -> `Интерфейс` -> `Главный экран` -> **«Виджеты статуса (PillStack)»**.
+  * **Ключ конфигурации:** `HundredGramConfig.pillStackEnabled` (`boolean`, по умолчанию `true`).
+  * **Ключевые классы:** [`PillStackView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/PillStackView.java), [`ProxyPill.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/ProxyPill.java), [`CachePill.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/CachePill.java), [`FragmentSearchField.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/FragmentSearchField.java).
+* **Кастомизация действия при свайпе сообщения**:
+  * **Описание:** Возможность переназначить стандартный свайп сообщения влево в чате (`chatMessageSwipeAction`) на одно из действий: Ответить, В Избранное, Копировать текст, Переслать, Редактировать, Удалить. На полотне отрисовки динамически подставляется соответствующая иконка с цветом темы сервисных элементов.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Действия и жесты` -> раздел **«Свайп сообщения»** -> **«Действие при свайпе»**.
+  * **Ключевые классы:** [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java).
+* **Надежность и выбор камеры при записи кружочков**:
+  * **Описание:** Предотвращение крашей MediaCodec при коротких записях (<0.5с), выбор камеры (селфи/основная) без отрыва пальца от кнопки записи, интерактивный зум-слайдер.
+  * **Ключевые классы:** [`RoundVideoCodecRecorder.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/utils/camera/roundvideo/RoundVideoCodecRecorder.java), [`InstantCameraView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/InstantCameraView.java), [`ChatActivityEnterView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java).
+  * **Статус:** В релизе.
+
+---
+
+## 28. Система наборов иконок интерфейса (Icon Packs)
+
+* **Динамическая замена иконок приложения без перезапуска**:
+  * **Описание:** Поддержка наборов векторных и растровых иконок интерфейса (`.icons` и `.zip` архивы). Иконки подменяются на уровне перехватчика `HundredGramResources` во всем приложении (ActionBar, всплывающие меню, списки чатов, настройки) без фризов за счёт многоуровневого `LruCache`.
+  * **Где настраивается (UI):** `Настройки 100gram` -> раздел «Интерфейс и чаты» -> **«Пакеты иконок»** (`HundredGramIconPacksActivity`).
+  * **Возможности экрана:**
+    * Включение/выключение подмены иконок клиентом;
+    * Выбор активного пака (с превью автора и числа иконок);
+    * Установка пользовательских паков из файловой системы через системный выбор файлов;
+    * Удаление кастомных паков по долгому нажатию;
+    * Мгновенный пересчет и применение стилей интерфейса.
+  * **Ключевые классы:** [`HundredGramResources.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/icons/HundredGramResources.java), [`HundredGramIconManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/icons/HundredGramIconManager.java), [`HundredGramIconPackStorage.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/icons/HundredGramIconPackStorage.java), [`HundredGramIconPacksActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramIconPacksActivity.java).
+  * **Статус:** В релизе.
+
+---
+
+## 29. Резервное копирование и сброс настроек (JSON Backup & Restore)
+
+* **Экспорт и восстановление параметров форка**:
+  * **Описание:** Полное сохранение всей структуры настроек клиента 100gram в структурированный JSON-файл с метаданными схемы. Позволяет мгновенно переносить свои предпочтения на новые устройства или восстанавливать конфигурацию после чистой переустановки.
+  * **Где настраивается (UI):** `Настройки 100gram` -> раздел «Хранилище и Сеть (Данные)» -> **«Резервное копирование»** (`HundredGramBackupActivity`).
+  * **Возможности экрана:**
+    * **Экспорт настроек в JSON:** создание резервной копии и отправка через системный диалог Android Share Sheet (включая прямое сохранение в «Избранное» Telegram);
+    * **Импорт настроек из файла:** загрузка параметров из любого валидного JSON-бэкапа 100gram с мгновенным применением и динамическим оповещением всех компонентов интерфейса;
+    * **Сброс настроек:** безопасный возврат всех параметров форка к заводским значениям по умолчанию с подтверждением в диалоговом окне.
+  * **Ключевые классы:** [`HundredGramBackupManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramBackupManager.java), [`HundredGramBackupActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramBackupActivity.java), [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java).
+  * **Статус:** В релизе.
+
+---
+
+## 30. Виджеты строки поиска (PillStack: Weather & Crypto) и отключение телеметрии
+
+* **Погодный виджет (WeatherPill)**:
+  * **Описание:** Интерактивная плашка в поисковой строке с отображением текущей температуры (°C) и векторной иконки погоды (ясно, переменная облачность, пасмурно, дождь, снег, гроза, туман, ночь).
+  * **Геолокация:** Автоматическое определение по координатам устройства с кэшированием на 20 минут. Если доступ к геопозиции отключен, запрашивает системные разрешения по клику.
+  * **Ключевые классы:** [`WeatherPill.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/WeatherPill.java), [`Weather.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Stories/recorder/Weather.java).
+* **Криптовалютные виджеты (GramPill, BtcPill, UsdPill)**:
+  * **Описание:** Отображение котировок курсов в реальном времени:
+    * `GramPill`: курс Telegram Open Network (TON);
+    * `BtcPill`: курс Bitcoin (BTC);
+    * `UsdPill`: курс американского доллара (USD к фиатным валютам).
+  * **Сетевой клиент и котировки:** Асинхронные HTTP-запросы через Coinbase REST API без API-ключей на `Utilities.globalQueue` с 5-минутным кэшированием в памяти и SharedPreferences.
+  * **Мультивалютность:** Поддержка 15 фиатных валют (USD, EUR, RUB, KZT, UAH, TRY, PLN, AED, CNY, JPY, BYN, ILS, CZK, INR). По долгому тапу открывается меню быстрого выбора валюты отображения.
+  * **Ключевые классы:** [`ExchangeRates.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/ExchangeRates.java), [`RatePill.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/RatePill.java), [`GramPill.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/GramPill.java), [`BtcPill.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/BtcPill.java), [`UsdPill.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/UsdPill.java), [`PillStackCurrencies.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/PillStackCurrencies.java).
+* **Экран настройки плашек (HundredGramPillStackSettingsActivity)**:
+  * **Описание:** Управление списком активных и скрытых виджетов с возможностью перемещения кликом и сброса к заводскому состоянию.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> `Главный экран` -> `Настройка плашек строки поиска`.
+  * **Ключевые классы:** [`HundredGramPillStackSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramPillStackSettingsActivity.java), [`PillRegistry.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/PillRegistry.java), [`PillStackConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PillStack/PillStackConfig.java).
+* **Полное подавление фоновой телеметрии (Telemetry Killswitch)**:
+  * **Описание:** Полная блокировка отправки диагностических данных, аналитики и крэш-логов во внешние сервисы для максимальной анонимности и снижения сетевого фонового трафика.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Конфиденциальность` -> **«Отключить всю телеметрию»**.
+  * **Ключ конфигурации:** `HundredGramConfig.disableAllTelemetry` (`boolean`, по умолчанию `true`).
+  * **Ключевые классы:** [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+  * **Статус:** В релизе.
+
+---
+
+## 31. Кастомизация интерфейса: форма аватарок, табы навигации и стиль переключателей MD3
+
+* **Регулировка скругления аватарок (Avatar Corner Radius)**:
+  * **Описание:** Плавная настройка радиуса скругления всех аватарок пользователей, каналов, групп и ботов по всему приложению.
+  * **Диапазон:** От 0 (строгие квадратные аватарки) до 28 (стандартные круглые аватарки Telegram). Промежуточные значения позволяют получить аватарки в стиле сквиркла (squircle / superellipse).
+  * **Интерактивное превью (AvatarCornersPreviewCell):**
+    * Встроенный слайдер `AltSeekbar` с тактильным откликом при достижении граничных позиций и динамическим бейджем значения;
+    * Стилизованная карточка с обводкой `PreviewBackgroundDrawable` и превью симуляции чата в реальном времени с онлайн-индикатором.
+  * **Ключевые классы:** [`AvatarCornersPreviewCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AvatarCornersPreviewCell.java), [`AltSeekbar.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AltSeekbar.java), [`PreviewBackgroundDrawable.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PreviewBackgroundDrawable.java), [`PreviewColors.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/PreviewColors.java), [`AvatarDrawable.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AvatarDrawable.java), [`BackupImageView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/BackupImageView.java), [`DialogCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/DialogCell.java).
+* **Управление вкладками нижней панели (MainTabs Navigation)**:
+  * **Описание:** Возможность скрывать неиспользуемые вкладки из нижней навигационной панели `MainTabsActivity` с полной динамической синхронизацией `ViewPagerFixed`.
+  * **Доступные тумблеры:**
+    * «Скрыть вкладку Контакты» (`bottomNavHideContactsTab`);
+    * «Скрыть вкладку Настройки» (`bottomNavHideSettingsTab`).
+  * **Динамическая синхронизация страниц:** При отключении вкладки экран не просто исчезает из нижней плашки, а физически исключается из пейджера: свайп влево из чатов переходит сразу на следующую видимую вкладку (например, «Настройки»), минуя скрытые разделы.
+  * **Мгновенное применение:** Нижняя панель и пейджер мгновенно перестраиваются без перезагрузки экрана или приложения.
+  * **Ключевые классы:** [`MainTabsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/MainTabsActivity.java), [`ViewPagerActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ViewPagerActivity.java), [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java).
+* **Стиль переключателей Material Design 3 (MD3 Switches)**:
+  * **Описание:** Кастомизация внешнего вида системных тумблеров Telegram (`Switch.java`) в стиле современных спецификаций Material You / Material Design 3.
+  * **Особенности отрисовки:**
+    * Увеличенный скругленный трек переключателя;
+    * Увеличенный ползунок (thumb);
+    * Встроенные анимированные векторные индикаторы (галочка во включенном состоянии и крестик в выключенном), отрисовываемые аппаратным Canvas.
+  * **Ключевой класс:** [`Switch.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/Switch.java).
+* **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> разделы «Внешний вид и аватарки» и «Главный экран».
+* **Статус:** В релизе.
+
+---
+
+## 32. Модуль AI-ассистента: Google Gemini, ChatGPT, контекстное меню сообщений и замена Premium AI Composer
+
+* **Поддерживаемые AI-провайдеры**:
+  * **Google Gemini (Официальный API)**: Интеграция через OpenAI-совместимый эндпоинт `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`. Поддержка моделей `gemini-2.5-flash`, `gemini-2.5-pro` с бесплатным доступом по личному API-ключу Google AI Studio.
+  * **OpenAI ChatGPT**: Официальный эндпоинт `https://api.openai.com/v1/chat/completions`. Модели `gpt-4o-mini`, `gpt-4o`.
+  * **Пользовательский эндпоинт (Custom Endpoint)**: Поддержка любых сторонних OpenAI-совместимых серверов (Groq, OpenRouter, DeepSeek, локальные инсталляции Ollama/vLLM) с произвольным URL, названием модели и токеном авторизации.
+* **Потоковая генерация ответов (Server-Sent Events / SSE Streaming)**:
+  * Отображение ответа искусственного интеллекта в реальном времени символ за символом по мере генерации на сервере.
+  * Легковесный сетевой клиент `HundredGramAiClient` на базе стандартного `HttpURLConnection` без тяжелых внешних библиотек и SDK.
+  * Возможность мгновенной отмены текущей генерации при закрытии шторки.
+* **Контекстные действия над сообщениями в чатах**:
+  * В контекстное меню сообщений `ChatActivity` добавлен пункт **«Спросить AI»**.
+  * Шторка быстрых действий `HundredGramAiPromptBottomSheet`:
+    * Отображение цитаты выбранного сообщения;
+    * Быстрые чипы пресетов: «Кратко» (суммаризация поста/сообщения), «Исправить» (исправление орфографии, пунктуации и стиля), «Спросить» (свободный вопрос ассистенту), «Перевести» (перевод на язык системы);
+    * Поле для ввода пользовательского уточняющего промпта.
+  * Шторка стриминга ответа `HundredGramAiResponseBottomSheet`:
+    * Живой скролл текста с плавным индикатором прогресса;
+    * Кнопка быстрого копирования ответа в буфер обмена;
+    * Кнопка «Применить» / «Вставить в чат» для мгновенной подстановки сгенерированного текста в поле ввода сообщения.
+* **Замена платного Telegram Premium AI Composer**:
+  * Модуль `TelegramAiReplacement` интегрирован в нативный редактор `AIEditorAlert`.
+  * При отсутствии подписки Telegram Premium или включенной опции в настройках подменяет сетевые запросы Telegram RPC на вызовы локально сконфигурированного AI-провайдера.
+* **Экран настроек (HundredGramAiSettingsActivity)**:
+  * Включение/отключение модуля AI-ассистента;
+  * Выбор активного провайдера (Gemini / OpenAI / Custom);
+  * Ввод и маскированное отображение API-ключа (`••••••••`);
+  * Выбор рабочей модели;
+  * Настройка URL пользовательского эндпоинта;
+  * Тумблер потоковой выдачи ответов (стриминг);
+  * Тумблер сохранения контекста диалога и кнопка очистки истории диалогов с подтверждением и всплывающим уведомлением `Bulletin`;
+  * Быстрая кнопка перехода в консоль разработчика для бесплатного получения API-ключа.
+* **Ключевые классы**:
+  * Ядро: [`Role.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/Role.java), [`Suggestions.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/Suggestions.java), [`Service.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/Service.java), [`Message.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/Message.java), [`HundredGramAiConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/HundredGramAiConfig.java), [`HundredGramAiClient.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/HundredGramAiClient.java), [`HundredGramAiController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/HundredGramAiController.java), [`TelegramAiReplacement.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/TelegramAiReplacement.java).
+  * UI: [`HundredGramAiPromptBottomSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramAiPromptBottomSheet.java), [`HundredGramAiResponseBottomSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramAiResponseBottomSheet.java), [`HundredGramAiSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramAiSettingsActivity.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`AIEditorAlert.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AIEditorAlert.java).
+* **Где настраивается (UI)**: `Настройки 100gram` -> категория **«Искусственный интеллект»** (AI Assistant).
+* **Статус**: В релизе.
+
+---
+
+## 33. Мульти-провайдерный переводчик (Google, Yandex, DeepL, Telegram) и Анти-спам щит в личных сообщениях
+
+* **Мульти-провайдерный переводчик (HundredGramTranslator)**:
+  * **Поддерживаемые движки:**
+    * **Google Translate:** Быстрый перевод через Google Translate Web API без API-ключей и без ограничений;
+    * **Yandex Translate:** Нативная интеграция с мобильным API Яндекса для высочайшего качества перевода на русский и славянские языки;
+    * **DeepL:** Перевод с сохранением семантики и контекста;
+    * **Telegram (Official):** Стандартный нативный перевод через Telegram MTProto.
+  * **Снятие ограничений:** Автоматический перевод диалогов и каналов без необходимости подписки Telegram Premium.
+  * **Кэширование:** Многоуровневый `LruCache` на 500 записей для мгновенного скролла переведенных сообщений без сетевых задержек.
+  * **Ключевые классы:** [`HundredGramTranslator.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/translator/HundredGramTranslator.java), [`TranslateAlert2.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/TranslateAlert2.java), [`TranslateController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/TranslateController.java).
+* **Автоматический Анти-спам щит (HundredGramAntiSpam)**:
+  * **Принцип работы:** Фоновый анализ входящих личных сообщений (Direct Messages) от пользователей, не входящих в список контактов устройства.
+  * **Критерии фильтрации:**
+    * Наличие внешних ссылок (http, https, t.me, @юзернеймы) от неизвестных аккаунтов;
+    * Поиск по настраиваемому словарю стоп-слов и ключевых фраз (крипто-скам, казино, бесплатные раздачи, инвестиции);
+    * Исключение для проверенных аккаунтов (`verified`), ботов и контактов.
+  * **Реакция на спам (Action on Spam):**
+    * Заглушение диалога и отметка как прочитанного;
+    * Автоматическое перемещение чата в папку «Архив» с выключением звука;
+    * Мгновенная блокировка пользователя (`blockPeer`) и удаление спам-диалога.
+  * **Статистика и уведомления:** Подсчет количества предотвращенных спам-атак и информационные карточки `Bulletin`.
+  * **Ключевой класс:** [`HundredGramAntiSpam.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/antispam/HundredGramAntiSpam.java).
+* **Экран управления:** [`HundredGramServicesSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramServicesSettingsActivity.java).
+* **Где настраивается (UI):** `Настройки 100gram` -> категория **«Сервисы и инструменты»** (Services & Tools).
+* **Статус:** В релизе.
+
+---
+
+## 34. Модульная система плагинов и поддержка расширений exteraGram (Plugins & Extensions)
+
+* **Мульти-движковая архитектура (Multi-Engine Architecture)**:
+  * **Нативный загрузчик байткода (`NativeDexPluginsEngine`)**:
+    * Загрузка плагинов форматов `.100p` (архивы с манифестом `plugin.json` и dex-файлами) и чистых `.dex` файлов через изолированный `DexClassLoader`;
+    * Валидация Zip Slip и защита от path traversal при распаковке пакетов;
+    * Публичный SDK: интерфейсы `IPlugin`, `PluginContext`, аннотации хуков.
+  * **Мост совместимости с exteraGram (`ExteraPythonPluginsEngine`)**:
+    * Прямая поддержка плагинов экосистемы exteraGram: форматы `.plugin`, `.elyx`, `.eaf`;
+    * Декларативный парсер метаданных плагина (`__id__`, `__name__`, `__version__`, `__description__`, `__author__`);
+    * Автоматическая трансляция пунктов меню `add_menu_item()`, хуков отправки сообщений `on_send_message_hook()` и конфигурационных схем `create_settings()`.
+  * **Центральный координатор (`PluginsController`)**:
+    * Синглтон-менеджер жизненного цикла плагинов с инициализацией при старте приложения через `ApplicationLoader`;
+    * Выделенный фоновый поток `Utilities.pluginsQueue` для изоляции тяжелых операций;
+    * **Безопасный режим (Safe Mode)**: мгновенное отключение выполнения всех хуков и плагинов в случае сбоев;
+    * Опция **«Отключить оптимизации ART»** (`pluginsDisableArtOpts`) для предотвращения падений при динамической загрузке байткода;
+    * Опция **«Разрешить установку из неизвестных источников»** (`pluginsInstallUnknownSources`).
+* **Точки расширения в Telegram Core**:
+  * **Хук отправки сообщений (`PluginsHooks` / `on_send_message_hook`)**:
+    * Перехват исходящих сообщений в `SendMessagesHelper.sendMessage` перед формированием сетевого запроса;
+    * Возможность модификации текста, добавления форматирования или отмены отправки плагином.
+  * **Контекстное меню сообщений (`ChatActivity`)**:
+    * Регистрация пользовательских пунктов меню плагинов (`OPTION_PLUGIN_START = 1000`);
+    * Поддержка условий видимости (`can_show`) и динамический запуск действий плагина по нажатию.
+  * **Декларативные экраны настроек плагинов (`HundredGramPluginSettingsActivity`)**:
+    * Автоматический рендеринг виджетов настроек на базе `UniversalRecyclerView`: `SwitchSetting`, `InputSetting`, `SelectorSetting`, `HeaderSetting`, `DividerSetting`, `TextSetting`;
+    * Сохранение параметров в изолированные хранилища каждого плагина.
+* **Экран управления плагинами (`HundredGramPluginsActivity`)**:
+  * Глобальный тумблер включения/выключения движка плагинов;
+  * Настройки безопасности: безопасный режим, отключение оптимизаций ART, неизвестные источники;
+  * Интерактивный список установленных плагинов с отображением версии, автора, описания и переключателя активности;
+  * Установка новых плагинов из локального хранилища через системный селектор файлов (`ACTION_GET_CONTENT`);
+  * Меню управления плагином: переход в настройки, удаление пакета.
+* **Ключевые классы**:
+  * Контроллер и движки: [`PluginsController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/PluginsController.java), [`NativeDexPluginsEngine.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/NativeDexPluginsEngine.java), [`ExteraPythonPluginsEngine.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/ExteraPythonPluginsEngine.java), [`PluginsEngine.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/PluginsEngine.java).
+  * SDK и модели: [`IPlugin.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/IPlugin.java), [`PluginContext.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/PluginContext.java), [`Plugin.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/Plugin.java), [`PluginsHooks.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/PluginsHooks.java), [`PluginsConstants.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/plugins/PluginsConstants.java).
+  * UI экраны: [`HundredGramPluginsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramPluginsActivity.java), [`HundredGramPluginSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramPluginSettingsActivity.java), [`HundredGramSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java), [`HundredGramWhatsNewActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramWhatsNewActivity.java).
+  * Интеграции: [`SendMessagesHelper.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/SendMessagesHelper.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`ApplicationLoader.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ApplicationLoader.java).
+* **Где настраивается (UI)**: `Настройки 100gram` -> категория **«Плагины»** (с динамическим счетчиком установленных модулей).
+* **Статус**: В релизе.
+
+---
+
+## 35. Пакет улучшений для работы с чатами и вводом сообщений (Chats & Input Experience)
+
+* **Повтор сообщений из контекстного меню (Repeat Message)**:
+  * **Описание:** Добавление пункта «Повторить» в контекстное меню любого сообщения. Позволяет мгновенно отправить точную копию текстового сообщения, медиафайла или сгруппированного альбома в текущий чат без цитирования (forward header) и без необходимости ручного копирования или пересылки.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Действия` -> раздел «Меню сообщения» -> **«Кнопка «Повторить»»**.
+  * **Ключ конфигурации:** `HundredGramConfig.showRepeatMessageButton` (`boolean`, по умолчанию `true`).
+  * **Ключевые классы:** [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`SendMessagesHelper.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/SendMessagesHelper.java).
+
+* **Просмотр результатов опросов до голосования (Show Results Before Voting)**:
+  * **Описание:** Предоставляет возможность заранее просмотреть распределение процентов и количество отданных голосов за каждый вариант в опросах без обязательной предварительной отправки собственного голоса.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Действия` -> раздел «Отправка и пересылка сообщений» -> **«Результаты опросов до голосования»**.
+  * **Ключ конфигурации:** `HundredGramConfig.showResultsBeforeVoting` (`boolean`, по умолчанию `false`).
+  * **Ключевые классы:** [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java).
+
+* **Быстрая очистка поля ввода сообщений (Clear Input Button)**:
+  * **Описание:** Компактная анимированная кнопка с крестиком (✕) внутри поля ввода сообщения (`messageEditTextContainer`), плавно появляющаяся при вводе любого текста и позволяющая мгновенно стереть весь черновик в одно касание.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Действия` -> раздел «Отправка и пересылка сообщений» -> **«Кнопка очистки поля ввода»**.
+  * **Ключ конфигурации:** `HundredGramConfig.showClearInputButton` (`boolean`, по умолчанию `true`).
+  * **Ключевые классы:** [`ChatActivityEnterView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java).
+
+* **Фильтрация Zalgo-глитчей (Filter Zalgo Text)**:
+  * **Описание:** Интеллектуальный фильтр комбинируемых Unicode-диакритик (`NON_SPACING_MARK`, `COMBINING_SPACING_MARK`, `ENCLOSING_MARK`), которые используются злоумышленниками для визуального разрушения сообщений и зависания UI. Ограничивает число подряд идущих диакритических знаков до 2, сохраняя легитимные диакритики языков мира (вьетнамский, французский и др.) и форматирование `Spannable`.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Фильтрация Zalgo-текста»**.
+  * **Ключ конфигурации:** `HundredGramConfig.filterZalgo` (`boolean`, по умолчанию `true`).
+  * **Ключевые классы:** [`AndroidUtilities.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/AndroidUtilities.java), [`MessageObject.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessageObject.java).
+
+* **Замена метки «изменено» на иконку карандаша (Replace Edited Label With Icon)**:
+  * **Описание:** Заменяет громоздкую текстовую надпись «изменено»/«edited» рядом с временем отправки сообщения на миниатюрную аккуратную иконку карандаша (`R.drawable.msg_edit`) через `ColoredImageSpan`, экономя полезную площадь сообщения и делая пузыри компактнее.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Иконка карандаша для изменённых сообщений»**.
+  * **Ключ конфигурации:** `HundredGramConfig.replaceEditedWithIcon` (`boolean`, по умолчанию `false`).
+  * **Ключевые классы:** [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java).
+* **Статус:** В релизе.
+
+---
+
+## 36. Кастомизация Action Bar и вкладок папок (Header & Tabs Customization)
+
+* **Режимы отображения заголовка Action Bar (Action Bar Title Modes)**:
+  * **Описание:** Настройка содержимого верхней панели Action Bar на главном экране чатов (`DialogsActivity`):
+    * `0` — **Имя приложения («100gram»)**: классический логотип форка.
+    * `1` — **Юзернейм профиля («@username»)**: юзернейм текущего авторизованного пользователя с автоматическим переходом на имя при отсутствии юзернейма.
+    * `2` — **Имя профиля («First Last»)**: полное имя пользователя.
+    * `3` — **Активная папка чатов**: динамическое отображение названия текущей открытой папки («Все чаты», «Личные», «Каналы» и пользовательские папки), автоматически обновляющееся при переключении и пролистывании вкладок.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Главный экран» -> **«Заголовок Action Bar»**.
+  * **Ключ конфигурации:** `HundredGramConfig.actionBarTitleMode` (`int`, по умолчанию `0`).
+  * **Ключевые классы:** [`DialogsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java).
+
+* **Центрирование заголовков Action Bar (Center Action Bar Title)**:
+  * **Описание:** Выравнивание названия экрана, логотипа и статуса строго по центру горизонтальной оси верхней панели приложения в стиле iOS / OneUI:
+    * В `DialogsActivity` заголовок и логотип центрируются сразу в верху списка чатов и при скролле через [`DialogStoriesCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Stories/DialogStoriesCell.java).
+    * В `ChatActivity` контейнер аватара и информации о собеседнике, группе или канале (`avatarContainer`) центрируется горизонтально между кнопкой «Назад» и меню действий с безопасными отступами по 56dp.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Главный экран» -> **«Центрировать заголовок»**.
+  * **Ключ конфигурации:** `HundredGramConfig.centerActionBarTitle` (`boolean`, по умолчанию `false`).
+  * **Ключевые классы:** [`ActionBar.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ActionBar/ActionBar.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`DialogStoriesCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Stories/DialogStoriesCell.java).
+
+* **Стили отображения вкладок папок (Folder Tabs Style)**:
+  * **Описание:** Персонализация горизонтальной полосы вкладок папок над списком чатов:
+    * `0` — **Текст и иконки (Text & Icons)**: дефолтный вид с отображением названия папки и прикрепленных эмодзи/кастомных анимированных эмодзи.
+    * `1` — **Только текст (Text Only)**: лаконичный вид без иконок со стриппингом эмодзи для строгого делового стиля интерфейса.
+    * `2` — **Только иконки (Icons Only)**: компактный минималистичный режим, извлекающий первую эмодзи или кастомную векторную иконку папки (`R.drawable.msg_folders`), экономя пространство по горизонтали.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Главный экран» -> **«Стиль вкладок папок»**.
+  * **Ключ конфигурации:** `HundredGramConfig.tabTitleStyle` (`int`, по умолчанию `0`).
+  * **Ключевые классы:** [`FilterTabsView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/FilterTabsView.java).
+
+* **Режимы счетчиков непрочитанных на вкладках (Folder Tab Counters Mode)**:
+  * **Описание:** Гибкая фильтрация бейджей счетчиков непрочитанных сообщений на вкладках:
+    * `0` — **Все чаты (All Chats)**: суммирование всех непрочитанных сообщений в папке.
+    * `1` — **Без беззвучных (Unmuted Only)**: исключение каналов и чатов с выключенными уведомлениями (muted), акцентируя внимание только на действительно важных личных диалогах и беседах.
+    * `2` — **Скрыть счетчики (Hide Counters)**: полное скрытие числовых счетчиков на вкладках для чистого визуального спокойствия.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Главный экран» -> **«Счетчики на вкладках»**.
+  * **Ключ конфигурации:** `HundredGramConfig.tabCounterMode` (`int`, по умолчанию `0`).
+  * **Ключевые классы:** [`DialogsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java).
+* **Статус:** В релизе.
+ 
+ ---
+ 
++## 37. Мультимедиа, эргономика плеера и стиль сообщений (Multimedia & Bubble Tail Styling)
++
++* **Включение звука кнопками громкости (Unmute with Volume Buttons)**:
++  * **Описание:** Нажатие аппаратных клавиш Volume Up или Volume Down на устройстве при просмотре видео со звуком по умолчанию (заглушенного) мгновенно включает звук в плеере `PhotoViewer`, сбрасывает статус заглушения и обновляет кнопку громкости в панели управления, не изменяя глобальный рингтон или громкость звонка впустую.
++  * **Где настраивается (UI):** `Настройки 100gram` -> `Медиа и качество` -> раздел «Видео» -> **«Включение звука клавишами громкости»**.
++  * **Ключ конфигурации:** `HundredGramConfig.unmuteWithVolumeButtons` (`boolean`, по умолчанию `false`).
++  * **Ключевые классы:** [`PhotoViewer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/PhotoViewer.java).
++
++* **Свайп в «Картинка в картинке» (Swipe video to PiP)**:
++  * **Описание:** Жест свайпа вверх по полноэкранному видеоплееру плавно переводит воспроизведение видео в парящее плавающее окно (PiP) поверх системы или чатов с сохранением позиции таймлайна вместо закрытия медиапросмотрщика.
++  * **Где настраивается (UI):** `Настройки 100gram` -> `Медиа и качество` -> раздел «Видео» -> **«Свайп в «Картинка в картинке»»**.
++  * **Ключ конфигурации:** `HundredGramConfig.swipeToPip` (`boolean`, по умолчанию `true`).
++  * **Ключевые классы:** [`PhotoViewer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/PhotoViewer.java).
++
++* **Скрытие хвостиков сообщений (Remove Message Tails)**:
++  * **Описание:** Опция убирает нижние треугольные хвостики у входящих и исходящих облачков сообщений в чатах. Текстовые пузыри и медиаблоки получают аккуратные скругленные углы (`Theme.key_drawable_msgInMedia` / `Theme.key_drawable_msgOutMedia`) в стиле современного плоского минимализма, освобождая полезное пространство по бокам.
++  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Скрыть хвостики сообщений»**.
++  * **Ключ конфигурации:** `HundredGramConfig.removeMessageTail` (`boolean`, по умолчанию `false`).
++  * **Ключевые классы:** [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java), [`Theme.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ActionBar/Theme.java).
++
++* **Широкие медиапосты в каналах (Wide Posts in Channels)**:
++  * **Описание:** Фотографии и видеозаписи в публичных каналах растягиваются на всю доступную ширину экрана смартфона без неоправданных боковых отступов в 64dp, делая ленты каналов иммерсивными и выразительными.
++  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Широкие медиапосты в каналах»**.
++  * **Ключ конфигурации:** `HundredGramConfig.widePostsInChannels` (`boolean`, по умолчанию `false`).
++  * **Ключевые классы:** [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java).
++* **Статус:** В релизе.
+
+---
+
+## 38. Навигация, стикеры и безопасность жестов (Navigation, Stickers & Gesture Safety)
+
+* **Защита от случайной разархивации свайпом (Disable Unarchive on Swipe)**:
+  * **Описание:** Предотвращает случайное извлечение чатов из архива при неосторожном горизонтальном свайпе пальцем по строке диалога в папке «Архив». Разархивация остается доступной через долгое нажатие (контекстное меню) и пиктограмму в верхней панели Action Bar.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Действия` -> раздел «Свайпы» -> **«Отключить разархивацию свайпом»**.
+  * **Ключ конфигурации:** `HundredGramConfig.disableUnarchiveSwipe` (`boolean`, по умолчанию `false`).
+  * **Ключевые классы:** [`DialogsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java).
+
+* **Скрытие строки поиска над списком чатов (Hide Chats Search Bar)**:
+  * **Описание:** Скрывает постоянную поисковую панель над списком чатов, возвращая полезную вертикальную площадь экрану. Полнофункциональный поиск открывается нажатием на значок лупы в Action Bar с поддержкой всех фильтров, вкладок и медиакатегорий.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Главный экран» -> **«Скрыть строку поиска в чатах»**.
+  * **Ключ конфигурации:** `HundredGramConfig.hideDialogsSearchBar` (`boolean`, по умолчанию `false`).
+  * **Ключевые классы:** [`DialogsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java).
+
+* **Расширенный пул недавних стикеров (Extended Recent Stickers Pool)**:
+  * **Описание:** Расширяет лимит хранения недавних стикеров с 20 (ограничение стандартного клиента Telegram) до 100 штук, сохраняя все используемые стикеры в локальной базе данных без вытеснения.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Медиа и качество` -> раздел «Стикеры и GIF» -> **«Расширенный пул недавних стикеров»**.
+  * **Ключ конфигурации:** `HundredGramConfig.extendedRecentStickers` (`boolean`, по умолчанию `true`).
+  * **Ключевые классы:** [`MediaDataController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MediaDataController.java).
+
+* **Мгновенный переход между каналами (Quick Channel Transition)**:
+  * **Описание:** Ускоряет переход к следующему непрочитанному каналу при свайпе вверх от конца ленты с 300ms до 80ms и отключает задержку анимации пружины, обеспечивая быстрое и плавное чтение каналов без пауз.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Быстрый переход между каналами»**.
+  * **Ключ конфигурации:** `HundredGramConfig.quickChannelTransition` (`boolean`, по умолчанию `false`).
+  * **Ключевые классы:** [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+* **Статус:** В релизе.
+
+---
+
+## 39. Эргономика медиа и хранилища (Media & Storage Ergonomics)
+
+* **Количество пересылок на постах каналов (Show Forwards Count)**:
+  * **Описание:** Отображает счетчик пересылок (репостов) рядом с количеством просмотров на сообщениях каналов (например, `12.4K • 342 ↗`). Автоматически измеряет ширину текста таймстампа и анимирует изменение числа пересылок без мерцания.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Количество пересылок»**.
+  * **Ключ конфигурации:** `HundredGramConfig.showForwardsCount` (`boolean`, по умолчанию `true`).
+  * **Ключевые классы:** [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java).
+
+* **Скрытие статуса в шапке чата (Hide Subtitle / Status in Chat Action Bar)**:
+  * **Описание:** Скрывает подзаголовок в верхнем заголовке чата (время захода, статус «в сети», количество участников группы, индикатор «печатает...») для чистоты интерфейса, безопасных скриншотов и стриминга. Название чата или имя собеседника автоматически центрируется по вертикали.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Скрыть статус в шапке чата»**.
+  * **Ключ конфигурации:** `HundredGramConfig.hideActionBarStatus` (`boolean`, по умолчанию `false`).
+  * **Ключевые классы:** [`ChatAvatarContainer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/ChatAvatarContainer.java).
+
+* **Интервал перемотки видео по двойному нажатию (Double Tap Seek Duration)**:
+  * **Описание:** Позволяет выбрать интервал перемотки вперед и назад при двойном касании по правому или левому краю видеоплеера `PhotoViewer`: 5, 10, 15 или 20 секунд (вместо жестко закодированных 10 секунд).
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Медиа и качество` -> раздел «Видео» -> **«Интервал перемотки по двойному нажатию»**.
+  * **Ключ конфигурации:** `HundredGramConfig.doubleTapSeekDuration` (`int`, по умолчанию `10`).
+  * **Ключевые классы:** [`PhotoViewer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/PhotoViewer.java).
+
+* **Быстрый переход между темами форумов (Quick Topic Transition)**:
+  * **Описание:** Сокращает длительность анимации переключения между темами (топиками) форумов и pull-жеста перехода с 150ms до 60ms, убирая лишние задержки и делая навигацию в форумных группах мгновенной.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Быстрый переход между темами»**.
+  * **Ключ конфигурации:** `HundredGramConfig.quickTopicTransition` (`boolean`, по умолчанию `false`).
+  * **Ключевые классы:** [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+* **Статус:** В релизе.
+
+---
+
+## 40. Интерактивный редизайн настроек, живые превью и физика переходов (Interactive Settings Redesign & Transitions)
+
+* **Новый центр управления и карточный интерфейс (Hero Hub & Modern Cards)**:
+  * **Описание:** Полная переработка экрана настроек `HundredGramSettingsActivity`:
+    - **Hero-профиль (`HundredGramSettingsHeroCell`)**: карточка текущего пользователя с аватаркой (учитывающей настройку скругления углов), отображением имени, `@username`, версии клиента, а также 4 быстрыми индикаторами состояния (AI, Vault, Ghost, Plugins).
+    - **Интерактивные карточки категорий (`HundredGramCardCell`)**: стиль iOS/OneUI со скругленными цветными бейджами иконок, двустрочными описаниями и динамическими статусами (бейдж-пилюли).
+    - **Виджет хранилища Медиа-сейфа (`HundredGramVaultStorageCard`)**: встроенная карточка статистики объема сохраненных файлов с прогресс-баром и быстрым переходом в просмотрщик сейфа.
+  * **Где настраивается (UI):** `Настройки` -> **«Настройки 100gram»**.
+  * **Ключевые классы:** [`HundredGramSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java), [`HundredGramCardCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramCardCell.java), [`HundredGramSettingsHeroCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramSettingsHeroCell.java), [`HundredGramVaultStorageCard.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramVaultStorageCard.java).
+
+* **Живые интерактивные превью-компоненты (Interactive Previews)**:
+  * **Свайпы сообщений (`SwipeActionsPreviewCell`)**: карточка интерактивного сообщения, которую можно смахнуть влево с тактильным откликом при достижении порога срабатывания, цветным кругом действия и горизонтальным переключателем чипов быстрых действий (Ответить, Сохранить, Копировать, Переслать, Изменить, Удалить).
+  * **Баблы сообщений (`MessageBubblePreviewCell`)**: живой холст с демонстрацией входящего и исходящего сообщений, мгновенно реагирующий на переключение скрытия хвостиков сообщений (`removeMessageTail`), иконки карандаша (`replaceEditedWithIcon`), отображения секунд в таймстампах (`showSecondsInTime`) и счетчика пересылок (`showForwardsCount`).
+  * **Размер стикеров (`StickerSizePreviewCell`)**: наглядное превью с масштабированием стикера на пружинной анимации (`ValueAnimator` + `OvershootInterpolator`) и горизонтальной линейкой масштаба (50%, 75%, 100%, 125%, 150%).
+  * **Где настраивается (UI):** `Настройки 100gram` -> разделы «Внешний вид и стиль», «Действия и свайпы», «Медиа и качество».
+  * **Ключевые классы:** [`SwipeActionsPreviewCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/SwipeActionsPreviewCell.java), [`MessageBubblePreviewCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/MessageBubblePreviewCell.java), [`StickerSizePreviewCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/StickerSizePreviewCell.java).
+
+* **Физика анимаций переходов (Spring Screen Transitions & AOSP Style)**:
+  * **Описание:** Настраиваемая физика переходов экранов и диалогов форка:
+    - `Стандартная (Default)`: классическая плавная анимация Telegram.
+    - `AOSP (Android)`: линейно-кубическая интерполяция стандартного Android.
+    - `Пружинная (Spring)`: физическая затухающая гармоническая осцилляция (`SpringInterpolator` с коэффициентом затухания damping = 0.78f и реакцией 280ms) для естественного и отзывчивого открытия/закрытия экранов.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> «Анимации переходов и разделители» -> **«Анимация переходов»**.
+  * **Ключ конфигурации:** `HundredGramConfig.transitionAnimation` (`int`, `TRANSITION_DEFAULT=0`, `TRANSITION_AOSP=1`, `TRANSITION_SPRING=2`).
+  * **Ключевые классы:** [`SpringInterpolator.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/SpringInterpolator.java), [`ActionBarLayout.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ActionBar/ActionBarLayout.java).
+
+* **Кастомизация разделителей списков (Divider Styles)**:
+  * **Описание:** Возможность выбрать визуальный стиль линий-разделителей между элементами списков: «Классическая линия» (`DIVIDER_LINE`), «Островные сегменты» (`DIVIDER_SEGMENTS`) или «Без разделителей» (`DIVIDER_HIDDEN` для полностью плоского современного вида).
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> «Анимации переходов и разделители» -> **«Стиль разделителей»**.
+  * **Ключ конфигурации:** `HundredGramConfig.dividerStyle` (`int`, `DIVIDER_LINE=0`, `DIVIDER_SEGMENTS=1`, `DIVIDER_HIDDEN=2`).
+  * **Ключевые классы:** [`UniversalAdapter.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/UniversalAdapter.java).
+* **Статус:** В релизе.
+
+---
+
+## 41. Мульти-действия свайпом по сообщениям и векторный счетчик пересылок (Swipe Actions & Forwards Count)
+
+* **Многослотовое меню свайпа по сообщению (Multi-Slot Swipe Actions)**:
+  * **Описание:** Продвинутая система свайпов сообщений из exteraGram. При сдвиге сообщения влево и удержании пальца с движением вверх или вниз открывается вертикальная колонка доступных действий с тактильным откликом при смене слота:
+    - Поддерживаемые действия: «Ответить», «В Избранное», «Скопировать», «Переслать», «Закрепить», «Редактировать», «Удалить», «Без звука».
+    - Интерактивный предпросмотр в настройках с возможностью протестировать жест вживую.
+    - Drag-and-drop перетаскивание для сортировки приоритета действий.
+    - Включение/отключение отдельных действий в один клик.
+    - Опция «Зацикливание» (`swipeActionsLoop`): циклический переход от последнего действия к первому.
+    - Опция «Обратная прокрутка» (`swipeActionsReversed`): выбор направления прокрутки колонки действий вместе с пальцем.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Действия` -> **«Действия свайпом»** (отдельный экран `HundredGramSwipeActionsActivity`).
+  * **Ключ конфигурации:** `HundredGramConfig.chatMessageSwipeActions` (`String`), `HundredGramConfig.swipeActionsLoop` (`boolean`), `HundredGramConfig.swipeActionsReversed` (`boolean`).
+  * **Ключевые классы:** [`SwipeActionsHelper.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/SwipeActionsHelper.java), [`HundredGramSwipeActionsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSwipeActionsActivity.java), [`SwipeActionsCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/SwipeActionsCell.java), [`SwipeAction.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/chats/SwipeAction.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+
+* **Векторная иконка счетчика пересылок (Forwards Count Vector Rendering)**:
+  * **Описание:** Замена старого текстового символа Unicode `↗` на нативную векторную отрисовку зеркально отраженной стрелки `R.drawable.msg_reply_small` через `ForwardsCountUiHelper`. Иконка автоматически наследует текущие цвета темы (акцентные или белые в зависимости от исходящего/входящего бабла и медиафона), поддерживает прозрачность (alpha), масштабирование и плавную смену числовых значений.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс` -> раздел «Чаты и сообщения» -> **«Количество пересылок»**.
+  * **Ключ конфигурации:** `HundredGramConfig.showForwardsCount` (`boolean`, по умолчанию `true`).
+  * **Ключевые классы:** [`ForwardsCountUiHelper.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/ForwardsCountUiHelper.java), [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java).
+* **Статус:** В релизе.
+
+---
+
+## 42. Мульти-сервисная система ИИ и кастомные роли (AI Assistant Engine & Personas)
+
+* **Многопровайдерная система ИИ-сервисов (Multi-Provider AI Services)**:
+  * **Описание:** Архитектура подключения и управления произвольными сервисами генеративного искусственного интеллекта (LLM), адаптированная из exteraGram:
+    - Пресеты провайдеров с готовыми базовыми URL и шаблонами: **Google Gemini**, **OpenAI**, **OpenRouter**, **Groq**, **Perplexity**, а также **Custom** для персональных эндпоинтов (vLLM, Ollama, LM Studio, локальные серверы).
+    - Быстрый импорт ключей и конфигураций из буфера обмена («Вставить из буфера»).
+    - Поддержка reasoning/thinking моделей (DeepSeek-R1, Gemini 2.0 Flash Thinking, o3-mini) с отдельным флагом конфигурации.
+    - Встроенная валидация подключения и тестовый пинг модели прямо из формы редактирования сервиса.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Искусственный интеллект` -> **«Сервисы»** (`HundredGramAiServicesActivity`, `HundredGramEditServiceActivity`).
+  * **Ключевые классы:** [`HundredGramAiServicesActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramAiServicesActivity.java), [`HundredGramEditServiceActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramEditServiceActivity.java), [`HundredGramAiConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/HundredGramAiConfig.java), [`HundredGramAiController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/ai/HundredGramAiController.java).
+
+* **Кастомные и системные роли ИИ с эмодзи (AI Personas & Animated Emoji)**:
+  * **Описание:** Управление стилями общения и системными промптами ассистента:
+    - Предустановленные системные роли: «По умолчанию», «Формальный», «Неформальный», «Кодер», «Краткий», «Учитель», «Переводчик».
+    - Создание и редактирование собственных персон с кастомным именем, системным промптом и привязкой анимированных эмодзи через Telegram-нативный `CreateAiStyleAlert` без привязки к серверным MTProto-эндпоинтам.
+    - Копирование системного промпта в буфер обмена и удаление роли по долгому нажатию.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Искусственный интеллект` -> **«Роли»** (`HundredGramRolesActivity`).
+  * **Ключевые классы:** [`HundredGramRolesActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramRolesActivity.java), [`RoleCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/RoleCell.java), [`AIEditorAlert.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AIEditorAlert.java).
+
+* **История диалогов и параметры генерации (Dialogue History & Generation Tuning)**:
+  * **Описание:** Просмотр и менеджмент контекста общения с нейросетью:
+    - Интерактивный просмотр истории предыдущих запросов и ответов в виде ленты сообщений (`HundredGramAiHistoryActivity`) с возможностью полной очистки сессии.
+    - Точная настройка температуры генерации (от 0.0 до 2.0) для управления креативностью и детерминированностью ответов.
+    - Потоковая генерация ответов (Streaming) в реальном времени.
+    - Режим скрытия запроса в чате («Только ответ»).
+    - Автоматическое цитирование сообщений при генерации ответов.
+  * **Где настраивается (UI):** `Настройки 100gram` -> **«Искусственный интеллект»** (`HundredGramAiSettingsActivity`).
+  * **Ключевые классы:** [`HundredGramAiSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramAiSettingsActivity.java), [`HundredGramAiHistoryActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramAiHistoryActivity.java).
+* **Статус:** В релизе.
+
+---
+
+## 43. Выборочные уведомления аккаунтов, фильтр Zalgo и квадратный FAB (Selective Notifications & Ergonomics)
+
+* **Выборочные push-уведомления для каждого аккаунта (Selective Account Notifications)**:
+  * **Описание:** Telegram изначально предлагает бинарный выбор: либо уведомления только для активного профиля, либо сразу для всех подключенных аккаунтов. В форке реализована гранулярная настройка: в настройках уведомлений под пунктом «Все аккаунты» появляется переход «Аккаунты», где пользователь может чекбоксами выбрать, от каких конкретно учетных записей получать push-уведомления в фоне.
+  * **Безопасность:** Встроена защита от отключения текущего аккаунта: при нажатии на него срабатывает пружинная анимация встряхивания (`shakeViewSpring`), подается тактильный виброотклик об ошибке и всплывает Bulletin с предупреждением.
+  * **Где настраивается (UI):** `Настройки` -> `Уведомления и звуки` -> раздел «Аккаунты» -> **«Аккаунты»** (`HundredGramAccountNotificationsActivity`).
+  * **Ключевые классы:** [`HundredGramAccountNotifications.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramAccountNotifications.java), [`HundredGramAccountNotificationsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramAccountNotificationsActivity.java), [`NotificationsController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/NotificationsController.java), [`NotificationsSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/NotificationsSettingsActivity.java).
+
+* **Фильтрация Zalgo-глитчей и экстремальной диакритики (HundredGramZalgoFilter)**:
+  * **Описание:** Защита от спам-атак и вредоносных строк, содержащих нагромождения диакритических знаков Unicode (Zalgo), которые вызывают лаги, деградацию производительности или аварийные падения UI-рендеринга шрифтов Android.
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Действия и меню сообщений` -> **«Фильтрация Zalgo-текста»**.
+  * **Ключевые классы:** [`HundredGramZalgoFilter.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramZalgoFilter.java), [`Emoji.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/Emoji.java).
+
+* **Квадратная плавающая кнопка в стиле Material 3 (Square FAB)**:
+  * **Описание:** Переключение формы плавающей кнопки создания сообщения (FAB) и подкнопки историй в списке чатов с классического круглого вида на современный закругленный квадрат Material 3 (радиус скругления 16dp и 12dp соответственно).
+  * **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> **«Квадратная плавающая кнопка»**.
+  * **Ключевые классы:** [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java), [`FragmentFloatingButton.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/FragmentFloatingButton.java).
+* **Статус:** В релизе.
+
+---
+
+## 44. Быстрый расчет математических выражений и инспектор IP-адресов (Inline Math & IP Inspector)
+
+* **Мгновенный расчет выражений в поле ввода сообщений (Inline Math Engine)**:
+  - **Описание:** Живой расчет математических и арифметических выражений прямо в процессе набора текста в поле ввода чата.
+  - **Математические возможности:**
+    - Арифметические операции: сложение (`+`), вычитание (`-`), умножение (`*`), деление (`/`), возведение в степень (`^`), квадратный корень (`√`), остаток от деления (`%`), факториал (`!`).
+    - Тригонометрия и функции: `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `log`, `ln`, `abs`, `sqrt`, `cbrt`, `ceil`, `floor`, `round`, `exp`, `deg`, `rad`, `min`, `max`.
+    - Математические константы: число Пи (`pi`), число Эйлера (`e`), золотое сечение (`phi`).
+  - **Интерфейс и анимации:**
+    - Полупрозрачный фантомный предпросмотр результата в конце выражения (`GhostTextLayout`);
+    - Плавное появление (`AnimatedFloat`) и фирменная разворачивающаяся анимация подстановки (`MathRevealAnimation`);
+    - Интеллектуальное исключение дат (`looksLikeDate`): предотвращает ложные срабатывания при вводе дат календаря (например, `14.10.2024`);
+    - Подстановка по нажатию клавиши пробела или `=`, быстрое аннулирование (Undo) по клавише Backspace.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Поведение в чатах» -> **«Быстрый расчет выражений»**.
+  - **Ключевые классы:** [`HundredGramInlineMathController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/math/inline/HundredGramInlineMathController.java), [`MathExpression.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/math/MathExpression.java), [`MathOperators.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/math/MathOperators.java), [`GhostTextLayout.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/math/inline/GhostTextLayout.java), [`MathRevealAnimation.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/math/inline/MathRevealAnimation.java), [`EditTextBoldCursor.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/EditTextBoldCursor.java), [`ChatActivityEnterView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java).
+
+* **Инспектор IP-адресов и параметров прокси (IP Address & Proxy Inspector)**:
+  - **Описание:** Контекстное всплывающее меню проверки безопасности и геолокации сетевых адресов при долгом нажатии на IPv4 / IPv6 или адрес сервера в ссылках прокси.
+  - **Предоставляемые данные:**
+    - Быстрое копирование IP-адреса;
+    - Страна, регион и город расположения узла с локализованной иконкой геолокации;
+    - Название интернет-провайдера (ISP);
+    - Организация-владелец автономной системы (AS);
+    - Ассоциированное доменное имя;
+    - Часовой пояс расположения хоста.
+  - **Архитектура:** Асинхронные HTTP-запросы к API `ipwho.is` с LRU-кэшированием и фильтрацией приватных, локальных и мультикаст адресов.
+  - **Ключевые классы:** [`HundredGramIpInfoController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramIpInfoController.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+* **Статус:** В релизе.
+
+---
+
+## 45. Мини-аватары диалогов, пауза медиа и фильтрация реакций (Ergonomics & Media Controls)
+
+* **Мини-аватары авторов в списке чатов (`senderMiniAvatars`)**:
+  - **Описание:** Отображение компактных круглых аватарок авторов последних сообщений прямо в строке предпросмотра диалогов для групп и каналов.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Главный экран и навигация» -> **«Мини-аватары авторов»**.
+  - **Ключевые классы:** [`DialogCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/DialogCell.java).
+
+* **Автоматическая пауза медиа при сворачивании (`pauseOnMinimize`)**:
+  - **Описание:** Раздельная приостановка воспроизведения полноэкранного видео, голосовых и круглых видеосообщений при переходе приложения в фоновый режим.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Медиа и кэш` -> раздел «При сворачивании приложения» -> **«Пауза видео»**, **«Пауза голосовых»**, **«Пауза видеосообщений»**.
+  - **Ключевые классы:** [`PhotoViewer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/PhotoViewer.java), [`MediaController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MediaController.java).
+
+* **Скрытие кнопки «Отправить от имени» (`hideSendAsPeer`)**:
+  - **Описание:** Скрытие кнопки переключения профиля отправки в поле ввода сообщений с возможностью вызова меню по долгому нажатию на кнопку эмодзи.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Поведение в чатах» -> **«Скрыть отправку от имени»**.
+  - **Ключевые классы:** [`ChatActivityEnterView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java).
+
+* **Скрытие стрелки «Поделиться» у каналов (`hideShareButton`)**:
+  - **Описание:** Отключение круглой кнопки быстрой пересылки рядом с постами в каналах во избежание случайных нажатий при прокрутке.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Сообщения» -> **«Скрыть кнопку пересылки»**.
+  - **Ключевые классы:** [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java).
+
+* **Скрытие реакций в каналах и группах (`hideReactionsInChannels`, `hideReactionsInGroups`)**:
+  - **Описание:** Раздельное отключение плашек реакций под сообщениями в каналах и группах.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Сообщения» -> **«Скрыть реакции в каналах»**, **«Скрыть реакции в группах»**.
+  - **Ключевые классы:** [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+* **Статус:** В релизе.
+
+---
+
+## 46. Мгновенные push-уведомления, архив свайпом и медиа-контроли (Instant Alerts & Chat Controls)
+
+* **Отключение искусственной задержки push-уведомлений (`disableNotificationDelay`)**:
+  - **Описание:** Полный пропуск встроенной задержки Telegram (1–3 секунды) перед показом входящих уведомлений. Оповещения появляются моментально.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Поведение в чатах» -> **«Отключить задержку уведомлений»**.
+  - **Ключевые классы:** [`NotificationsController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/NotificationsController.java).
+
+* **Открытие архива свайпом вниз (`archiveOnPull`)**:
+  - **Описание:** Мгновенный переход к экрану архива чатов при оттягивании списка диалогов вниз свайпом.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Главный экран и навигация» -> **«Открывать архив по свайпу»**.
+  - **Ключевые классы:** [`DialogsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java).
+
+* **Настраиваемая нижняя кнопка в каналах (`channelBottomButton`)**:
+  - **Описание:** Выбор действия для плавающей кнопки внизу ленты каналов: Без звука/Включить звук, Чат обсуждения или полное Скрытие кнопки.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Поведение в чатах» -> **«Нижняя кнопка в каналах»**.
+  - **Ключевые классы:** [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+
+* **Неограниченные недавние стикеры (`unlimitedRecentStickers`)**:
+  - **Описание:** Снятие ограничения в 20 последних стикеров во вкладке недавних с сохранением всей истории использованных стикеров.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Размер стикеров и GIF» -> **«Неограниченные недавние стикеры»**.
+  - **Ключевые классы:** [`MediaDataController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MediaDataController.java).
+
+* **Гибкая отметка времени на стикерах (`stickerTimeMode`)**:
+  - **Описание:** Конфигурация отображения времени и галочек прочтения на стикерах: по умолчанию (поверх стикера), рядом со стикером (вынос за контур изображения) или скрыто.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Интерфейс и дизайн` -> раздел «Размер стикеров и GIF» -> **«Время на стикерах»**.
+  - **Ключевые классы:** [`StickerTime.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/chats/StickerTime.java), [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java).
+
+* **Запоминание камеры видеосообщений (`rememberLastUsedCamera`)**:
+  - **Описание:** Автоматическое запоминание последней активной камеры (фронтальной или основной) при записи круглых видеосообщений.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Камера` -> раздел «Кружочки» -> **«Запоминать камеру»** / `Медиа и кэш`.
+  - **Ключевые классы:** [`InstantCameraView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/InstantCameraView.java), [`HundredGramCameraActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramCameraActivity.java).
+
+* **Автовыбор исходного качества видео (`preferOriginalQuality`)**:
+  - **Описание:** Автоматический выбор максимального / оригинального потока качества при запуске воспроизведения многопоточных видеороликов.
+  - **Где настраивается (UI):** `Настройки 100gram` -> `Медиа и кэш` -> раздел «Видео» -> **«Исходное качество видео»**.
+  - **Ключевые классы:** [`VideoPlayer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/VideoPlayer.java), [`PhotoViewer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/PhotoViewer.java).
+* **Статус:** В релизе.
+
+---
+
+## 47. Локальный теневой бан пользователей и каналов (Local Shadowban)
+
+* **Локальное подавление сообщений нежелательных авторов**:
+  * **Описание:** Возможность полностью скрыть сообщения конкретных спамеров, троллей или нежелательных каналов из любых групп, бесед и комментариев на клиенте без бана на сервере Telegram и без уведомления собеседников.
+  * **Безопасная архитектура:** Не удаляет сообщения из локальной базы данных Telegram и не ломает индексы ленты чата; вместо этого адаптер `ChatActivity` связывает тенезабаненные сообщения с фиктивным представлением нулевого размера `HundredGramDummyView` (`viewType = -1000`, `height = 0`, `visibility = GONE`).
+  * **Где вызывается (UI):**
+    * В контекстном меню сообщений чата: **«В теневой бан»** / **«Снять теневой бан»** для любых входящих или пересланных сообщений;
+    * В меню профиля пользователя или канала (`ProfileActivity` -> `...`): **«В теневой бан»** / **«Снять теневой бан»**;
+    * В настройках: `Настройки 100gram` -> `Конфиденциальность` -> **«Теневой бан»** (открывает полноценный список управления `HundredGramShadowbanActivity`).
+  * **Экран управления (`HundredGramShadowbanActivity`)**:
+    * Просмотр всех тенезабаненных пользователей и каналов с аватарками, именами и статусами;
+    * Быстрое удаление из бана по кнопке корзины или свайпу;
+    * Добавление новых пользователей/каналов через встроенный пикер диалогов;
+    * Полная очистка списка теневого бана с диалогом подтверждения.
+  * **Ключевые классы:** [`HundredGramShadowbanController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramShadowbanController.java), [`HundredGramShadowbanActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramShadowbanActivity.java), [`HundredGramDummyView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramDummyView.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`ProfileActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ProfileActivity.java).
+* **Статус:** В релизе.
+
+---
+
+## 48. Фильтрация контента в каналах и чатах (Content & Keyword Filter)
+
+* **Локальная фильтрация сообщений по стоп-словам, спам-ссылкам и Regex**:
+  * **Описание:** Мощный локальный фильтр нежелательных постов и сообщений в каналах, группах и личных чатах. Позволяет избавиться от рекламы крипто-скама, казино, реферальных ссылок и заказных постов без выхода из каналов.
+  * **Готовые пресеты (Presets):**
+    * *Крипто-скам и казино:* подавляет airdrop, giveaway, binance, casino, 1win, вулкан, ставки, договорные матчи, схемы заработка и т.д.
+    * *Спам-ссылки и инвайты:* подавляет `t.me/+`, `t.me/joinchat/`, `bit.ly`, `tinyurl.com` и сервисы сокращения ссылок.
+  * **Пользовательские правила:**
+    * Добавление любых кастомных ключевых слов (регистронезависимый поиск по тексту сообщений);
+    * Добавление сложных регулярных выражений (Regex) с автоматической валидацией синтаксиса перед сохранением и кэшированием компилированных `Pattern`.
+  * **Архитектура подавления и скрытия:**
+    * В `ChatActivity` связывает отфильтрованные сообщения с `HundredGramDummyView` (`viewType = -1000`, нулевой размер);
+    * В `ChatMessageCell` возвращает нулевые размеры в `onMeasure` и прерывает отрисовку в `onDraw`;
+    * В `NotificationsController` вырезает отфильтрованные сообщения из очереди пуш-уведомлений, полностью предотвращая звуковые оповещения и баннеры для спама.
+  * **Где настраивается:** `Настройки 100gram` -> `Конфиденциальность` или `Интерфейс` -> **«Фильтрация контента»** ([`HundredGramContentFilterActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramContentFilterActivity.java)).
+  * **Ключевые классы:** [`HundredGramContentFilterController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramContentFilterController.java), [`HundredGramContentFilterActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramContentFilterActivity.java), [`HundredGramDummyView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramDummyView.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java), [`NotificationsController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/NotificationsController.java).
+* **Статус:** В релизе.
+
+---
+
+## 49. Стилизация меток удаленных сообщений и перехват активности
+
+* **Кастомизация значка и прозрачности удалённых сообщений (Deleted Mark Customization)**:
+  * **Выбор значка:** Корзина (`msg_delete`), Крестик (`msg_clear_input`), Перечеркнутый глаз (`msg_archive_hide`).
+  * **Полупрозрачные удалённые сообщения:** Опция включения альфы 0.65f для удаленных сообщений для визуального отделения от обычной переписки.
+  * **Где настраивается:** `Настройки 100gram` -> `Интерфейс` -> «Выделять удалённые сообщения».
+  * **Ключевые классы:** [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java), [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+* **Автоматический перехват активности (HundredGramActivityTracker)**:
+  * Фиксация точного времени последней активности пользователей при отправке ими сообщений в любых чатах/группах, а также при выставлении реакций (`TRIGGER_REACTION = 5`).
+  * Отображение триггера реакций в шторке истории активности [`HundredGramUserActivityBottomSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramUserActivityBottomSheet.java) с иконкой `msg_reactions2`.
+  * **Ключевые классы:** [`HundredGramActivityTracker.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramActivityTracker.java), [`MessagesController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java), [`HundredGramUserActivityBottomSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramUserActivityBottomSheet.java).
+* **Статус:** В релизе.
+
+---
+
+## 50. Regex-поиск сообщений и массовые упоминания (@all / @admins)
+
+* **Регулярные выражения в поиске сообщений (In-Chat Regex Search)**:
+  * **Описание:** Полнофункциональный поиск сообщений в чатах и группах с использованием регулярных выражений Java/Android. Позволяет находить специфичные паттерны данных в переписке (номера телефонов, банковские карты, крипто-кошельки, хэши транзакций, ссылки, даты, IP-адреса) без сторонних утилит.
+  * **Кнопка переключения `.*` (Regex Toggle):** Интерактивная кнопка в поисковой строке `ChatActivity` со скругленным бейджем и анимацией нажатия. Обычное нажатие включает/выключает Regex-режим (с всплывающим информационным Bulletin), а долгое нажатие открывает шторку шаблонов Regex.
+  * **Библиотека встроенных шаблонов (Presets):**
+    * *Номера телефонов:* международные и локальные форматы (`(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{2,4}`);
+    * *Банковские карты:* 16-значные номера банковских карт с пробелами и дефисами (`\b(?:\d{4}[ -]?){3}\d{4}\b`);
+    * *Bitcoin-кошельки (BTC):* адреса форматов Legacy, SegWit и Bech32 (`\b(?:[13][a-km-zA-HJ-NP-Z1-9]{25,34}|bc1[a-zA-HJ-NP-Z0-9]{39,59})\b`);
+    * *Ethereum / EVM:* адреса сетей Ethereum, BSC, Polygon, Arbitrum (`\b0x[a-fA-F0-9]{40}\b`);
+    * *TON-кошельки:* адреса The Open Network (EQ... и UQ... `\b[EU]Q[a-zA-Z0-9_-]{46}\b`);
+    * *USDT (TRC20 / Tron):* адреса сети Tron (`\bT[a-zA-Z0-9]{33}\b`);
+    * *Ссылки и URL:* веб-адреса http/https (`https?:\/\/[^\s\/$.?#].[^\s]*`);
+    * *Email-адреса:* стандартные адреса электронной почты (`[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+`);
+    * *IPv4-адреса:* сетевые IP-адреса (`\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b`);
+    * *Даты:* даты в форматах ДД.ММ.ГГГГ, ГГГГ-ММ-ДД (`\b\d{1,2}[./-]\d{1,2}[./-]\d{2,4}\b`).
+  * **Кастомные шаблоны пользователя:** Возможность сохранять, называть и удалять собственные регулярные выражения через шторку [`HundredGramRegexPresetsBottomSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramRegexPresetsBottomSheet.java). Шаблоны сохраняются в `HundredGramConfig` в формате JSON.
+  * **Безопасность и оптимизация (ReDoS Protection):** Проверка регулярных выражений перед поиском, защита от катастрофического бэктрекинга (ReDoS) с ограничением вложенных квантификаторов, прямой поиск по локальной базе SQLite `messages_v2` в фоновом потоке `MessagesStorage.searchMessagesByRegex`.
+  * **Ключевые классы:** [`HundredGramRegexSearchController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramRegexSearchController.java), [`HundredGramRegexPresetsBottomSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramRegexPresetsBottomSheet.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`MessagesStorage.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesStorage.java).
+
+* **Массовое упоминание участников (@all / @everyone / @admins)**:
+  * **Описание:** Быстрое тегирование участников групп без ручного ввода каждого логина. При наборе в поле ввода `@`, `@all`, `@everyone`, `@admins` вверху подсказок появляются интерактивные элементы вызова массового упоминания с иконками.
+  * **Выбор аудитории (Audience Target):**
+    * *Все участники (All Members)* — полный состав группы;
+    * *Онлайн / недавние (Online / Recent)* — фильтрация участников со статусом `UserStatusOnline` или `UserStatusRecently`;
+    * *Только администраторы (Admins Only)* — тег админ-состава.
+  * **Два стиля оформления (Mention Styles):**
+    * *Скрытый / Аккуратный (Hidden / Clean)*: Создает незаметную ссылку на спецсимволе нулевой ширины `\u2060` (`Word Joiner`) с кликабельным спаном `URLSpanUserMention`. Позволяет тегнуть до 50 участников одним словом `@all` без простыни текста в чате.
+    * *Явный список (Visible List)*: Форматирует открытый список участников в виде `@username` или текстовых ссылок на имена.
+  * **Лимиты Telegram и безопасность:** Автоматическая разбивка на пачки по 50 сущностей (максимальный лимит Telegram на количество `MessageEntityMentionName` в одном сообщении), автоматическая фильтрация ботов, удаленных аккаунтов (`deleted`) и самого пользователя.
+  * **Ключевые классы:** [`HundredGramMentionController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramMentionController.java), [`HundredGramMentionBottomSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramMentionBottomSheet.java), [`MentionsAdapter.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Adapters/MentionsAdapter.java), [`MentionsContainerView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/MentionsContainerView.java), [`MentionCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/MentionCell.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+* **Статус:** В релизе.
+
+---
+
+## 51. Блокировщик рекламы в браузере, музыкальный статус Now Playing и единая лента каналов (AdBlock, Now Playing & Channels Feed)
+
+* **Встроенный AdBlock во встроенном веб-браузере (Browser AdBlock)**:
+  * **Описание:** Мощный модуль блокировки навязчивой рекламы, всплывающих баннеров, трекеров аналитики и фишинговых сайтов прямо во встроенном браузере Telegram и Instant View.
+  * **Техническая реализация:**
+    * Интеграция C++ движка `libetgadblock.so` для высокоскоростной фильтрации сетевых запросов без задержек рендеринга;
+    * Менеджер подписок [`SubscriptionsManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/adblock/SubscriptionsManager.java) с фоновым обновлением правил EasyList, uBlock Origin и списков защиты от фишинга;
+    * Менеджер скриптлетов [`ScriptletsManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/adblock/ScriptletsManager.java) для косметической очистки DOM (сокрытие пустых рекламных блоков, обход anti-adblock ловушек);
+    * Перехват запросов в [`BotWebViewContainer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/web/BotWebViewContainer.java), индикатор заблокированных элементов в шапке [`WebActionBar.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/web/WebActionBar.java) и поддержка Instant View в [`ArticleViewer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ArticleViewer.java).
+  * **Управление:** Быстрый тумблер в настройках интерфейса и браузера [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+  * **Ключевые классы:** [`SubscriptionsManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/adblock/SubscriptionsManager.java), [`ScriptletsManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/adblock/ScriptletsManager.java), [`BotWebViewContainer.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/web/BotWebViewContainer.java), [`WebActionBar.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/web/WebActionBar.java).
+
+* **Музыкальный статус Now Playing в профилях пользователей**:
+  * **Описание:** Стильная адаптивная карточка воспроизводимой музыки в профилях пользователей, отображающая текущий трек или трек из раздела сохраненной музыки (Saved Music).
+  * **Особенности карточки [`NowPlayingCard.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/NowPlayingCard.java):**
+    * Динамический акцентный градиент на основе обложки альбома;
+    * Векторный процедурный паттерн парящих музыкальных нот с прозрачностью;
+    * Распознавание и бейдж музыкального сервиса: Apple Music, Spotify, VK Музыка, Telegram, SoundCloud, Яндекс Музыка;
+    * Встроенное воспроизведение 30-секундного официального превью песни через аудиодвижок ExoPlayer с плавной анимацией кнопки Play/Pause;
+    * Прямой переход к сохраненной музыке пользователя по клику на бейдж Saved Music.
+  * **Источники данных:** Резолвинг аудио-вложений из `userInfo.saved_music` и поиск официальных обложек и аудио-сэмплов через iTunes Search API.
+  * **Ключевые классы:** [`NowPlayingCard.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/NowPlayingCard.java), [`NowPlayingController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/NowPlayingController.java), [`NowPlayingDTO.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/NowPlayingDTO.java), [`ProfileActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ProfileActivity.java).
+
+* **Единая агрегированная лента каналов (Channels Feed)**:
+  * **Описание:** Полноценный режим ленты новостей, объединяющий публикации со всех каналов, на которые подписан пользователь, в единую хронологическую ленту.
+  * **Возможности [`FeedActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/ui/FeedActivity.java):**
+    * Непрерывный хронологический таймлайн постов без необходимости заходить в каждый канал по отдельности;
+    * Экран управления подписками ленты [`FeedChannelsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/ui/FeedChannelsActivity.java): скрытие нежелательных каналов из ленты, включение/исключение архивированных каналов;
+    * Кнопка «Отметить все как прочитанные» с подтверждением и анимацией прогресса;
+    * Поддержка широких постов (`WidePostsInFeed`) и счетчика непрочитанных;
+    * Фоновый загрузчик ленты [`FeedTimelineLoader.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/loader/FeedTimelineLoader.java) с надежной защитой от сбоев БД и контроллер [`FeedController.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/FeedController.java).
+  * **Точки входа:** Пункт меню быстрого доступа в [`DialogsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java) рядом с «Избранным» и выделенный раздел настроек в [`HundredGramSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java).
+  * **Ключевые классы:** [`FeedActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/ui/FeedActivity.java), [`FeedChannelsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/ui/FeedChannelsActivity.java), [`FeedController.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/FeedController.java), [`FeedTimelineLoader.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/loader/FeedTimelineLoader.java).
+* **Статус:** В релизе.
+
+---
+
+## 52. Кастомные ленты, плейлисты, вечная история прочтений, нижняя навигация и быстрый бан (Custom Feeds, Playlists & Read History)
+
+* **Пользовательские кастомные ленты каналов (Custom Feeds)**:
+  * **Описание:** Возможность создания нескольких независимых тематических лент каналов (например, «Новости», «Технологии», «Крипта», «Мемы») с гибким включением/исключением каналов для каждой ленты отдельно.
+  * **Техническая реализация:**
+    * Модель [`CustomFeed.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/CustomFeed.java) с JSON-сериализацией и контроллер [`CustomFeedManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/CustomFeedManager.java);
+    * Поддержка переключения активной ленты в один тап через выпадающее меню ActionBar в [`FeedActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/ui/FeedActivity.java);
+    * Диалог быстрого создания новой ленты с вводом названия;
+    * Экран [`FeedChannelsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/ui/FeedChannelsActivity.java) с параметром `customFeedId`, позволяющий переключать привязку каналов именно к выбранной пользовательской ленте;
+    * Фильтрация таймлайна в [`FeedTimelineLoader.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/loader/FeedTimelineLoader.java) с динамическим подтягиванием списка каналов активной ленты.
+  * **Ключевые классы:** [`CustomFeed.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/CustomFeed.java), [`CustomFeedManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/CustomFeedManager.java), [`FeedActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/ui/FeedActivity.java), [`FeedChannelsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/ui/FeedChannelsActivity.java), [`FeedTimelineLoader.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/loader/FeedTimelineLoader.java).
+
+* **Архив и Лента каналов в нижней навигационной панели (Bottom Navigation Tabs)**:
+  * **Описание:** Расширение нижней стеклянной панели навигации [`MainTabsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/MainTabsActivity.java) дополнительными вкладками «Архив» и «Лента».
+  * **Техническая реализация:**
+    * Добавление типов табов `TabAnimation.ARCHIVE` и `TabAnimation.FEED` в векторную панель [`GlassTabView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/glass/GlassTabView.java);
+    * Расширение пула индексов и позиций в [`MainTabsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/MainTabsActivity.java) с поддержкой динамического создания `DialogsActivity(archive)` и `FeedActivity`;
+    * Независимые тумблеры отображения в [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java) и экране настроек интерфейса [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+  * **Ключевые классы:** [`MainTabsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/MainTabsActivity.java), [`GlassTabView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/glass/GlassTabView.java), [`HundredGramConfig.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+
+* **Пользовательские плейлисты в музыкальном плеере (Audio Playlists)**:
+  * **Описание:** Создание и управление музыкальными плейлистами прямо из всплывающего аудиоплеера Telegram.
+  * **Техническая реализация:**
+    * Создан менеджер [`HundredGramPlaylistManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramPlaylistManager.java) с хранением плейлистов и Base64-сериализацией TL-структур треков (`TLRPC.Message.serializeToStream()`);
+    * В [`AudioPlayerAlert.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AudioPlayerAlert.java) добавлены кнопка «Плейлисты» в ActionBar, в меню троеточия и пункт «Добавить в плейлист» в контекстном меню трека;
+    * Прямой запуск проигрывания любого плейлиста через `MediaController.getInstance().setPlaylist()`.
+  * **Ключевые классы:** [`HundredGramPlaylistManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramPlaylistManager.java), [`AudioPlayerAlert.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AudioPlayerAlert.java).
+
+* **Вечное сохранение времени прочтения сообщений (Read History Forever)**:
+  * **Описание:** Преодоление серверного 7-дневного лимита Telegram на просмотр участников, прочитавших сообщение в группах, а также отображение времени прочтения исходящих сообщений в личных чатах.
+  * **Техническая реализация:**
+    * Контроллер и SQLite хранилище [`HundredGramReadHistoryManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramReadHistoryManager.java), таблицы `hundredgram_read_history` и `hundredgram_dm_read_history`;
+    * Перехват сокет-событий `TL_updateReadHistoryOutbox` в [`MessagesController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java) с моментальной фиксацией точного времени прочтения собеседником;
+    * Автоматическое кэширование участников в [`MessageSeenView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/MessageSeenView.java) и оффлайн-фоллбэк при серверной ошибке истечения срока давности;
+    * Интеграция локального кэша в [`MessagePrivateSeenView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/MessagePrivateSeenView.java) и снятие блокировок в [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+  * **Ключевые классы:** [`HundredGramReadHistoryManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramReadHistoryManager.java), [`MessagesController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java), [`MessageSeenView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/MessageSeenView.java), [`MessagePrivateSeenView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/MessagePrivateSeenView.java), [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java).
+
+* **Быстрый бан в группах (Quick Ban)**:
+  * **Описание:** Для администраторов с правами блокировки пользователей добавлен пункт «Быстрый бан» в контекстное меню сообщений в группах, позволяющий в одно действие исключить нарушителя и удалить все его сообщения в чате.
+  * **Ключевые классы:** [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`MessagesController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java).
+
+* **Мини-аватарки авторов только в группах & устранение дублирования галочки**:
+  * В [`DialogCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/DialogCell.java) мини-аватар автора в последнем сообщении отключен в личных диалогах (1-на-1) и каналах.
+  * В [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java) ликвидирован баг визуального задвоения галочки статуса сообщения при смене состояния отправки/прочтения.
+* **Статус:** В релизе.
+ 
+---
+ 
+## 53. Полная интеграция Ленты каналов и Редизайн экрана музыки (Channels Feed & Music Screen)
+ 
+* **Интеграция Ленты каналов в ChatActivity (Channels Feed Integration)**:
+  * **Описание:** Нативная интеграция общей ленты каналов exteraGram непосредственно в чат-контейнер `ChatActivity` (`searchType = SEARCH_FEED`, `chatMode = MODE_SEARCH`).
+  * **Техническая реализация:**
+    * Контроллер [`FeedChatIntegration.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/FeedChatIntegration.java) управляет пагинацией постов из множества каналов, фильтрацией и разделителем непрочитанных публикаций;
+    * Полная поддержка широких постов (`Wide Posts`) для постов ленты в [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java);
+    * Нативный переход к оригинальному посту в канале по клику на аватар автора поста;
+    * Пункт «Лента каналов» в боковом меню (Drawer) и динамический счётчик непрочитанных постов во вкладке «Лента» нижней навигационной панели [`DialogsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java).
+  * **Ключевые классы:** [`ChatActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java), [`FeedChatIntegration.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/FeedChatIntegration.java), [`FeedController.java`](file:///D:/100gram/TMessagesProj/src/main/java/com/exteragram/messenger/feed/FeedController.java), [`ChatMessageCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java), [`DialogsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java).
+ 
+* **Редизайн экрана музыки и плавающий мини-плеер (Modern Music Screen & Floating Player)**:
+  * **Описание:** Обновлённый экран музыки [`HundredGramMusicActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramMusicActivity.java) с современным интерфейсом и плавающим мини-плеером внизу экрана.
+  * **Техническая реализация:**
+    * Плавающий мини-плеер внизу экрана: отображение обложки трека (`BackupImageView`), заголовка и артиста, кнопок Play/Pause (`PlayPauseDrawable`) и Next Track (`RLottieImageView`), полоски прогресса воспроизведения (`LineProgressView`), автоматический расчёт отступа над нижней навигационной панелью (`hasMainTabs`);
+    * Селектор источника аудио (Избранное или любой выбранный чат/канал через диалог выбора);
+    * Плейлисты прямо на экране: мгновенный старт воспроизведения треков плейлиста в один тап без перехода на другие экраны, всплывающее меню с возможностью переименования и удаления плейлиста.
+  * **Ключевые классы:** [`HundredGramMusicActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramMusicActivity.java), [`HundredGramPlaylistManager.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramPlaylistManager.java), [`AudioPlayerAlert.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AudioPlayerAlert.java).
+* **Статус:** В релизе.
+
+---
+
+## 54. Имитация активности и планировщик сессий «В сети» (Activity Simulation & Online Scheduler)
+
+* **Имитация присутствия в сети (Online Presence Simulation)**:
+  * **Описание:** Позволяет симулировать нахождение пользователя в сети (статус «В сети») на протяжении заданного времени (быстрый запуск на 15, 30, 45 минут, 1, 2, 4, 8 часов или на любое произвольно заданное пользователем время).
+  * **Планировщик сессий (Scheduled Online Sessions):** Возможность запланировать автоматический вход в сеть в указанное пользователем время суток (например, в 14:30) с заданной длительностью нахождения в сети и выбором типа повторения (однократно или ежедневно).
+  * **Техническая реализация:**
+    * Модуль [`HundredGramActivitySimulator.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramActivitySimulator.java) отправляет `TL_account.updateStatus(offline = false)` каждые 50 секунд и удерживает сетевое соединение активным;
+    * При наступлении времени завершения сессии статус автоматически переводится в офлайн (`TL_account.updateStatus(offline = true)`);
+    * Точный планировщик на базе Android `AlarmManager.setExactAndAllowWhileIdle(...)` и широковещательного приёмника [`HundredGramActivitySimulatorReceiver.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramActivitySimulatorReceiver.java);
+    * Восстановление запланированных задач после перезагрузки смартфона через [`HundredGramBootReceiver.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramBootReceiver.java);
+    * Интеграция с [`MessagesController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java) и [`SendMessagesHelper.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/SendMessagesHelper.java) для предотвращения случайной отправки `offline` во время активной симуляции;
+    * Опция естественных микро-перерывов (1.5 минуты каждые 15 минут) для правдоподобной имитации действий живого человека;
+    * Отдельный интерактивный экран управления [`HundredGramActivitySimulatorActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramActivitySimulatorActivity.java) с живым таймером отсчёта, быстрым запуском и планировщиком;
+    * Доступ через карточку в [`HundredGramSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java), а также разделы «Призрачный режим» и «Трекер активности» в [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+  * **Ключевые классы:** [`HundredGramActivitySimulator.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramActivitySimulator.java), [`HundredGramActivitySimulatorReceiver.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramActivitySimulatorReceiver.java), [`HundredGramActivitySimulatorActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramActivitySimulatorActivity.java), [`MessagesController.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java).
+* **Статус:** В релизе.
+
+## 55. Поиск по настройкам и Редизайн интерфейса 2.0 (Settings Search & UI Redesign 2.0)
+
+* **Универсальный мгновенный поиск по настройкам форка (Settings Search Engine)**:
+  * **Описание:** Полнотекстовый поиск по всем кастомным параметрам 100gram с мгновенной фильтрацией, историей запросов, чипами категорий и бесшовным глубоким переходом к найденной настройке с визуальной подсветкой.
+  * **Поисковый индекс и ранжирование:**
+    * Модуль [`HundredGramSettingsSearchIndex.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramSettingsSearchIndex.java) содержит базу более 35 настроек с названиями, описаниями, категориями, ключевыми словами-синонимами на двух языках (русском и английском) и целевыми классами фрагментов;
+    * Алгоритм скоринга ранжирует результаты по релевантности (точное совпадение, префиксное совпадение заголовка, совпадение в описании и ключевых словах) и вычисляет диапазоны символов для подсветки.
+  * **Глубокая навигация и импульсная подсветка (Deep Navigation & Pulse Highlight):**
+    * При нажатии на результат поиска открывается точный экран настроек (`HundredGramSubSettingsActivity(category, highlightItemId)` или соответствующий дочерний фрагмент);
+    * В `onTransitionAnimationEnd()` целевой экран автоматически плавно скроллит список к нужной строке и активирует нативную пульсирующую подсветку `listView.highlightRow()`.
+  * **История поиска (Recent Searches):**
+    * Автоматическое сохранение поисковых запросов в локальные SharedPreferences с быстрым перезапуском в один клик и кнопкой полной очистки истории.
+  * **Категорийные фильтры (Category Chips):**
+    * Горизонтальная панель чипов (Все, Призрак, Хранилище, Интерфейс, Сеть, Имитатор, ИИ) для мгновенной фильтрации результатов по смысловым модулям.
+  * **Сквозная интеграция в поиск Telegram (Global Search Integration):**
+    * В поисковый адаптер основного экрана настроек Telegram [`ProfileActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ProfileActivity.java) интегрированы параметры 100gram, позволяя находить возможности форка напрямую из поисковой строки настроек мессенджера.
+* **Редизайн экрана настроек и Liquid Glass тактильность (UI Elevation & Glass Haptics)**:
+  * **Плавающая карточка поиска:** В [`HundredGramSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java) добавлена стильная карточка-поисковик под Hero-панелью, мгновенно разворачивающая поиск.
+  * **Hero Dashboard:** Расширен статусными чипами симулятора активности и сетевого буста с прямой навигацией.
+  * **Тактильный отклик Liquid Glass:** В [`MainTabsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/MainTabsActivity.java) интегрирована тактильная виброотдача (`AndroidUtilities.vibrateCursor`) при переключении табов нижней панели.
+  * **Ключевые классы:** [`HundredGramSettingsSearchIndex.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/messenger/HundredGramSettingsSearchIndex.java), [`HundredGramSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java), [`HundredGramSearchResultCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/HundredGramSearchResultCell.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java), [`ProfileActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/ProfileActivity.java), [`MainTabsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/MainTabsActivity.java).
+* **Статус:** В релизе.
+
+
+
+## 56. Отображение отправителя для уникальных подарков (Unique / NFT Gifts Sender Display)
+
+* **Корректный показ дарителя в карточке уникальных и коллекционных подарков (`StarGiftSheet`)**:
+  * **Описание:** В официальном клиенте Telegram для Android существовало расхождение с версией Telegram Desktop: в карточке уникального/улучшенного подарка (NFT/Collectible Gift, `TL_starGiftUnique`) строка «От кого» (`Gift2From`) не отображалась вовсе, даже если подарок был получен от пользователя в чате или профиле.
+  * **Реализация:**
+    * В [`StarGiftSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Stars/StarGiftSheet.java) добавлено извлечение отправителя подарка по приоритету источников: сохранённый подарок в профиле (`savedStarGift.from_id`), служебное сообщение в чате (`TL_messageActionStarGiftUnique.from_id`) и оригинальные атрибуты минта (`starGiftAttributeOriginalDetails.sender_id`);
+    * Строка «От кого» со ссылкой на профиль, аватаром и эмодзи-статусом добавляется в карточку сразу под строкой владельца («Владелец»);
+    * Поддержаны анонимные дарители (`StarsReactionAnonymous` — «Анонимный даритель»);
+    * Для подарков без исходных атрибутов минта поддержан вывод точной даты отправки (`StarsTransactionDate`) и прикрепленного комментария отправителя (`tableView.addFullRow(customMessage.text, customMessage.entities)`);
+    * В `TableView.java` внедрен защитный запрос в SQLite (`MessagesStorage`), исключающий отображение пустого имени или ложного «Удаленный аккаунт», если пользователь еще не загружен в оперативную память.
+* **Мини-аватарка дарителя на карточках уникальных подарков в списке профиля (`GiftSheet.GiftCell`)**:
+  * **Описание:** В официальном клиенте аватарка дарителя в списке подарков принудительно скрывалась для всех уникальных подарков (`if (unique) avatarView.setVisibility(GONE)`).
+  * **Реализация:**
+    * Снято ограничение `if (unique)` и добавлено извлечение дарителя из сохранённого подарка `userGift.from_id` или `originalDetails.sender_id`;
+    * На карточке уникального подарка в сетке профиля отображается мини-аватарка дарителя в левом верхнем углу (или маска инкогнито, если имя скрыто);
+    * При закреплении уникального подарка в топе профиля (`pinnedView`) аватарка автоматически сдвигается вправо (`+22dp`), исключая наложение на значок булавки;
+    * Добавлен защитный запрос в SQLite `MessagesStorage` при отсутствии пользователя в памяти RAM.
+  * **Ключевые классы:** [`GiftSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Gifts/GiftSheet.java), [`StarGiftSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Stars/StarGiftSheet.java), [`TableView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/TableView.java).
   * **Статус:** В релизе.

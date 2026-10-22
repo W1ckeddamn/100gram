@@ -225,6 +225,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     private int lastShadowRow;
     @Keep
     private int stickersRow;
+    private int stickerSizeRow;
     private int stickersInfoRow;
     private int stickersSectionRow, mediaSoundSectionRow, otherSectionRow;
     private int mediaSoundHeaderRow, otherHeaderRow;
@@ -570,6 +571,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         pauseOnRecordRow = -1;
         pauseOnMediaRow = -1;
         stickersRow = -1;
+        stickerSizeRow = -1;
         stickersInfoRow = -1;
         stickersSectionRow = -1;
         mediaSoundHeaderRow = -1;
@@ -684,6 +686,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             browserRow = rowCount++;
             liteModeRow = rowCount++;
             stickersRow = rowCount++;
+            stickerSizeRow = rowCount++;
             stickersSectionRow = rowCount++;
 
             mediaSoundHeaderRow = rowCount++;
@@ -1487,6 +1490,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                 editTheme();
             } else if (position == stickersRow) {
                 presentFragment(new StickersActivity(MediaDataController.TYPE_IMAGE, null));
+            } else if (position == stickerSizeRow) {
+                presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE));
             } else if (position == liteModeRow) {
                 presentFragment(new LiteModeSettingsActivity());
             }
@@ -2690,8 +2695,15 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                         cell.imageLeft = 20;
                     } else if (position == stickersRow) {
                         cell.setColors(Theme.key_dialogIcon, Theme.key_windowBackgroundWhiteBlackText);
-                        cell.setTextAndIcon(getString(R.string.StickersName), R.drawable.msg2_sticker, false);
+                        cell.setTextAndIcon(getString(R.string.StickersName), R.drawable.msg2_sticker, true);
                         cell.setSubtitle(getString(R.string.StickersNameInfo2));
+                        cell.offsetFromImage = 64;
+                        cell.heightDp = 60;
+                        cell.imageLeft = 20;
+                    } else if (position == stickerSizeRow) {
+                        cell.setColors(Theme.key_dialogIcon, Theme.key_windowBackgroundWhiteBlackText);
+                        cell.setTextAndIcon(LocaleController.getString("StickersAndGifsHeader", R.string.StickersAndGifsHeader), R.drawable.msg2_sticker, false);
+                        cell.setSubtitle(LocaleController.getString("StickerSizeInfo", R.string.StickerSizeInfo));
                         cell.offsetFromImage = 64;
                         cell.heightDp = 60;
                         cell.imageLeft = 20;
@@ -2769,7 +2781,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             } else if (position == bubbleRadiusRow) {
                 return TYPE_BUBBLE_RADIUS;
             } else if (position == backgroundRow || position == editThemeRow || position == createNewThemeRow ||
-                        position == liteModeRow || position == stickersRow) {
+                        position == liteModeRow || position == stickersRow || position == stickerSizeRow) {
                 return TYPE_TEXT_PREFERENCE;
             } else if (position == swipeGestureRow) {
                 return TYPE_SWIPE_GESTURE;

@@ -1504,6 +1504,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 NotificationCenter.getInstance(a).addObserver(MediaController.this, NotificationCenter.mediaDidLoad);
                 NotificationCenter.getInstance(a).addObserver(MediaController.this, NotificationCenter.musicListLoaded);
                 NotificationCenter.getGlobalInstance().addObserver(MediaController.this, NotificationCenter.playerDidStartPlaying);
+                NotificationCenter.getGlobalInstance().addObserver(MediaController.this, NotificationCenter.stopAllHeavyOperations);
             }
         });
 
@@ -1981,6 +1982,13 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                     wasPlayingAudioBeforePause = true;
                 }
                 pauseMessage(message);
+            } else if (!org.telegram.ui.LaunchActivity.isResumed) {
+                pauseInBackgroundIfNeeded();
+            }
+        } else if (id == NotificationCenter.stopAllHeavyOperations) {
+            Integer reason = (Integer) args[0];
+            if (reason != null && reason == 4096 && !org.telegram.ui.LaunchActivity.isResumed) {
+                pauseInBackgroundIfNeeded();
             }
         } else if (id == NotificationCenter.musicListLoaded) {
             if (currentSavedMusicList != null && args[0] == currentSavedMusicList) {
@@ -2009,6 +2017,16 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                     NotificationCenter.getInstance(playingMessageObject.currentAccount).postNotificationName(NotificationCenter.moreMusicDidLoad, addedCount);
                 }
             }
+        }
+    }
+
+    private void pauseInBackgroundIfNeeded() {
+        MessageObject message = getPlayingMessageObject();
+        if (message == null) {
+            return;
+        }
+        if (((message.isVoice() && org.telegram.messenger.HundredGramConfig.pauseOnMinimizeVoice) || (message.isRoundVideo() && org.telegram.messenger.HundredGramConfig.pauseOnMinimizeRound)) && isPlayingMessage(message) && !isMessagePaused()) {
+            pauseMessage(message);
         }
     }
 
@@ -5869,7 +5887,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                     filename = AndroidUtilities.generateFileName(0, extension);
                 }
                 uriToInsert = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-                File dirDest = new File(Environment.DIRECTORY_PICTURES, "Telegram");
+                String hgSavePath = org.telegram.messenger.HundredGramConfig.customSavePath;
+                String hgFolder = android.text.TextUtils.isEmpty(hgSavePath) ? "Telegram" : hgSavePath;
+                File dirDest = new File(Environment.DIRECTORY_PICTURES, hgFolder);
                 contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, dirDest + File.separator);
                 contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
                 contentValues.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
@@ -5880,7 +5900,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 if (filename == null) {
                     filename = AndroidUtilities.generateFileName(1, extension);
                 }
-                File dirDest = new File(Environment.DIRECTORY_MOVIES, "Telegram");
+                String hgSavePath = org.telegram.messenger.HundredGramConfig.customSavePath;
+                String hgFolder = android.text.TextUtils.isEmpty(hgSavePath) ? "Telegram" : hgSavePath;
+                File dirDest = new File(Environment.DIRECTORY_MOVIES, hgFolder);
                 contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, dirDest + File.separator);
                 uriToInsert = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
                 contentValues.put(MediaStore.Video.Media.DISPLAY_NAME, filename);
@@ -5888,7 +5910,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 if (filename == null) {
                     filename = sourceFile.getName();
                 }
-                File dirDest = new File(Environment.DIRECTORY_DOWNLOADS, "Telegram");
+                String hgSavePath2 = org.telegram.messenger.HundredGramConfig.customSavePath;
+                String hgFolder2 = android.text.TextUtils.isEmpty(hgSavePath2) ? "Telegram" : hgSavePath2;
+                File dirDest = new File(Environment.DIRECTORY_DOWNLOADS, hgFolder2);
                 contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, dirDest + File.separator);
                 uriToInsert = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
                 contentValues.put(MediaStore.Downloads.DISPLAY_NAME, filename);
@@ -5896,7 +5920,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 if (filename == null) {
                     filename = sourceFile.getName();
                 }
-                File dirDest = new File(Environment.DIRECTORY_MUSIC, "Telegram");
+                String hgSavePath3 = org.telegram.messenger.HundredGramConfig.customSavePath;
+                String hgFolder3 = android.text.TextUtils.isEmpty(hgSavePath3) ? "Telegram" : hgSavePath3;
+                File dirDest = new File(Environment.DIRECTORY_MUSIC, hgFolder3);
                 contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, dirDest + File.separator);
                 uriToInsert = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
                 contentValues.put(MediaStore.Audio.Media.DISPLAY_NAME, filename);

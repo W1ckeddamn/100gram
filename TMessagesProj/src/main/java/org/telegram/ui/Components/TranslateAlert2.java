@@ -523,6 +523,20 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
             alternativeTranslate(text, "en", toLng, done);
             return;
         }
+        if (org.telegram.messenger.HundredGramConfig.translationProvider != org.telegram.messenger.HundredGramConfig.TRANSLATION_PROVIDER_TELEGRAM) {
+            org.telegram.messenger.translator.HundredGramTranslator.getInstance().translate(text, fromLng, toLng, new org.telegram.messenger.translator.HundredGramTranslator.TranslateCallback() {
+                @Override
+                public void onSuccess(String translatedText) {
+                    done.run(translatedText, false);
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    done.run(null, false);
+                }
+            });
+            return;
+        }
         final String etext = Uri.encode(text);
         if (etext.length() > 5000) {
             ArrayList<String> parts = cut(etext, 5000);

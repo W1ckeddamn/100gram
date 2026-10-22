@@ -157,6 +157,44 @@ public class ItemOptions {
     private boolean blurForMenu;
     private boolean longPressSelectionEnabled = true;
 
+    private boolean dismissOnMoveOutside = false;
+
+    public ItemOptions setDismissOnMoveOutside(boolean value) {
+        this.dismissOnMoveOutside = value;
+        return this;
+    }
+
+    @androidx.annotation.Keep
+    public boolean isDismissOnMoveOutside() {
+        return this.dismissOnMoveOutside;
+    }
+
+    public void dispatchCapturedTouchEvent(MotionEvent motionEvent) {
+        if (canHandleCapturedTouch()) {
+            MotionEvent obtain = MotionEvent.obtain(motionEvent);
+            int[] loc = new int[2];
+            this.layout.getLocationOnScreen(loc);
+            obtain.offsetLocation(-loc[0], -loc[1]);
+            this.layout.dispatchTouchEvent(obtain);
+            int actionMasked = motionEvent.getActionMasked();
+            if (actionMasked == MotionEvent.ACTION_MOVE) {
+                updateHover((int) motionEvent.getRawX(), (int) motionEvent.getRawY());
+            } else if (actionMasked == MotionEvent.ACTION_UP) {
+                releaseHover((int) motionEvent.getRawX(), (int) motionEvent.getRawY());
+            } else if (actionMasked == MotionEvent.ACTION_CANCEL) {
+                cancelHover();
+            }
+            obtain.recycle();
+        }
+    }
+
+    private boolean canHandleCapturedTouch() {
+        if (this.layout == null) {
+            return false;
+        }
+        return (this.actionBarPopupWindow != null && this.actionBarPopupWindow.isShowing()) || this.layout.getParent() != null;
+    }
+
     public ItemOptions setLongPressSelectionEnabled(boolean enabled) {
         longPressSelectionEnabled = enabled;
         return this;
@@ -697,6 +735,35 @@ public class ItemOptions {
         ActionBarMenuSubItem subItem = new ActionBarMenuSubItem(context, false, false, resourcesProvider);
         subItem.setPadding(dp(18), 0, dp(18), 0);
         subItem.setText(text);
+        subItem.setSubtext(subtext);
+
+        subItem.setColors(textColor != null ? textColor : Theme.getColor(Theme.key_actionBarDefaultSubmenuItem, resourcesProvider), iconColor != null ? iconColor : Theme.getColor(Theme.key_actionBarDefaultSubmenuItemIcon, resourcesProvider));
+        subItem.setSelectorColor(selectorColor != null ? selectorColor : Theme.multAlpha(Theme.getColor(Theme.key_actionBarDefaultSubmenuItem, resourcesProvider), .12f));
+
+        subItem.setOnClickListener(view1 -> {
+            if (onClickListener != null) {
+                onClickListener.run();
+            }
+            if (dismissWithButtons) dismiss();
+        });
+        if (minWidthDp > 0) {
+            subItem.setMinimumWidth(dp(minWidthDp));
+            addView(subItem, LayoutHelper.createLinear(minWidthDp, LayoutHelper.WRAP_CONTENT));
+        } else {
+            addView(subItem, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+        }
+
+        return this;
+    }
+
+    public ItemOptions add(int iconResId, CharSequence text, CharSequence subtext, Runnable onClickListener) {
+        if (context == null) {
+            return this;
+        }
+
+        ActionBarMenuSubItem subItem = new ActionBarMenuSubItem(context, false, false, resourcesProvider);
+        subItem.setPadding(dp(18), 0, dp(18), 0);
+        subItem.setTextAndIcon(text, iconResId, null);
         subItem.setSubtext(subtext);
 
         subItem.setColors(textColor != null ? textColor : Theme.getColor(Theme.key_actionBarDefaultSubmenuItem, resourcesProvider), iconColor != null ? iconColor : Theme.getColor(Theme.key_actionBarDefaultSubmenuItemIcon, resourcesProvider));
@@ -1876,6 +1943,18 @@ public class ItemOptions {
             hoveredItem = null;
             target.setPressed(false);
             target.performClick();
+        } else if (dismissOnMoveOutside) {
+            if (scrimView != null) {
+                int[] loc = new int[2];
+                scrimView.getLocationOnScreen(loc);
+                int left = loc[0];
+                int top = loc[1];
+                if (rawX < left || rawX > left + scrimView.getWidth() || rawY < top || rawY > top + scrimView.getHeight()) {
+                    dismiss();
+                }
+            } else {
+                dismiss();
+            }
         }
     }
 

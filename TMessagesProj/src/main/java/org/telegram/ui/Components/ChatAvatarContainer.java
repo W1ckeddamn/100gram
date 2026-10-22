@@ -764,8 +764,9 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         final int viewTop = (actionBarHeight - avatarImageView.getMeasuredHeight() - 2) / 2 + (occupyStatusBar ? AndroidUtilities.statusBarHeight : 0);
         final int subtitleTop = viewTop + dp(glassMode ? 23.66f : 24);
 
-        avatarImageView.layout(1 + leftPadding, 1 + viewTop, 1 + leftPadding + avatarImageView.getMeasuredWidth(), 1 + viewTop + avatarImageView.getMeasuredHeight());
-        int l = leftPadding + (avatarImageView.getVisibility() == VISIBLE ? dp(glassMode ? 49.66f : 55) : dp(glassMode ? 13 : 1)) + rightAvatarPadding;
+        final int avatarLeft = glassMode ? dp(8) : (1 + leftPadding);
+        avatarImageView.layout(avatarLeft, 1 + viewTop, avatarLeft + avatarImageView.getMeasuredWidth(), 1 + viewTop + avatarImageView.getMeasuredHeight());
+        int l = avatarLeft + (avatarImageView.getVisibility() == VISIBLE ? dp(glassMode ? 52 : 55) : dp(glassMode ? 13 : 1)) + rightAvatarPadding;
         SimpleTextView titleTextLargerCopyView = this.titleTextLargerCopyView.get();
         if (getSubtitleTextView().getVisibility() != GONE) {
             titleTextView.layout(l, viewTop + dp(1.66f) - titleTextView.getPaddingTop(), l + titleTextView.getMeasuredWidth(), viewTop + titleTextView.getTextHeight() + dp(1.66f) - titleTextView.getPaddingTop() + titleTextView.getPaddingBottom());
@@ -780,24 +781,24 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         }
         if (communityItem != null) {
             communityItem.layout(
-                leftPadding + dp(29f),
+                avatarLeft + dp(28f),
                 viewTop + dp(27.33f),
-                leftPadding + dp(29f) + communityItem.getMeasuredWidth(),
+                avatarLeft + dp(28f) + communityItem.getMeasuredWidth(),
                 viewTop + dp(27.33f) + communityItem.getMeasuredHeight());
         }
         if (timeItem != null) {
             timeItem.layout(
-                leftPadding + dp(19.333f),
+                avatarLeft + dp(18.333f),
                 viewTop - dp(8),
-                leftPadding + dp(19.333f) + timeItem.getMeasuredWidth(),
+                avatarLeft + dp(18.333f) + timeItem.getMeasuredWidth(),
                 viewTop - dp(8) + timeItem.getMeasuredHeight()
             );
         }
         if (starBgItem != null) {
-            starBgItem.layout(leftPadding + dp(28), viewTop + dp(24), leftPadding + dp(28) + starBgItem.getMeasuredWidth(), viewTop + dp(24) + starBgItem.getMeasuredHeight());
+            starBgItem.layout(avatarLeft + dp(27), viewTop + dp(24), avatarLeft + dp(27) + starBgItem.getMeasuredWidth(), viewTop + dp(24) + starBgItem.getMeasuredHeight());
         }
         if (starFgItem != null) {
-            starFgItem.layout(leftPadding + dp(28), viewTop + dp(24), leftPadding + dp(28) + starFgItem.getMeasuredWidth(), viewTop + dp(24) + starFgItem.getMeasuredHeight());
+            starFgItem.layout(avatarLeft + dp(27), viewTop + dp(24), avatarLeft + dp(27) + starFgItem.getMeasuredWidth(), viewTop + dp(24) + starFgItem.getMeasuredHeight());
         }
         if (subtitleTextView != null) {
             subtitleTextView.layout(l, subtitleTop, l + subtitleTextView.getMeasuredWidth(), subtitleTop + subtitleTextView.getTextHeight());
@@ -1080,6 +1081,12 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
 
     public void updateSubtitle(boolean animated) {
         if (parentFragment == null) {
+            return;
+        }
+        if (org.telegram.messenger.HundredGramConfig.hideActionBarStatus) {
+            if (getSubtitleTextView().getVisibility() != GONE) {
+                getSubtitleTextView().setVisibility(GONE);
+            }
             return;
         }
         if (parentFragment.getChatMode() == ChatActivity.MODE_EDIT_BUSINESS_LINK) {
@@ -1371,6 +1378,21 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         if (avatarImageView != null) {
             avatarImageView.setForUserOrChat(chat, avatarDrawable);
             avatarImageView.setRoundRadius(ChatObject.isForum(chat) ? dp(ChatObject.hasStories(chat) ? 11 : 16) : dp(21));
+        }
+    }
+
+    public void setFeedAvatar() {
+        this.avatarDrawable.setInfo(UserConfig.getInstance(this.currentAccount).getClientUserId());
+        this.avatarDrawable.setAvatarType(AvatarDrawable.AVATAR_TYPE_SAVED);
+        if (Theme.avatarDrawables != null && Theme.avatarDrawables.length > 25 && Theme.avatarDrawables[25] != null) {
+            this.avatarDrawable.setCustomIcon(Theme.avatarDrawables[25]);
+        }
+        if (this.avatarImageView != null) {
+            this.avatarImageView.setRoundRadius(AndroidUtilities.dp(21));
+            if (this.avatarImageView.getImageReceiver() != null) {
+                this.avatarImageView.getImageReceiver().setRoundRadius(AndroidUtilities.dp(21));
+            }
+            this.avatarImageView.setImage((org.telegram.messenger.ImageLocation) null, (String) null, this.avatarDrawable, (Object) null);
         }
     }
 

@@ -63,7 +63,17 @@ public abstract class ViewPagerActivity extends BaseFragment {
             initialFragmentPosition = getStartPosition();
         }
         viewPager.setPosition(initialFragmentPosition);
-        viewPager.setAdapter(new ViewPagerFixed.Adapter() {
+        viewPager.setAdapter(createAdapter(context));
+
+        contentView.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+
+        fragmentView = contentView;
+        ViewCompat.setOnApplyWindowInsetsListener(fragmentView, this::onApplyWindowInsets);
+        return fragmentView;
+    }
+
+    protected ViewPagerFixed.Adapter createAdapter(Context context) {
+        return new ViewPagerFixed.Adapter() {
             @Override
             public int getItemCount() {
                 return getFragmentsCount();
@@ -117,13 +127,26 @@ public abstract class ViewPagerActivity extends BaseFragment {
                 checkSystemBarColors();
                 checkFragmentsVisibility();
             }
-        });
+        };
+    }
 
-        contentView.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
-
-        fragmentView = contentView;
-        ViewCompat.setOnApplyWindowInsetsListener(fragmentView, this::onApplyWindowInsets);
-        return fragmentView;
+    public void resetViewPagerPages() {
+        if (viewPager != null && contentView != null) {
+            for (int i = 1; i < 10; i++) {
+                dropFragmentAtPosition(i);
+            }
+            int currentPos = viewPager.getCurrentPosition();
+            if (currentPos >= getFragmentsCount()) {
+                currentPos = Math.max(0, getFragmentsCount() - 1);
+            }
+            viewPager.removeAllViews();
+            viewPager.clearViews();
+            viewPager.setPosition(currentPos);
+            Context context = getContext();
+            if (context != null) {
+                viewPager.setAdapter(createAdapter(context));
+            }
+        }
     }
 
     protected void putFragmentAtPosition(int position, BaseFragment fragment) {

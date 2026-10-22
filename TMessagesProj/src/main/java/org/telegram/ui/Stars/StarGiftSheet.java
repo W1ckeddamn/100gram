@@ -4121,6 +4121,9 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
 
         ownerTextView = null;
         tableView.clear();
+        final TL_stars.starGiftAttributeOriginalDetails originalDetails = findAttribute(gift.attributes, TL_stars.starGiftAttributeOriginalDetails.class);
+        TLRPC.TL_textWithEntities customMessage = null;
+        int customDate = 0;
         if (!refunded) {
             if (gift.host_id != null) {
                 if (!TextUtils.isEmpty(gift.owner_address)) {
@@ -4143,6 +4146,50 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                     TableRow row = tableView.addRowUserWithEmojiStatus(getString(R.string.Gift2Owner), currentAccount, owner_id, () -> openProfile(owner_id));
                     ownerTextView = ((TableView.TableRowContent) row.getChildAt(1)).getChildAt(0);
                 }
+            }
+
+            long senderId = 0;
+            boolean isAnonymousSender = false;
+            if (savedStarGift != null) {
+                if ((savedStarGift.flags & 2) != 0 && savedStarGift.from_id != null) {
+                    if (savedStarGift.name_hidden) {
+                        isAnonymousSender = true;
+                    } else {
+                        senderId = DialogObject.getPeerDialogId(savedStarGift.from_id);
+                    }
+                }
+                customMessage = savedStarGift.message;
+                customDate = savedStarGift.date;
+            } else if (messageObject != null && messageObject.messageOwner != null && messageObject.messageOwner.action instanceof TLRPC.TL_messageActionStarGiftUnique) {
+                TLRPC.TL_messageActionStarGiftUnique action = (TLRPC.TL_messageActionStarGiftUnique) messageObject.messageOwner.action;
+                if (action.from_id != null) {
+                    if (action.name_hidden) {
+                        isAnonymousSender = true;
+                    } else {
+                        senderId = DialogObject.getPeerDialogId(action.from_id);
+                    }
+                }
+                customMessage = action.message;
+                customDate = messageObject.messageOwner.date;
+            }
+            if (senderId == 0 && !isAnonymousSender && originalDetails != null) {
+                if ((originalDetails.flags & 1) != 0 && originalDetails.sender_id != null) {
+                    senderId = DialogObject.getPeerDialogId(originalDetails.sender_id);
+                }
+                if (customMessage == null) {
+                    customMessage = originalDetails.message;
+                }
+                if (customDate == 0) {
+                    customDate = originalDetails.date;
+                }
+            }
+            if (senderId != 0 && senderId != UserObject.ANONYMOUS) {
+                if (senderId != owner_id || !myProfile || dialogId < 0) {
+                    final long sId = senderId;
+                    tableView.addRowUserWithEmojiStatus(getString(R.string.Gift2From), currentAccount, sId, () -> openProfile(sId));
+                }
+            } else if (isAnonymousSender) {
+                tableView.addRow(getString(R.string.Gift2From), getString(R.string.StarsReactionAnonymous));
             }
         }
         addAttributeRow(findAttribute(gift.attributes, TL_stars.starGiftAttributeModel.class));
@@ -4175,6 +4222,12 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                 tableView.addRow(getString(R.string.GiftValue2), "~" + roundedValue, getString(R.string.GiftValue2LearnMore), () -> {
                     openValueStats(gift.gift_id, gift.title, getGiftName(), value, gift.getDocument(), gift.slug);
                 });
+            }
+            if (customDate != 0 && originalDetails == null) {
+                tableView.addRow(getString(R.string.StarsTransactionDate), LocaleController.formatString(R.string.formatDateAtTime, LocaleController.getInstance().getFormatterGiveawayCard().format(new Date(customDate * 1000L)), LocaleController.getInstance().getFormatterDay().format(new Date(customDate * 1000L))));
+            }
+            if (customMessage != null && !TextUtils.isEmpty(customMessage.text) && originalDetails == null) {
+                tableView.addFullRow(customMessage.text, customMessage.entities);
             }
         }
         final TL_stars.starGiftAttributeOriginalDetails details = findAttribute(gift.attributes, TL_stars.starGiftAttributeOriginalDetails.class);
@@ -5184,6 +5237,9 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             userStarGiftRepolled = true;
             if (upgradedGift != null) {
                 unsavedFromSavedStarGift = upgradedGift.unsaved;
+                if (savedStarGift == null) {
+                    savedStarGift = upgradedGift;
+                }
                 if (messageObject != null && messageObject.messageOwner != null) {
                     if (messageObject.messageOwner.action instanceof TLRPC.TL_messageActionStarGiftUnique) {
                         TLRPC.TL_messageActionStarGiftUnique action = (TLRPC.TL_messageActionStarGiftUnique) messageObject.messageOwner.action;

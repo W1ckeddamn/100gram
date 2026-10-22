@@ -77,6 +77,11 @@ public class EditTextCell extends FrameLayout {
         updateLimitText();
     }
 
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
+        updateLimitText();
+    }
+
     private void updateLimitText() {
         if (editText == null) return;
         limitCount = maxLength - getText().length();

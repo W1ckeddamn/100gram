@@ -1612,7 +1612,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                     ObjectAnimator.ofFloat(this, "innerTranslationX", (float) containerView.getMeasuredWidth()).setDuration(duration)
                 );
                 if (newBackTransitions()) {
-                    animatorSet.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
+                    animatorSet.setInterpolator(getFragmentTransitionInterpolator());
                 }
             }
         } else {
@@ -1624,7 +1624,7 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                     ObjectAnimator.ofFloat(this, "innerTranslationX", 0.0f).setDuration(duration)
                 );
                 if (newBackTransitions()) {
-                    animatorSet.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
+                    animatorSet.setInterpolator(getFragmentTransitionInterpolator());
                 }
             }
         }
@@ -2166,8 +2166,8 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
                 fragment.onTransitionAnimationStart(true, false);
                 currentAnimation = new AnimatorSet();
                 currentAnimation.playTogether(animators);
-                currentAnimation.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
-                currentAnimation.setDuration(200);
+                currentAnimation.setInterpolator(getFragmentTransitionInterpolator());
+                currentAnimation.setDuration(org.telegram.messenger.HundredGramConfig.transitionAnimation == org.telegram.messenger.HundredGramConfig.TRANSITION_SPRING ? 280 : 200);
                 currentAnimation.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
@@ -3598,5 +3598,14 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
         }
 
         return WindowInsetsCompat.CONSUMED;
+    }
+
+    private android.animation.TimeInterpolator getFragmentTransitionInterpolator() {
+        if (org.telegram.messenger.HundredGramConfig.transitionAnimation == org.telegram.messenger.HundredGramConfig.TRANSITION_SPRING) {
+            return org.telegram.ui.Components.SpringInterpolator.INSTANCE;
+        } else if (org.telegram.messenger.HundredGramConfig.transitionAnimation == org.telegram.messenger.HundredGramConfig.TRANSITION_AOSP) {
+            return CubicBezierInterpolator.DEFAULT;
+        }
+        return CubicBezierInterpolator.EASE_OUT_QUINT;
     }
 }

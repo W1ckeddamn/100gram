@@ -6,11 +6,18 @@ import android.text.TextUtils;
 
 import org.telegram.tgnet.TLRPC;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import androidx.core.util.Consumer;
 
 public class HundredGramVaultManager implements NotificationCenter.NotificationCenterDelegate {
 
@@ -74,8 +81,17 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
         if (message == null || TextUtils.isEmpty(filePath)) {
             return;
         }
+        if (!HundredGramConfig.vaultSaveForBots) {
+            long fromId = MessageObject.getFromChatId(message);
+            if (fromId > 0) {
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(fromId);
+                if (user != null && user.bot) {
+                    return;
+                }
+            }
+        }
         long dialogId = message.dialog_id != 0 ? message.dialog_id : MessageObject.getDialogId(message);
-        if (!HundredGramConfig.isChatAntiDelete(dialogId)) {
+        if (!HundredGramConfig.isChatAntiDelete(dialogId) && !HundredGramConfig.canVaultDownload(dialogId)) {
             return;
         }
         File file = new File(filePath);
@@ -100,7 +116,13 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
         if (file == null || !file.exists() || file.length() == 0 || messageId == 0 || dialogId == 0) {
             return;
         }
-        if (!HundredGramConfig.isChatAntiDelete(dialogId)) {
+        if (!HundredGramConfig.vaultSaveForBots && dialogId > 0) {
+            TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(dialogId);
+            if (user != null && user.bot) {
+                return;
+            }
+        }
+        if (!HundredGramConfig.isChatAntiDelete(dialogId) && !HundredGramConfig.canVaultDownload(dialogId)) {
             return;
         }
         Utilities.globalQueue.postRunnable(() -> {
@@ -120,8 +142,17 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
         if (messageObject == null || messageObject.messageOwner == null) {
             return;
         }
+        if (!HundredGramConfig.vaultSaveForBots) {
+            long fromId = messageObject.getFromChatId();
+            if (fromId > 0) {
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(fromId);
+                if (user != null && user.bot) {
+                    return;
+                }
+            }
+        }
         long dialogId = messageObject.getDialogId();
-        if (!HundredGramConfig.isChatAntiDelete(dialogId)) {
+        if (!HundredGramConfig.isChatAntiDelete(dialogId) && !HundredGramConfig.canVaultDownload(dialogId)) {
             return;
         }
         TLRPC.Message message = messageObject.messageOwner;
@@ -209,10 +240,11 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                         }
                     }
                 }
-                long maxLimit = (long) HundredGramConfig.vaultMaxAutodownloadSizeMb * 1024L * 1024L;
-                if (maxLimit <= 0) {
-                    maxLimit = 100L * 1024L * 1024L; // 100MB default
+                int maxMb = HundredGramConfig.getChatVaultMaxSizeMb(dialogId);
+                if (maxMb == 0) {
+                    maxMb = HundredGramConfig.autoDownloadMaxSizeMb;
                 }
+                long maxLimit = maxMb > 0 ? (long) maxMb * 1024L * 1024L : Long.MAX_VALUE;
                 if (size <= 0 || size <= maxLimit) {
                     acquireWakeLock(45000);
                     final String pendingFileName = fileName != null ? fileName :
@@ -260,6 +292,15 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
      */
     public void isolateMediaForEdit(TLRPC.Message oldMessage, int editDate) {
         if (oldMessage == null) return;
+        if (!HundredGramConfig.vaultSaveForBots) {
+            long fromId = MessageObject.getFromChatId(oldMessage);
+            if (fromId > 0) {
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(fromId);
+                if (user != null && user.bot) {
+                    return;
+                }
+            }
+        }
         long dialogId = oldMessage.dialog_id != 0 ? oldMessage.dialog_id : MessageObject.getDialogId(oldMessage);
         if (oldMessage.media == null || oldMessage.media instanceof TLRPC.TL_messageMediaEmpty) return;
 
@@ -303,8 +344,11 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
 
             if (localFile == null || !localFile.exists()) {
                 // If not locally downloaded, schedule download so it gets saved to vault when loaded
-                long maxLimit = (long) HundredGramConfig.vaultMaxAutodownloadSizeMb * 1024L * 1024L;
-                if (maxLimit <= 0) maxLimit = 100L * 1024L * 1024L;
+                int maxMb = HundredGramConfig.getChatVaultMaxSizeMb(dialogId);
+                if (maxMb == 0) {
+                    maxMb = HundredGramConfig.autoDownloadMaxSizeMb;
+                }
+                long maxLimit = maxMb > 0 ? (long) maxMb * 1024L * 1024L : Long.MAX_VALUE;
                 MessageObject oldObj = new MessageObject(currentAccount, oldMessage, false, false);
                 long size = oldObj.getSize();
                 if (size <= 0 || size <= maxLimit) {
@@ -432,7 +476,7 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                 } else {
                     FilePathDatabase.FileMeta fileMeta = FileLoader.getInstance(currentAccount).getFileDatabase().getFileDialogId(file, null);
                     if (fileMeta != null && fileMeta.dialogId != 0 && fileMeta.messageId != 0) {
-                        if (HundredGramConfig.isChatAntiDelete(fileMeta.dialogId) && HundredGramConfig.canVaultDownload(fileMeta.dialogId)) {
+                        if (HundredGramConfig.isChatAntiDelete(fileMeta.dialogId) || HundredGramConfig.canVaultDownload(fileMeta.dialogId)) {
                             isolateMediaForMessage(fileMeta.messageId, fileMeta.dialogId, file);
                         }
                     }
@@ -716,5 +760,167 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
             try { if (fis != null) fis.close(); } catch (Exception ignore) {}
             try { if (fos != null) fos.close(); } catch (Exception ignore) {}
         }
+    }
+
+    public void exportVaultToZip(File destZip, List<File> files, Consumer<Float> progressCallback, Utilities.Callback<File> onComplete) {
+        if (files == null || files.isEmpty()) {
+            if (onComplete != null) {
+                AndroidUtilities.runOnUIThread(() -> onComplete.run(null));
+            }
+            return;
+        }
+        Utilities.globalQueue.postRunnable(() -> {
+            ZipOutputStream zos = null;
+            FileOutputStream fos = null;
+            boolean success = false;
+            try {
+                if (destZip.exists()) {
+                    destZip.delete();
+                }
+                File parent = destZip.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+                fos = new FileOutputStream(destZip);
+                zos = new ZipOutputStream(new BufferedOutputStream(fos));
+
+                byte[] buffer = new byte[65536];
+                HashSet<String> addedNames = new HashSet<>();
+                int totalFiles = files.size();
+
+                for (int i = 0; i < totalFiles; i++) {
+                    File file = files.get(i);
+                    if (file == null || !file.exists() || !file.isFile() || file.length() == 0) {
+                        continue;
+                    }
+                    String baseName = file.getName();
+                    String entryName = baseName;
+                    int count = 1;
+                    while (addedNames.contains(entryName)) {
+                        int dot = baseName.lastIndexOf('.');
+                        if (dot > 0) {
+                            entryName = baseName.substring(0, dot) + "_" + count + baseName.substring(dot);
+                        } else {
+                            entryName = baseName + "_" + count;
+                        }
+                        count++;
+                    }
+                    addedNames.add(entryName);
+
+                    ZipEntry entry = new ZipEntry(entryName);
+                    entry.setTime(file.lastModified());
+                    zos.putNextEntry(entry);
+
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(file);
+                        int read;
+                        while ((read = fis.read(buffer)) != -1) {
+                            zos.write(buffer, 0, read);
+                        }
+                    } finally {
+                        if (fis != null) {
+                            try { fis.close(); } catch (Exception ignore) {}
+                        }
+                    }
+                    zos.closeEntry();
+
+                    if (progressCallback != null) {
+                        final float progress = (float) (i + 1) / totalFiles;
+                        AndroidUtilities.runOnUIThread(() -> progressCallback.accept(progress));
+                    }
+                }
+                zos.flush();
+                success = true;
+            } catch (Throwable e) {
+                FileLog.e(e);
+                if (destZip.exists()) {
+                    destZip.delete();
+                }
+                success = false;
+            } finally {
+                if (zos != null) {
+                    try { zos.close(); } catch (Exception ignore) {}
+                }
+                if (fos != null) {
+                    try { fos.close(); } catch (Exception ignore) {}
+                }
+            }
+
+            final boolean finalSuccess = success;
+            AndroidUtilities.runOnUIThread(() -> {
+                if (onComplete != null) {
+                    onComplete.run(finalSuccess ? destZip : null);
+                }
+            });
+        });
+    }
+
+    public void pruneOrphanDatabaseEntries(Consumer<Integer> onComplete) {
+        MessagesStorage.getInstance(currentAccount).getStorageQueue().postRunnable(() -> {
+            int cleanedCount = 0;
+            org.telegram.SQLite.SQLiteCursor cursor = null;
+            ArrayList<Object[]> toDelete = new ArrayList<>();
+            try {
+                cursor = MessagesStorage.getInstance(currentAccount).getDatabase().queryFinalized("SELECT mid, uid, file_name, vault_path FROM hundredgram_vault");
+                while (cursor.next()) {
+                    int mid = cursor.intValue(0);
+                    long uid = cursor.longValue(1);
+                    String fileName = cursor.stringValue(2);
+                    String vaultPath = cursor.stringValue(3);
+
+                    File file = null;
+                    if (!TextUtils.isEmpty(vaultPath)) {
+                        file = new File(vaultPath);
+                    }
+                    if ((file == null || !file.exists()) && vaultDir != null && !TextUtils.isEmpty(fileName)) {
+                        File fallback = new File(vaultDir, fileName);
+                        if (fallback.exists()) {
+                            file = fallback;
+                        }
+                    }
+
+                    if (file == null || !file.exists() || file.length() == 0) {
+                        if (file != null && file.exists() && file.length() == 0) {
+                            file.delete();
+                        }
+                        toDelete.add(new Object[] { mid, uid, fileName, vaultPath });
+                    }
+                }
+            } catch (Throwable e) {
+                FileLog.e(e);
+            } finally {
+                if (cursor != null) cursor.dispose();
+            }
+
+            for (Object[] row : toDelete) {
+                int mid = (Integer) row[0];
+                long uid = (Long) row[1];
+                String fileName = (String) row[2];
+                if (!TextUtils.isEmpty(fileName)) {
+                    vaultCache.remove(fileName);
+                }
+                vaultCache.remove(uid + "_" + mid);
+                MessagesStorage.getInstance(currentAccount).deleteVaultEntry(mid, uid, fileName);
+                cleanedCount++;
+            }
+
+            // Clean 0-byte orphan files from vaultDir
+            if (vaultDir != null && vaultDir.exists()) {
+                File[] files = vaultDir.listFiles();
+                if (files != null) {
+                    for (File f : files) {
+                        if (f != null && f.isFile() && f.length() == 0) {
+                            f.delete();
+                        }
+                    }
+                }
+            }
+
+            final int finalCleaned = cleanedCount;
+            if (onComplete != null) {
+                AndroidUtilities.runOnUIThread(() -> onComplete.accept(finalCleaned));
+            }
+        });
     }
 }

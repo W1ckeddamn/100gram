@@ -4912,7 +4912,12 @@ public class PeerStoriesView extends SizeNotifierFrameLayout implements Notifica
         } else if (!currentStory.isLive && org.telegram.messenger.HundredGramConfig.isGhostStoryViewActive()) {
             stealthModeIsActive = true;
             chatActivityEnterView.setEnabled(true);
-            chatActivityEnterView.setOverrideHint("👻 " + LocaleController.getString("GhostStoriesBadge", R.string.GhostStoriesBadge), animated);
+            SpannableStringBuilder ghostHint = new SpannableStringBuilder("  " + LocaleController.getString("GhostStoriesBadge", R.string.GhostStoriesBadge));
+            ColoredImageSpan ghostSpan = new ColoredImageSpan(R.drawable.msg_stories_stealth);
+            ghostSpan.setSize(AndroidUtilities.dp(16));
+            ghostSpan.setTopOffset(1);
+            ghostHint.setSpan(ghostSpan, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            chatActivityEnterView.setOverrideHint(ghostHint, animated);
         } else if (!currentStory.isLive && stealthMode != null && ConnectionsManager.getInstance(currentAccount).getCurrentTime() < stealthMode.active_until_date) {
             stealthModeIsActive = true;
             int time = stealthMode.active_until_date - ConnectionsManager.getInstance(currentAccount).getCurrentTime();

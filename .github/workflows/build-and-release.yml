@@ -1,0 +1,146 @@
+name: Build and Release 100gram
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - develop
+    tags:
+      - 'v*'
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_MAXSIZE: 2G
+      CCACHE_COMPILERCHECK: content
+      CCACHE_NOHASHDIR: "1"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up Java 21 (Corretto)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'corretto'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.5'
+
+      - name: Setup Android NDK and CMake
+        run: |
+          set -euo pipefail
+          SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          CMAKE_DIR="${ANDROID_HOME}/cmake/3.22.1"
+          NDK_DIR="${ANDROID_HOME}/ndk/27.2.12479018"
+
+          install_pkg() {
+            set +o pipefail
+            echo y | "${SDKMANAGER}" --install "$1"
+            set -o pipefail
+          }
+          if [ ! -x "${CMAKE_DIR}/bin/cmake" ]; then install_pkg "cmake;3.22.1"; fi
+          if [ ! -d "${NDK_DIR}" ]; then install_pkg "ndk;27.2.12479018"; fi
+
+          printf 'sdk.dir=%s\ncmake.dir=%s\n' "${ANDROID_HOME}" "${CMAKE_DIR}" > local.properties
+          echo "ANDROID_NDK_HOME=${NDK_DIR}" >> "${GITHUB_ENV}"
+
+      - name: Setup ccache
+        run: |
+          sudo apt-get update && sudo apt-get install -y ccache
+          mkdir -p "${CCACHE_DIR}"
+          ccache -s
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ${{ runner.os }}-ccache-ndk27-${{ hashFiles('TMessagesProj/jni/**', 'TMessagesProj/**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-ndk27-
+
+      # Определяем тип сборки (Release для тегов, Debug для коммитов)
+      - name: Determine Build Flavor
+        id: config
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]] || [[ "${{ inputs.build_type }}" == "release" ]]; then
+            echo "task=:TMessagesProj_AppStandalone:assembleAfatStandaloneRelease" >> $GITHUB_OUTPUT
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "task=:TMessagesProj_AppStandalone:assembleAfatStandaloneDebug" >> $GITHUB_OUTPUT
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build APK with Gradle
+        run: |
+          chmod +x gradlew
+          ./gradlew ${{ steps.config.outputs.task }} --no-daemon --stacktrace || ./gradlew :TMessagesProj_AppStandalone:assembleStandalone --no-daemon --stacktrace
+
+      - name: Find and Prepare APK
+        id: locate_apk
+        run: |
+          # Ищем собранный apk
+          APK_FILE=$(find TMessagesProj_AppStandalone/build/outputs/apk -type f -name "*.apk" | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+            echo "APK not found!" >&2
+            find TMessagesProj_AppStandalone/build/outputs -type f >&2
+            exit 1
+          fi
+
+          VERSION="${{ github.ref_name }}"
+          TARGET_NAME="100gram-${VERSION}.apk"
+          cp "$APK_FILE" "$TARGET_NAME"
+
+          echo "apk_path=$TARGET_NAME" >> "$GITHUB_OUTPUT"
+          echo "apk_name=$TARGET_NAME" >> "$GITHUB_OUTPUT"
+          echo "apk_sha256=$(sha256sum "$TARGET_NAME" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      # ДЕБАГ: загрузка в Artifacts при обычном коммите/PR
+      - name: Upload Debug Artifact
+        if: ${{ steps.config.outputs.is_release == 'false' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.locate_apk.outputs.apk_name }}
+          path: ${{ steps.locate_apk.outputs.apk_path }}
+          retention-days: 14
+
+      # РЕЛИЗ: автоматическое создание GitHub Release при пуше тега v*
+      - name: Create GitHub Release
+        if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.locate_apk.outputs.apk_path }}
+          name: 100gram ${{ github.ref_name }}
+          body: |
+            ## 100gram ${{ github.ref_name }}
+            
+            **SHA-256:** `${{ steps.locate_apk.outputs.apk_sha256 }}`
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

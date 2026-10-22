@@ -337,6 +337,63 @@ public class Weather {
         return cacheValue;
     }
 
+    public static void clearCache() {
+        cacheKey = null;
+        cacheValue = null;
+    }
+
+    public static boolean isLocationPermissionGranted() {
+        Context context = ApplicationLoader.applicationContext;
+        if (context == null) return false;
+        return context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static boolean isLocationEnabled() {
+        try {
+            if (ApplicationLoader.applicationContext == null) return false;
+            LocationManager locationManager = (LocationManager) ApplicationLoader.applicationContext.getSystemService(Context.LOCATION_SERVICE);
+            if (locationManager == null) {
+                return false;
+            }
+            if (Build.VERSION.SDK_INT >= 28) {
+                return locationManager.isLocationEnabled();
+            }
+            return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                    || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+                    || locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER);
+        } catch (Exception e) {
+            FileLog.e(e);
+            return false;
+        }
+    }
+
+    public static void fetchExtera(Utilities.Callback<State> callback) {
+        if (org.telegram.ui.Components.PillStack.PillStackConfig.getUseCurrentLocation()) {
+            if (!isLocationPermissionGranted()) {
+                if (callback != null) callback.run(null);
+                return;
+            } else {
+                fetch(false, callback);
+                return;
+            }
+        }
+        double lat = 55.7558d;
+        double lon = 37.6173d;
+        String customLoc = org.telegram.ui.Components.PillStack.PillStackConfig.getCustomWeatherLocation();
+        if (customLoc != null) {
+            try {
+                String[] parts = customLoc.split(",");
+                if (parts.length >= 2) {
+                    lat = Double.parseDouble(parts[0].trim());
+                    lon = Double.parseDouble(parts[1].trim());
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        fetch(lat, lon, callback);
+    }
+
 //    public static Runnable fetch(double lat, double lng, Utilities.Callback<State> whenFetched) {
 //        if (whenFetched == null) return null;
 //

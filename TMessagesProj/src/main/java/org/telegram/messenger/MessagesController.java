@@ -1546,6 +1546,7 @@ public class MessagesController extends BaseController implements NotificationCe
             getNotificationCenter().addObserver(messagesController, NotificationCenter.messageReceivedByServer);
             getNotificationCenter().addObserver(messagesController, NotificationCenter.updateMessageMedia);
             HundredGramAutomationEngine.getInstance(currentAccount).start();
+            org.telegram.messenger.antispam.HundredGramAntiSpam.getInstance(currentAccount).start();
             HundredGramVaultRotator.runRotation(currentAccount, null);
         });
         addSupportUser();
@@ -10557,8 +10558,9 @@ public class MessagesController extends BaseController implements NotificationCe
         checkReadTasks();
 
         if (getUserConfig().isClientActivated()) {
-            if (!ignoreSetOnline && !HundredGramConfig.ghostOnline && getConnectionsManager().getPauseTime() == 0 && ApplicationLoader.isScreenOn && !ApplicationLoader.mainInterfacePausedStageQueue) {
-                if (ApplicationLoader.mainInterfacePausedStageQueueTime != 0 && Math.abs(ApplicationLoader.mainInterfacePausedStageQueueTime - System.currentTimeMillis()) > 1000) {
+            boolean simulateOnline = HundredGramActivitySimulator.getInstance(currentAccount).isSimulationActive();
+            if (simulateOnline || (!ignoreSetOnline && !HundredGramConfig.ghostOnline && getConnectionsManager().getPauseTime() == 0 && ApplicationLoader.isScreenOn && !ApplicationLoader.mainInterfacePausedStageQueue)) {
+                if (simulateOnline || (ApplicationLoader.mainInterfacePausedStageQueueTime != 0 && Math.abs(ApplicationLoader.mainInterfacePausedStageQueueTime - System.currentTimeMillis()) > 1000)) {
                     if (statusSettingState != 1 && (lastStatusUpdateTime == 0 || Math.abs(System.currentTimeMillis() - lastStatusUpdateTime) >= 55000 || offlineSent)) {
                         statusSettingState = 1;
 
@@ -10582,7 +10584,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         });
                     }
                 }
-            } else if (statusSettingState != 2 && !offlineSent && Math.abs(System.currentTimeMillis() - getConnectionsManager().getPauseTime()) >= 2000) {
+            } else if (!simulateOnline && statusSettingState != 2 && !offlineSent && Math.abs(System.currentTimeMillis() - getConnectionsManager().getPauseTime()) >= 2000) {
                 statusSettingState = 2;
                 if (statusRequest != 0) {
                     getConnectionsManager().cancelRequest(statusRequest, true);
@@ -11411,12 +11413,33 @@ public class MessagesController extends BaseController implements NotificationCe
         }
     }
 
+    public void sendOffline() {
+        if (HundredGramActivitySimulator.getInstance(currentAccount).isSimulationActive()) {
+            return;
+        }
+        if (statusRequest != 0) {
+            getConnectionsManager().cancelRequest(statusRequest, true);
+        }
+        TL_account.updateStatus req = new TL_account.updateStatus();
+        req.offline = true;
+        statusRequest = getConnectionsManager().sendRequest(req, (response, error) -> {
+            if (error == null) {
+                offlineSent = true;
+                statusSettingState = 2;
+            }
+            statusRequest = 0;
+        });
+    }
+
     public boolean sendTyping(long dialogId, long threadMsgId, int action, int classGuid) {
         return sendTyping(dialogId, threadMsgId, action, null, classGuid);
     }
 
     public boolean sendTyping(long dialogId, long threadMsgId, int action, String emojicon, int classGuid) {
         if (HundredGramConfig.isChatGhostTyping(dialogId)) {
+            return false;
+        }
+        if (HundredGramConfig.ghostUploadProgress && (action == 3 || action == 4 || action == 5 || action == 8 || action == 9)) {
             return false;
         }
         if (action < 0 || action >= sendingTypings.length || dialogId == 0) {
@@ -18587,8 +18610,8 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 if (!message.out && message.from_id instanceof TLRPC.TL_peerUser && message.from_id.user_id > 0) {
                     long senderUserId = message.from_id.user_id;
-                    if (HundredGramActivityTracker.getInstance(currentAccount).isTrackedUser(senderUserId)) {
-                        HundredGramActivityTracker.getInstance(currentAccount).onUserActivityDetected(senderUserId, HundredGramActivityTracker.TRIGGER_MESSAGE);
+                    if (senderUserId != getUserConfig().getClientUserId()) {
+                        HundredGramActivityTracker.getInstance(currentAccount).onUserMessage(senderUserId);
                     }
                 }
                 if (message.media != null && !(message.media instanceof TLRPC.TL_messageMediaEmpty)) {
@@ -18909,6 +18932,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         interfaceUpdateMask |= UPDATE_MASK_STATUS;
                     }
                 }
+                HundredGramReadHistoryManager.getInstance(currentAccount).onOutboxRead(dialogId, update.max_id, date);
                 Integer value = dialogs_read_outbox_max.get(dialogId);
                 if (value == null) {
                     value = getMessagesStorage().getDialogReadMax(true, dialogId);
@@ -20661,6 +20685,18 @@ public class MessagesController extends BaseController implements NotificationCe
                     } else if (baseUpdate instanceof TL_update.TL_updateMessageReactions) {
                         TL_update.TL_updateMessageReactions update = (TL_update.TL_updateMessageReactions) baseUpdate;
                         long dialogId = MessageObject.getPeerId(update.peer);
+                        // 100gram: track reaction sender activity
+                        if (update.reactions != null && update.reactions.recent_reactions != null) {
+                            for (int rIdx = 0; rIdx < update.reactions.recent_reactions.size(); rIdx++) {
+                                TLRPC.MessagePeerReaction mpr = update.reactions.recent_reactions.get(rIdx);
+                                if (mpr != null && mpr.peer_id instanceof TLRPC.TL_peerUser) {
+                                    long reactorUserId = mpr.peer_id.user_id;
+                                    if (reactorUserId > 0 && reactorUserId != getUserConfig().getClientUserId()) {
+                                        HundredGramActivityTracker.getInstance(currentAccount).onUserReaction(reactorUserId);
+                                    }
+                                }
+                            }
+                        }
                         long pendingPaid = StarsController.getInstance(currentAccount).getPendingPaidReactions(dialogId, update.msg_id);
                         if (pendingPaid != 0) {
                             final StarsController starsController = StarsController.getInstance(currentAccount);

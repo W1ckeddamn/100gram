@@ -441,6 +441,14 @@ public class Camera2Session {
         return minZoom;
     }
 
+    public boolean isFront() {
+        return isFront;
+    }
+
+    public int getRecordingFrameRate() {
+        return HundredGramConfig.cameraRoundFps > 0 ? HundredGramConfig.cameraRoundFps : 30;
+    }
+
     public int getPreviewWidth() {
         return previewSize.getWidth();
     }

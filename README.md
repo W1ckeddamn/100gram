@@ -1,101 +1,127 @@
-# 100gram — Advanced Telegram Client for Android
+# 100gram
 
-**100gram** — это высокопроизводительный, конфиденциальный и кастомизируемый форк официального клиента Telegram для Android. 
-Проект основан на кодовой базе [Telegram Android 12.10.5 (Build 7105)](https://github.com/DrKLO/Telegram) с расширением функциональности нативного C++ ядра (MTProto / SQLite) и пользовательского интерфейса.
+```
+   _  ___   ___                             
+  / |/ _ \ / _ \ ___ ________ ___ _         
+  | | | | | | | / _ `/ __/ _ `/  ' \        
+  |_|\___/ \___/\_, /_/  \_,_/_/_/_/        
+                /___/                       
+```
 
----
-
-## 🌟 Ключевые возможности
-
-### 🚀 Network Boost (Сетевой ускоритель)
-- **Многопоточная передача данных**: скачивание и загрузка файлов в параллельном режиме (до 8 независимых потоков MTProto).
-- **Мониторинг сети**: индикатор скорости в реальном времени в заголовке и шторке.
-- **Пинг-тест дата-центров**: замер задержки до всех DC Telegram в один клик.
-
-### 🎥 Продвинутая камера и видеозаметки (Square Video Notes)
-- **Мульти-движок камеры**: поддержка **Jetpack CameraX**, **Camera2**, **Camera1 Legacy** и системного движка Telegram.
-- **Квадратные видеосообщения**: запись и отображение видеозаметок с квадратным соотношением сторон и скругленными углами (16dp).
-- **Отключение размытия фона**: переписка остаётся четкой и читаемой во время записи кружка.
-- **Управление битрейтом и FPS**: выбор битрейта (от 750 Кбит/с до 3.0 Мбит/с Ultra) и режим 60 FPS.
-- **Поддержка объективов**: переключение на сверхширокоугольную камеру (0.6x) и адаптация под старые 4:3 сенсоры.
-
-### 🗄️ Медиа-сейф (Media Vault)
-- **Анти-удаление и история правок**: перехват и локальная изоляция удаляемых и редактируемых медиафайлов до их уничтожения на сервере.
-- **Нулевой расход памяти (Hardlinks)**: использование файловых ссылок `android.system.Os.link` для мгновенного сохранения без дублирования места на диске.
-- **Встроенная галерея сейфа**: фильтрация по фото, видео, голосовым сообщениям и файлам с полноэкранным плеером.
-
-### ⏱️ Журнал сетевой активности (Activity Tracker)
-- **Мониторинг заходов в сеть**: логирование точного времени начала и завершения сессий.
-- **Детекция действий**: фиксация онлайн-статуса, набора текста (тайпинг с таймаутом 6 с) и отправки сообщений.
-- **Автозакрытие сессий**: умное закрытие зависших сессий (90 с) для пользователей со скрытым Last Seen («был недавно»).
-- **Суточная статистика**: расчёт суммарного времени, проведённого в сети за день.
-
-### 🎭 Режим стримера и защита экрана
-- **Блокировка захвата экрана (`FLAG_SECURE`)**: окно приложения становится чёрным в OBS, Discord, AnyDesk и системных скриншотах.
-- **Маскирование текста**: скрытие текста входящих и исходящих сообщений точками (`••••••••••`).
-- **Скрытие профиля**: подмена имени, номера телефона и юзернейма в шапке настроек.
-
-### 👻 Режим невидимки (Ghost Mode)
-- Скрытие статуса прочтения входящих сообщений (без отправки галочек).
-- Анонимный просмотр Stories.
-- Скрытие статуса набора текста («печатает...»).
+> **PROJECT STATUS: VIBE-CODED**  
+> This repository is vibe-coded in continuous collaboration with autonomous AI coding agents (Antigravity) and human direction.  
+> Architecture decisions, native patches, and UI additions are written rapidly through LLM iterations and validated against the Android NDK compiler, Gradle toolchains, and daily-driver dogfooding.  
+> No corporate bloat. Pragmatic code, direct patches, clean compilation.
 
 ---
 
-## 🛠️ Сборка проекта (Build Instructions)
+## Overview
 
-### Системные требования
-- **ОС:** Windows 10 / 11, Linux или macOS.
-- **JDK:** OpenJDK 17 (рекомендуется встроенный в Android Studio: `jbr`).
-- **Android SDK:** API Level 35 (Android 15), Build-Tools 35.0.0.
-- **Android NDK:** 26.1.10909125.
-- **CMake:** 3.22.1.
+**100gram** is an enhanced, privacy-hardened, and performance-tuned Telegram client fork for Android, built on top of [Telegram for Android](https://github.com/DrKLO/Telegram) v12.10.5 (Build 7105).
 
-### Сборка через PowerShell (Windows)
-
-1. Экспортируйте переменную `JAVA_HOME`:
-   ```powershell
-   $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-   ```
-
-2. Быстрая компиляция Java-кода:
-   ```powershell
-   .\gradlew.bat :TMessagesProj_AppStandalone:compileAfatDebugJavaWithJavac
-   ```
-
-3. Сборка отладочного APK (Debug):
-   ```powershell
-   .\gradlew.bat :TMessagesProj_AppStandalone:assembleAfatDebug
-   ```
-   *Выходной файл:* `TMessagesProj_AppStandalone/build/outputs/apk/afat/debug/app.apk`
-
-4. Сборка релизного APK (Release):
-   ```powershell
-   .\gradlew.bat :TMessagesProj_AppStandalone:assembleAfatRelease
-   ```
-   *Выходной файл:* `TMessagesProj_AppStandalone/build/outputs/apk/afat/release/app.apk`
+The fork bypasses upstream product restrictions, optimizes native MTProto throughput, embeds local machine learning models for speech recognition, and adds power-user media and stealth tools directly into the core application runtime.
 
 ---
 
-## 📁 Структура репозитория
+## Feature Matrix
 
-```text
-├── TMessagesProj/                   # Основная библиотека клиента Telegram
-│   ├── src/main/java/org/telegram/  # Исходный код Java
-│   │   ├── messenger/               # Ядро (HundredGramConfig, Vault, Tracker, MTProto)
-│   │   └── ui/                      # Интерфейс (BaseFragment, ячейки, шторки)
-│   ├── jni/                         # Нативный код C/C++ (WebRTC, SQLite, BoringSSL, TgNet)
-│   └── src/main/res/                # Ресурсы, разметка и локализация
-├── TMessagesProj_AppStandalone/     # Модуль сборки автономного APK (без Google Play Services)
-├── .agents/skills/                  # Набор навыков (Skills) для AI-разработки в Antigravity
-│   ├── 100gram-architect/           # Архитектурные правила, модель потоков и Defensive Null Safety
-│   ├── 100gram-build/               # Справочник по Gradle, NDK/CMake и сборке под Windows
-│   ├── 100gram-ui-components/       # Каталог ячеек, темы и шаблоны BaseFragment
-│   └── 100gram-tracker-vault/       # Спецификация Activity Tracker и Media Vault
-└── HANDOVER.md                      # Детальное техническое руководство по проекту
+| Subsystem | Capabilities |
+| :--- | :--- |
+| **Networking** | Parallel MTProto downloads/uploads (up to 8 concurrent connections), real-time bandwidth monitor, DC1–DC5 round-trip latency ping diagnostics. |
+| **Camera & Video Notes** | Multi-engine backend (CameraX, Camera2, Camera1, Native), square video notes with rounded corners (16dp), background blur removal during recording, bitrate control (up to 3.0 Mbps Ultra), 60 FPS mode, ultra-wide lens (0.6x) support. |
+| **Media Vault** | Anti-deletion interception for chats and channels, edit-history persistence, zero-copy storage via filesystem hardlinks (`android.system.Os.link`), isolated SQLite-indexed media gallery. |
+| **Activity Tracker** | Contact online/offline presence logger, typing activity detector, 90s auto-closing timeout heuristic for hidden last-seen users, daily cumulative time analytics. |
+| **Offline STT** | On-device voice and video note transcription powered by embedded Vosk models (no Telegram Premium required), real-time streaming output, 3:1 audio downsampling, AGC. |
+| **Gestures & Swipe** | Multi-slot swipe-to-left action selection (Reply, Saved Messages, Copy, Forward, Pin, Edit, Delete), vertical swipe selector with haptic feedback, real-time settings preview. |
+| **Navigation & Layout** | Fully dynamic bottom navigation tabs (Chats, Contacts, Settings, Profile) with ViewPager page unbinding, centered action bar titles and avatars, real-time preview dials for chat bubbles, stickers, and avatar corners. |
+| **AI Assistant** | Multi-service engine (Gemini, OpenAI, OpenRouter, Groq, Perplexity, Custom endpoints) with reasoning model support, custom personas/roles with animated emoji icons, live ping validation, and persistent conversation history. |
+| **Privacy & Stealth** | `FLAG_SECURE` window shield (blocks screenshots and recording in OBS, Discord, AnyDesk), text redaction (`••••••`), ghost mode (read receipt suppression, anonymous story viewing, typing state masking), contact profile audit log. |
+| **Plugins & Feeds** | Sandboxed JavaScript plugin engine, aggregated multi-channel feed reader, custom icon pack support. |
+
+---
+
+## Build Guide
+
+### Requirements
+
+- **OS**: Windows 10/11, Linux, or macOS
+- **JDK**: OpenJDK 17 (`jbr` from Android Studio)
+- **Android SDK**: API 35 (Build-tools 35.0.0)
+- **Android NDK**: 26.1.10909125
+- **CMake**: 3.22.1
+
+### Configuration (`local.properties`)
+
+```properties
+sdk.dir=C:\\Users\\<USER>\\AppData\\Local\\Android\\Sdk
+ndk.dir=C:\\Users\\<USER>\\AppData\\Local\\Android\\Sdk\\ndk\\26.1.10909125
+```
+
+### Commands (Windows PowerShell)
+
+```powershell
+# Set JBR path
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+
+# Verify resources for collisions
+.\gradlew.bat :TMessagesProj:packageDebugResources --daemon
+
+# Compile Debug APK (skips lints and tests for fast build)
+.\gradlew.bat :TMessagesProj_AppStandalone:assembleAfatDebug -x lint -x test --daemon
+# Output: TMessagesProj_AppStandalone/build/outputs/apk/afat/debug/app.apk
+
+# Compile Release APK
+.\gradlew.bat :TMessagesProj_AppStandalone:assembleAfatRelease -x lint -x test --daemon
+# Output: TMessagesProj_AppStandalone/build/outputs/apk/afat/release/app.apk
+```
+
+### Commands (Linux / macOS)
+
+```bash
+export JAVA_HOME="/path/to/android-studio/jbr"
+./gradlew :TMessagesProj_AppStandalone:assembleAfatDebug -x lint -x test --daemon
 ```
 
 ---
 
-## 📄 Лицензия
-Проект распространяется на условиях лицензии GNU General Public License v2.0 (или более поздней) в соответствии с лицензией исходного проекта [Telegram for Android](https://github.com/DrKLO/Telegram).
+## Upstream Synchronization
+
+Upstream Telegram replaces `TMessagesProj/jni/` with Git submodules. A naive `git merge upstream/master` will wipe all native C++ build sources.
+
+To prevent native source deletion, `.gitattributes` enforces:
+```gitattributes
+TMessagesProj/jni/** merge=ours
+.gitmodules merge=ours
+```
+
+Enable the merge driver once per clone:
+```bash
+git config merge.ours.driver true
+```
+
+When pulling upstream updates (`git merge upstream/master`), Git automatically preserves all local native C++ files while updating Java/Kotlin code, layouts, and assets.
+
+---
+
+## Repository Layout
+
+```text
+.
+|-- TMessagesProj/                   Core library module (Java and C/C++ native source)
+|   |-- src/main/java/org/telegram/
+|   |   |-- messenger/               Core controllers, storage, network, MTProto
+|   |   `-- ui/                      BaseFragment screens, UI cells, bottom sheets
+|   |-- jni/                         Native C/C++ source (TgNet, WebRTC, SQLite, BoringSSL)
+|   `-- src/main/res/                Resources, styles, drawables, localizations
+|-- TMessagesProj_AppStandalone/     Standalone APK build module (no Google Play Services)
+|-- .agents/skills/                  Agent engineering guides and architectural rules
+|-- CHANGELOG.md                     Detailed version change log
+|-- FEATURES.md                      Comprehensive feature documentation
+`-- HANDOVER.md                      Technical handover guide
+```
+
+---
+
+## License
+
+This project is licensed under the terms of the GNU General Public License v2.0 or later. Based on [Telegram for Android](https://github.com/DrKLO/Telegram).

@@ -678,7 +678,7 @@ public class SharedMediaLayout extends FrameLayout implements NotificationCenter
     private MediaSearchAdapter audioSearchAdapter;
     private MediaSearchAdapter linksSearchAdapter;
     private GroupUsersSearchAdapter groupUsersSearchAdapter;
-    private MediaPage[] mediaPages = new MediaPage[2];
+    protected MediaPage[] mediaPages = new MediaPage[2];
     private ActionBarMenuItem deleteItem;
     @Nullable
     public ActionBarMenuItem searchItemIcon;
@@ -5035,7 +5035,7 @@ public class SharedMediaLayout extends FrameLayout implements NotificationCenter
         }
     }
 
-    private void checkCurrentTabValid() {
+    protected void checkCurrentTabValid() {
         int id = scrollSlidingTextTabStrip.getCurrentTabId();
         if (!scrollSlidingTextTabStrip.hasTab(id)) {
             id = scrollSlidingTextTabStrip.getFirstTabId();
@@ -7105,7 +7105,7 @@ public class SharedMediaLayout extends FrameLayout implements NotificationCenter
         }
     }
 
-    private void switchToCurrentSelectedMode(boolean animated) {
+    protected void switchToCurrentSelectedMode(boolean animated) {
         boolean sections = false;
         if (giftsContainer != null) {
             giftsContainer.resetReordering();

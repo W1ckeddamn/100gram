@@ -19,9 +19,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.core.widget.NestedScrollView;
+import org.telegram.ui.Cells.HeaderCell;
+import android.view.MotionEvent;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -56,9 +60,12 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.BulletinFactory;
+import org.telegram.ui.Components.CheckBox2;
 import org.telegram.ui.Components.EmptyTextProgressView;
 import org.telegram.ui.Components.LayoutHelper;
+import org.telegram.ui.Components.NumberTextView;
 import org.telegram.ui.Components.RecyclerListView;
+import org.telegram.ui.Components.RecyclerViewItemRangeSelector;
 import org.telegram.ui.Components.ViewPagerFixed;
 
 import java.io.File;
@@ -66,6 +73,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 public class HundredGramVaultViewerActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
@@ -78,6 +86,19 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
     private static final int ITEM_SEARCH = 1;
     private static final int ITEM_FILTER = 2;
     private static final int ITEM_SCAN = 3;
+    private static final int ITEM_SORT = 4;
+    private static final int ITEM_SELECT_MODE = 5;
+
+    private static final int ITEM_SELECT_ALL = 10;
+    private static final int ITEM_BATCH_SAVE = 11;
+    private static final int ITEM_BATCH_ZIP = 12;
+    private static final int ITEM_BATCH_DELETE = 13;
+
+    public static final int SORT_DATE_DESC = 0;
+    public static final int SORT_DATE_ASC = 1;
+    public static final int SORT_SIZE_DESC = 2;
+    public static final int SORT_SIZE_ASC = 3;
+    public static final int SORT_NAME_ASC = 4;
 
     public static class VaultItem {
         public int mid;
@@ -154,7 +175,22 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
     private boolean loading = true;
     private String searchQuery = null;
     private long selectedDialogId = 0;
+    private long minFileSizeBytes = 0;
+    private int currentSortMode = SORT_DATE_DESC;
     private long totalVaultSize = 0;
+    private long photosTotalSize = 0;
+    private long videosTotalSize = 0;
+    private long voiceTotalSize = 0;
+    private long filesTotalSize = 0;
+    private final HashMap<Long, Long> chatTotalSizes = new HashMap<>();
+    private final HashMap<Long, Integer> chatFileCounts = new HashMap<>();
+
+    private FrameLayout statsBar;
+    private TextView statsTextView;
+
+    private boolean selectionMode = false;
+    private final HashSet<VaultItem> selectedItems = new HashSet<>();
+    private NumberTextView selectedCountTextView;
 
     @Override
     public boolean onFragmentCreate() {
@@ -182,21 +218,60 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
     }
 
     @Override
+    public boolean onBackPressed(boolean invoked) {
+        if (actionBar != null && actionBar.isActionModeShowed()) {
+            if (invoked) {
+                exitSelectionMode();
+            }
+            return false;
+        }
+        return super.onBackPressed(invoked);
+    }
+
+    @Override
     public View createView(Context context) {
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
         actionBar.setTitle(LocaleController.getString("HundredGramVaultMediaTitle", R.string.HundredGramVaultMediaTitle));
         actionBar.setSubtitle(LocaleController.getString("Loading", R.string.Loading));
 
+        ActionBarMenu actionMode = actionBar.createActionMode();
+        selectedCountTextView = new NumberTextView(actionMode.getContext());
+        selectedCountTextView.setTextSize(18);
+        selectedCountTextView.setTypeface(AndroidUtilities.bold());
+        selectedCountTextView.setTextColor(Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
+        actionMode.addView(selectedCountTextView, LayoutHelper.createLinear(0, LayoutHelper.MATCH_PARENT, 1.0f, 72, 0, 0, 0));
+
+        actionMode.addItemWithWidth(ITEM_SELECT_ALL, R.drawable.msg_select, AndroidUtilities.dp(54), LocaleController.getString("HundredGramVaultSelectAll", R.string.HundredGramVaultSelectAll));
+        actionMode.addItemWithWidth(ITEM_BATCH_SAVE, R.drawable.msg_download, AndroidUtilities.dp(54), LocaleController.getString("HundredGramVaultSaveAll", R.string.HundredGramVaultSaveAll));
+        actionMode.addItemWithWidth(ITEM_BATCH_ZIP, R.drawable.msg_share, AndroidUtilities.dp(54), LocaleController.getString("HundredGramVaultExportZip", R.string.HundredGramVaultExportZip));
+        actionMode.addItemWithWidth(ITEM_BATCH_DELETE, R.drawable.msg_delete, AndroidUtilities.dp(54), LocaleController.getString("Delete", R.string.Delete));
+
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override
             public void onItemClick(int id) {
                 if (id == -1) {
-                    finishFragment();
+                    if (actionBar.isActionModeShowed()) {
+                        exitSelectionMode();
+                    } else {
+                        finishFragment();
+                    }
+                } else if (id == ITEM_SELECT_MODE) {
+                    enterSelectionMode(null);
+                } else if (id == ITEM_SORT) {
+                    showSortDialog();
                 } else if (id == ITEM_FILTER) {
-                    showChatFilterDialog();
+                    showChatsAndStorageBottomSheet();
                 } else if (id == ITEM_SCAN) {
                     showDeepScanDialog();
+                } else if (id == ITEM_SELECT_ALL) {
+                    selectAllInCurrentTab();
+                } else if (id == ITEM_BATCH_SAVE) {
+                    batchSaveSelected();
+                } else if (id == ITEM_BATCH_ZIP) {
+                    batchExportZipSelected();
+                } else if (id == ITEM_BATCH_DELETE) {
+                    batchDeleteSelected();
                 }
             }
         });
@@ -220,11 +295,17 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             }
         });
 
-        ActionBarMenuItem scanItem = menu.addItem(ITEM_SCAN, R.drawable.msg_retry);
-        scanItem.setContentDescription(LocaleController.getString("HundredGramVaultDeepScanTitle", R.string.HundredGramVaultDeepScanTitle));
+        ActionBarMenuItem selectModeItem = menu.addItem(ITEM_SELECT_MODE, R.drawable.msg_select);
+        selectModeItem.setContentDescription(LocaleController.getString("HundredGramVaultSelectMode", R.string.HundredGramVaultSelectMode));
+
+        ActionBarMenuItem sortItem = menu.addItem(ITEM_SORT, R.drawable.msg_actions);
+        sortItem.setContentDescription(LocaleController.getString("HundredGramVaultSort", R.string.HundredGramVaultSort));
 
         ActionBarMenuItem filterItem = menu.addItem(ITEM_FILTER, R.drawable.msg_openprofile);
         filterItem.setContentDescription(LocaleController.getString("HundredGramVaultFilterByChat", R.string.HundredGramVaultFilterByChat));
+
+        ActionBarMenuItem scanItem = menu.addItem(ITEM_SCAN, R.drawable.msg_retry);
+        scanItem.setContentDescription(LocaleController.getString("HundredGramVaultDeepScanTitle", R.string.HundredGramVaultDeepScanTitle));
 
         FrameLayout root = new FrameLayout(context);
         root.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
@@ -233,13 +314,27 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
         tabsView = viewPager.createTabsView(true, 8);
         tabsView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
 
-        root.addView(tabsView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48, Gravity.TOP | Gravity.FILL_HORIZONTAL));
+        root.addView(tabsView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 44, Gravity.TOP | Gravity.FILL_HORIZONTAL));
+
+        statsBar = new FrameLayout(context);
+        statsBar.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
+        statsBar.setOnClickListener(v -> showChatsAndStorageBottomSheet());
+
+        statsTextView = new TextView(context);
+        statsTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
+        statsTextView.setTypeface(AndroidUtilities.bold());
+        statsTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
+        statsTextView.setGravity(Gravity.CENTER);
+        statsTextView.setSingleLine(true);
+        statsTextView.setEllipsize(TextUtils.TruncateAt.END);
+        statsBar.addView(statsTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER, 12, 0, 12, 0));
+        root.addView(statsBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 30, Gravity.TOP | Gravity.FILL_HORIZONTAL, 0, 44, 0, 0));
 
         View divider = new View(context);
         divider.setBackgroundColor(Theme.getColor(Theme.key_divider));
-        root.addView(divider, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 1, Gravity.TOP, 0, 48, 0, 0));
+        root.addView(divider, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 1, Gravity.TOP, 0, 74, 0, 0));
 
-        root.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL, 0, 49, 0, 0));
+        root.addView(viewPager, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL, 0, 75, 0, 0));
 
         viewPager.setAdapter(new ViewPagerFixed.Adapter() {
             @Override
@@ -251,14 +346,14 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             public CharSequence getItemTitle(int position) {
                 switch (position) {
                     case TAB_PHOTOS:
-                        return LocaleController.getString("HundredGramVaultTabPhotos", R.string.HundredGramVaultTabPhotos);
+                        return LocaleController.getString("HundredGramVaultTabPhotos", R.string.HundredGramVaultTabPhotos) + (photosTotalSize > 0 ? " (" + AndroidUtilities.formatFileSize(photosTotalSize) + ")" : "");
                     case TAB_VIDEOS:
-                        return LocaleController.getString("HundredGramVaultTabVideos", R.string.HundredGramVaultTabVideos);
+                        return LocaleController.getString("HundredGramVaultTabVideos", R.string.HundredGramVaultTabVideos) + (videosTotalSize > 0 ? " (" + AndroidUtilities.formatFileSize(videosTotalSize) + ")" : "");
                     case TAB_VOICE:
-                        return LocaleController.getString("HundredGramVaultTabVoice", R.string.HundredGramVaultTabVoice);
+                        return LocaleController.getString("HundredGramVaultTabVoice", R.string.HundredGramVaultTabVoice) + (voiceTotalSize > 0 ? " (" + AndroidUtilities.formatFileSize(voiceTotalSize) + ")" : "");
                     case TAB_FILES:
                     default:
-                        return LocaleController.getString("HundredGramVaultTabFiles", R.string.HundredGramVaultTabFiles);
+                        return LocaleController.getString("HundredGramVaultTabFiles", R.string.HundredGramVaultTabFiles) + (filesTotalSize > 0 ? " (" + AndroidUtilities.formatFileSize(filesTotalSize) + ")" : "");
                 }
             }
 
@@ -309,10 +404,18 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
                 pageAdapters[position] = adapter;
                 listView.setAdapter(adapter);
 
+                final int tabIndex = position;
+                listView.addOnItemTouchListener(new VaultEdgeDragSelector(tabIndex));
+
                 listView.setOnItemClickListener((v, pos) -> {
                     ArrayList<VaultItem> currentList = getListForTab(position);
                     if (pos < 0 || pos >= currentList.size()) return;
                     VaultItem item = currentList.get(pos);
+
+                    if (selectionMode) {
+                        toggleItemSelection(item);
+                        return;
+                    }
 
                     if (position == TAB_PHOTOS || position == TAB_VIDEOS) {
                         openPhotoViewer(currentList, pos);
@@ -326,7 +429,15 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
                 listView.setOnItemLongClickListener((v, pos) -> {
                     ArrayList<VaultItem> currentList = getListForTab(position);
                     if (pos >= 0 && pos < currentList.size()) {
-                        showItemContextMenu(currentList.get(pos));
+                        if (v != null) {
+                            v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+                        }
+                        VaultItem item = currentList.get(pos);
+                        if (selectionMode) {
+                            toggleItemSelection(item);
+                        } else {
+                            showItemContextMenu(item);
+                        }
                         return true;
                     }
                     return false;
@@ -357,6 +468,7 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
 
         MessagesStorage.getInstance(currentAccount).getStorageQueue().postRunnable(() -> {
             ArrayList<VaultItem> items = new ArrayList<>();
+            ArrayList<Object[]> toPrune = new ArrayList<>();
             File vaultDir = HundredGramVaultManager.getInstance(currentAccount).getVaultDir();
             HashSet<Long> uniqueUids = new HashSet<>();
 
@@ -392,12 +504,22 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
                         it.date = file.lastModified();
                         items.add(it);
                         uniqueUids.add(uid);
+                    } else {
+                        toPrune.add(new Object[] { mid, uid, fileName });
                     }
                 }
             } catch (Throwable e) {
                 FileLog.e(e);
             } finally {
                 if (cursor != null) cursor.dispose();
+            }
+
+            if (!toPrune.isEmpty()) {
+                for (Object[] p : toPrune) {
+                    try {
+                        MessagesStorage.getInstance(currentAccount).deleteVaultEntry((Integer) p[0], (Long) p[1], (String) p[2]);
+                    } catch (Throwable ignore) {}
+                }
             }
 
             ArrayList<Long> unknownUsers = new ArrayList<>();
@@ -429,7 +551,7 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
                 }
             }
 
-            Collections.sort(items, (a, b) -> Long.compare(b.date, a.date));
+            applySort(items);
 
             AndroidUtilities.runOnUIThread(() -> {
                 loading = false;
@@ -462,10 +584,28 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
         filesList.clear();
 
         totalVaultSize = 0;
+        photosTotalSize = 0;
+        videosTotalSize = 0;
+        voiceTotalSize = 0;
+        filesTotalSize = 0;
+        chatTotalSizes.clear();
+        chatFileCounts.clear();
+
         for (VaultItem it : allItems) {
             totalVaultSize += it.size;
+            chatTotalSizes.put(it.uid, chatTotalSizes.getOrDefault(it.uid, 0L) + it.size);
+            chatFileCounts.put(it.uid, chatFileCounts.getOrDefault(it.uid, 0) + 1);
+
+            if (it.isPhoto()) photosTotalSize += it.size;
+            else if (it.isVideo()) videosTotalSize += it.size;
+            else if (it.isVoice()) voiceTotalSize += it.size;
+            else filesTotalSize += it.size;
 
             if (selectedDialogId != 0 && it.uid != selectedDialogId) {
+                continue;
+            }
+
+            if (minFileSizeBytes > 0 && it.size < minFileSizeBytes) {
                 continue;
             }
 
@@ -494,13 +634,31 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
         }
 
         updateActionBarSubtitle();
+        updateStatsBar();
         updateEmptyViews();
+
+        if (viewPager != null) {
+            viewPager.fillTabs(false);
+        }
 
         for (int i = 0; i < pageAdapters.length; i++) {
             if (pageAdapters[i] != null) {
                 pageAdapters[i].notifyDataSetChanged();
             }
         }
+    }
+
+    private void updateStatsBar() {
+        if (statsTextView == null) return;
+        if (loading) {
+            statsTextView.setText(LocaleController.getString("Loading", R.string.Loading));
+            return;
+        }
+        String pStr = "📷 " + AndroidUtilities.formatFileSize(photosTotalSize);
+        String vStr = "🎬 " + AndroidUtilities.formatFileSize(videosTotalSize);
+        String aStr = "🎙 " + AndroidUtilities.formatFileSize(voiceTotalSize);
+        String fStr = "📁 " + AndroidUtilities.formatFileSize(filesTotalSize);
+        statsTextView.setText(pStr + "   " + vStr + "   " + aStr + "   " + fStr);
     }
 
     private void updateActionBarSubtitle() {
@@ -511,10 +669,22 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
         }
 
         String sizeStr = AndroidUtilities.formatFileSize(totalVaultSize);
+        StringBuilder sb = new StringBuilder();
         if (selectedDialogId != 0) {
             TLObject obj = MessagesController.getInstance(currentAccount).getUserOrChat(selectedDialogId);
             String title = DialogObject.setDialogPhotoTitle(null, obj);
-            actionBar.setSubtitle(title + " • " + sizeStr);
+            if (TextUtils.isEmpty(title)) {
+                title = selectedDialogId > 0 ? "User " + selectedDialogId : "Chat " + selectedDialogId;
+            }
+            sb.append(title);
+        }
+        if (minFileSizeBytes > 0) {
+            if (sb.length() > 0) sb.append(" • ");
+            sb.append("> ").append(AndroidUtilities.formatFileSize(minFileSizeBytes));
+        }
+        if (sb.length() > 0) {
+            sb.append(" • ").append(sizeStr);
+            actionBar.setSubtitle(sb.toString());
         } else {
             actionBar.setSubtitle(sizeStr);
         }
@@ -592,9 +762,17 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             actions.add(2);
         }
 
+        items.add(LocaleController.getString("HundredGramVaultDetails", R.string.HundredGramVaultDetails));
+        icons.add(R.drawable.msg_info);
+        actions.add(5);
+
         items.add(LocaleController.getString("HundredGramVaultDelete", R.string.HundredGramVaultDelete));
         icons.add(R.drawable.msg_delete);
         actions.add(3);
+
+        items.add(LocaleController.getString("HundredGramVaultSelectMode", R.string.HundredGramVaultSelectMode));
+        icons.add(R.drawable.msg_select);
+        actions.add(4);
 
         builder.setItems(items.toArray(new CharSequence[0]), AndroidUtilities.toIntArray(icons), (dialog, which) -> {
             int action = actions.get(which);
@@ -604,8 +782,79 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
                 saveVaultFile(item);
             } else if (action == 2) {
                 goToMessageInChat(item);
+            } else if (action == 5) {
+                showFileDetailsDialog(item);
             } else if (action == 3) {
                 showDeleteFilePrompt(item);
+            } else if (action == 4) {
+                enterSelectionMode(item);
+            }
+        });
+
+        showDialog(builder.create());
+    }
+
+    private void showFileDetailsDialog(VaultItem item) {
+        if (getParentActivity() == null || item == null) return;
+        BottomSheet.Builder builder = new BottomSheet.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramVaultDetails", R.string.HundredGramVaultDetails), true);
+
+        ArrayList<CharSequence> titles = new ArrayList<>();
+        ArrayList<CharSequence> subtitles = new ArrayList<>();
+        ArrayList<Integer> detailIcons = new ArrayList<>();
+
+        // File Name
+        titles.add(LocaleController.getString("FileName", R.string.FileName));
+        subtitles.add(item.fileName != null ? item.fileName : "-");
+        detailIcons.add(R.drawable.msg_download);
+
+        // File Size
+        titles.add(LocaleController.getString("FileSize", R.string.FileSize));
+        subtitles.add(AndroidUtilities.formatFileSize(item.size));
+        detailIcons.add(R.drawable.msg_download);
+
+        // Date Saved
+        titles.add(LocaleController.getString("Date", R.string.Date));
+        subtitles.add(LocaleController.formatDateTime(item.date / 1000L, false));
+        detailIcons.add(R.drawable.msg_calendar2);
+
+        // Chat / Source Dialog
+        titles.add("Чат / Источник");
+        String chatDisplay = item.chatTitle != null ? item.chatTitle : ("ID: " + item.uid);
+        if (item.uid != 0) {
+            chatDisplay += " (" + item.uid + ")";
+        }
+        subtitles.add(chatDisplay);
+        detailIcons.add(item.uid > 0 ? R.drawable.msg_usersearch : R.drawable.msg_channel);
+
+        // Message ID
+        if (item.mid > 0) {
+            titles.add("ID сообщения");
+            subtitles.add(String.valueOf(item.mid));
+            detailIcons.add(R.drawable.msg_message);
+        }
+
+        // Vault Local Path
+        if (item.vaultPath != null) {
+            titles.add(LocaleController.getString("FilePath", R.string.FilePath));
+            subtitles.add(item.vaultPath);
+            detailIcons.add(R.drawable.msg_openin);
+        }
+
+        CharSequence[] itemsArray = new CharSequence[titles.size()];
+        for (int i = 0; i < titles.size(); i++) {
+            itemsArray[i] = titles.get(i) + "\n" + subtitles.get(i);
+        }
+
+        builder.setItems(itemsArray, AndroidUtilities.toIntArray(detailIcons), (dialog, which) -> {
+            if (which >= 0 && which < subtitles.size()) {
+                CharSequence textToCopy = subtitles.get(which);
+                if (!TextUtils.isEmpty(textToCopy)) {
+                    AndroidUtilities.addToClipboard(textToCopy.toString());
+                    BulletinFactory.of(HundredGramVaultViewerActivity.this).createCopyBulletin(
+                            LocaleController.getString("TextCopied", R.string.TextCopied)
+                    ).show();
+                }
             }
         });
 
@@ -677,25 +926,340 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
         dialog.redPositive();
     }
 
-    private void showChatFilterDialog() {
-        if (getParentActivity() == null) return;
+    private void enterSelectionMode(VaultItem initialItem) {
+        enterSelectionMode(initialItem, null);
+    }
 
-        HashMap<Long, Integer> chatCounts = new HashMap<>();
-        for (VaultItem it : allItems) {
-            chatCounts.put(it.uid, chatCounts.getOrDefault(it.uid, 0) + 1);
+    private void enterSelectionMode(VaultItem initialItem, View initialView) {
+        selectionMode = true;
+        selectedItems.clear();
+        if (initialItem != null) {
+            selectedItems.add(initialItem);
+        }
+        if (actionBar != null) {
+            actionBar.showActionMode();
+        }
+        updateSelectionCount();
+
+        int currentTab = viewPager != null ? viewPager.getCurrentPosition() : 0;
+        RecyclerListView lv = listViews[currentTab];
+        if (lv != null) {
+            for (int i = 0; i < lv.getChildCount(); i++) {
+                View child = lv.getChildAt(i);
+                if (child instanceof VaultMediaCell) {
+                    ((VaultMediaCell) child).setSelectionMode(true);
+                } else if (child instanceof VaultFileCell) {
+                    ((VaultFileCell) child).setSelectionMode(true);
+                }
+            }
+        }
+        if (initialView instanceof VaultMediaCell) {
+            ((VaultMediaCell) initialView).setChecked(true, true);
+        } else if (initialView instanceof VaultFileCell) {
+            ((VaultFileCell) initialView).setChecked(true, true);
+        } else {
+            notifyAllAdapters();
+        }
+    }
+
+    private void exitSelectionMode() {
+        selectionMode = false;
+        selectedItems.clear();
+        if (actionBar != null) {
+            actionBar.hideActionMode();
+        }
+        notifyAllAdapters();
+    }
+
+    private void toggleItemSelection(VaultItem item) {
+        if (item == null) return;
+        if (selectedItems.contains(item)) {
+            selectedItems.remove(item);
+        } else {
+            selectedItems.add(item);
+        }
+        updateSelectionCount();
+        notifyAllAdapters();
+    }
+
+    private void updateSelectionCount() {
+        if (selectedCountTextView != null) {
+            selectedCountTextView.setNumber(selectedItems.size(), true);
+        }
+    }
+
+    private void notifyAllAdapters() {
+        for (int i = 0; i < pageAdapters.length; i++) {
+            if (pageAdapters[i] != null) {
+                pageAdapters[i].notifyDataSetChanged();
+            }
+        }
+    }
+
+    private void selectAllInCurrentTab() {
+        int currentTab = viewPager != null ? viewPager.getCurrentPosition() : 0;
+        ArrayList<VaultItem> currentList = getListForTab(currentTab);
+        if (currentList.isEmpty()) return;
+
+        boolean allSelected = true;
+        for (VaultItem it : currentList) {
+            if (!selectedItems.contains(it)) {
+                allSelected = false;
+                break;
+            }
         }
 
-        ArrayList<Long> uids = new ArrayList<>(chatCounts.keySet());
-        Collections.sort(uids, (a, b) -> Integer.compare(chatCounts.get(b), chatCounts.get(a)));
+        if (allSelected) {
+            for (VaultItem it : currentList) {
+                selectedItems.remove(it);
+            }
+        } else {
+            selectedItems.addAll(currentList);
+        }
+        updateSelectionCount();
+        notifyAllAdapters();
+    }
+
+    private void batchSaveSelected() {
+        if (selectedItems.isEmpty() || getParentActivity() == null) {
+            return;
+        }
+        ArrayList<VaultItem> itemsToSave = new ArrayList<>(selectedItems);
+        int total = itemsToSave.size();
+        int[] savedCount = new int[1];
+
+        AlertDialog progressDialog = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_LOADING);
+        progressDialog.setMessage(LocaleController.getString("Loading", R.string.Loading));
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.setCancelable(false);
+        showDialog(progressDialog);
+
+        for (int i = 0; i < total; i++) {
+            VaultItem item = itemsToSave.get(i);
+            int type = item.isPhoto() ? 0 : (item.isVideo() ? 1 : (item.isVoice() ? 3 : 2));
+            MediaController.saveFile(item.file.getAbsolutePath(), getParentActivity(), type, item.fileName, null, uri -> {
+                savedCount[0]++;
+                if (savedCount[0] >= total) {
+                    try {
+                        progressDialog.dismiss();
+                    } catch (Throwable ignore) {}
+                    BulletinFactory.of(HundredGramVaultViewerActivity.this).createSimpleBulletin(
+                            R.raw.ic_save_to_gallery,
+                            LocaleController.formatString("HundredGramVaultBatchSaved", R.string.HundredGramVaultBatchSaved, total)
+                    ).show();
+                    exitSelectionMode();
+                }
+            }, false);
+        }
+    }
+
+    private void batchExportZipSelected() {
+        if (selectedItems.isEmpty() || getParentActivity() == null) {
+            return;
+        }
+        ArrayList<File> files = new ArrayList<>();
+        for (VaultItem it : selectedItems) {
+            if (it.file != null && it.file.exists() && it.file.length() > 0) {
+                files.add(it.file);
+            }
+        }
+        if (files.isEmpty()) return;
+
+        AlertDialog progressDialog = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_LOADING);
+        progressDialog.setMessage(LocaleController.getString("HundredGramVaultExportingZip", R.string.HundredGramVaultExportingZip));
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.setCancelable(false);
+        showDialog(progressDialog);
+
+        File cacheDir = org.telegram.messenger.ApplicationLoader.applicationContext.getCacheDir();
+        File destZip = new File(cacheDir, "100gram_vault_selection_" + System.currentTimeMillis() + ".zip");
+        HundredGramVaultManager.getInstance(currentAccount).exportVaultToZip(destZip, files, progress -> {
+            if (progressDialog.isShowing()) {
+                progressDialog.setMessage(LocaleController.getString("HundredGramVaultExportingZip", R.string.HundredGramVaultExportingZip) + " (" + (int)(progress * 100) + "%)");
+            }
+        }, zipFile -> {
+            try {
+                progressDialog.dismiss();
+            } catch (Throwable ignore) {}
+            if (zipFile != null && zipFile.exists() && getParentActivity() != null) {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("application/zip");
+                    Uri uri = androidx.core.content.FileProvider.getUriForFile(
+                            org.telegram.messenger.ApplicationLoader.applicationContext,
+                            org.telegram.messenger.ApplicationLoader.getApplicationId() + ".provider",
+                            zipFile
+                    );
+                    intent.putExtra(Intent.EXTRA_STREAM, uri);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    getParentActivity().startActivity(Intent.createChooser(intent, LocaleController.getString("HundredGramVaultExportZip", R.string.HundredGramVaultExportZip)));
+                    BulletinFactory.of(HundredGramVaultViewerActivity.this).createSimpleBulletin(
+                            R.raw.done,
+                            LocaleController.getString("HundredGramVaultZipSuccess", R.string.HundredGramVaultZipSuccess)
+                    ).show();
+                    exitSelectionMode();
+                } catch (Throwable e) {
+                    FileLog.e(e);
+                }
+            }
+        });
+    }
+
+    private void batchDeleteSelected() {
+        if (selectedItems.isEmpty() || getParentActivity() == null) {
+            return;
+        }
+        final ArrayList<VaultItem> itemsToDelete = new ArrayList<>(selectedItems);
+        final int count = itemsToDelete.size();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramVaultDelete", R.string.HundredGramVaultDelete));
+        builder.setMessage(LocaleController.formatString("HundredGramVaultBatchDeleteConfirm", R.string.HundredGramVaultBatchDeleteConfirm, count));
+        builder.setPositiveButton(LocaleController.getString("Delete", R.string.Delete), (d, w) -> {
+            for (VaultItem item : itemsToDelete) {
+                HundredGramVaultManager.getInstance(currentAccount).deleteVaultFile(item.mid, item.uid, item.fileName, item.vaultPath);
+                allItems.remove(item);
+            }
+            exitSelectionMode();
+            filterAll();
+            BulletinFactory.of(HundredGramVaultViewerActivity.this).createSimpleBulletin(
+                    R.raw.ic_delete,
+                    LocaleController.formatString("HundredGramVaultBatchDeleted", R.string.HundredGramVaultBatchDeleted, count)
+            ).show();
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.redPositive();
+    }
+
+    private void showSortDialog() {
+        if (getParentActivity() == null) return;
+        BottomSheet.Builder builder = new BottomSheet.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HundredGramVaultSort", R.string.HundredGramVaultSort), true);
+
+        CharSequence[] options = new CharSequence[] {
+                (currentSortMode == SORT_DATE_DESC ? "✓ " : "") + LocaleController.getString("HundredGramVaultSortDateDesc", R.string.HundredGramVaultSortDateDesc),
+                (currentSortMode == SORT_DATE_ASC ? "✓ " : "") + LocaleController.getString("HundredGramVaultSortDateAsc", R.string.HundredGramVaultSortDateAsc),
+                (currentSortMode == SORT_SIZE_DESC ? "✓ " : "") + LocaleController.getString("HundredGramVaultSortSizeDesc", R.string.HundredGramVaultSortSizeDesc),
+                (currentSortMode == SORT_SIZE_ASC ? "✓ " : "") + LocaleController.getString("HundredGramVaultSortSizeAsc", R.string.HundredGramVaultSortSizeAsc),
+                (currentSortMode == SORT_NAME_ASC ? "✓ " : "") + LocaleController.getString("HundredGramVaultSortNameAsc", R.string.HundredGramVaultSortNameAsc)
+        };
+
+        builder.setItems(options, (dialog, which) -> {
+            currentSortMode = which;
+            applySort(allItems);
+            filterAll();
+        });
+        showDialog(builder.create());
+    }
+
+    private void applySort(ArrayList<VaultItem> list) {
+        if (list == null || list.isEmpty()) return;
+        switch (currentSortMode) {
+            case SORT_DATE_DESC:
+                Collections.sort(list, (a, b) -> Long.compare(b.date, a.date));
+                break;
+            case SORT_DATE_ASC:
+                Collections.sort(list, (a, b) -> Long.compare(a.date, b.date));
+                break;
+            case SORT_SIZE_DESC:
+                Collections.sort(list, (a, b) -> Long.compare(b.size, a.size));
+                break;
+            case SORT_SIZE_ASC:
+                Collections.sort(list, (a, b) -> Long.compare(a.size, b.size));
+                break;
+            case SORT_NAME_ASC:
+                Collections.sort(list, (a, b) -> {
+                    String an = a.fileName != null ? a.fileName : "";
+                    String bn = b.fileName != null ? b.fileName : "";
+                    return an.compareToIgnoreCase(bn);
+                });
+                break;
+        }
+    }
+
+    private void showChatsAndStorageBottomSheet() {
+        if (getParentActivity() == null) return;
 
         BottomSheet.Builder builder = new BottomSheet.Builder(getParentActivity());
-        builder.setTitle(LocaleController.getString("HundredGramVaultFilterByChat", R.string.HundredGramVaultFilterByChat), true);
+        builder.setTitle(LocaleController.getString("HundredGramVaultStorageAndFilters", R.string.HundredGramVaultStorageAndFilters), true);
 
-        ArrayList<CharSequence> names = new ArrayList<>();
-        ArrayList<Long> dialogIds = new ArrayList<>();
+        LinearLayout container = new LinearLayout(getParentActivity());
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.setPadding(0, AndroidUtilities.dp(8), 0, AndroidUtilities.dp(16));
 
-        names.add(LocaleController.getString("HundredGramVaultAllChats", R.string.HundredGramVaultAllChats) + " (" + allItems.size() + ")");
-        dialogIds.add(0L);
+        LinearLayout statsCard = new LinearLayout(getParentActivity());
+        statsCard.setOrientation(LinearLayout.VERTICAL);
+        statsCard.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(12), Theme.getColor(Theme.key_windowBackgroundGray)));
+        statsCard.setPadding(AndroidUtilities.dp(16), AndroidUtilities.dp(12), AndroidUtilities.dp(16), AndroidUtilities.dp(12));
+
+        TextView totalVaultText = new TextView(getParentActivity());
+        totalVaultText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+        totalVaultText.setTypeface(AndroidUtilities.bold());
+        totalVaultText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        totalVaultText.setText(LocaleController.formatString("HundredGramVaultTotalStats", R.string.HundredGramVaultTotalStats, AndroidUtilities.formatFileSize(totalVaultSize), allItems.size()));
+        statsCard.addView(totalVaultText, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 8));
+
+        TextView typesDetailText = new TextView(getParentActivity());
+        typesDetailText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+        typesDetailText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
+        String typesLine1 = "📷 " + LocaleController.getString("HundredGramVaultTabPhotos", R.string.HundredGramVaultTabPhotos) + ": " + AndroidUtilities.formatFileSize(photosTotalSize) + " (" + photosList.size() + ")"
+                + "  •  🎬 " + LocaleController.getString("HundredGramVaultTabVideos", R.string.HundredGramVaultTabVideos) + ": " + AndroidUtilities.formatFileSize(videosTotalSize) + " (" + videosList.size() + ")";
+        String typesLine2 = "🎙 " + LocaleController.getString("HundredGramVaultTabVoice", R.string.HundredGramVaultTabVoice) + ": " + AndroidUtilities.formatFileSize(voiceTotalSize) + " (" + voiceList.size() + ")"
+                + "  •  📁 " + LocaleController.getString("HundredGramVaultTabFiles", R.string.HundredGramVaultTabFiles) + ": " + AndroidUtilities.formatFileSize(filesTotalSize) + " (" + filesList.size() + ")";
+        typesDetailText.setText(typesLine1 + "\n" + typesLine2);
+        statsCard.addView(typesDetailText, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        container.addView(statsCard, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 16, 0, 16, 12));
+
+        HeaderCell sizeHeader = new HeaderCell(getParentActivity());
+        sizeHeader.setText(LocaleController.getString("HundredGramVaultFilterSize", R.string.HundredGramVaultFilterSize));
+        container.addView(sizeHeader, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        LinearLayout sizeRow = new LinearLayout(getParentActivity());
+        sizeRow.setOrientation(LinearLayout.HORIZONTAL);
+        long[] sizes = new long[] { 0, 10L * 1024L * 1024L, 50L * 1024L * 1024L, 100L * 1024L * 1024L };
+        String[] sizeLabels = new String[] {
+                LocaleController.getString("HundredGramVaultFilterSizeAll", R.string.HundredGramVaultFilterSizeAll),
+                LocaleController.getString("HundredGramVaultFilterSize10Mb", R.string.HundredGramVaultFilterSize10Mb),
+                LocaleController.getString("HundredGramVaultFilterSize50Mb", R.string.HundredGramVaultFilterSize50Mb),
+                LocaleController.getString("HundredGramVaultFilterSize100Mb", R.string.HundredGramVaultFilterSize100Mb)
+        };
+        for (int i = 0; i < sizes.length; i++) {
+            final long s = sizes[i];
+            TextView chip = new TextView(getParentActivity());
+            chip.setText(sizeLabels[i]);
+            chip.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
+            boolean isSelected = minFileSizeBytes == s;
+            chip.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(8), isSelected ? Theme.getColor(Theme.key_featuredStickers_addButton) : Theme.getColor(Theme.key_windowBackgroundGray)));
+            chip.setTextColor(isSelected ? Color.WHITE : Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+            chip.setPadding(AndroidUtilities.dp(10), AndroidUtilities.dp(6), AndroidUtilities.dp(10), AndroidUtilities.dp(6));
+            chip.setOnClickListener(v -> {
+                minFileSizeBytes = s;
+                filterAll();
+                builder.getDismissRunnable().run();
+            });
+            sizeRow.addView(chip, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, 0, 0, 8, 0));
+        }
+        HorizontalScrollView hsv = new HorizontalScrollView(getParentActivity());
+        hsv.setHorizontalScrollBarEnabled(false);
+        hsv.addView(sizeRow, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.START, 16, 0, 16, 0));
+        container.addView(hsv, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 12));
+
+        HeaderCell chatsHeader = new HeaderCell(getParentActivity());
+        chatsHeader.setText(LocaleController.getString("HundredGramVaultByChats", R.string.HundredGramVaultByChats));
+        container.addView(chatsHeader, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        ArrayList<Long> uids = new ArrayList<>(chatTotalSizes.keySet());
+        Collections.sort(uids, (a, b) -> Long.compare(chatTotalSizes.getOrDefault(b, 0L), chatTotalSizes.getOrDefault(a, 0L)));
+
+        ArrayList<CharSequence> chatDisplayList = new ArrayList<>();
+        ArrayList<Long> chatDialogIdList = new ArrayList<>();
+
+        chatDisplayList.add((selectedDialogId == 0 ? "✓ " : "") + LocaleController.getString("HundredGramVaultAllChats", R.string.HundredGramVaultAllChats)
+                + " — " + LocaleController.formatString("HundredGramVaultChatSpace", R.string.HundredGramVaultChatSpace, allItems.size(), AndroidUtilities.formatFileSize(totalVaultSize)));
+        chatDialogIdList.add(0L);
 
         for (Long uid : uids) {
             TLObject obj = MessagesController.getInstance(currentAccount).getUserOrChat(uid);
@@ -703,15 +1267,32 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             if (TextUtils.isEmpty(title)) {
                 title = uid > 0 ? "User " + uid : "Chat " + uid;
             }
-            names.add(title + " (" + chatCounts.get(uid) + ")");
-            dialogIds.add(uid);
+            long cSize = chatTotalSizes.getOrDefault(uid, 0L);
+            int cCount = chatFileCounts.getOrDefault(uid, 0);
+            boolean isCur = selectedDialogId == uid;
+            chatDisplayList.add((isCur ? "✓ " : "") + title + " — " + LocaleController.formatString("HundredGramVaultChatSpace", R.string.HundredGramVaultChatSpace, cCount, AndroidUtilities.formatFileSize(cSize)));
+            chatDialogIdList.add(uid);
         }
 
-        builder.setItems(names.toArray(new CharSequence[0]), (dialog, which) -> {
-            selectedDialogId = dialogIds.get(which);
-            filterAll();
-        });
+        for (int i = 0; i < chatDisplayList.size(); i++) {
+            final long did = chatDialogIdList.get(i);
+            TextView itemText = new TextView(getParentActivity());
+            itemText.setText(chatDisplayList.get(i));
+            itemText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
+            itemText.setTextColor(Theme.getColor(did == selectedDialogId ? Theme.key_featuredStickers_addButton : Theme.key_windowBackgroundWhiteBlackText));
+            itemText.setBackground(Theme.getSelectorDrawable(false));
+            itemText.setPadding(AndroidUtilities.dp(16), AndroidUtilities.dp(10), AndroidUtilities.dp(16), AndroidUtilities.dp(10));
+            itemText.setOnClickListener(v -> {
+                selectedDialogId = did;
+                filterAll();
+                builder.getDismissRunnable().run();
+            });
+            container.addView(itemText, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+        }
 
+        NestedScrollView scrollView = new NestedScrollView(getParentActivity());
+        scrollView.addView(container);
+        builder.setCustomView(scrollView);
         showDialog(builder.create());
     }
 
@@ -807,11 +1388,12 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             ArrayList<VaultItem> list = getListForTab(tabIndex);
             if (position < 0 || position >= list.size()) return;
             VaultItem item = list.get(position);
+            boolean isSelected = selectedItems.contains(item);
 
             if (holder.itemView instanceof VaultMediaCell) {
-                ((VaultMediaCell) holder.itemView).setItem(item);
+                ((VaultMediaCell) holder.itemView).setItem(item, selectionMode, isSelected);
             } else if (holder.itemView instanceof VaultFileCell) {
-                ((VaultFileCell) holder.itemView).setItem(item);
+                ((VaultFileCell) holder.itemView).setItem(item, selectionMode, isSelected);
             }
         }
 
@@ -821,10 +1403,12 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
         }
     }
 
-    public static class VaultMediaCell extends FrameLayout {
+    public class VaultMediaCell extends FrameLayout {
         private final BackupImageView imageView;
+        private final View selectionOverlay;
         private final FrameLayout videoBadge;
         private final TextView videoDurationText;
+        private final CheckBox2 checkBox;
 
         public VaultMediaCell(@NonNull Context context) {
             super(context);
@@ -832,6 +1416,11 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             imageView = new BackupImageView(context);
             imageView.setAspectFit(false);
             addView(imageView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL, 1, 1, 1, 1));
+
+            selectionOverlay = new View(context);
+            selectionOverlay.setBackgroundColor(0x55000000);
+            selectionOverlay.setVisibility(View.GONE);
+            addView(selectionOverlay, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
 
             videoBadge = new FrameLayout(context);
             GradientDrawable bg = new GradientDrawable();
@@ -857,6 +1446,12 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
 
             videoBadge.addView(badgeLayout, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
             addView(videoBadge, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.START, 6, 0, 0, 6));
+
+            checkBox = new CheckBox2(context, 21);
+            checkBox.setColor(Theme.key_checkbox, Theme.key_checkboxDisabled, Theme.key_checkboxCheck);
+            checkBox.setDrawUnchecked(true);
+            checkBox.setVisibility(View.GONE);
+            addView(checkBox, LayoutHelper.createFrame(24, 24, Gravity.TOP | Gravity.END, 0, 6, 6, 0));
         }
 
         @Override
@@ -865,7 +1460,17 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY));
         }
 
-        public void setItem(VaultItem item) {
+        public void setSelectionMode(boolean active) {
+            checkBox.setVisibility(active ? View.VISIBLE : View.GONE);
+        }
+
+        public void setChecked(boolean isSelected, boolean animated) {
+            selectionOverlay.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+            checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
+            checkBox.setChecked(isSelected, animated);
+        }
+
+        public void setItem(VaultItem item, boolean selectionMode, boolean isSelected) {
             if (item == null || item.vaultPath == null) return;
             imageView.setImage(ImageLocation.getForPath(item.vaultPath), "150_150", (Drawable) null, null);
             if (item.isVideo()) {
@@ -873,6 +1478,9 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             } else {
                 videoBadge.setVisibility(View.GONE);
             }
+            selectionOverlay.setVisibility(isSelected ? View.VISIBLE : View.GONE);
+            checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
+            checkBox.setChecked(isSelected, false);
         }
     }
 
@@ -880,6 +1488,8 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
         private final ImageView iconView;
         private final TextView titleView;
         private final TextView subtitleView;
+        private final CheckBox2 checkBox;
+        private final ImageView optionsView;
         private final boolean isVoice;
         private VaultItem currentItem;
 
@@ -922,7 +1532,25 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             subtitleView.setEllipsize(TextUtils.TruncateAt.END);
             textContainer.addView(subtitleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
-            addView(textContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, 72, 0, 16, 0));
+            addView(textContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, 72, 0, 52, 0));
+
+            checkBox = new CheckBox2(context, 21);
+            checkBox.setColor(Theme.key_checkbox, Theme.key_checkboxDisabled, Theme.key_checkboxCheck);
+            checkBox.setDrawUnchecked(true);
+            checkBox.setVisibility(View.GONE);
+            addView(checkBox, LayoutHelper.createFrame(24, 24, Gravity.CENTER_VERTICAL | Gravity.END, 0, 0, 16, 0));
+
+            optionsView = new ImageView(context);
+            optionsView.setImageResource(R.drawable.ic_ab_other);
+            optionsView.setColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon), PorterDuff.Mode.SRC_IN);
+            optionsView.setScaleType(ImageView.ScaleType.CENTER);
+            optionsView.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector), 1));
+            optionsView.setOnClickListener(v -> {
+                if (currentItem != null) {
+                    showItemContextMenu(currentItem);
+                }
+            });
+            addView(optionsView, LayoutHelper.createFrame(40, 40, Gravity.CENTER_VERTICAL | Gravity.END, 0, 0, 8, 0));
         }
 
         @Override
@@ -930,7 +1558,18 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
             super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64), MeasureSpec.EXACTLY));
         }
 
-        public void setItem(VaultItem item) {
+        public void setSelectionMode(boolean active) {
+            checkBox.setVisibility(active ? View.VISIBLE : View.GONE);
+            optionsView.setVisibility(active ? View.GONE : View.VISIBLE);
+        }
+
+        public void setChecked(boolean isSelected, boolean animated) {
+            checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
+            optionsView.setVisibility(selectionMode ? View.GONE : View.VISIBLE);
+            checkBox.setChecked(isSelected, animated);
+        }
+
+        public void setItem(VaultItem item, boolean selectionMode, boolean isSelected) {
             this.currentItem = item;
             if (item == null) return;
 
@@ -945,6 +1584,159 @@ public class HundredGramVaultViewerActivity extends BaseFragment implements Noti
                 iconView.setImageResource(playing ? R.drawable.ic_pause : R.drawable.ic_play);
                 iconView.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN);
             }
+
+            checkBox.setVisibility(selectionMode ? View.VISIBLE : View.GONE);
+            optionsView.setVisibility(selectionMode ? View.GONE : View.VISIBLE);
+            checkBox.setChecked(isSelected, false);
+        }
+    }
+
+    public class VaultEdgeDragSelector implements RecyclerView.OnItemTouchListener {
+        private final int tabIndex;
+        private float downX, downY;
+        private boolean isDragSelecting;
+        private int lastSelectedPos = -1;
+        private RecyclerView currentRv;
+        private boolean inTopHotspot, inBottomHotspot;
+        private static final int AUTO_SCROLL_DELAY = 16;
+
+        private final Runnable autoScrollRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (currentRv == null || !isDragSelecting) return;
+                if (inTopHotspot) {
+                    currentRv.scrollBy(0, -AndroidUtilities.dp(12));
+                    processTouchAt(currentRv, downX, AndroidUtilities.dp(85));
+                    AndroidUtilities.runOnUIThread(this, AUTO_SCROLL_DELAY);
+                } else if (inBottomHotspot) {
+                    currentRv.scrollBy(0, AndroidUtilities.dp(12));
+                    processTouchAt(currentRv, downX, currentRv.getHeight() - AndroidUtilities.dp(85));
+                    AndroidUtilities.runOnUIThread(this, AUTO_SCROLL_DELAY);
+                }
+            }
+        };
+
+        public VaultEdgeDragSelector(int tabIndex) {
+            this.tabIndex = tabIndex;
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+            currentRv = rv;
+            float x = e.getX();
+            float y = e.getY();
+            int action = e.getActionMasked();
+
+            if (action == MotionEvent.ACTION_DOWN) {
+                downX = x;
+                downY = y;
+                isDragSelecting = false;
+                lastSelectedPos = -1;
+                inTopHotspot = false;
+                inBottomHotspot = false;
+                AndroidUtilities.cancelRunOnUIThread(autoScrollRunnable);
+            } else if (action == MotionEvent.ACTION_MOVE) {
+                if (isDragSelecting) {
+                    return true;
+                }
+                float dx = x - downX;
+                float dy = y - downY;
+                float edgeThreshold = rv.getWidth() - AndroidUtilities.dp(64);
+                boolean reachedEdge = (x >= edgeThreshold) || (dx > AndroidUtilities.dp(50) && x >= rv.getWidth() - AndroidUtilities.dp(80));
+                boolean verticalMovement = Math.abs(dy) > AndroidUtilities.dp(14);
+
+                if (reachedEdge && verticalMovement) {
+                    isDragSelecting = true;
+                    rv.requestDisallowInterceptTouchEvent(true);
+                    if (viewPager != null) {
+                        viewPager.requestDisallowInterceptTouchEvent(true);
+                    }
+                    if (parentLayout != null && parentLayout.getView() != null) {
+                        parentLayout.getView().requestDisallowInterceptTouchEvent(true);
+                    }
+                    if (!selectionMode) {
+                        enterSelectionMode(null);
+                    }
+                    processTouchAt(rv, downX, downY);
+                    processTouchAt(rv, x, y);
+                    return true;
+                }
+            } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                stopDragSelection();
+            }
+            return isDragSelecting;
+        }
+
+        @Override
+        public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+            currentRv = rv;
+            float x = e.getX();
+            float y = e.getY();
+            int action = e.getActionMasked();
+
+            if (action == MotionEvent.ACTION_MOVE) {
+                if (!isDragSelecting) return;
+
+                int hotspot = AndroidUtilities.dp(80);
+                if (y < hotspot) {
+                    inBottomHotspot = false;
+                    if (!inTopHotspot) {
+                        inTopHotspot = true;
+                        AndroidUtilities.runOnUIThread(autoScrollRunnable);
+                    }
+                } else if (y > rv.getHeight() - hotspot) {
+                    inTopHotspot = false;
+                    if (!inBottomHotspot) {
+                        inBottomHotspot = true;
+                        AndroidUtilities.runOnUIThread(autoScrollRunnable);
+                    }
+                } else {
+                    inTopHotspot = false;
+                    inBottomHotspot = false;
+                    AndroidUtilities.cancelRunOnUIThread(autoScrollRunnable);
+                }
+
+                processTouchAt(rv, x, y);
+            } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                stopDragSelection();
+            }
+        }
+
+        private void processTouchAt(RecyclerView rv, float x, float y) {
+            float clampedX = Math.min(Math.max(x, AndroidUtilities.dp(10)), rv.getWidth() - AndroidUtilities.dp(10));
+            View child = rv.findChildViewUnder(clampedX, y);
+            if (child != null) {
+                int pos = rv.getChildAdapterPosition(child);
+                ArrayList<VaultItem> currentList = getListForTab(tabIndex);
+                if (pos >= 0 && pos < currentList.size() && pos != lastSelectedPos) {
+                    lastSelectedPos = pos;
+                    VaultItem it = currentList.get(pos);
+                    if (!selectedItems.contains(it)) {
+                        selectedItems.add(it);
+                        if (child instanceof VaultMediaCell) {
+                            ((VaultMediaCell) child).setChecked(true, true);
+                        } else if (child instanceof VaultFileCell) {
+                            ((VaultFileCell) child).setChecked(true, true);
+                        }
+                        try {
+                            AndroidUtilities.vibrateCursor(rv);
+                        } catch (Throwable ignore) {}
+                        updateSelectionCount();
+                    }
+                }
+            }
+        }
+
+        private void stopDragSelection() {
+            isDragSelecting = false;
+            inTopHotspot = false;
+            inBottomHotspot = false;
+            AndroidUtilities.cancelRunOnUIThread(autoScrollRunnable);
+            notifyAllAdapters();
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
         }
     }
 }

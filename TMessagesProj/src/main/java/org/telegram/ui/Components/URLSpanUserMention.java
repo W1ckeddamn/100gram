@@ -13,6 +13,18 @@ import android.view.View;
 
 import org.telegram.ui.ActionBar.Theme;
 
+import android.os.Bundle;
+import android.text.TextUtils;
+
+import org.telegram.messenger.FileLog;
+import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.Utilities;
+import org.telegram.tgnet.TLRPC;
+import org.telegram.ui.ActionBar.BaseFragment;
+import org.telegram.ui.LaunchActivity;
+import org.telegram.ui.ProfileActivity;
+
 public class URLSpanUserMention extends URLSpanNoUnderline {
 
     private int currentType;
@@ -30,7 +42,37 @@ public class URLSpanUserMention extends URLSpanNoUnderline {
 
     @Override
     public void onClick(View widget) {
-        super.onClick(widget);
+        try {
+            String url = getURL();
+            if (TextUtils.isEmpty(url)) {
+                return;
+            }
+            if (url.startsWith("@")) {
+                super.onClick(widget);
+                return;
+            }
+            long userId = Utilities.parseLong(url);
+            if (userId != 0) {
+                int currentAccount = UserConfig.selectedAccount;
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(userId);
+                BaseFragment fragment = null;
+                if (widget != null && widget.getContext() instanceof LaunchActivity) {
+                    fragment = ((LaunchActivity) widget.getContext()).getActionBarLayout().getLastFragment();
+                }
+                if (fragment != null) {
+                    if (user != null) {
+                        MessagesController.getInstance(currentAccount).openChatOrProfileWith(user, null, fragment, 0, false);
+                    } else {
+                        Bundle args = new Bundle();
+                        args.putLong("user_id", userId);
+                        fragment.presentFragment(new ProfileActivity(args));
+                    }
+                    return;
+                }
+            }
+        } catch (Throwable e) {
+            FileLog.e(e);
+        }
     }
 
     @Override

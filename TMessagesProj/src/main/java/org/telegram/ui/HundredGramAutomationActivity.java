@@ -89,7 +89,7 @@ public class HundredGramAutomationActivity extends BaseFragment {
                 }
 
                 // Actions summary
-                sb.append("➔ THEN: ");
+                sb.append("• THEN: ");
                 ArrayList<String> actions = new ArrayList<>();
                 if (rule.saveToSaved) actions.add(LocaleController.getString("AutomationActionSaved", R.string.AutomationActionSaved));
                 if (rule.markAsRead) actions.add(LocaleController.getString("AutomationActionMarkRead", R.string.AutomationActionMarkRead));

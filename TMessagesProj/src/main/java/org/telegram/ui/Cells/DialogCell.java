@@ -136,6 +136,7 @@ import org.telegram.ui.Stars.StarsIntroActivity;
 import org.telegram.ui.Stories.StoriesListPlaceProvider;
 import org.telegram.ui.Stories.StoriesUtilities;
 import org.telegram.ui.Stories.StoryViewer;
+import org.telegram.ui.AvatarSpan;
 import org.telegram.ui.community.CommunityArrowDrawable;
 import org.telegram.ui.community.CommunitySheet;
 
@@ -206,6 +207,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
     public boolean isSavedDialog;
     public boolean isSavedDialogCell;
     public DialogCellTags tags;
+    private AvatarSpan messageAvatarSpan;
 
     public final StoriesUtilities.AvatarStoryParams storyParams = new StoriesUtilities.AvatarStoryParams(false) {
         @Override
@@ -356,7 +358,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
 
     public static class FixedWidthSpan extends ReplacementSpan {
 
-        private int width;
+        public int width;
 
         public FixedWidthSpan(int w) {
             width = w;
@@ -365,6 +367,38 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
         @Override
         public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
             if (fm == null) {
+                fm = paint.getFontMetricsInt();
+            }
+            if (fm != null) {
+                int h = fm.descent - fm.ascent;
+                fm.bottom = fm.descent = 1 - h;
+                fm.top = fm.ascent = -1;
+            }
+            return width;
+        }
+
+        @Override
+        public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
+
+        }
+    }
+
+    public static class ThumbFixedWidthSpan extends FixedWidthSpan {
+        public ThumbFixedWidthSpan(int w) {
+            super(w);
+        }
+    }
+
+    public static class AvatarGapSpan extends ReplacementSpan {
+        public final int width;
+
+        public AvatarGapSpan(int w) {
+            width = w;
+        }
+
+        @Override
+        public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
+            if (fm == null && paint != null) {
                 fm = paint.getFontMetricsInt();
             }
             if (fm != null) {
@@ -694,7 +728,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
         Theme.createDialogsResources(context);
         drawMonoforumAvatar = false;
         drawCommunityAvatar = false;
-        avatarImage.setRoundRadius(dp(26));
+        avatarImage.setRoundRadius(org.telegram.messenger.HundredGramConfig.getAvatarCorners(56.0f));
         for (int i = 0; i < thumbImage.length; ++i) {
             thumbImage[i] = new ImageReceiver(this);
             thumbImage[i].ignoreNotifications = true;
@@ -1233,6 +1267,44 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
 
     private static final float BADGE_DRAWABLE_SIZE = 16;
     private static final float BADGE_DRAWABLE_OFFSET = (BADGE_SIZE - BADGE_DRAWABLE_SIZE) / 2f;
+
+    private boolean hasSenderAvatar(MessageObject messageObject) {
+        if (!org.telegram.messenger.HundredGramConfig.senderMiniAvatars || messageObject == null) {
+            return false;
+        }
+        if (currentDialogId > 0) {
+            return false;
+        }
+        TLRPC.Chat currentChat = chat;
+        if (currentChat == null && currentDialogId < 0) {
+            currentChat = org.telegram.messenger.MessagesController.getInstance(currentAccount).getChat(-currentDialogId);
+        }
+        if (currentChat == null || org.telegram.messenger.ChatObject.isChannelAndNotMegaGroup(currentChat)) {
+            return false;
+        }
+        long fromChatId = messageObject.getFromChatId();
+        return fromChatId != 0 && fromChatId != org.telegram.messenger.UserConfig.getInstance(currentAccount).getClientUserId() && fromChatId != currentDialogId;
+    }
+
+    private CharSequence addSenderAvatar(CharSequence charSequence, MessageObject messageObject) {
+        if (!TextUtils.isEmpty(charSequence) && hasSenderAvatar(messageObject)) {
+            long fromChatId = messageObject.getFromChatId();
+            if (messageAvatarSpan == null) {
+                messageAvatarSpan = new AvatarSpan(this, currentAccount, 18.0f);
+                messageAvatarSpan.needDrawShadow = false;
+            }
+            messageAvatarSpan.setDialogId(fromChatId);
+            SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder("A ");
+            spannableStringBuilder.setSpan(messageAvatarSpan, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            int length = spannableStringBuilder.length();
+            spannableStringBuilder.append(" ");
+            spannableStringBuilder.setSpan(new AvatarGapSpan(AndroidUtilities.dp(1.0f)), length, spannableStringBuilder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannableStringBuilder.append(charSequence);
+            AvatarSpan.checkSpansParent(spannableStringBuilder, this);
+            return spannableStringBuilder;
+        }
+        return charSequence;
+    }
 
     public void buildLayout() {
         if (isTransitionSupport) {
@@ -1836,10 +1908,10 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                                     SpannableStringBuilder builder = (SpannableStringBuilder) messageString;
                                     if (thumbInsertIndex >= builder.length()) {
                                         builder.append(" ");
-                                        builder.setSpan(new FixedWidthSpan(dp(thumbsCount * (thumbSize + 2) - 2 + 5)), builder.length() - 1, builder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                        builder.setSpan(new ThumbFixedWidthSpan(dp(thumbsCount * (thumbSize + 2) - 2 + 5)), builder.length() - 1, builder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                                     } else {
                                         builder.insert(thumbInsertIndex, " ");
-                                        builder.setSpan(new FixedWidthSpan(dp(thumbsCount * (thumbSize + 2) - 2 + 5)), thumbInsertIndex, thumbInsertIndex + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                        builder.setSpan(new ThumbFixedWidthSpan(dp(thumbsCount * (thumbSize + 2) - 2 + 5)), thumbInsertIndex, thumbInsertIndex + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                                     }
                                 }
                             } else {
@@ -2032,7 +2104,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                                     checkMessage = false;
                                     SpannableStringBuilder builder = (SpannableStringBuilder) messageString;
                                     builder.insert(0, " ");
-                                    builder.setSpan(new FixedWidthSpan(dp((thumbSize + 2) * thumbsCount - 2 + 5)), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                    builder.setSpan(new ThumbFixedWidthSpan(dp((thumbSize + 2) * thumbsCount - 2 + 5)), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                                     Emoji.replaceEmoji(builder, Theme.dialogs_messagePaint[paintIndex].getFontMetricsInt(), false);
                                     if (message.hasHighlightedWords()) {
                                         CharSequence s = AndroidUtilities.highlightText(builder, message.highlightedWords, resourcesProvider);
@@ -2666,6 +2738,9 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                         messageNameString = s;
                     }
                 }
+                if (messageNameString != null) {
+                    messageNameString = addSenderAvatar(messageNameString, message);
+                }
                 messageNameLayout = StaticLayoutEx.createStaticLayout(messageNameString, Theme.dialogs_messageNamePaint, messageWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0, false, TextUtils.TruncateAt.END, messageWidth, 1);
             } catch (Exception e) {
                 FileLog.e(e);
@@ -2739,15 +2814,16 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     }
                 }
             }
+            int senderAvatarWidth = (messageNameLayout == null && hasSenderAvatar(message)) ? dp(22) : 0;
             if ((useForceThreeLines || SharedConfig.useThreeLinesLayout) && !hasTags() && currentDialogFolderId != 0 && currentDialogFolderDialogsCount > 1) {
                 messageStringFinal = messageNameString;
                 messageNameString = null;
                 currentMessagePaint = Theme.dialogs_messagePaint[paintIndex];
             } else if (!useForceThreeLines && !SharedConfig.useThreeLinesLayout || hasTags() || messageNameString != null || ChatObject.isMonoForum(chat) && ChatObject.canManageMonoForum(currentAccount, chat)) {
                 if (!isForumCell() && messageString instanceof Spanned && ((Spanned) messageString).getSpans(0, messageString.length(), FixedWidthSpan.class).length <= 0) {
-                    messageStringFinal = TextUtils.ellipsize(messageString, currentMessagePaint, messageWidth - dp(12 + (thumbsCount * (thumbSize + 2) - 2) + 5), TextUtils.TruncateAt.END);
+                    messageStringFinal = TextUtils.ellipsize(messageString, currentMessagePaint, messageWidth - dp(12 + (thumbsCount * (thumbSize + 2) - 2) + 5) - senderAvatarWidth, TextUtils.TruncateAt.END);
                 } else {
-                    messageStringFinal = TextUtils.ellipsize(messageString, currentMessagePaint, messageWidth - dp(12), TextUtils.TruncateAt.END);
+                    messageStringFinal = TextUtils.ellipsize(messageString, currentMessagePaint, messageWidth - dp(12) - senderAvatarWidth, TextUtils.TruncateAt.END);
                 }
             } else {
                 messageStringFinal = messageString;
@@ -2755,6 +2831,8 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
 
             if (org.telegram.messenger.HundredGramConfig.isStreamerHideDialogMessages()) {
                 messageStringFinal = "••••••••••••••••";
+            } else if (messageNameLayout == null) {
+                messageStringFinal = addSenderAvatar(messageStringFinal, message);
             }
 
             Layout.Alignment align = isForum && LocaleController.isRTL ? Layout.Alignment.ALIGN_OPPOSITE : Layout.Alignment.ALIGN_NORMAL;
@@ -2990,15 +3068,33 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             try {
                 CharSequence text = layout.getText();
                 if (text instanceof Spanned) {
-                    FixedWidthSpan[] spans = ((Spanned) text).getSpans(0, text.length(), FixedWidthSpan.class);
-                    if (spans != null && spans.length > 0) {
-                        int spanOffset = ((Spanned) text).getSpanStart(spans[0]);
+                    ThumbFixedWidthSpan[] thumbSpans = ((Spanned) text).getSpans(0, text.length(), ThumbFixedWidthSpan.class);
+                    FixedWidthSpan targetSpan = null;
+                    if (thumbSpans != null && thumbSpans.length > 0) {
+                        targetSpan = thumbSpans[0];
+                    } else {
+                        FixedWidthSpan[] spans = ((Spanned) text).getSpans(0, text.length(), FixedWidthSpan.class);
+                        if (spans != null && spans.length > 0) {
+                            for (FixedWidthSpan span : spans) {
+                                if (span.width >= dp(thumbSize)) {
+                                    targetSpan = span;
+                                    break;
+                                }
+                            }
+                            if (targetSpan == null) {
+                                targetSpan = spans[0];
+                            }
+                        }
+                    }
+                    if (targetSpan != null) {
+                        int spanOffset = ((Spanned) text).getSpanStart(targetSpan);
                         if (spanOffset < 0) {
                             spanOffset = 0;
                         }
 
+                        int endOffset = Math.min(spanOffset + 1, text.length());
                         float x1 = layout.getPrimaryHorizontal(spanOffset);
-                        float x2 = layout.getPrimaryHorizontal(spanOffset + 1);
+                        float x2 = layout.getPrimaryHorizontal(endOffset);
                         int offset = (int) Math.ceil(Math.min(x1, x2));
                         if (offset != 0 && !drawForwardIcon && !drawGiftIcon) {
                             offset += dp(3);
@@ -3023,7 +3119,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
         if (thumbsCount > 0) {
             SpannableStringBuilder builder = SpannableStringBuilder.valueOf(string);
             builder.insert(0, " ");
-            builder.setSpan(new FixedWidthSpan(dp((thumbSize + 2) * thumbsCount - 2 + 5)), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            builder.setSpan(new ThumbFixedWidthSpan(dp((thumbSize + 2) * thumbsCount - 2 + 5)), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             return builder;
         }
         return string;
@@ -3230,7 +3326,7 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             }
             drawMonoforumAvatar = false;
             drawCommunityAvatar = false;
-            avatarImage.setRoundRadius(dp(26));
+            avatarImage.setRoundRadius(org.telegram.messenger.HundredGramConfig.getAvatarCorners(56.0f));
             drawUnmute = false;
         } else {
             int oldUnreadCount = unreadCount;
@@ -3691,9 +3787,9 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             } else if (drawCommunityAvatar) {
                 avatarRadius = dp(12);
             } else if (chat != null && chat.forum && currentDialogFolderId == 0 && !useFromUserAsAvatar || !isSavedDialog && user != null && user.self && MessagesController.getInstance(currentAccount).savedViewAsChats) {
-                avatarRadius = dp(16);
+                avatarRadius = org.telegram.messenger.HundredGramConfig.getAvatarCorners(56.0f, false, true);
             } else {
-                avatarRadius = dp(28);
+                avatarRadius = org.telegram.messenger.HundredGramConfig.getAvatarCorners(56.0f, false, false);
             }
 
             avatarImage.setRoundRadius(avatarRadius);

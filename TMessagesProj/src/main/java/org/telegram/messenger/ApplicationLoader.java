@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -352,6 +353,7 @@ public class ApplicationLoader extends Application {
 
         LauncherIconController.tryFixLauncherIconIfNeeded();
         ProxyRotationController.init();
+        org.telegram.messenger.plugins.PluginsController.getInstance().init();
     }
 
     public static void startPushService() {
@@ -439,11 +441,19 @@ public class ApplicationLoader extends Application {
                             @Override
                             public void onAvailable(@NonNull Network network) {
                                 lastKnownNetworkType = -1;
+                                checkProxyForNetworkState();
                             }
 
                             @Override
                             public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
                                 lastKnownNetworkType = -1;
+                                checkProxyForNetworkState();
+                            }
+
+                            @Override
+                            public void onLost(@NonNull Network network) {
+                                lastKnownNetworkType = -1;
+                                checkProxyForNetworkState();
                             }
                         };
                         connectivityManager.registerDefaultNetworkCallback(networkCallback);
@@ -720,4 +730,87 @@ public class ApplicationLoader extends Application {
     public File getDownloadedUpdateFile() {
         return null;
     }
+
+    // ── Batch 4: Smart Proxy auto-disable on network condition ─────────────────
+
+    private static final String PREF_PROXY_AUTO_DISABLED = "proxy_auto_disabled_by_network";
+
+    public static void checkProxyForNetworkState() {
+        if (applicationContext == null) return;
+        try {
+            SharedPreferences prefs = MessagesController.getGlobalMainSettings();
+            boolean wasAutoDisabled = prefs.getBoolean(PREF_PROXY_AUTO_DISABLED, false);
+
+            boolean shouldDisable =
+                (HundredGramConfig.isProxyDisabledOn(HundredGramConfig.PROXY_DISABLE_VPN) && isVpnActive()) ||
+                (HundredGramConfig.isProxyDisabledOn(HundredGramConfig.PROXY_DISABLE_MOBILE) && hasNetworkTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) ||
+                (HundredGramConfig.isProxyDisabledOn(HundredGramConfig.PROXY_DISABLE_WIFI) && hasNetworkTransport(NetworkCapabilities.TRANSPORT_WIFI));
+
+            if (shouldDisable) {
+                if (!wasAutoDisabled) {
+                    boolean isEnabled = prefs.getBoolean("proxy_enabled", false);
+                    String proxyIp = prefs.getString("proxy_ip", "");
+                    if (isEnabled && !TextUtils.isEmpty(proxyIp)) {
+                        prefs.edit()
+                            .putBoolean(PREF_PROXY_AUTO_DISABLED, true)
+                            .putBoolean("proxy_enabled", false)
+                            .apply();
+                        ConnectionsManager.setProxySettings(false, proxyIp, 1080, "", "", "");
+                        NotificationCenter.getGlobalInstance().postNotificationNameOnUIThread(
+                            NotificationCenter.proxySettingsChanged, new Object[0]);
+                    }
+                }
+            } else if (wasAutoDisabled) {
+                String proxyIp = prefs.getString("proxy_ip", "");
+                prefs.edit().putBoolean(PREF_PROXY_AUTO_DISABLED, false)
+                    .putBoolean("proxy_enabled", !TextUtils.isEmpty(proxyIp))
+                    .apply();
+                if (!TextUtils.isEmpty(proxyIp)) {
+                    int proxyPort = prefs.getInt("proxy_port", 1080);
+                    String proxyUser = prefs.getString("proxy_user", "");
+                    String proxyPass = prefs.getString("proxy_pass", "");
+                    String proxySecret = prefs.getString("proxy_secret", "");
+                    ConnectionsManager.setProxySettings(true, proxyIp, proxyPort,
+                        proxyUser != null ? proxyUser : "",
+                        proxyPass != null ? proxyPass : "",
+                        proxySecret != null ? proxySecret : "");
+                }
+                NotificationCenter.getGlobalInstance().postNotificationNameOnUIThread(
+                    NotificationCenter.proxySettingsChanged, new Object[0]);
+            }
+        } catch (Throwable t) {
+            FileLog.e(t);
+        }
+    }
+
+    private static boolean hasNetworkTransport(int transport) {
+        try {
+            if (connectivityManager == null) {
+                connectivityManager = (ConnectivityManager) applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+            }
+            if (connectivityManager == null) return false;
+            Network net = connectivityManager.getActiveNetwork();
+            if (net == null) return false;
+            NetworkCapabilities caps = connectivityManager.getNetworkCapabilities(net);
+            return caps != null && caps.hasTransport(transport);
+        } catch (Throwable unused) {
+            return false;
+        }
+    }
+
+    private static boolean isVpnActive() {
+        try {
+            if (connectivityManager == null) {
+                connectivityManager = (ConnectivityManager) applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+            }
+            if (connectivityManager == null) return false;
+            Network net = connectivityManager.getActiveNetwork();
+            if (net == null) return false;
+            NetworkCapabilities caps = connectivityManager.getNetworkCapabilities(net);
+            return caps != null && caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN);
+        } catch (Throwable unused) {
+            return false;
+        }
+    }
 }
+

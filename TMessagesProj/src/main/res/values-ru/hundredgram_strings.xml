@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App Lifecycle -->
+    <string name="THKillTheAPP">Перезапустить / Закрыть приложение</string>
+
     <!-- Message Details & Actions -->
     <string name="Details">Подробности</string>
     <string name="Date">Дата</string>
@@ -142,7 +145,9 @@
     <string name="HundredGramVaultAddException">Добавить исключение</string>
     <string name="HundredGramVaultExceptionsEmpty">У вас пока нет персональных настроек для чатов</string>
     <string name="HundredGramVaultSizeDefault">По умолчанию (%1$d МБ)</string>
+    <string name="HundredGramVaultSizeDefaultUnlimited">По умолчанию (Без ограничений)</string>
     <string name="HundredGramVaultSizeUnlimited">Без ограничений</string>
+    <string name="HundredGramGB">ГБ</string>
     <string name="HundredGramVaultSaved">Настройки для чата сохранены</string>
     <string name="HundredGramVaultDeleted">Исключение удалено</string>
     <string name="HundredGramVaultDeleteConfirm">Удалить исключение для чата «%1$s»?</string>
@@ -174,8 +179,8 @@
 
     <!-- Deleted Messages Highlight -->
     <string name="DeletedMessage">удалено</string>
-    <string name="HundredGramHighlightDeleted">Полупрозрачность удаленных сообщений</string>
-    <string name="HundredGramHighlightDeletedInfo">Отображает удаленные сообщения и медиа полупрозрачными (призрачный режим), выделяя их как сохраненные копии</string>
+    <string name="HundredGramHighlightDeleted">Выделять удалённые сообщения</string>
+    <string name="HundredGramHighlightDeletedInfo">Отображает удалённые сообщения полупрозрачными с иконкой корзины</string>
 
     <!-- Media Quality & Extera Features -->
     <string name="HundredGramCategoryMediaQuality">Качество медиа и загрузка</string>
@@ -541,13 +546,15 @@
     <string name="CameraEngineCamera1Legacy">Camera1 Legacy (Старая камера)</string>
 
     <!-- Round Video Messages (Кружочки) -->
+    <string name="FrontCamera">Передняя камера</string>
+    <string name="RearCamera">Основная камера</string>
     <string name="RoundVideoHeader">Видеосообщения (Кружочки)</string>
-    <string name="RoundCameraStart">Начальная камера для кружочков</string>
-    <string name="RoundCameraFront">🤳 Фронтальная камера</string>
-    <string name="RoundCameraBack">📷 Задняя (основная) камера</string>
-    <string name="RoundCameraWide">🔍 Ультраширокоугольная (0.6x)</string>
-    <string name="RoundCameraMenu">📋 Меню выбора при записи</string>
-    <string name="RoundCameraLast">🔄 Последняя использованная</string>
+    <string name="RoundCameraStart">Начальная камера</string>
+    <string name="RoundCameraFront">Фронтальная</string>
+    <string name="RoundCameraBack">Основная</string>
+    <string name="RoundCameraWide">Широкоугольная (0.6x)</string>
+    <string name="RoundCameraMenu">Меню выбора</string>
+    <string name="RoundCameraLast">Последняя</string>
     <string name="RoundCameraMenuPrompt">С какой камеры начать запись?</string>
     <string name="RoundVideoSquare">Квадратный формат («Квадратные кружочки»)</string>
     <string name="RoundVideoSquareInfo">Записывать и отображать видеосообщения в современном квадратном формате со скругленными углами</string>
@@ -595,6 +602,7 @@
     <string name="HundredGramVaultSaveGallery">Сохранить в Галерею</string>
     <string name="HundredGramVaultSaveDownloads">Сохранить в Загрузки</string>
     <string name="HundredGramVaultGoToMessage">Перейти к сообщению</string>
+    <string name="HundredGramVaultDetails">Свойства файла</string>
     <string name="HundredGramVaultDelete">Удалить из Vault</string>
     <string name="HundredGramVaultDeleteFileConfirm">Удалить этот файл из Vault?</string>
     <string name="HundredGramVaultDeletedFile">Файл удалён из Vault</string>
@@ -603,6 +611,34 @@
     <string name="HundredGramVaultTabVoice">Голосовые</string>
     <string name="HundredGramVaultTabFiles">Файлы</string>
     <string name="HundredGramVaultFileSaved">Файл сохранён</string>
+    <string name="HundredGramVaultSelectMode">Выбрать</string>
+    <string name="HundredGramVaultSelectAll">Выбрать все</string>
+    <string name="HundredGramVaultDeselectAll">Снять выбор</string>
+    <string name="HundredGramVaultSaveAll">Сохранить выбранные</string>
+    <string name="HundredGramVaultExportZip">Экспорт в ZIP</string>
+    <string name="HundredGramVaultExportingZip">Создание ZIP-архива…</string>
+    <string name="HundredGramVaultZipSuccess">ZIP-архив успешно создан</string>
+    <string name="HundredGramVaultBatchDeleteConfirm">Удалить %1$d выбранных файлов из Vault?</string>
+    <string name="HundredGramVaultBatchDeleted">Удалено %1$d файлов из Vault</string>
+    <string name="HundredGramVaultBatchSaved">Сохранено файлов: %1$d</string>
+    <string name="HundredGramVaultSort">Сортировка</string>
+    <string name="HundredGramVaultSortDateDesc">По дате: сначала новые</string>
+    <string name="HundredGramVaultSortDateAsc">По дате: сначала старые</string>
+    <string name="HundredGramVaultSortSizeDesc">По размеру: сначала большие</string>
+    <string name="HundredGramVaultSortSizeAsc">По размеру: сначала маленькие</string>
+    <string name="HundredGramVaultSortNameAsc">По имени: А-Я</string>
+    <string name="HundredGramVaultFilterSize">Фильтр по размеру</string>
+    <string name="HundredGramVaultFilterSizeAll">Все размеры</string>
+    <string name="HundredGramVaultFilterSize10Mb">Больше 10 МБ</string>
+    <string name="HundredGramVaultFilterSize50Mb">Больше 50 МБ</string>
+    <string name="HundredGramVaultFilterSize100Mb">Больше 100 МБ</string>
+    <string name="HundredGramVaultPruneOrphans">Очистить повреждённые записи БД</string>
+    <string name="HundredGramVaultPruneOrphansDone">Очищено %1$d повреждённых записей Vault</string>
+    <string name="HundredGramVaultExportAllZip">Экспорт всех файлов в ZIP</string>
+    <string name="HundredGramVaultStorageAndFilters">Хранилище и фильтры</string>
+    <string name="HundredGramVaultByChats">Занятое место по чатам</string>
+    <string name="HundredGramVaultChatSpace">%1$d файлов • %2$s</string>
+    <string name="HundredGramVaultTotalStats">Всего в сейфе: %1$s (%2$d файлов)</string>
 
     <!-- Unsupported Block -->
     <string name="UnsupportedBlockTitle">Неподдерживаемый блок</string>
@@ -682,6 +718,8 @@
     <string name="HundredGramDisableNumberRounding">Точные числа просмотров и участников</string>
     <string name="HundredGramDisableNumberRoundingInfo">Показывает точное значение с разделителями (например, 1,234,567 вместо 1.2M)</string>
     <string name="HundredGramMainScreenSection">Главный экран</string>
+    <string name="HundredGramPillStack">Виджеты статуса (PillStack)</string>
+    <string name="HundredGramPillStackInfo">Отображает плашки статуса прокси/пинга и размера кэша с вертикальным свайпом</string>
     <string name="HundredGramHideArchiveFolder">Скрыть архив чатов</string>
     <string name="HundredGramHideArchiveFolderInfo">Скрывает строчку «Архив» из основного списка диалогов</string>
     <string name="HundredGramHideFloatingButton">Скрыть плавающую кнопку (FAB)</string>
@@ -690,6 +728,9 @@
     <string name="DoubleTapHeader">Двойное нажатие</string>
     <string name="DoubleTapActionIncomingDesc">Действие при двойном нажатии по входящему сообщению</string>
     <string name="DoubleTapActionOutgoingDesc">Действие при двойном нажатии по своему исходящему сообщению</string>
+    <string name="SwipeActionHeader">Свайп сообщения</string>
+    <string name="ChatMessageSwipeAction">Действие при свайпе</string>
+    <string name="ChatMessageSwipeActionDesc">Действие, выполняемое при свайпе сообщения влево</string>
     <string name="MessageMenuSection">Меню сообщения</string>
     <string name="ShowSaveMessageButtonInfo">Добавляет пункт быстрого сохранения в Избранное в меню сообщения</string>
     <string name="ShowDetailsButtonInfo">Показывает подробные метаданные сообщения (ID, автор, дата, медиа, DC)</string>
@@ -751,7 +792,7 @@
     <string name="WhatsNewStreamer">Режим стримера и приватность</string>
     <string name="WhatsNewStreamerDesc">Скрытие телефонных номеров, юзернеймов, аватарок и отключение скриншотов</string>
     <!-- What\'s New badge -->
-    <string name="WhatsNewNew">✦ НОВОЕ</string>
+    <string name="WhatsNewNew">НОВОЕ</string>
 
     <!-- Offline Speech-to-Text (STT) without Premium -->
     <string name="LocalSttHeader">Распознавание речи (Офлайн STT)</string>
@@ -791,4 +832,807 @@
     <string name="WhatsNewSaveToGalleryDesc">Исправлен экспорт фото и видео из изолированного медиасейфа в системную галерею и память устройства</string>
     <string name="ProfileHistoryToggle">Аудит изменений профиля</string>
     <string name="ProfileHistoryInfo">Автоматически сохранять смену имени, юзернейма, телефона, описания, дня рождения и подарков пользователей</string>
+
+    <!-- Icon Packs -->
+    <string name="HundredGramIconPacks">Пакеты иконок</string>
+    <string name="HundredGramIconPacksSub">Кастомные наборы векторных и растровых иконок интерфейса</string>
+    <string name="HundredGramIconPacksHeader">Установленные паки</string>
+    <string name="HundredGramIconPacksEnable">Включить замену иконок</string>
+    <string name="HundredGramIconPacksEnableSub">Динамически заменять иконки приложения на выбранный набор</string>
+    <string name="HundredGramInstallIconPack">Установить пак (.icons / .zip)</string>
+    <string name="HundredGramInstallIconPackSub">Импортировать архив с иконками из хранилища устройства</string>
+    <string name="HundredGramIconPackInstalled">Пакет иконок «%1$s» успешно установлен</string>
+    <string name="HundredGramIconPackInstallFailed">Не удалось установить пакет иконок</string>
+    <string name="HundredGramIconPackDeleteConfirm">Вы действительно хотите удалить пакет иконок «%1$s»?</string>
+    <string name="HundredGramIconPackDeleted">Пакет иконок удален</string>
+
+    <!-- Backup & Restore -->
+    <string name="HundredGramBackupTitle">Резервное копирование</string>
+    <string name="HundredGramBackupSubtitle">Экспорт и восстановление настроек форка в JSON</string>
+    <string name="HundredGramExportSettings">Экспорт настроек в JSON</string>
+    <string name="HundredGramExportSettingsSub">Сохранить текущую конфигурацию или отправить в Избранное</string>
+    <string name="HundredGramImportSettings">Импорт настроек из файла</string>
+    <string name="HundredGramImportSettingsSub">Восстановить параметры из ранее созданного JSON-файла</string>
+    <string name="HundredGramResetSettings">Сбросить все настройки 100gram</string>
+    <string name="HundredGramResetSettingsSub">Вернуть все параметры форка к значениям по умолчанию</string>
+    <string name="HundredGramResetSettingsConfirm">Вы действительно хотите сбросить все кастомные настройки форка 100gram? Это действие вернет конфигурацию по умолчанию.</string>
+    <string name="HundredGramImportSuccess">Настройки успешно восстановлены</string>
+    <string name="HundredGramImportFailed">Не удалось загрузить настройки из выбранного файла</string>
+    <string name="HundredGramSettingsResetDone">Все настройки сброшены по умолчанию</string>
+
+    <!-- PillStack & Weather & Crypto -->
+    <string name="WeatherPill">Погода</string>
+    <string name="WeatherLocationPermissionGrant">Разрешить доступ</string>
+    <string name="WeatherLocationServicesEnable">Включить геолокацию</string>
+    <string name="WeatherLocationPermissionNo">100gram требуется доступ к геолокации для отображения актуальной погоды.</string>
+    <string name="CryptoPillTargetCurrency">Валюта отображения</string>
+    <string name="PillStackPills">Плашки поиска</string>
+    <string name="PillStackPillsInfo">Интерактивные виджеты в строке поиска: погода, курсы валют, прокси, кеш</string>
+    <string name="PillStackInfiniteScrolling">Бесконечная прокрутка</string>
+    <string name="PillStackInfiniteScrollingSub">Зацикливать прокрутку списка плашек</string>
+    <string name="PillStackActivePills">Активные плашки</string>
+    <string name="PillStackHiddenPills">Скрытые плашки</string>
+    <string name="PillStackTapToHide">Активна</string>
+    <string name="PillStackTapToShow">Скрыта</string>
+    <string name="PillStackPillsSettingsInfo">Нажимайте на плашки для перемещения между активными и скрытыми. Порядок определяет очередность отображения.</string>
+    <string name="PillStackResetConfirm">Сбросить расположение плашек и настройки валют по умолчанию?</string>
+    <string name="PillStackResetDone">Настройки плашек сброшены</string>
+
+    <!-- Currencies -->
+    <string name="CryptoCurrencyUsd">Доллар США</string>
+    <string name="CryptoCurrencyEur">Евро</string>
+    <string name="CryptoCurrencyRub">Российский рубль</string>
+    <string name="CryptoCurrencyGbp">Британский фунт</string>
+    <string name="CryptoCurrencyKzt">Казахстанский тенге</string>
+    <string name="CryptoCurrencyTry">Турецкая лира</string>
+    <string name="CryptoCurrencyUah">Украинская гривна</string>
+    <string name="CryptoCurrencyPln">Польский злотый</string>
+    <string name="CryptoCurrencyAed">Дирхам ОАЭ</string>
+    <string name="CryptoCurrencyCny">Китайский юань</string>
+    <string name="CryptoCurrencyJpy">Японская иена</string>
+    <string name="CryptoCurrencyByn">Белорусский рубль</string>
+    <string name="CryptoCurrencyIls">Новый израильский шекель</string>
+    <string name="CryptoCurrencyCzk">Чешская крона</string>
+    <string name="CryptoCurrencyInr">Индийская рупия</string>
+
+    <!-- Telemetry Killswitch -->
+    <string name="HundredGramTelemetrySection">Телеметрия и диагностика</string>
+    <string name="HundredGramDisableTelemetry">Отключить всю телеметрию</string>
+    <string name="HundredGramDisableTelemetryInfo">Блокирует сбор аналитики, отчётов о сбоях и отправку диагностических данных во внешние сервисы.</string>
+
+    <!-- What's New -->
+    <string name="WhatsNewPillStackWidgets">Новые плашки поиска: Погода и Криптовалюты</string>
+    <string name="WhatsNewPillStackWidgetsDesc">Прогноз погоды и актуальные курсы TON, BTC и USD прямо в поисковой строке</string>
+    <string name="WhatsNewTelemetryKillswitch">Отключение телеметрии</string>
+    <string name="WhatsNewTelemetryKillswitchDesc">Полная блокировка фоновой телеметрии и аналитики для максимальной приватности</string>
+    <string name="WhatsNewAvatarCornersAndNav">Скругление аватарок и вкладки навигации</string>
+    <string name="WhatsNewAvatarCornersAndNavDesc">Плавная регулировка скругления аватарок со слайдером и превью, стиль переключателей MD3 и настройка нижней панели навигации</string>
+
+    <!-- Interface & Customization (Stage 3) -->
+    <string name="HundredGramAppearanceSection">Внешний вид и аватарки</string>
+    <string name="AvatarCorners">Скругление аватарок</string>
+    <string name="AvatarCornersLeft">Квадратные</string>
+    <string name="AvatarCornersRight">Круглые</string>
+    <string name="AvatarCornersInfo">Регулирует радиус скругления фото профилей и аватарок чатов во всем приложении.</string>
+    <string name="Md3SwitchStyle">Переключатели в стиле Material 3</string>
+    <string name="Md3SwitchStyleInfo">Использовать увеличенные переключатели со встроенными индикаторами статуса.</string>
+    <string name="BottomNavHeader">Нижняя панель навигации</string>
+    <string name="BottomNavHideContacts">Скрыть вкладку «Контакты»</string>
+    <string name="BottomNavHideContactsInfo">Убирает вкладку контактов из нижней панели навигации.</string>
+    <string name="BottomNavHideSettings">Скрыть вкладку «Настройки»</string>
+    <string name="BottomNavHideSettingsInfo">Убирает вкладку настроек из нижней панели навигации.</string>
+    <string name="BottomNavShowCalls">Вкладка «Звонки» вместо «Настроек»</string>
+    <string name="BottomNavShowCallsInfo">Отображает журнал звонков вместо настроек на третьей вкладке панели.</string>
+    <string name="BottomNavHideCalls">Скрыть вкладку «Звонки»</string>
+    <string name="BottomNavHideCallsInfo">Убирает вкладку звонков из нижней панели навигации.</string>
+    <string name="BottomNavSectionInfo">Настройка отображения вкладок плавающей нижней панели навигации (Liquid Glass) на главном экране.</string>
+
+    <!-- AI Assistant (Stage 4) -->
+    <string name="AiSettingsTitle">Искусственный интеллект</string>
+    <string name="AiSettingsSubtitle">Google Gemini, OpenAI ChatGPT, суммаризация и перефразирование</string>
+    <string name="AiGeneralSection">Общие настройки</string>
+    <string name="AiEnable">Включить AI-ассистента</string>
+    <string name="AiEnableInfo">Позволяет суммаризировать сообщения, исправлять ошибки, менять стиль текста и общаться с AI прямо в Telegram.</string>
+    <string name="AiProviderSection">Провайдер AI</string>
+    <string name="AiProvider">Активный сервис</string>
+    <string name="AiApiKey">API-ключ</string>
+    <string name="AiKeyNotSet">Не задан</string>
+    <string name="AiModel">Модель</string>
+    <string name="AiCustomEndpoint">URL пользовательского эндпоинта</string>
+    <string name="AiGetApiKey">Получить бесплатный API-ключ</string>
+    <string name="AiGetApiKeySub">Открыть консоль Google AI Studio или OpenAI</string>
+    <string name="AiProviderInfo">Ваш API-ключ хранится только локально на устройстве и отправляется напрямую провайдеру.</string>
+    <string name="AiGenerationSection">Параметры генерации</string>
+    <string name="AiStreaming">Потоковая выдача ответов</string>
+    <string name="AiStreamingInfo">Отображает ответ AI в реальном времени по мере генерации слов.</string>
+    <string name="AiSaveHistory">Сохранять контекст диалога</string>
+    <string name="ClearConversationHistoryInfo">Очистить всю историю диалогов с AI?</string>
+    <string name="HundredGramAiHistoryCleared">История AI очищена</string>
+
+    <string name="AIChatInfo2">Генерируйте текст по сообщениям или перед отправкой.</string>
+    <string name="Services">Сервисы</string>
+    <string name="ServicesInfo">Выберите подходящий сервис для взаимодействия с языковыми моделями.</string>
+    <string name="NewService">Новый сервис</string>
+    <string name="EditService">Редактировать сервис</string>
+    <string name="DeleteService">Удалить сервис</string>
+    <string name="DeleteServiceInfo">Вы уверены, что хотите удалить этот сервис?</string>
+    <string name="ServicePreset">Пресет</string>
+    <string name="ServicePresetCustom">Свой (OpenAI-совместимый)</string>
+    <string name="ServiceName">Название сервиса</string>
+    <string name="ServiceUrl">URL эндпоинта</string>
+    <string name="ServiceModel">Модель</string>
+    <string name="ServiceKey">API-ключ</string>
+    <string name="ServiceReasoning">Рассуждения / Thinking</string>
+    <string name="ServiceReasoningInfo">Позволяет поддерживаемым моделям (o1, Flash Thinking) обдумывать ответ перед генерацией.</string>
+    <string name="TestAndSave">Проверить и сохранить</string>
+    <string name="TestingService">Проверка подключения…</string>
+    <string name="TestSuccess">Сервис успешно подключен!</string>
+    <string name="TestFailed">Ошибка подключения: %1$s</string>
+    <string name="Roles">Роли</string>
+    <string name="RolesInfo">Создавайте и выбирайте системные роли для ваших задач.</string>
+    <string name="NewRole">Новая роль</string>
+    <string name="EditRole">Редактировать роль</string>
+    <string name="DeleteRole">Удалить роль</string>
+    <string name="DeleteRoleInfo">Вы уверены, что хотите удалить роль «%1$s»?</string>
+    <string name="RoleName">Название роли</string>
+    <string name="RolePrompt">Системный промпт</string>
+    <string name="AITemperature">Температура</string>
+    <string name="AITemperatureInfo">Температура управляет случайностью ответа: чем выше значение, тем креативнее ответ; чем ниже — тем точнее.</string>
+    <string name="ShowResponseOnly">Только ответ</string>
+    <string name="ShowResponseOnlyInfo">Вставлять только сгенерированный ответ без повтора вопроса.</string>
+    <string name="InsertResponseAsQuote">Вставлять как цитату</string>
+    <string name="InsertResponseAsQuoteInfo">Оформлять ответ ИИ как блок цитирования.</string>
+    <string name="MessageHistory">История сообщений</string>
+    <string name="HistoryInfo">Сохраняет недавние запросы и ответы ИИ для контекста диалога.</string>
+    <string name="HistoryEmpty">История пуста</string>
+    <string name="Suggestions">Рекомендуемые роли</string>
+    <string name="AIReplaceTelegram">Telegram AI</string>
+    <string name="AIFeaturesEditor">Редактор</string>
+    <string name="AIReplaceTelegramEditorInfo">Перевод, изменение стиля и проверка текста</string>
+    <string name="AIFeaturesSummaries">Краткие сводки</string>
+    <string name="AIReplaceTelegramSummariesInfo">Суммаризация длинных сообщений и постов</string>
+    <string name="AIReplaceTelegramInfo">Выбранные функции используют ваш настроенный AI вместо серверов Telegram без ограничений Premium.</string>
+    <string name="AIGeneration">Генерация</string>
+    <string name="ResponseStreaming">Потоковая передача ответа</string>
+    <string name="ResponseStreamingInfo">Обеспечивает более плавное и быстрое отображение ответов.</string>
+    <string name="AiIntegrationSection">Интеграция в Telegram</string>
+    <string name="AiReplaceEditor">Заменять Telegram AI Composer</string>
+    <string name="AiReplaceEditorInfo">Использует ваш настроенный AI в редакторе текста без подписки Telegram Premium.</string>
+    <string name="AiReplaceSummaries">Заменять Telegram AI Summarizer</string>
+    <string name="AiReplaceSummariesInfo">Суммаризирует посты каналов с помощью вашего AI.</string>
+    <string name="AskAi">Спросить AI</string>
+    <string name="AiPromptHint">Задайте вопрос к этому сообщению…</string>
+    <string name="AskAssistant">Спросить</string>
+    <string name="SummarizeThisMessage">Сделай краткую выжимку этого сообщения</string>
+    <string name="ProofreadThisMessage">Исправь ошибки и улучши текст</string>
+    <string name="TranslateThisMessage">Переведи это сообщение</string>
+    <string name="WhatsNewAiAssistant">AI-ассистент (Gemini и ChatGPT)</string>
+    <string name="WhatsNewAiAssistantDesc">Умная суммаризация постов, исправление ошибок, изменение тональности текста и ответы на вопросы на базе Google Gemini и OpenAI без подписки Premium</string>
+
+    <string name="AiChipSummarize">Кратко</string>
+    <string name="AiChipProofread">Исправить</string>
+    <string name="AiChipTranslate">Перевести</string>
+    <string name="AiGenerate">Сгенерировать</string>
+    <string name="HundredGramSettingsSaved">Настройки сохранены</string>
+
+    <!-- Services & Translation (Stage 5) -->
+    <string name="ServicesSettingsTitle">Сервисы и инструменты</string>
+    <string name="ServicesSettingsSubtitle">Мульти-провайдерный переводчик, анти-спам и защита личных сообщений</string>
+    <string name="TranslatorSection">Движки перевода</string>
+    <string name="TranslationProvider">Провайдер перевода</string>
+    <string name="TranslationTargetLang">Целевой язык</string>
+    <string name="TranslateBeforeSend">Переводить перед отправкой</string>
+    <string name="TranslatorSectionInfo">Позволяет переключаться между Google Translate, Yandex Translate, DeepL и Telegram без ограничений подписки Telegram Premium.</string>
+    <string name="AntiSpamSection">Анти-спам и защита</string>
+    <string name="AntiSpamEnable">Включить анти-спам в ЛС</string>
+    <string name="AntiSpamBlockLinks">Фильтровать ссылки от незнакомцев</string>
+    <string name="AntiSpamAction">Действие при обнаружении спама</string>
+    <string name="AntiSpamActionMute">Заглушить и пометить прочитанным</string>
+    <string name="AntiSpamActionArchive">Переместить в Архив и заглушить</string>
+    <string name="AntiSpamActionBlock">Заблокировать и удалить диалог</string>
+    <string name="AntiSpamKeywords">Ключевые слова и стоп-фразы</string>
+    <string name="AntiSpamBlockedCount">Заблокировано спам-сообщений: %1$d</string>
+    <string name="AntiSpamSectionInfo">Автоматически защищает ваши личные сообщения от скам-ботов, навязчивой рекламы, реферальных ссылок и предложений легкого заработка.</string>
+    <string name="AntiSpamBlockedAlert">100gram Анти-спам: Заблокировано сообщение от %1$s</string>
+    <string name="WhatsNewServices">Переводчики и Анти-спам щит</string>
+    <string name="WhatsNewServicesDesc">Мульти-движковый перевод (Google, Yandex, DeepL) без ограничений и автоматическая защита личных сообщений от спама и скам-ссылок</string>
+
+    <!-- General Helpers -->
+    <string name="Auto">Авто</string>
+    <string name="ResetSettings">Сбросить настройки</string>
+
+    <!-- Plugins System (Stage: Plugins & ExteraGram Compatibility) -->
+    <string name="Plugins">Плагины</string>
+    <string name="PluginsSubtitle">Кастомные расширения и плагины exteraGram</string>
+    <string name="PluginsEngine">Движок плагинов</string>
+    <string name="PluginsEngineInfo">Позволяет запускать нативные и exteraGram плагины</string>
+    <string name="PluginsSafeMode">Безопасный режим</string>
+    <string name="PluginsSafeModeInfo">Все плагины отключены для предотвращения сбоев</string>
+    <string name="PluginsSafeModeInfo2">В безопасном режиме все плагины неактивны. Это позволяет безопасно найти и отключить проблемный плагин.</string>
+    <string name="PluginsDisableArt">Режим совместимости</string>
+    <string name="PluginsDisableArtInfo">Предотвращает ошибки хуков плагинов путем отключения ART Profile Saver</string>
+    <string name="PluginsInstallUnknown">Неизвестные источники</string>
+    <string name="PluginsInstallUnknownInfo">Разрешить установку плагинов напрямую из чатов и памяти</string>
+    <string name="InstallPlugin">Установить плагин</string>
+    <string name="PluginInstalled">Плагин %1$s успешно установлен</string>
+    <string name="PluginUpdated">Плагин %1$s успешно обновлен</string>
+    <string name="PluginInstallError">Ошибка при установке плагина %1$s</string>
+    <string name="PluginEnableError">Не удалось включить %1$s</string>
+    <string name="PluginDisableError">Не удалось отключить %1$s</string>
+    <string name="PluginDelete">Удалить плагин</string>
+    <string name="PluginDeleteInfo">Вы уверены, что хотите удалить %1$s?</string>
+    <string name="PluginNotFound">Плагин %1$s не найден</string>
+    <string name="PluginNoDescription">Описание отсутствует</string>
+    <string name="PluginNoAuthor">Неизвестный автор</string>
+    <string name="PluginVersion">Версия</string>
+    <string name="PluginVersionValue">Версия %1$s</string>
+    <string name="PluginHasNoSettings">У плагина %1$s нет настроек</string>
+    <string name="PluginEngineNotEnabled">Включите движок плагинов для настройки %1$s</string>
+    <string name="PluginRequirements">Требования</string>
+    <string name="PluginRequired">Необходимые плагины</string>
+    <string name="PluginsNotFound">Нет установленных плагинов</string>
+    <string name="PluginsInfo">Вы можете устанавливать плагины (.100p, .plugin, .elyx) из файлов или чатов</string>
+    <string name="WhatsNewPlugins">Плагины и поддержка exteraGram</string>
+    <string name="WhatsNewPluginsDesc">Модульная система плагинов: поддержка нативных Dex-расширений и плагинов exteraGram с кастомными меню, хуками и экранами настроек</string>
+
+    <!-- Package 1: Chats & Input Experience -->
+    <string name="RepeatMessage">Повторить</string>
+    <string name="MessageRepeated">Сообщение повторено</string>
+    <string name="ShowRepeatMessageButton">Кнопка «Повторить»</string>
+    <string name="ShowRepeatMessageButtonInfo">Отображать пункт «Повторить» в контекстном меню сообщения для быстрой отправки дубликата</string>
+    <string name="ShowResultsBeforeVoting">Результаты опросов до голосования</string>
+    <string name="ShowResultsBeforeVotingInfo">Позволяет просматривать проценты и количество голосов без необходимости голосовать</string>
+    <string name="ShowClearInputButton">Кнопка очистки поля ввода</string>
+    <string name="ShowClearInputButtonInfo">Отображать кнопку (✕) для быстрой очистки текста в поле ввода</string>
+    <string name="ClearInputConfirmTitle">Очистить сообщение?</string>
+    <string name="ClearInputConfirmMessage">Вы уверены, что хотите удалить весь набранный текст?</string>
+    <string name="ClearInputCleared">Сообщение очищено</string>
+    <string name="FilterZalgo">Фильтрация Zalgo-текста</string>
+    <string name="FilterZalgoInfo">Удаляет избыточные объединяющие диакритические знаки, ломающие отображение чата</string>
+    <string name="ReplaceEditedWithIcon">Иконка карандаша для изменённых сообщений</string>
+    <string name="ReplaceEditedWithIconInfo">Заменять надпись «изменено» на компактную иконку карандаша возле времени сообщения</string>
+    <string name="WhatsNewChatsInput">Удобство чатов и ввода</string>
+    <string name="WhatsNewChatsInputDesc">Повтор сообщений из контекстного меню, просмотр результатов опросов без голосования, быстрая очистка поля ввода (✕), фильтрация Zalgo-глитчей и компактный карандаш у изменённых сообщений</string>
+
+    <!-- Package 2: Header & Tabs Customization -->
+    <string name="ActionBarTitleMode">Заголовок Action Bar</string>
+    <string name="ActionBarTitleModeInfo">Настройка отображения заголовка на главном экране</string>
+    <string name="ActionBarTitleAppName">Имя приложения (100gram)</string>
+    <string name="ActionBarTitleUsername">Юзернейм (@username)</string>
+    <string name="ActionBarTitleName">Имя профиля</string>
+    <string name="ActionBarTitleFilterChats">Активная папка</string>
+
+    <string name="CenterActionBarTitle">Центрировать заголовок</string>
+    <string name="CenterActionBarTitleInfo">Выравнивать заголовок и статус строго по центру в Action Bar и заголовках чатов</string>
+
+    <string name="TabTitleStyle">Стиль вкладок папок</string>
+    <string name="TabTitleStyleInfo">Внешний вид заголовков папок над списком чатов</string>
+    <string name="TabTitleStyleTextAndIcons">Текст и иконки</string>
+    <string name="TabTitleStyleTextOnly">Только текст</string>
+    <string name="TabTitleStyleIconsOnly">Только иконки</string>
+
+    <string name="TabCounterMode">Счетчики на вкладках</string>
+    <string name="TabCounterModeInfo">Режим подсчета непрочитанных сообщений на вкладках папок</string>
+    <string name="TabCounterModeAll">Все чаты</string>
+    <string name="TabCounterModeUnmuted">Без беззвучных</string>
+    <string name="TabCounterModeHide">Скрыть счетчики</string>
+
+    <string name="WhatsNewHeaderTabs">Кастомизация заголовка и вкладок</string>
+    <string name="WhatsNewHeaderTabsDesc">Режимы заголовка Action Bar (имя приложения, @username, имя профиля, активная папка), центрирование заголовков, стили вкладок папок (только текст, только иконки, текст с иконками) и гибкие счетчики непрочитанных</string>
+
+    <!-- Package 3: Multimedia, Player Ergonomics & Bubble Tail Styling -->
+    <string name="UnmuteWithVolumeButtons">Включение звука клавишами громкости</string>
+    <string name="UnmuteWithVolumeButtonsInfo">Нажатие физических кнопок громкости включает звук при просмотре беззвучного видео в плеере</string>
+    <string name="SwipeToPip">Свайп в «Картинка в картинке»</string>
+    <string name="SwipeToPipInfo">Свайп вверх по полноэкранному видеоплееру плавно переводит воспроизведение в плавающее окно (PiP)</string>
+    <string name="RemoveMessageTail">Скрыть хвостики сообщений</string>
+    <string name="RemoveMessageTailInfo">Убирает нижний хвостик у входящих и исходящих облачков сообщений для плоского минималистичного стиля</string>
+    <string name="WidePostsInChannels">Широкие медиапосты в каналах</string>
+    <string name="WidePostsInChannelsInfo">Отображать фото и видео в каналах на всю доступную ширину экрана без лишних отступов по бокам</string>
+
+    <string name="WhatsNewMediaAndBubbles">Мультимедиа и стиль сообщений</string>
+    <string name="WhatsNewMediaAndBubblesDesc">Включение звука кнопками громкости в видеоплеере, свайп вверх в режим «Картинка в картинке», облачка сообщений без хвостиков и широкие медиапосты в каналах</string>
+
+    <!-- Package 4: Navigation, Stickers & Gesture Safety -->
+    <string name="DisableUnarchiveSwipe">Отключить разархивацию свайпом</string>
+    <string name="DisableUnarchiveSwipeInfo">Предотвращает случайное извлечение чатов из Архива при горизонтальном свайпе по строке</string>
+    <string name="HideDialogsSearchBar">Скрыть строку поиска в чатах</string>
+    <string name="HideDialogsSearchBarInfo">Скрывает строку поиска над списком чатов для экономии места на экране. Поиск открывается по значку лупы в заголовке</string>
+    <string name="ExtendedRecentStickers">Расширенный пул недавних стикеров</string>
+    <string name="ExtendedRecentStickersInfo">Увеличивает вместимость списка недавно отправленных стикеров до 100 штук вместо стандартных 20</string>
+    <string name="QuickChannelTransition">Быстрый переход между каналами</string>
+    <string name="QuickChannelTransitionInfo">Ускоряет анимацию перехода к следующему непрочитанному каналу при свайпе вверх от конца ленты</string>
+
+    <string name="WhatsNewNavigationAndStickers">Навигация, стикеры и безопасность жестов</string>
+    <string name="WhatsNewNavigationAndStickersDesc">Защита от случайной разархивации свайпом, скрытие строки поиска над чатами, расширение пула недавних стикеров до 100 и мгновенный переход к следующему каналу</string>
+
+    <!-- Package 5: Media & Storage Ergonomics -->
+    <string name="ShowForwardsCount">Количество пересылок</string>
+    <string name="ShowForwardsCountInfo">Показывать счетчик пересылок рядом с просмотрами в сообщениях каналов</string>
+    <string name="HideActionBarStatus">Скрыть статус в шапке чата</string>
+    <string name="HideActionBarStatusInfo">Скрывает статус «в сети», время захода, количество участников и статус набора текста в верхнем заголовке чата для чистых скриншотов и стриминга</string>
+    <string name="DoubleTapSeekDuration">Интервал перемотки по двойному нажатию</string>
+    <string name="DoubleTapSeekDurationInfo">Время перемотки вперед или назад при двойном нажатии по краям видеоплеера</string>
+    <string name="DoubleTapSeekSeconds">%1$d с</string>
+    <string name="QuickTopicTransition">Быстрый переход между темами</string>
+    <string name="QuickTopicTransitionInfo">Ускоряет анимацию перехода и переключения жестом свайпа между темами (топиками) форумов</string>
+
+    <string name="WhatsNewMediaAndStorageErgonomics">Эргономика медиа и хранилища</string>
+    <string name="WhatsNewMediaAndStorageErgonomicsDesc">Счетчик пересылок в постах каналов, скрытие статуса в шапке чата, настраиваемый шаг перемотки видео по двойному нажатию и ускоренное переключение тем форумов</string>
+
+    <!-- Package 6: Interactive Settings Redesign, Live Previews & Spring Transitions -->
+    <string name="SwipeActionPreviewTitle">Смахните влево для проверки</string>
+    <string name="SwipeActionPreviewSub">Текущее действие: %1$s</string>
+    <string name="BubblePreviewInText">100gram — новый стиль баблов 🔥</string>
+    <string name="BubblePreviewOutText">С хвостиком сообщения</string>
+    <string name="BubblePreviewOutFlat">Чистый вид без хвостиков!</string>
+    <string name="BubblePreviewEdited">изменено</string>
+    <string name="HundredGramVaultCardTitle">Медиа-сейф 100gram</string>
+    <string name="HundredGramVaultQuotaInfo">Лимит квоты: %1$d МБ</string>
+    <string name="HundredGramVaultManage">Управление</string>
+    <string name="HundredGramSectionAppearance">Внешний вид и стиль</string>
+    <string name="HundredGramSectionChatsMedia">Чаты, медиа и камера</string>
+    <string name="HundredGramSectionSmartTools">Интеллект и расширения</string>
+    <string name="TransitionsAndDividersSection">Анимации переходов и разделители</string>
+    <string name="TransitionAnimation">Анимация переходов</string>
+    <string name="TransitionAnimationInfo">Стиль анимации открытия и закрытия экранов</string>
+    <string name="TransitionDefault">Стандартная (Telegram)</string>
+    <string name="TransitionAosp">AOSP (Android)</string>
+    <string name="TransitionSpring">Пружинная (Spring)</string>
+    <string name="DividerStyle">Стиль разделителей</string>
+    <string name="DividerStyleInfo">Внешний вид линий между пунктами списков</string>
+    <string name="DividerStyleLine">Классическая линия</string>
+    <string name="DividerStyleSegments">Островные сегменты</string>
+    <string name="DividerStyleHidden">Без разделителей</string>
+    <string name="WhatsNewSettingsRedesign">Интерактивный редизайн настроек</string>
+    <string name="WhatsNewSettingsRedesignDesc">Новый центр управления с Hero-профилем, живыми превью свайпов и баблов, пружинной физикой переходов (Spring) и виджетом хранилища</string>
+    <string name="HundredGramMessageBubblesSection">Оформление сообщений</string>
+    <string name="HundredGramChatBehaviorSection">Поведение в чатах</string>
+    <string name="MessageBubblePreviewInfo">Настройка хвостиков облачков сообщений, иконки редактирования, секунд в таймстампе и счетчика пересылок с живым предпросмотром.</string>
+    <string name="TransitionsAndDividersInfo">Пружинная физика переходов Spring и настройка стиля разделителей в списках приложения.</string>
+
+    <!-- Swipe Actions (ported from exteraGram) -->
+    <string name="SwipeActions">Действия свайпом</string>
+    <string name="SwipeActionsInfo">Проведите по сообщению влево и, не отпуская палец, ведите вверх или вниз, чтобы выбрать действие.</string>
+    <string name="SwipeActionsBehavior">Поведение</string>
+    <string name="SwipeActionsLoop">Зацикливание</string>
+    <string name="SwipeActionsReversed">Обратная прокрутка</string>
+    <string name="SwipeActionsBehaviorInfo">С зацикливанием после последнего действия снова идёт первое. При обратной прокрутке список движется вслед за пальцем.</string>
+    <string name="SwipeActionsEnabled">Действия</string>
+    <string name="SwipeActionsDisabled">Отключённые</string>
+    <string name="SwipeActionsOrderInfo">Нажмите на действие, чтобы включить или выключить, перетащите — чтобы изменить порядок. Верхнее срабатывает при обычном свайпе.</string>
+    <string name="SwipeActionsPreviewReply">а если промахнусь и удалю?</string>
+    <string name="SwipeActionsPreviewMessage">страх убивает разум. веди палец медленнее</string>
+
+    <string name="WhatsNewSwipeActions">Мульти-действия свайпом и счетчик пересылок</string>
+    <string name="WhatsNewSwipeActionsDesc">Настраиваемое меню свайпа сообщений с живым предпросмотром, сортировкой жестов перетаскиванием, зацикливанием и векторной иконкой пересылок в каналах</string>
+
+    <!-- Registration Date & Chat Creation Date -->
+    <string name="CreationDateUserLater">**%1$s** создал(а) аккаунт позже чем **%2$s**.</string>
+    <string name="CreationDateUserEarlier">**%1$s** создал(а) аккаунт раньше чем **%2$s**.</string>
+    <string name="CreationDateUserApproximately">**%1$s** создал(а) аккаунт примерно **%2$s**.</string>
+    <string name="CreationDateSelfLater">Вы создали аккаунт позже чем **%1$s**.</string>
+    <string name="CreationDateSelfEarlier">Вы создали аккаунт раньше чем **%1$s**.</string>
+    <string name="CreationDateSelfApproximately">Вы создали аккаунт примерно **%1$s**.</string>
+    <string name="CreationDateChat">**%1$s** создан(а) **%2$s**.</string>
+    <string name="DisableGreetingSticker">Отключить приветственный стикер</string>
+    <string name="DisableGreetingStickerInfo">Скрывает анимированный стикер приветствия в пустых диалогах</string>
+    <string name="WhatsNewExteraFeatures">Дата регистрации аккаунта и чистый старт диалога</string>
+    <string name="WhatsNewExteraFeaturesDesc">Оценка примерной даты регистрации по ID и истории аватаров в профиле пользователя с календариком, а также отключение стикера приветствия в пустых диалогах</string>
+    <!-- Selective Account Notifications & Square FAB -->
+    <string name="AccountNotifications">Аккаунты</string>
+    <string name="AccountNotificationsInfo">Отключённые аккаунты не показывают уведомления, пока вы используете другой аккаунт.</string>
+    <string name="AccountNotificationsCurrent">Уведомления для текущего аккаунта включены всегда.</string>
+    <string name="AccountNotificationsCount">%1$d из %2$d</string>
+    <string name="SquareFab">Квадратная плавающая кнопка</string>
+    <string name="SquareFabInfo">Закруглённые кнопки действий в стиле Material 3 вместо обычных круглых</string>
+    <string name="WhatsNewAccountNotifications">Выборочные уведомления аккаунтов и квадратный FAB</string>
+    <string name="WhatsNewAccountNotificationsDesc">Гранулярная настройка push-уведомлений для каждого аккаунта, защита от отключения активного профиля, стильные квадратные кнопки Material 3 и фильтр спам-глитчей Zalgo</string>
+
+    <!-- IP Address Inspector & Proxy Details -->
+    <string name="CopyIpAddress">Скопировать IP-адрес</string>
+    <string name="IpInfoCountry">Локация</string>
+    <string name="IpInfoIsp">Провайдер (ISP)</string>
+    <string name="IpInfoOrganization">Организация</string>
+    <string name="IpInfoDomain">Домен</string>
+    <string name="IpInfoTimezone">Часовой пояс</string>
+    <string name="IpInfoUnavailable">Информация об этом IP недоступна.</string>
+
+    <!-- Inline Math Calculation -->
+    <string name="InlineMathResult">Быстрый расчет выражений</string>
+    <string name="InlineMathResultInfo">Мгновенный расчет математических и арифметических выражений прямо в поле ввода сообщений (пробел или = для подстановки)</string>
+    <string name="InlineMathResultHint">Нажмите пробел или =, чтобы вставить результат</string>
+    <string name="InlineMathResultAnnouncement">Результат вычисления: %1$s</string>
+    <string name="WhatsNewInlineMathAndIp">Математика в поле ввода и инспектор IP</string>
+    <string name="WhatsNewInlineMathAndIpDesc">Мгновенный подсчет выражений прямо при наборе сообщений, а также детальный инспектор геопозиции и провайдера по клику на IP-адреса</string>
+
+    <!-- Batch 2: Dialogs, Media & Chat Controls -->
+    <string name="SenderMiniAvatars">Аватары авторов в диалогах</string>
+    <string name="SenderMiniAvatarsInfo">Показывать миниатюрные аватары отправителей перед текстом сообщений в списке чатов</string>
+    <string name="PauseOnMinimize">Пауза медиа при сворачивании</string>
+    <string name="PauseOnMinimizeVideo">Приостанавливать видео</string>
+    <string name="PauseOnMinimizeVideoInfo">Автоматически ставить воспроизведение видео на паузу при сворачивании приложения</string>
+    <string name="PauseOnMinimizeVoice">Приостанавливать голосовые</string>
+    <string name="PauseOnMinimizeVoiceInfo">Автоматически ставить воспроизведение голосовых сообщений на паузу в фоне</string>
+    <string name="PauseOnMinimizeRound">Приостанавливать видеосообщения</string>
+    <string name="PauseOnMinimizeRoundInfo">Автоматически ставить воспроизведение кружочков на паузу в фоне</string>
+    <string name="HideSendAsPeer">Скрыть кнопку «Отправить от имени»</string>
+    <string name="HideSendAsPeerInfo">Скрывает кнопку выбора автора у поля ввода. Для выбора автора зажмите кнопку эмодзи</string>
+    <string name="HideShareButton">Скрыть стрелку пересылки в каналах</string>
+    <string name="HideShareButtonInfo">Скрывает кнопку быстрой пересылки рядом с публикациями в каналах</string>
+    <string name="HideReactionsInChannels">Скрыть реакции в каналах</string>
+    <string name="HideReactionsInChannelsInfo">Не показывать счетчики и плашки реакций под публикациями в каналах</string>
+    <string name="HideReactionsInGroups">Скрыть реакции в группах</string>
+    <string name="HideReactionsInGroupsInfo">Не показывать счетчики и плашки реакций под сообщениями в группах</string>
+    <string name="WhatsNewBatch2Features">Аватары в чатах и эргономика</string>
+    <string name="WhatsNewBatch2FeaturesDesc">Мини-аватары авторов в списке чатов, пауза медиа при сворачивании, скрытие стрелок пересылки и кнопки выбора автора, фильтр реакций</string>
+
+    <!-- Batch 3: Notifications, Gestures & Media Controls -->
+    <string name="DisableNotificationDelay">Отключить задержку уведомлений</string>
+    <string name="DisableNotificationDelayInfo">Не ждать 1-3 секунды перед показом уведомлений, отображать их мгновенно</string>
+    <string name="ArchiveOnPull">Открывать архив свайпом вниз</string>
+    <string name="ArchiveOnPullInfo">Сразу открывать папку архива при потягивании списка чатов вниз</string>
+    <string name="ChannelBottomButton">Нижняя кнопка в каналах</string>
+    <string name="ChannelBottomButtonHide">Скрыть</string>
+    <string name="ChannelBottomButtonMute">Вкл/выкл звук</string>
+    <string name="ChannelBottomButtonDiscuss">Обсуждение</string>
+    <string name="UnlimitedRecentStickers">Неограниченные недавние стикеры</string>
+    <string name="UnlimitedRecentStickersInfo">Показывать все недавние стикеры без ограничения в 20 штук</string>
+    <string name="StickerTimeMode">Время на стикерах</string>
+    <string name="StickerTimeModeDefault">По умолчанию</string>
+    <string name="StickerTimeModeSide">Сбоку от стикера</string>
+    <string name="StickerTimeModeHidden">Скрыть</string>
+    <string name="RememberLastUsedCamera">Запоминать камеру</string>
+    <string name="RememberLastUsedCameraInfo">Запоминать фронтальную или основную камеру при записи видеосообщений</string>
+    <string name="PreferOriginalQuality">Исходное качество видео</string>
+    <string name="PreferOriginalQualityInfo">Автоматически выбирать исходное качество для видео с несколькими разрешениями</string>
+    <string name="WhatsNewBatch3Features">Мгновенные уведомления и контроль чатов</string>
+    <string name="WhatsNewBatch3FeaturesDesc">Мгновенный показ push-уведомлений, открытие архива свайпом вниз, настройка нижней панели каналов, бесконечные недавние стикеры, время сбоку от стикера и выбор оригинального качества видео</string>
+    <!-- Batch 4: Smart Proxy, Custom Save Path, Reply Styling & Sticker Shape -->
+    <string name="ProxyDisableOn">Отключать прокси при</string>
+    <string name="ProxyDisableOnVpn">VPN</string>
+    <string name="ProxyDisableOnMobileData">Мобильном интернете</string>
+    <string name="ProxyDisableOnWiFi">Wi-Fi</string>
+    <string name="ProxyDisableOnNever">Никогда</string>
+    <string name="ProxyDisableOnAlways">Всегда</string>
+    <string name="ProxyDisableNever">Никогда</string>
+    <string name="ProxyDisableAlways">Всегда</string>
+    <string name="ProxyDisableOnInfo">Автоматически отключать активный прокси при подключении к выбранным сетевым интерфейсам</string>
+
+    <string name="CustomSavePath">Папка для сохранения</string>
+    <string name="CustomSavePathInfo">Подпапка в медиа-хранилище устройства для сохранённых фото, видео и файлов</string>
+    <string name="CustomSavePathDialogTitle">Название подпапки</string>
+    <string name="CustomSavePathDefault">По умолчанию (Telegram)</string>
+
+    <string name="ReplyStylingHeader">Стилизация ответов и цитат</string>
+    <string name="ReplyBackground">Фон ответа</string>
+    <string name="ReplyBackgroundInfo">Отображать полупрозрачный цветной фон за цитируемым сообщением</string>
+    <string name="ReplyColors">Цвет автора в ответах</string>
+    <string name="ReplyColorsInfo">Использовать персональный цвет автора для полосы и имени вместо стандартного цвета темы</string>
+    <string name="ReplyEmoji">Эмодзи в ответах</string>
+    <string name="ReplyEmojiInfo">Отображать кастомные эмодзи и статус цитирования в заголовке ответа</string>
+
+    <string name="StickerShape">Форма углов стикеров</string>
+    <string name="StickerShapeDefault">По умолчанию (острые)</string>
+    <string name="StickerShapeRounded">Скруглённые (4dp)</string>
+    <string name="StickerShapeBubble">Радиус пузыря сообщения</string>
+
+    <string name="WhatsNewBatch4Features">Умный прокси и визуальная кастомизация</string>
+    <string name="Shadowban">Теневой бан</string>
+    <string name="ShadowbanAdd">В теневой бан</string>
+    <string name="ShadowbanRemove">Снять теневой бан</string>
+    <string name="ShadowbanAddedToast">%1$s добавлен в теневой бан</string>
+    <string name="ShadowbanRemovedToast">%1$s удалён из теневого бана</string>
+    <string name="ShadowbanDesc">Локально скрывать любые сообщения выбранных пользователей в группах и комментариях без бана в самом Telegram</string>
+    <string name="ShadowbanEmpty">Список теневого бана пуст</string>
+    <string name="ShadowbanClearAll">Очистить весь список</string>
+    <string name="ShadowbanClearAllAlert">Вы уверены, что хотите удалить всех пользователей из теневого бана?</string>
+    <string name="ShadowbanUsersCount_one">%1$d пользователь</string>
+    <string name="ShadowbanUsersCount_few">%1$d пользователя</string>
+    <string name="ShadowbanUsersCount_many">%1$d пользователей</string>
+    <string name="ShadowbanUsersCount_other">%1$d пользователей</string>
+    <string name="WhatsNewShadowban">Локальный теневой бан</string>
+    <string name="WhatsNewShadowbanDesc">Локально скрывайте спамеров и нежелательных авторов во всех группах и комментариях без бана на серверах Telegram</string>
+
+    <string name="ActivityTriggerReaction">Реакция</string>
+
+    <string name="Enabled">Включено</string>
+    <string name="Disabled">Выключено</string>
+
+    <string name="DeletedMarkIcon">Значок удаленного сообщения</string>
+    <string name="DeletedMarkColor">Цвет значка удаленного сообщения</string>
+    <string name="DeletedMarkColorTheme">В цвет времени (незаметный)</string>
+    <string name="DeletedMarkColorRed">Красный акцент (заметный)</string>
+    <string name="DeletedMarkTrash">Корзина</string>
+    <string name="DeletedMarkCross">Крестик</string>
+    <string name="DeletedMarkEye">Перечеркнутый глаз</string>
+    <string name="DeletedMessagesTransparent">Полупрозрачные удалённые сообщения</string>
+
+    <string name="EditHistoryDiff">Diff</string>
+    <string name="EditHistoryPlain">Обычный</string>
+    <string name="EditHistoryDiffLegend">🟢 добавлено · 🔴 удалено</string>
+
+    <string name="ContentFilterTitle">Фильтрация контента</string>
+    <string name="ContentFilterGeneral">Основные настройки</string>
+    <string name="ContentFilterEnable">Включить фильтрацию контента</string>
+    <string name="ContentFilterEnableDesc">Автоматически скрывает спам, скам и сообщения по стоп-словам в каналах и группах.</string>
+    <string name="ContentFilterScope">Область действия</string>
+    <string name="ContentFilterChannels">В каналах</string>
+    <string name="ContentFilterGroups">В группах</string>
+    <string name="ContentFilterDMs">В личных сообщениях</string>
+    <string name="ContentFilterPresets">Готовые пресеты</string>
+    <string name="ContentFilterPresetCrypto">Крипто-скам и казино</string>
+    <string name="ContentFilterPresetLinks">Спам-ссылки и инвайты</string>
+    <string name="ContentFilterPresetsDesc">Быстрые фильтры для скрытия крипто-раздач, рекламы казино и реферальных ссылок.</string>
+    <string name="ContentFilterRules">Пользовательские правила</string>
+    <string name="ContentFilterAddKeyword">Добавить ключевое слово...</string>
+    <string name="ContentFilterAddRegex">Добавить Regex...</string>
+    <string name="ContentFilterAddRuleTitle">Добавить правило</string>
+    <string name="ContentFilterAddKeywordTitle">Добавить ключевое слово</string>
+    <string name="ContentFilterKeywordHint">например: казино, ставки, airdrop</string>
+    <string name="ContentFilterAddRegexTitle">Добавить регулярное выражение (Regex)</string>
+    <string name="ContentFilterRegexHint">например: (?i).*(crypto|casino).*</string>
+    <string name="ContentFilterRegexErrorTitle">Ошибка в Regex</string>
+    <string name="ContentFilterDeleteRuleTitle">Удалить правило?</string>
+    <string name="ContentFilterKeywordType">Ключевое слово</string>
+    <string name="ContentFilterRegexType">Регулярное выражение</string>
+    <string name="ContentFilterNoRules">Нет добавленных правил</string>
+    <string name="ContentFilterRuleClickDesc">Нажмите на правило для его удаления.</string>
+    <string name="ContentFilterStats">Статистика</string>
+    <string name="ContentFilterStatsCount_one">%1$d сообщение скрыто</string>
+    <string name="ContentFilterStatsCount_few">%1$d сообщения скрыто</string>
+    <string name="ContentFilterStatsCount_many">%1$d сообщений скрыто</string>
+    <string name="ContentFilterStatsCount_other">%1$d сообщений скрыто</string>
+    <string name="ContentFilterResetStats">Сбросить статистику</string>
+    <string name="ContentFilterStatsResetToast">Статистика сброшена</string>
+    <string name="ContentFilterRulesCount_one">%1$d правило</string>
+    <string name="ContentFilterRulesCount_few">%1$d правила</string>
+    <string name="ContentFilterRulesCount_many">%1$d правил</string>
+    <string name="ContentFilterRulesCount_other">%1$d правил</string>
+    <string name="ContentFilterDesc">Локальная фильтрация спама, крипто-скама и стоп-слов в каналах и чатах.</string>
+    <string name="WhatsNewContentFilter">Фильтрация контента и стоп-слова</string>
+    <string name="WhatsNewContentFilterDesc">Локальное скрытие спама, крипто-скама, реферальных ссылок и стоп-слов в каналах и чатах.</string>
+    <string name="WhatsNewDeletedMark">Стилизация меток удаленных сообщений</string>
+    <string name="WhatsNewDeletedMarkDesc">Выбор значка удаленного сообщения (корзина, крестик, перечеркнутый глаз) и полупрозрачность удаленных сообщений.</string>
+    <string name="WhatsNewEditHistoryDiff">Визуальный Diff в истории правок</string>
+    <string name="WhatsNewEditHistoryDiffDesc">Пословное выделение добавленного и удаленного текста, переключение Diff/обычный текст и относительное время изменений (+15с, +2м).</string>
+
+    <!-- AyuGram Enhancements -->
+    <string name="MessageReadDate">Прочитано</string>
+    <string name="TrackReadDate">Фиксировать время прочтения</string>
+    <string name="TrackReadDateInfo">Записывает точную дату и секунду, когда ваше исходящее сообщение было прочитано собеседником.</string>
+    <string name="SendOfflineAfterOnline">Мгновенный офлайн после отправки</string>
+    <string name="SendOfflineAfterOnlineInfo">Немедленно отправляет статус офлайн после отправки сообщения, исключая появление онлайна на 5–15 секунд.</string>
+    <string name="GhostUploadProgress">Скрыть статус загрузки медиа</string>
+    <string name="GhostUploadProgressInfo">Не передавать другим пользователям индикатор загрузки фото, видео или документов.</string>
+    <string name="VaultSaveForBots">Сохранять сообщения ботов</string>
+    <string name="VaultSaveForBotsInfo">Разрешить сохранение медиа и сообщений ботов в Vault и историю удалённых сообщений.</string>
+    <string name="WhatsNewAyuGramSpyGhost">Точное время прочтения и мгновенный офлайн</string>
+    <string name="WhatsNewAyuGramSpyGhostDesc">Отображение секунд прочтения исходящих сообщений в подробностях, мгновенный уход в офлайн при отправке сообщений и подавление индикаторов загрузки медиа.</string>
+
+    <!-- Save Presets & Scopes System -->
+    <string name="SavePreset">Режим сохранения</string>
+    <string name="SavePresetTitle">Выберите пресет сохранения</string>
+    <string name="SavePresetSmart">Умный (Рекомендуемый)</string>
+    <string name="SavePresetSmartDesc">Личные чаты и группы: фото, кружочки, голосовые и видео до 25 МБ. Каналы и боты исключены.</string>
+    <string name="SavePresetDMsOnly">Только личные диалоги</string>
+    <string name="SavePresetDMsOnlyDesc">Только диалоги 1-на-1. Все типы медиа до 50 МБ. Группы, каналы и боты исключены.</string>
+    <string name="SavePresetAll">Максимальный архив</string>
+    <string name="SavePresetAllDesc">Сохраняет всё из личных чатов, групп и каналов. Все типы файлов до 100 МБ.</string>
+    <string name="SavePresetStorageSaver">Экономия памяти</string>
+    <string name="SavePresetStorageSaverDesc">Только личные чаты: текст, фото и голосовые до 5 МБ. Без видео и тяжёлых файлов.</string>
+    <string name="SavePresetCustom">Пользовательский</string>
+    <string name="SavePresetCustomDesc">Индивидуальная настройка параметров ниже.</string>
+
+    <string name="SaveScopeHeader">Откуда сохранять</string>
+    <string name="SaveScopeHeaderInfo">Укажите, в каких категориях чатов работает сохранение удалённых сообщений и медиа-сейф.</string>
+    <string name="SaveScopePrivate">Личные сообщения (1-на-1)</string>
+    <string name="SaveScopeGroups">Группы и супергруппы</string>
+    <string name="SaveScopeChannels">Каналы</string>
+    <string name="SaveScopeBots">Боты и сервисные боты</string>
+    <string name="SaveScopeArchived">Чаты из Архива</string>
+
+    <string name="SaveTypesHeader">Что сохранять</string>
+    <string name="SaveTypesHeaderInfo">Выберите типы контента, которые будут автоматически архивироваться в локальный сейф.</string>
+    <string name="SaveAntiDeleteText">Удалённые сообщения (Anti-Delete)</string>
+    <string name="SaveEditHistory">История изменений сообщений</string>
+    <string name="SaveMediaPhotos">Фотографии</string>
+    <string name="SaveMediaVoiceRounds">Голосовые и кружочки</string>
+    <string name="SaveMediaVideos">Видеозаписи</string>
+    <string name="SaveMediaFiles">Документы и файлы</string>
+    <string name="WhatsNewSavePresets">Умные пресеты сохранения контента</string>
+    <string name="WhatsNewSavePresetsDesc">Полный контроль над тем, откуда и что сохраняется: Умный пресет, Только ЛС, Всё подряд или Экономия памяти с раздельными переключателями типов чатов и медиа.</string>
+
+    <!-- Regex Search -->
+    <string name="RegexSearch">Regex-поиск</string>
+    <string name="RegexSearchToggle">Режим Regex</string>
+    <string name="RegexSearchPresets">Шаблоны Regex</string>
+    <string name="RegexSearchEnabled">Regex-поиск включён</string>
+    <string name="RegexSearchDisabled">Regex-поиск выключен</string>
+    <string name="RegexCustomTemplates">Мои шаблоны</string>
+    <string name="RegexAddCustom">Добавить шаблон</string>
+    <string name="RegexTemplateName">Название шаблона</string>
+    <string name="RegexTemplatePattern">Регулярное выражение</string>
+    <string name="RegexSave">Сохранить</string>
+    <string name="RegexDelete">Удалить</string>
+    <string name="RegexSyntaxError">Ошибка в регулярном выражении</string>
+    <string name="RegexPresetPhone">Номера телефонов</string>
+    <string name="RegexPresetPhoneDesc">Международные и локальные форматы телефонов</string>
+    <string name="RegexPresetCards">Банковские карты</string>
+    <string name="RegexPresetCardsDesc">16-значные номера банковских карт</string>
+    <string name="RegexPresetBtc">Bitcoin-кошельки (BTC)</string>
+    <string name="RegexPresetBtcDesc">Адреса Legacy, SegWit и Bech32</string>
+    <string name="RegexPresetEth">Ethereum / EVM</string>
+    <string name="RegexPresetEthDesc">0x... адреса Ethereum, BSC, Polygon</string>
+    <string name="RegexPresetTon">TON-кошельки</string>
+    <string name="RegexPresetTonDesc">EQ... и UQ... адреса The Open Network</string>
+    <string name="RegexPresetUsdt">USDT (TRC20 / Tron)</string>
+    <string name="RegexPresetUsdtDesc">T... адреса сети Tron</string>
+    <string name="RegexPresetUrls">Ссылки и URL</string>
+    <string name="RegexPresetUrlsDesc">Веб-адреса (http и https)</string>
+    <string name="RegexPresetEmail">Email-адреса</string>
+    <string name="RegexPresetEmailDesc">Стандартные адреса электронной почты</string>
+    <string name="RegexPresetIpv4">IPv4-адреса</string>
+    <string name="RegexPresetIpv4Desc">Сетевые IP-адреса формата 0.0.0.0</string>
+    <string name="RegexPresetDates">Даты</string>
+    <string name="RegexPresetDatesDesc">Форматы дат (ДД.ММ.ГГГГ и др.)</string>
+    <string name="RegexSearching">Поиск по регулярному выражению...</string>
+    <string name="RegexMatchesCount">Найдено совпадений: %1$d</string>
+
+    <!-- Mention All (@all / @everyone / @admins) -->
+    <string name="MentionAll">Упомянуть всех</string>
+    <string name="MentionAllSub">Тегнуть всех участников группы</string>
+    <string name="MentionAdmins">Упомянуть администраторов</string>
+    <string name="MentionAdminsSub">Тегнуть только администраторов группы</string>
+    <string name="MentionAllTitle">Упоминание участников</string>
+    <string name="MentionAllAudienceSection">Аудитория</string>
+    <string name="MentionAllStyleSection">Стиль упоминаний</string>
+    <string name="MentionAllTargetAll">Все участники (%1$d)</string>
+    <string name="MentionAllTargetOnline">Онлайн / недавние (%1$d)</string>
+    <string name="MentionAllTargetAdmins">Только администраторы (%1$d)</string>
+    <string name="MentionAllStyleHidden">Скрытый (Аккуратный)</string>
+    <string name="MentionAllStyleHiddenDesc">Невидимые ссылки без засорения чата полотном текста</string>
+    <string name="MentionAllStyleVisible">Явный список</string>
+    <string name="MentionAllStyleVisibleDesc">Упоминания в виде открытого списка @username и имён</string>
+    <string name="MentionAllInsert">Вставить в сообщение</string>
+    <string name="MentionAllSend">Отправить упоминание</string>
+    <string name="MentionAllNoMembers">Нет участников для упоминания</string>
+    <string name="MentionAllBatchesNotice">Будет отправлено в %1$d сообщениях</string>
+
+    <!-- What's New -->
+    <string name="WhatsNewRegexAndMention">Regex-поиск и упоминание @all</string>
+    <string name="WhatsNewRegexAndMentionDesc">Поиск по переписке через регулярные выражения с готовыми шаблонами (кошельки, карты, телефоны) и пакетный тег всех участников или админов группы.</string>
+
+    <!-- AdBlock -->
+    <string name="PageBlocked">Страница заблокирована</string>
+    <string name="PageBlockedDescription">100gram предотвратил загрузку следующей страницы:\n**%1$s**</string>
+    <string name="PageBlockedGoBack">Назад</string>
+    <string name="PageBlockedProceed">Продолжить</string>
+    <string name="BlockAds">Блокировка рекламы</string>
+    <string name="BlockAdsInfo">Блокирует баннеры, всплывающие окна и рекламу во встроенном браузере правилами EasyList и uBlock</string>
+    <string name="BlockedRequests_one">%1$d заблокировано</string>
+    <string name="BlockedRequests_few">%1$d заблокировано</string>
+    <string name="BlockedRequests_many">%1$d заблокировано</string>
+    <string name="AdBlockFiltersLoading">Загрузка фильтров…</string>
+
+    <!-- Feed / Channels Feed -->
+    <string name="Feed">Лента</string>
+    <string name="FeedTitle">Лента каналов</string>
+    <string name="FeedSettings">Настройки ленты</string>
+    <string name="FeedBottomTab">Вкладка внизу</string>
+    <string name="FeedBottomTabInfo">Отображать вкладку ленты каналов в нижней панели</string>
+    <string name="WidePostsInFeed">Широкие посты в ленте</string>
+    <string name="FeedUnreadCounter">Счетчик непрочитанных</string>
+    <string name="FeedIncludeArchived">Включать архивные каналы</string>
+    <string name="FeedIncludeArchivedInfo">Посты из каналов в архиве также будут попадать в ленту</string>
+    <string name="FeedShownChannels">Отображаемые каналы</string>
+    <string name="FeedHiddenChannels">Скрытые каналы</string>
+    <string name="FeedChannelsInfo">Вы можете исключить определенные каналы из общей ленты</string>
+    <string name="FeedHideChannel">Скрыть из ленты</string>
+    <string name="FeedChannelHidden">Канал %1$s скрыт из ленты</string>
+    <string name="FeedMarkAllRead">Прочитать всё</string>
+    <string name="FeedMarkAllReadConfirm">Вы действительно хотите отметить все посты в ленте как прочитанные?</string>
+    <string name="FeedMarkAllReadDone">Все посты отмечены как прочитанные</string>
+
+    <!-- Now Playing -->
+    <string name="NowPlaying">Музыкальный статус</string>
+    <string name="NowPlayingInfo">Карточка текущего трека или сохраненной музыки в профиле</string>
+    <string name="WhatsNewBatch5Title">AdBlock, Музыка в профиле и Лента каналов</string>
+    <string name="WhatsNewBatch5Desc">Встроенный AdBlock для браузера на фильтрах EasyList, карточка трека Now Playing в профилях со сэмплами iTunes и единая лента постов каналов.</string>
+
+    <!-- Batch 6: Custom Feeds, Playlists, Bottom Nav, Read History, Quick Ban -->
+    <string name="CustomFeeds">Кастомные ленты</string>
+    <string name="AllChannels">Все каналы</string>
+    <string name="CreateCustomFeed">Создать ленту</string>
+    <string name="EnterFeedName">Название ленты</string>
+    <string name="EditCustomFeed">Редактировать ленту</string>
+    <string name="DeleteCustomFeed">Удалить ленту</string>
+    <string name="DeleteFeedConfirm">Вы уверены, что хотите удалить эту ленту?</string>
+    <string name="CustomFeedChannels">Выбранные каналы</string>
+    <string name="CustomFeedChannelsCount">%1$d каналов</string>
+    <string name="SelectChannelsForFeed">Выбрать каналы</string>
+
+    <string name="BottomNavArchive">Архив</string>
+    <string name="BottomNavFeed">Лента</string>
+    <string name="BottomNavShowArchive">Вкладка «Архив» в нижней панели</string>
+    <string name="BottomNavShowFeed">Вкладка «Лента» в нижней панели</string>
+    <string name="BottomNavShowMusic">Вкладка «Музыка» в нижней панели</string>
+
+    <string name="Playlists">Плейлисты</string>
+    <string name="AddToPlaylist">Добавить в плейлист</string>
+    <string name="NewPlaylist">Новый плейлист</string>
+    <string name="EnterPlaylistName">Название плейлиста</string>
+    <string name="TrackAddedToPlaylist">Добавлено в плейлист «%1$s»</string>
+    <string name="TrackAlreadyInPlaylist">Уже в этом плейлисте</string>
+    <string name="DeletePlaylist">Удалить плейлист</string>
+    <string name="DeletePlaylistConfirm">Вы уверены, что хотите удалить этот плейлист?</string>
+    <string name="RenamePlaylist">Переименовать плейлист</string>
+    <string name="NoPlaylists">Пока нет плейлистов</string>
+
+    <string name="ReadDate">Прочитано %1$s</string>
+    <string name="ReadAt">Прочитано в %1$s</string>
+    <string name="ReadHistoryForever">Хранить время прочтения в группах</string>
+    <string name="ReadHistoryForeverInfo">Сохранять время прочтения сообщений в группах локально навсегда в обход 7-дневного серверного лимита Telegram</string>
+
+    <string name="QuickBanUser">Быстрый бан</string>
+    <string name="QuickBanUserConfirm">Заблокировать %1$s?</string>
+    <string name="QuickBanDeleteAllMessages">Удалить все сообщения пользователя</string>
+    <string name="QuickBanSuccess">Пользователь заблокирован</string>
+
+    <string name="WhatsNewBatch6Title">Кастомные ленты, плейлисты и история прочтений</string>
+    <string name="WhatsNewBatch6Desc">Кастомные ленты каналов, архив и лента в нижней навигации, плейлисты в аудиоплеере, вечное время прочтения в группах и быстрый бан.</string>
+
+    <string name="ActivitySimulatorTitle">Имитация активности</string>
+    <string name="ActivitySimulatorSubtitle">Имитация нахождения в сети и планировщик сессий</string>
+    <string name="ActivitySimulatorActiveBadge">В СЕТИ (ИМИТАЦИЯ)</string>
+    <string name="ActivitySimulatorInactiveBadge">НЕ АКТИВНА</string>
+    <string name="ActivitySimulatorOnlineEmulation">Поддержание статуса «В сети»</string>
+    <string name="ActivitySimulatorReady">Готово к запуску</string>
+    <string name="ActivitySimulatorScheduledAt">Запланировано на %1$s (на %2$s)</string>
+    <string name="ActivitySimulatorRemaining">Осталось: %1$s</string>
+    <string name="ActivitySimulatorMicroBreak">Короткий перерыв (1.5 мин.)</string>
+    <string name="ActivitySimulatorStop">Остановить имитацию</string>
+    <string name="ActivitySimulatorStartNow">Запустить прямо сейчас</string>
+    <string name="ActivitySimulatorStartQuickBtn">Запустить сейчас (на %1$s)</string>
+    <string name="ActivitySimulatorStarted">Имитация активности запущена</string>
+    <string name="ActivitySimulatorStopped">Имитация активности остановлена</string>
+    <string name="ActivitySimulatorCompleted">Сессия имитации активности завершена</string>
+    <string name="ActivitySimulatorQuickSection">Быстрый запуск</string>
+    <string name="ActivitySimulatorDuration">Длительность сессии</string>
+    <string name="ActivitySimulatorCustomDuration">Задать время вручную (в минутах)</string>
+    <string name="ActivitySimulatorQuickInfo">Приложение удерживает статус «В сети» на протяжении выбранного времени, после чего автоматически вернётся в исходный статус.</string>
+    <string name="ActivitySimulatorScheduleSection">Планировщик сессий</string>
+    <string name="ActivitySimulatorScheduleToggle">Запланировать вход в сеть</string>
+    <string name="ActivitySimulatorScheduleTime">Время входа в сеть</string>
+    <string name="ActivitySimulatorScheduleDuration">Длительность нахождения в сети</string>
+    <string name="ActivitySimulatorScheduleRepeat">Повторение</string>
+    <string name="ActivitySimulatorRepeatOnce">Однократно</string>
+    <string name="ActivitySimulatorRepeatDaily">Каждый день</string>
+    <string name="ActivitySimulatorScheduleEnabledAlert">Вход в сеть запланирован</string>
+    <string name="ActivitySimulatorScheduleDisabledAlert">Запланированный вход отменён</string>
+    <string name="ActivitySimulatorScheduleEnabledShort">Запланировано</string>
+    <string name="ActivitySimulatorScheduleInfo">Приложение автоматически подключится к серверу в указанное время, будет поддерживать статус «В сети» заданное количество времени, после чего вернётся в офлайн.</string>
+    <string name="ActivitySimulatorBehaviorSection">Поведение и реализм</string>
+    <string name="ActivitySimulatorMicroBreaksToggle">Естественные микро-перерывы</string>
+    <string name="ActivitySimulatorMicroBreaksInfo">Делать периодические короткие паузы (1–2 минуты) каждые 15 минут, делая активность неотличимой от действий реального человека.</string>
+    <string name="ActivitySimulatorNotifyToggle">Уведомления о сессиях</string>
+    <string name="WhatsNewActivitySimulatorTitle">Имитация активности и планировщик «В сети»</string>
+    <string name="WhatsNewActivitySimulatorDesc">Имитация присутствия в сети на заданное время (например, на час), а также планирование входа в сеть в указанное время с заданной длительностью.</string>
+    <string name="SettingsSearchHint">Поиск по настройкам 100gram…</string>
+    <string name="SettingsSearchNoResults">Ничего не найдено</string>
+    <string name="SettingsSearchNoResultsSub">Попробуйте изменить поисковый запрос или выбрать другую категорию</string>
+    <string name="SettingsSearchRecent">Недавние запросы</string>
+    <string name="SettingsSearchClearRecent">Очистить</string>
+    <string name="SettingsSearchChipAll">Все</string>
+    <string name="SettingsSearchChipGhost">Призрак</string>
+    <string name="SettingsSearchChipVault">Хранилище</string>
+    <string name="SettingsSearchChipInterface">Интерфейс</string>
+    <string name="SettingsSearchChipNetwork">Сеть</string>
+    <string name="SettingsSearchChipSimulator">Имитатор</string>
+    <string name="SettingsSearchChipAI">ИИ</string>
+    <string name="SettingsSearchFoundCount">Найдено: %1$d</string>
+    <string name="WhatsNewUiElevationAndSearchTitle">Поиск по настройкам и Редизайн интерфейса 2.0</string>
+    <string name="WhatsNewUiElevationAndSearchDesc">Универсальный мгновенный поиск по всем параметрам форка с автопереходом и подсветкой, сгруппированные карточки настроек, обновленный статус-панель и тактильный отклик Liquid Glass навигации.</string>
 </resources>
+
+

@@ -1547,6 +1547,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                                     updateCounters(false);
                                     viewPages[0].dialogsAdapter.resume();
                                     viewPages[1].dialogsAdapter.pause();
+                                    updateHundredGramActionBarTitle(false);
                                 }
                                 viewPages[1].setVisibility(View.GONE);
                                 showScrollbars(true);
@@ -1666,7 +1667,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         containersAlpha *= (1f - factorSearch);
         if (containersAlpha != 1f) {
             actionBar.getTitlesContainer().setPivotY(AndroidUtilities.statusBarHeight);
-            actionBar.getTitlesContainer().setPivotX(dp(20));
+            actionBar.getTitlesContainer().setPivotX(org.telegram.messenger.HundredGramConfig.centerActionBarTitle && actionBar.getTitlesContainer().getMeasuredWidth() > 0 ? actionBar.getTitlesContainer().getMeasuredWidth() / 2f : dp(20));
             float s = 0.4f + 0.6f * containersAlpha;
             actionBar.getTitlesContainer().setScaleY(s);
             actionBar.getTitlesContainer().setScaleX(s);
@@ -2273,6 +2274,16 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                                 }
                                 ((DialogCell) view).startOutAnimation();
                                 parentPage.archivePullViewState = ARCHIVE_ITEM_STATE_SHOWED;
+                                if (HundredGramConfig.archiveOnPull) {
+                                    AndroidUtilities.runOnUIThread(() -> {
+                                        Bundle bundle = new Bundle();
+                                        bundle.putInt("folderId", 1);
+                                        bundle.putBoolean("onlySelect", onlySelect);
+                                        DialogsActivity dialogsActivity = new DialogsActivity(bundle);
+                                        dialogsActivity.setDelegate(delegate);
+                                        presentFragment(dialogsActivity, onlySelect);
+                                    }, 150L);
+                                }
                                 if (AndroidUtilities.isAccessibilityScreenReaderEnabled()) {
                                     AndroidUtilities.makeAccessibilityAnnouncement(LocaleController.getString(R.string.AccDescrArchivedChatsShown));
                                 }
@@ -2438,6 +2449,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     swipeFolderBack = false;
                     return makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
                 } else {
+                    if (folderId != 0 && org.telegram.messenger.HundredGramConfig.disableUnarchiveSwipe) {
+                        return 0;
+                    }
                     int currentDialogsType = initialDialogsType;
                     try {
                         currentDialogsType = parentPage.dialogsAdapter.getDialogsType();
@@ -2956,6 +2970,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
 
         loadDialogs(getAccountInstance());
+        if (folderId != 0) {
+            getMessagesController().loadDialogs(folderId, -1, 100, true);
+        }
         getMessagesController().getStoriesController().loadAllStories();
         getMessagesController().loadPinnedDialogs(folderId, 0, null);
         if (databaseMigrationHint != null && !getMessagesStorage().isDatabaseMigrationInProgress()) {
@@ -3068,6 +3085,104 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         if (selectAnimatedEmojiDialog != null && selectAnimatedEmojiDialog.getContentView() instanceof SelectAnimatedEmojiDialog) {
             SimpleTextView textView = actionBar.getTitleTextView();
             ((SelectAnimatedEmojiDialog) selectAnimatedEmojiDialog.getContentView()).setScrimDrawable(textView != null && textView.getRightDrawable() == statusDrawable ? statusDrawable : null, textView);
+        }
+    }
+
+    public void updateHundredGramActionBarTitle(boolean animated) {
+        updateHundredGramActionBarTitle(animated, -1);
+    }
+
+    public void updateHundredGramActionBarTitle(boolean animated, int targetTabId) {
+        if (folderId != 0 || communityId != 0 || searching || onlySelect || actionBar == null) {
+            return;
+        }
+        TLRPC.User currentUser = UserConfig.getInstance(currentAccount).getCurrentUser();
+        switch (HundredGramConfig.actionBarTitleMode) {
+            case HundredGramConfig.ACTION_BAR_TITLE_USERNAME: {
+                if (currentUser != null && !TextUtils.isEmpty(currentUser.username)) {
+                    actionBar.setTitle("@" + currentUser.username);
+                    updateStatus(currentUser, animated);
+                    if (dialogStoriesCell != null) {
+                        dialogStoriesCell.requestLayout();
+                        dialogStoriesCell.invalidate();
+                    }
+                    return;
+                } else if (currentUser != null) {
+                    actionBar.setTitle(ContactsController.formatName(currentUser.first_name, currentUser.last_name));
+                    updateStatus(currentUser, animated);
+                    if (dialogStoriesCell != null) {
+                        dialogStoriesCell.requestLayout();
+                        dialogStoriesCell.invalidate();
+                    }
+                    return;
+                }
+                break;
+            }
+            case HundredGramConfig.ACTION_BAR_TITLE_NAME: {
+                if (currentUser != null) {
+                    actionBar.setTitle(ContactsController.formatName(currentUser.first_name, currentUser.last_name));
+                    updateStatus(currentUser, animated);
+                    if (dialogStoriesCell != null) {
+                        dialogStoriesCell.requestLayout();
+                        dialogStoriesCell.invalidate();
+                    }
+                    return;
+                }
+                break;
+            }
+            case HundredGramConfig.ACTION_BAR_TITLE_FILTER_CHATS: {
+                if (filterTabsView != null && !filterTabsView.isEmpty()) {
+                    int currentId = targetTabId >= 0 ? targetTabId : filterTabsView.getCurrentTabId();
+                    CharSequence tabTitle = filterTabsView.getTabTitle(currentId);
+                    if (!TextUtils.isEmpty(tabTitle)) {
+                        actionBar.setTitle(tabTitle);
+                        updateStatus(currentUser, animated);
+                        if (dialogStoriesCell != null) {
+                            dialogStoriesCell.requestLayout();
+                            dialogStoriesCell.invalidate();
+                        }
+                        return;
+                    }
+                    if (currentId == filterTabsView.getDefaultTabId()) {
+                        actionBar.setTitle(LocaleController.getString(R.string.FilterAllChats));
+                        updateStatus(currentUser, animated);
+                        if (dialogStoriesCell != null) {
+                            dialogStoriesCell.requestLayout();
+                            dialogStoriesCell.invalidate();
+                        }
+                        return;
+                    }
+                    ArrayList<MessagesController.DialogFilter> dialogFilters = getMessagesController().getDialogFilters();
+                    if (currentId >= 0 && currentId < dialogFilters.size()) {
+                        MessagesController.DialogFilter f = dialogFilters.get(currentId);
+                        if (f != null && !TextUtils.isEmpty(f.name)) {
+                            actionBar.setTitle(f.name);
+                            updateStatus(currentUser, animated);
+                            if (dialogStoriesCell != null) {
+                                dialogStoriesCell.requestLayout();
+                                dialogStoriesCell.invalidate();
+                            }
+                            return;
+                        }
+                    }
+                }
+                break;
+            }
+            case HundredGramConfig.ACTION_BAR_TITLE_APP_NAME:
+            default:
+                break;
+        }
+        if (logoDrawable != null) {
+            SpannableStringBuilder ssb = new SpannableStringBuilder(getString(R.string.AppName));
+            ssb.setSpan(new ImageSpan(logoDrawable), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            actionBar.setTitle(ssb, statusDrawable);
+        } else {
+            actionBar.setTitle(getString(R.string.AppName));
+        }
+        updateStatus(currentUser, animated);
+        if (dialogStoriesCell != null) {
+            dialogStoriesCell.requestLayout();
+            dialogStoriesCell.invalidate();
         }
     }
 
@@ -3504,7 +3619,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
             actionBar.setBackgroundColor(getThemedColor(Theme.key_windowBackgroundWhite));
         } else {
-            if (searchString != null || folderId != 0 || communityId != 0) {
+            if (searchString != null || (folderId != 0 && !hasMainTabs) || communityId != 0) {
                 actionBar.setBackButtonDrawable(backDrawable = new BackDrawable(false));
             }
             if (folderId != 0) {
@@ -3523,10 +3638,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 logoDrawable = context.getResources().getDrawable(R.drawable.telegram_logo_2).mutate();
                 logoDrawable.setBounds(0, dp(2), logoDrawable.getIntrinsicWidth(), dp(2) + logoDrawable.getIntrinsicHeight());
                 logoDrawable.setColorFilter(getThemedColor(Theme.key_telegram_color_dialogsLogo), PorterDuff.Mode.MULTIPLY);
-                SpannableStringBuilder ssb = new SpannableStringBuilder(getString(R.string.AppName));
-                ssb.setSpan(new ImageSpan(logoDrawable), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                actionBar.setTitle(ssb, statusDrawable);
-                updateStatus(UserConfig.getInstance(currentAccount).getCurrentUser(), false);
+                updateHundredGramActionBarTitle(false);
             }
             if (folderId == 0) {
                 actionBar.setSupportsHolidayImage(true);
@@ -3640,6 +3752,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     showScrollbars(false);
                     switchToCurrentSelectedMode(true);
                     animatingForward = forward;
+                    updateHundredGramActionBarTitle(true, tab != null ? tab.id : -1);
                 }
 
                 @Override
@@ -3670,13 +3783,40 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         checkListLoad(viewPages[0]);
                         viewPages[0].dialogsAdapter.resume();
                         viewPages[1].dialogsAdapter.pause();
+                        updateHundredGramActionBarTitle(false);
                     }
                 }
 
                 @Override
                 public int getTabCounter(int tabId) {
-                    if (initialDialogsType == DIALOGS_TYPE_FORWARD) {
+                    if (initialDialogsType == DIALOGS_TYPE_FORWARD || HundredGramConfig.tabCounterMode == HundredGramConfig.TAB_COUNTER_MODE_HIDE) {
                         return 0;
+                    }
+                    if (HundredGramConfig.tabCounterMode == HundredGramConfig.TAB_COUNTER_MODE_UNMUTED) {
+                        if (tabId == filterTabsView.getDefaultTabId()) {
+                            int count = 0;
+                            ArrayList<TLRPC.Dialog> allDialogs = getMessagesController().getDialogs(0);
+                            for (int i = 0; i < allDialogs.size(); i++) {
+                                TLRPC.Dialog d = allDialogs.get(i);
+                                if (d.unread_count > 0 && !getMessagesController().isDialogMuted(d.id, 0)) {
+                                    count += (DialogObject.isFolderDialogId(d.id) ? 1 : d.unread_count);
+                                }
+                            }
+                            return count;
+                        }
+                        ArrayList<MessagesController.DialogFilter> dialogFilters = getMessagesController().getDialogFilters();
+                        if (tabId < 0 || tabId >= dialogFilters.size()) {
+                            return 0;
+                        }
+                        MessagesController.DialogFilter filter = dialogFilters.get(tabId);
+                        int count = 0;
+                        for (int i = 0; i < filter.dialogs.size(); i++) {
+                            TLRPC.Dialog d = filter.dialogs.get(i);
+                            if (d.unread_count > 0 && !getMessagesController().isDialogMuted(d.id, 0)) {
+                                count += d.unread_count;
+                            }
+                        }
+                        return count;
                     }
                     if (tabId == filterTabsView.getDefaultTabId()) {
                         return getMessagesStorage().getMainUnreadCount();
@@ -5353,7 +5493,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         undoView[1] = null;
 
         if (hasMainTabs) {
-            actionBar.getTitlesContainer().setTranslationX(dp(4));
+            actionBar.getTitlesContainer().setTranslationX(org.telegram.messenger.HundredGramConfig.centerActionBarTitle ? 0 : dp(4));
             actionBar.setTitleColor(getThemedColor(Theme.key_telegram_color_dialogsLogo));
         }
 
@@ -6835,6 +6975,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         viewPages[a].dialogsAdapter.setDialogsType(viewPages[a].dialogsType);
         viewPages[a].layoutManager.scrollToPositionWithOffset(viewPages[a].dialogsType == DIALOGS_TYPE_DEFAULT && hasHiddenArchive() && viewPages[a].archivePullViewState == ARCHIVE_ITEM_STATE_HIDDEN ? 1 : 0, (int) scrollYOffset);
         checkListLoad(viewPages[a]);
+        updateHundredGramActionBarTitle(animated);
     }
 
     private boolean scrollBarVisible = true;
@@ -7026,6 +7167,10 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onResume() {
         super.onResume();
+        updateHundredGramActionBarTitle(false);
+        if (actionBar != null) {
+            actionBar.requestLayout();
+        }
         if (dialogStoriesCell != null) {
             dialogStoriesCell.onResume();
         }
@@ -10611,9 +10756,11 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         } else if (id == NotificationCenter.updateInterfaces) {
             Integer mask = (Integer) args[0];
             updateVisibleRows(mask);
+            checkUi_searchFieldVisibility();
             if (filterTabsView != null && filterTabsView.getVisibility() == View.VISIBLE && (mask & MessagesController.UPDATE_MASK_READ_DIALOG_MESSAGE) != 0) {
                 filterTabsView.checkTabsCounter();
             }
+            updateHundredGramActionBarTitle(false);
             if (communityId != 0 ) {
                 if ((mask & MessagesController.UPDATE_MASK_CHAT) != 0 || (mask & MessagesController.UPDATE_MASK_AVATAR) != 0 || (mask & MessagesController.UPDATE_MASK_CHAT_AVATAR) != 0 || (mask & MessagesController.UPDATE_MASK_CHAT_NAME) != 0) {
                     community = getMessagesController().getChat(communityId);
@@ -10629,6 +10776,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 }
             }
             updateStatus(UserConfig.getInstance(account).getCurrentUser(), true);
+            updateHundredGramActionBarTitle(true);
         } else if (id == NotificationCenter.appDidLogout) {
             dialogsLoaded.put(currentAccount, false);
         } else if (id == NotificationCenter.encryptedChatUpdated) {
@@ -10762,6 +10910,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
         } else if (id == NotificationCenter.dialogFiltersUpdated) {
             updateFilterTabs(true, true);
+            updateHundredGramActionBarTitle(false);
         } else if (id == NotificationCenter.filterSettingsUpdated) {
             showFiltersHint();
         } else if (id == NotificationCenter.newSuggestionsAvailable) {
@@ -11690,7 +11839,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     public boolean isMainDialogList() {
-        return delegate == null && searchString == null;
+        return delegate == null && searchString == null && folderId == 0 && communityId == 0;
     }
 
     public boolean isArchive() {
@@ -13806,6 +13955,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             args.putLong("user_id", UserConfig.getInstance(currentAccount).getClientUserId());
             presentFragment(new ChatActivity(args));
         });
+        io.add(R.drawable.msg_channel, LocaleController.getString("FeedTitle", R.string.FeedTitle), () -> {
+            com.exteragram.messenger.feed.ui.FeedActivity.presentFeed(this);
+        });
         if (ApplicationLoader.applicationLoaderInstance != null) {
             ApplicationLoader.applicationLoaderInstance.addItemOptions(io);
         }
@@ -14116,9 +14268,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         final float actionModeVisible = Math.max(progressToActionMode, animatorActionModeVisible.getFloatValue());
         final float searchFieldVisible = animatorSearchVisible.getFloatValue();
 
-        final float factor0 = isSupportSearch() ? 1 : 0;
+        final float factor0 = (isSupportSearch() && (!org.telegram.messenger.HundredGramConfig.hideDialogsSearchBar || searchFieldVisible > 0)) ? 1 : 0;
         final float factor1 = (1f - actionModeVisible) * (1f - animatorDoneButtonVisible.getFloatValue());
-        final float factor2 = Math.max(searchFieldVisible, alphaByScrollOffset * (1f - getRightSlidingProgress()));
+        final float factor2 = org.telegram.messenger.HundredGramConfig.hideDialogsSearchBar ? searchFieldVisible : Math.max(searchFieldVisible, alphaByScrollOffset * (1f - getRightSlidingProgress()));
 
         final float alpha = factor0 * factor1 * factor2;
 

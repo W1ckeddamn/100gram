@@ -1021,6 +1021,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     public boolean doneButtonPressed;
     boolean keyboardAnimationEnabled;
     private Theme.ResourcesProvider resourcesProvider;
+    private boolean pauseOnMinimize;
 
     private Runnable setLoadingRunnable = new Runnable() {
         @Override
@@ -18862,6 +18863,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (photoPaintView != null) {
             photoPaintView.onResume();
         }
+        if (pauseOnMinimize && org.telegram.messenger.HundredGramConfig.pauseOnMinimizeVideo && videoPlayer != null && !videoPlayer.isPlaying()) {
+            pauseOnMinimize = false;
+            videoPlayer.play();
+        }
     }
 
     public void onConfigurationChanged(Configuration newConfig) {}
@@ -18876,6 +18881,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
         if (videoPlayer != null && playerLooping) {
             videoPlayer.setLooping(allowLoopingOnPause());
+        }
+        if (org.telegram.messenger.HundredGramConfig.pauseOnMinimizeVideo && videoPlayer != null && videoPlayer.isPlaying()) {
+            pauseOnMinimize = true;
+            videoPlayer.pause();
         }
     }
 
@@ -20997,7 +21006,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         boolean forward = x >= width / 3 * 2;
         long current = getCurrentVideoPosition();
         long total = getVideoDuration();
-        return current != C.TIME_UNSET && total > 15 * 1000 && (!forward || total - current > 10000);
+        long seekStep = Math.max(5, org.telegram.messenger.HundredGramConfig.doubleTapSeekDuration) * 1000L;
+        return current != C.TIME_UNSET && total > 15 * 1000 && (!forward || total - current > seekStep);
     }
 
     long totalRewinding;
@@ -21011,18 +21021,19 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             int width = getContainerViewWidth();
             boolean forward = x >= width / 3 * 2;
             if (canDoubleTapSeekVideo(e)) {
+                long seekStep = Math.max(5, org.telegram.messenger.HundredGramConfig.doubleTapSeekDuration) * 1000L;
                 long old = current;
                 if (x >= width / 3 * 2) {
-                    current += 10000;
+                    current += seekStep;
                 } else if (x < width / 3) {
-                    current -= 10000;
+                    current -= seekStep;
                 }
                 if (old != current) {
                     boolean apply = true;
                     if (current > total) {
                         current = total;
                     } else if (current < 0) {
-                        if (current < -9000) {
+                        if (current < -(seekStep - 1000)) {
                             apply = false;
                         }
                         current = 0;
@@ -21030,7 +21041,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     if (apply) {
                         videoForwardDrawable.setOneShootAnimation(true);
                         videoForwardDrawable.setLeftSide(x < width / 3);
-                        videoForwardDrawable.addTime(10000);
+                        videoForwardDrawable.addTime((int) seekStep);
                         seekVideoOrWebTo(current);
                         containerView.invalidate();
                         videoPlayerSeekbar.setProgress(current / (float) total, true);
@@ -21073,7 +21084,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     }
 
     private boolean enableSwipeToPiP() {
-        return false;
+        return org.telegram.messenger.HundredGramConfig.swipeToPip && pipItem != null && pipItem.isEnabled() && isPlaying && !PipVideoOverlay.isVisible() && AndroidUtilities.checkInlinePermissions(parentActivity);
     }
 
     @Override
@@ -23736,8 +23747,17 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         @Override
         public boolean dispatchKeyEvent(KeyEvent event) {
             int keyCode = event.getKeyCode();
-            if (!muteVideo && sendPhotoType != SELECT_TYPE_AVATAR && isCurrentVideo && videoPlayer != null && event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN && (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN)) {
-                videoPlayer.setVolume(1.0f);
+            if (event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN && (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)) {
+                if (org.telegram.messenger.HundredGramConfig.unmuteWithVolumeButtons && muteVideo && sendPhotoType != SELECT_TYPE_AVATAR && isCurrentVideo && videoPlayer != null) {
+                    muteVideo = false;
+                    videoPlayer.setMute(CastSync.isActive() || muteVideo);
+                    videoPlayer.setVolume(1.0f);
+                    updateMuteButton();
+                    return true;
+                }
+                if (!muteVideo && sendPhotoType != SELECT_TYPE_AVATAR && isCurrentVideo && videoPlayer != null) {
+                    videoPlayer.setVolume(1.0f);
+                }
             }
             return super.dispatchKeyEvent(event);
         }

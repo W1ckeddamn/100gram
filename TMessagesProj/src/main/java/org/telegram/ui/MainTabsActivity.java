@@ -37,6 +37,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import org.telegram.messenger.*;
 import org.telegram.tgnet.TLRPC;
+import com.exteragram.messenger.feed.ui.FeedActivity;
+import com.exteragram.messenger.feed.FeedController;
 import org.telegram.ui.ActionBar.ActionBarMenuSubItem;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.EdgeToEdgeSupportMode;
@@ -71,20 +73,108 @@ import me.vkryl.android.animator.FactorAnimator;
 
 public class MainTabsActivity extends ViewPagerActivity implements NotificationCenter.NotificationCenterDelegate, FactorAnimator.Target {
 
-    public static final int TABS_COUNT = 4;
     private static final int POSITION_CHATS = 0;
-    private static final int POSITION_CONTACTS = 1;
-    private static final int POSITION_CALLS_OR_SETTINGS = 2;
-    private static final int POSITION_PROFILE = 3;
 
-    private static final int INDEX_CHATS = 0;
-    private static final int INDEX_CONTACTS = 1;
-    private static final int INDEX_SETTINGS = 2;
-    private static final int INDEX_CALLS = 3;
-    private static final int INDEX_PROFILE = 4;
+    public static final int INDEX_CHATS = 0;
+    public static final int INDEX_ARCHIVE = 1;
+    public static final int INDEX_FEED = 2;
+    public static final int INDEX_MUSIC = 3;
+    public static final int INDEX_CONTACTS = 4;
+    public static final int INDEX_SETTINGS = 5;
+    public static final int INDEX_PROFILE = 6;
 
-    private static int indexToPosition(int index) {
-        return index > 2 ? index - 1 : index;
+    public int indexToPosition(int index) {
+        int pos = 0;
+        if (index == INDEX_CHATS) {
+            return pos;
+        }
+        pos++;
+        if (org.telegram.messenger.HundredGramConfig.bottomNavArchiveTab) {
+            if (index == INDEX_ARCHIVE) {
+                return pos;
+            }
+            pos++;
+        } else if (index == INDEX_ARCHIVE) {
+            return -1;
+        }
+        if (org.telegram.messenger.HundredGramConfig.enableFeedTab) {
+            if (index == INDEX_FEED) {
+                return pos;
+            }
+            pos++;
+        } else if (index == INDEX_FEED) {
+            return -1;
+        }
+        if (org.telegram.messenger.HundredGramConfig.bottomNavMusicTab) {
+            if (index == INDEX_MUSIC) {
+                return pos;
+            }
+            pos++;
+        } else if (index == INDEX_MUSIC) {
+            return -1;
+        }
+        if (!org.telegram.messenger.HundredGramConfig.bottomNavHideContactsTab) {
+            if (index == INDEX_CONTACTS) {
+                return pos;
+            }
+            pos++;
+        } else if (index == INDEX_CONTACTS) {
+            return -1;
+        }
+        if (!org.telegram.messenger.HundredGramConfig.bottomNavHideSettingsTab) {
+            if (index == INDEX_SETTINGS) {
+                return pos;
+            }
+            pos++;
+        } else if (index == INDEX_SETTINGS) {
+            return -1;
+        }
+        if (index == INDEX_PROFILE) {
+            return pos;
+        }
+        return -1;
+    }
+
+    public int positionToIndex(int position) {
+        int p = 0;
+        if (position == p) {
+            return INDEX_CHATS;
+        }
+        p++;
+        if (org.telegram.messenger.HundredGramConfig.bottomNavArchiveTab) {
+            if (position == p) {
+                return INDEX_ARCHIVE;
+            }
+            p++;
+        }
+        if (org.telegram.messenger.HundredGramConfig.enableFeedTab) {
+            if (position == p) {
+                return INDEX_FEED;
+            }
+            p++;
+        }
+        if (org.telegram.messenger.HundredGramConfig.bottomNavMusicTab) {
+            if (position == p) {
+                return INDEX_MUSIC;
+            }
+            p++;
+        }
+        if (!org.telegram.messenger.HundredGramConfig.bottomNavHideContactsTab) {
+            if (position == p) {
+                return INDEX_CONTACTS;
+            }
+            p++;
+        }
+        if (!org.telegram.messenger.HundredGramConfig.bottomNavHideSettingsTab) {
+            if (position == p) {
+                return INDEX_SETTINGS;
+            }
+            p++;
+        }
+        if (position == p) {
+            return INDEX_PROFILE;
+        }
+        return INDEX_CHATS;
     }
 
     private static final int ANIMATOR_ID_TABS_VISIBLE = 0;
@@ -253,6 +343,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     @Override
     public void onResume() {
         super.onResume();
+        updateTabsVisibility(false);
         blur3_updateColors();
         checkContactsTabBadge();
         checkUnreadCount(true);
@@ -292,28 +383,36 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         tabsView.setPadding(dp(DialogsActivity.MAIN_TABS_MARGIN + 4), dp(DialogsActivity.MAIN_TABS_MARGIN + 4), dp(DialogsActivity.MAIN_TABS_MARGIN + 4), dp(DialogsActivity.MAIN_TABS_MARGIN + 4));
         tabsView.setMaxWidth(dp(328 + DialogsActivity.MAIN_TABS_MARGIN * 2));
 
-        tabs = new GlassTabView[5];
+        tabs = new GlassTabView[7];
         tabs[INDEX_CHATS] = GlassTabView.createMainTab(context, resourceProvider, GlassTabView.TabAnimation.CHATS, R.string.MainTabsChats);
+        tabs[INDEX_ARCHIVE] = GlassTabView.createMainTab(context, resourceProvider, GlassTabView.TabAnimation.ARCHIVE, R.string.BottomNavArchive);
+        tabs[INDEX_FEED] = GlassTabView.createMainTab(context, resourceProvider, GlassTabView.TabAnimation.FEED, R.string.BottomNavFeed);
+        tabs[INDEX_MUSIC] = GlassTabView.createMainTab(context, resourceProvider, GlassTabView.TabAnimation.MUSIC, R.string.SharedMusicTab2);
         tabs[INDEX_CONTACTS] = GlassTabView.createMainTab(context, resourceProvider, GlassTabView.TabAnimation.CONTACTS, R.string.MainTabsContacts);
         tabs[INDEX_SETTINGS] = GlassTabView.createMainTab(context, resourceProvider, GlassTabView.TabAnimation.SETTINGS, R.string.Settings);
-        tabs[INDEX_CALLS] = GlassTabView.createMainTab(context, resourceProvider, GlassTabView.TabAnimation.CALLS, R.string.MainTabsCalls);
         tabs[INDEX_PROFILE] = GlassTabView.createAvatar(context, resourceProvider, currentAccount, R.string.MainTabsProfile);
         tabs[INDEX_CHATS].setOnLongClickListener(this::openFoldersSelector);
         tabs[INDEX_CONTACTS].setOnLongClickListener(this::openContactsSelector);
-        tabs[INDEX_CALLS].setOnLongClickListener(this::openCallsSelector);
         tabs[INDEX_PROFILE].setOnLongClickListener(this::openAccountSelector);
 
         tabsView.addTabToIgnoreClick(tabs[INDEX_CHATS]);
+        tabsView.addTabToIgnoreClick(tabs[INDEX_ARCHIVE]);
+        tabsView.addTabToIgnoreClick(tabs[INDEX_FEED]);
+        tabsView.addTabToIgnoreClick(tabs[INDEX_MUSIC]);
         tabsView.addTabToIgnoreClick(tabs[INDEX_CONTACTS]);
+        tabsView.addTabToIgnoreClick(tabs[INDEX_SETTINGS]);
         tabsView.addTabToIgnoreClick(tabs[INDEX_PROFILE]);
-        tabsView.addTabToIgnoreClick(tabs[INDEX_CALLS]);
 
         for (int index = 0; index < tabs.length; index++) {
-            final GlassTabView view = tabs[index];
-
-            final int position = indexToPosition(index);
+            final int tabIndex = index;
             tabs[index].setOnClickListener(v -> {
+                AndroidUtilities.vibrateCursor(v);
                 if (viewPager.isManualScrolling() || viewPager.isTouch()) {
+                    return;
+                }
+
+                final int position = indexToPosition(tabIndex);
+                if (position == -1) {
                     return;
                 }
 
@@ -330,9 +429,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             });
 
             tabsView.addView(tabs[index]);
-            tabsView.setViewVisible(view, true, false);
+            tabsView.setViewVisible(tabs[index], true, false);
         }
-        checkUi_callTabVisible(getUserConfig().showCallsTab, false);
+        updateTabsVisibility(false);
 
         selectTab(viewPager.getCurrentPosition(), false);
 
@@ -359,8 +458,19 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
         contentView.addView(fadeView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 0, Gravity.BOTTOM));
 
-        tabsViewWrapper = new FrameLayout(context);
-        tabsViewWrapper.setOnClickListener(v -> {});
+        tabsViewWrapper = new FrameLayout(context) {
+            @Override
+            public boolean onTouchEvent(MotionEvent event) {
+                if (tabsView != null && tabsView.getVisibility() == View.VISIBLE) {
+                    float x = event.getX() - tabsView.getLeft();
+                    float y = event.getY() - tabsView.getTop();
+                    if (x >= 0 && x <= tabsView.getWidth() && y >= 0 && y <= tabsView.getHeight()) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
         tabsViewWrapper.addView(tabsView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, DialogsActivity.MAIN_TABS_HEIGHT_WITH_MARGINS, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL));
         tabsViewWrapper.setClipToPadding(false);
         contentView.addView(tabsViewWrapper, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM));
@@ -390,6 +500,28 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         } else {
             tabs[INDEX_CHATS].setCounter(null, false, animated);
         }
+
+        if (tabs[INDEX_ARCHIVE] != null) {
+            final int archiveUnread = MessagesStorage.getInstance(currentAccount).getArchiveUnreadCount();
+            if (archiveUnread > 0) {
+                tabs[INDEX_ARCHIVE].setCounter(LocaleController.formatNumber(archiveUnread, ','), false, animated);
+            } else {
+                tabs[INDEX_ARCHIVE].setCounter(null, false, animated);
+            }
+        }
+
+        if (tabs[INDEX_FEED] != null) {
+            if (org.telegram.messenger.HundredGramConfig.feedUnreadCounter) {
+                final int feedUnread = FeedController.getInstance(currentAccount).getUnreadCount();
+                if (feedUnread > 0) {
+                    tabs[INDEX_FEED].setCounter(LocaleController.formatNumber(feedUnread, ','), false, animated);
+                } else {
+                    tabs[INDEX_FEED].setCounter(null, false, animated);
+                }
+            } else {
+                tabs[INDEX_FEED].setCounter(null, false, animated);
+            }
+        }
     }
 
     public boolean openContactsSelector(View anchor) {
@@ -406,32 +538,6 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         o.setBlur(true);
         o.translate(0, -dp(4));
         o.setGravity(Gravity.LEFT);
-        final ShapeDrawable bg = Theme.createRoundRectDrawable(dp(28), getThemedColor(Theme.key_windowBackgroundWhite));
-        bg.getPaint().setShadowLayer(dp(6), 0, dp(1), Theme.multAlpha(0xFF000000, 0.15f));
-        o.setScrimViewBackground(bg);
-        o.show();
-        return true;
-    }
-
-    public boolean openCallsSelector(View anchor) {
-        if (getContext() == null || getParentActivity() == null) return false;
-        final ItemOptions o = ItemOptions.makeOptions(this, anchor);
-        o.add(R.drawable.menu_call_create, getString(R.string.GroupCallCreate2), () -> CallLogActivity.openCreateCall(this));
-        if (getUserConfig().showCallsTab) {
-            o.add(R.drawable.msg_archive_hide, getString(R.string.HideCallTab), () -> {
-                getUserConfig().setShowCallsTab(false);
-                checkUi_callTabVisible(false, true);
-                NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.callTabsVisibleToggled);
-            });
-        } else {
-            o.add(R.drawable.menu_add_tab_24, getString(R.string.GroupCallShowInMainTabs), () -> {
-                getUserConfig().setShowCallsTab(true);
-                checkUi_callTabVisible(true, true);
-                NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.callTabsVisibleToggled);
-            });
-        }
-        o.setBlur(true);
-        o.translate(0, -dp(4));
         final ShapeDrawable bg = Theme.createRoundRectDrawable(dp(28), getThemedColor(Theme.key_windowBackgroundWhite));
         bg.getPaint().setShadowLayer(dp(6), 0, dp(1), Theme.multAlpha(0xFF000000, 0.15f));
         o.setScrimViewBackground(bg);
@@ -699,12 +805,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
         if (viewPager != null) {
             final int currentPosition = viewPager.getCurrentPosition();
-            if (currentPosition != POSITION_CALLS_OR_SETTINGS && dropCallsFragmentAfterPageScroll) {
-                dropFragmentAtPosition(POSITION_CALLS_OR_SETTINGS);
-                dropCallsFragmentAfterPageScroll = false;
-            }
-            if (currentPosition != POSITION_PROFILE) {
-                dropFragmentAtPosition(POSITION_PROFILE);
+            final int profilePos = indexToPosition(INDEX_PROFILE);
+            if (profilePos != -1 && currentPosition != profilePos) {
+                dropFragmentAtPosition(profilePos);
             }
             if (pendingFolderId != null && currentPosition == POSITION_CHATS && dialogsActivity != null) {
                 dialogsActivity.scrollToFolder(pendingFolderId);
@@ -734,7 +837,23 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
     @Override
     protected int getFragmentsCount() {
-        return TABS_COUNT;
+        int count = 2;
+        if (org.telegram.messenger.HundredGramConfig.bottomNavArchiveTab) {
+            count++;
+        }
+        if (org.telegram.messenger.HundredGramConfig.enableFeedTab) {
+            count++;
+        }
+        if (org.telegram.messenger.HundredGramConfig.bottomNavMusicTab) {
+            count++;
+        }
+        if (!org.telegram.messenger.HundredGramConfig.bottomNavHideContactsTab) {
+            count++;
+        }
+        if (!org.telegram.messenger.HundredGramConfig.bottomNavHideSettingsTab) {
+            count++;
+        }
+        return count;
     }
 
     @Override
@@ -773,33 +892,46 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
     @Override
     protected BaseFragment createBaseFragmentAt(int position) {
-        if (position == POSITION_CONTACTS) {
+        int index = positionToIndex(position);
+        if (index == INDEX_ARCHIVE) {
+            Bundle args = new Bundle();
+            args.putInt("folderId", 1);
+            args.putBoolean("hasMainTabs", true);
+            DialogsActivity archiveActivity = new DialogsActivity(args);
+            archiveActivity.setMainTabsActivityController(new MainTabsActivityControllerImpl());
+            return archiveActivity;
+        } else if (index == INDEX_FEED) {
+            Bundle args = new Bundle();
+            args.putBoolean("hasMainTabs", true);
+            FeedActivity feedActivity = new FeedActivity(args);
+            feedActivity.setMainTabsActivityController(new MainTabsActivityControllerImpl());
+            return feedActivity;
+        } else if (index == INDEX_MUSIC) {
+            Bundle args = new Bundle();
+            args.putBoolean("hasMainTabs", true);
+            HundredGramMusicActivity musicActivity = new HundredGramMusicActivity(args);
+            musicActivity.setMainTabsActivityController(new MainTabsActivityControllerImpl());
+            return musicActivity;
+        } else if (index == INDEX_CONTACTS) {
             Bundle args = new Bundle();
             args.putBoolean("needPhonebook", true);
             args.putBoolean("needFinishFragment", false);
             args.putBoolean("hasMainTabs", true);
             return new ContactsActivity(args);
-        } else if (position == POSITION_CALLS_OR_SETTINGS) {
-            if (getUserConfig().showCallsTab) {
-                Bundle args = new Bundle();
-                args.putBoolean("needFinishFragment", false);
-                args.putBoolean("hasMainTabs", true);
-                return new CallLogActivity(args);
-            }
+        } else if (index == INDEX_SETTINGS) {
             Bundle args = new Bundle();
             args.putBoolean("hasMainTabs", true);
             return new SettingsActivity(args);
-        } else if (position == POSITION_CHATS) {
+        } else if (index == INDEX_CHATS) {
             Bundle args = new Bundle();
             args.putBoolean("hasMainTabs", true);
             dialogsActivity = new DialogsActivity(args);
             dialogsActivity.setMainTabsActivityController(new MainTabsActivityControllerImpl());
             return dialogsActivity;
-        } else if (position == POSITION_PROFILE) {
+        } else if (index == INDEX_PROFILE) {
             Bundle args = new Bundle();
             args.putLong("user_id", UserConfig.getInstance(currentAccount).getClientUserId());
             args.putBoolean("my_profile", true);
-            // args.putBoolean("expandPhoto", true);
             args.putBoolean("hasMainTabs", true);
             return new ProfileActivity(args);
         }
@@ -815,19 +947,26 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     public GlassTabView[] tabs;
 
     public void selectTab(int position, boolean animated) {
+        int activeIndex = positionToIndex(position);
         for (int a = 0; a < tabs.length; a++) {
             GlassTabView tab = tabs[a];
-            tab.setSelected(indexToPosition(a) == position, animated);
+            if (tab != null) {
+                tab.setSelected(a == activeIndex, animated);
+            }
         }
     }
 
     public void setGestureSelectedOverride(float animatedPosition, boolean allow) {
         for (int index = 0; index < tabs.length; index++) {
             final int position = indexToPosition(index);
-            final float visibility = Math.max(0, 1f - Math.abs(position - animatedPosition));
-            tabs[index].setGestureSelectedOverride(visibility, allow);
+            final float visibility = position != -1 ? Math.max(0, 1f - Math.abs(position - animatedPosition)) : 0f;
+            if (tabs[index] != null) {
+                tabs[index].setGestureSelectedOverride(visibility, allow);
+            }
         }
-        tabsView.invalidate();
+        if (tabsView != null) {
+            tabsView.invalidate();
+        }
     }
 
 
@@ -926,6 +1065,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     public void didReceivedNotification(int id, int account, Object... args) {
         if (id == NotificationCenter.notificationsCountUpdated || id == NotificationCenter.updateInterfaces) {
             checkUnreadCount(fragmentView != null && fragmentView.isAttachedToWindow());
+            if (id == NotificationCenter.updateInterfaces) {
+                updateTabsVisibility(true);
+            }
         } else if (id == NotificationCenter.appUpdateLoading) {
             if (updateLayout != null) {
                 updateLayout.updateFileProgress(null);
@@ -957,16 +1099,10 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             }
         } else if (id == NotificationCenter.needSetDayNightTheme) {
             clearAllHiddenFragments();
-        } else if (id == NotificationCenter.callTabsVisibleToggled) {
-            final boolean callTabsVisible = getUserConfig().showCallsTab;
-            checkUi_callTabVisible(callTabsVisible, true);
-            if (viewPager != null && viewPager.getCurrentPosition() == POSITION_CALLS_OR_SETTINGS) {
-                viewPager.scrollToPosition(POSITION_CHATS);
-                selectTab(POSITION_CHATS, true);
-                dropCallsFragmentAfterPageScroll = true;
-            } else {
-                dropFragmentAtPosition(POSITION_CALLS_OR_SETTINGS);
-            }
+        } else if (id == NotificationCenter.callTabsVisibleToggled || id == NotificationCenter.feedTabVisibleToggled) {
+            updateTabsVisibility(true);
+            resetViewPagerPages();
+            selectTab(viewPager != null ? viewPager.getCurrentPosition() : 0, true);
         } else if (id == NotificationCenter.mainUserInfoChanged) {
             if (tabs != null && tabs[INDEX_PROFILE] != null) {
                 tabs[INDEX_PROFILE].updateUserAvatar(currentAccount);
@@ -989,12 +1125,16 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             .add(NotificationCenter.notificationsCountUpdated)
             .add(NotificationCenter.updateInterfaces)
             .add(NotificationCenter.callTabsVisibleToggled)
+            .add(NotificationCenter.feedTabVisibleToggled)
             .add(NotificationCenter.mainUserInfoChanged)
             .add(NotificationCenter.contactsPermissionBadgeCheck);
 
         globalObserversGroup = NotificationCenter.getGlobalInstance().createObserversGroup(this)
             .add(NotificationCenter.appUpdateAvailable)
             .add(NotificationCenter.appUpdateLoading)
+            .add(NotificationCenter.updateInterfaces)
+            .add(NotificationCenter.callTabsVisibleToggled)
+            .add(NotificationCenter.feedTabVisibleToggled)
             .add(NotificationCenter.needSetDayNightTheme);
 
         return super.onFragmentCreate();
@@ -1030,7 +1170,8 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         }
 
         final float animatedPosition = viewPager.getPositionAnimated();
-        final float isProfile = 1f - MathUtils.clamp(Math.abs(POSITION_PROFILE - animatedPosition), 0, 1);
+        final int profilePos = indexToPosition(INDEX_PROFILE);
+        final float isProfile = profilePos != -1 ? (1f - MathUtils.clamp(Math.abs(profilePos - animatedPosition), 0, 1)) : 0f;
         final float hide = 1f - AndroidUtilities.getNavigationBarThirdButtonsFactor(0, 1f, navigationBarHeight);
         float alpha = (1f - isProfile * hide) * animatorTabsVisible.getFloatValue();
         if (tabletLayout) {
@@ -1058,11 +1199,54 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         tabsView.setVisibility(factor > 0 ? View.VISIBLE : View.GONE);
     }
 
-    private void checkUi_callTabVisible(boolean callTabsVisible, boolean animated) {
-        if (tabsView != null) {
-            tabsView.setViewVisible(tabs[INDEX_SETTINGS], !callTabsVisible, animated);
-            tabsView.setViewVisible(tabs[INDEX_CALLS], callTabsVisible, animated);
+    public void updateTabsVisibility(boolean animated) {
+        if (tabsView == null || tabs == null) {
+            return;
         }
+
+        boolean showArchive = org.telegram.messenger.HundredGramConfig.bottomNavArchiveTab;
+        boolean showFeed = org.telegram.messenger.HundredGramConfig.enableFeedTab;
+        boolean showMusic = org.telegram.messenger.HundredGramConfig.bottomNavMusicTab;
+        boolean showContacts = !org.telegram.messenger.HundredGramConfig.bottomNavHideContactsTab;
+        boolean showSettings = !org.telegram.messenger.HundredGramConfig.bottomNavHideSettingsTab;
+
+        if (tabs[INDEX_CHATS] != null) {
+            tabs[INDEX_CHATS].setVisibility(View.VISIBLE);
+            tabsView.setViewVisible(tabs[INDEX_CHATS], true, animated);
+        }
+
+        if (tabs[INDEX_ARCHIVE] != null) {
+            tabs[INDEX_ARCHIVE].setVisibility(showArchive ? View.VISIBLE : View.GONE);
+            tabsView.setViewVisible(tabs[INDEX_ARCHIVE], showArchive, animated);
+        }
+
+        if (tabs[INDEX_FEED] != null) {
+            tabs[INDEX_FEED].setVisibility(showFeed ? View.VISIBLE : View.GONE);
+            tabsView.setViewVisible(tabs[INDEX_FEED], showFeed, animated);
+        }
+
+        if (tabs[INDEX_MUSIC] != null) {
+            tabs[INDEX_MUSIC].setVisibility(showMusic ? View.VISIBLE : View.GONE);
+            tabsView.setViewVisible(tabs[INDEX_MUSIC], showMusic, animated);
+        }
+
+        if (tabs[INDEX_CONTACTS] != null) {
+            tabs[INDEX_CONTACTS].setVisibility(showContacts ? View.VISIBLE : View.GONE);
+            tabsView.setViewVisible(tabs[INDEX_CONTACTS], showContacts, animated);
+        }
+
+        if (tabs[INDEX_SETTINGS] != null) {
+            tabs[INDEX_SETTINGS].setVisibility(showSettings ? View.VISIBLE : View.GONE);
+            tabsView.setViewVisible(tabs[INDEX_SETTINGS], showSettings, animated);
+        }
+
+        if (tabs[INDEX_PROFILE] != null) {
+            tabs[INDEX_PROFILE].setVisibility(View.VISIBLE);
+            tabsView.setViewVisible(tabs[INDEX_PROFILE], true, animated);
+        }
+
+        tabsView.requestLayout();
+        tabsView.invalidate();
     }
 
     @Override

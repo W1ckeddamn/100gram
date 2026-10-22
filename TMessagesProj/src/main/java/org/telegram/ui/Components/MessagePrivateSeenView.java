@@ -147,6 +147,15 @@ public class MessagePrivateSeenView extends FrameLayout {
             return;
         }
         setOnClickListener(null);
+        int cachedDate = org.telegram.messenger.HundredGramReadHistoryManager.getInstance(currentAccount).getMessageReadDate(dialogId, messageId);
+        if (cachedDate > 0) {
+            valueLayout.setAlpha(1f);
+            loadingView.setAlpha(0f);
+            premiumTextView.setVisibility(View.GONE);
+            valueTextView.setText(LocaleController.formatPmSeenDate(cachedDate));
+            return;
+        }
+
         valueLayout.setAlpha(0f);
         loadingView.setAlpha(1f);
         premiumTextView.setVisibility(View.VISIBLE);
@@ -156,7 +165,12 @@ public class MessagePrivateSeenView extends FrameLayout {
         req.msg_id = messageId;
         ConnectionsManager.getInstance(currentAccount).sendRequest(req, (res, err) -> AndroidUtilities.runOnUIThread(() -> {
             if (err != null) {
-                if ("USER_PRIVACY_RESTRICTED".equals(err.text)) {
+                int fallback = org.telegram.messenger.HundredGramReadHistoryManager.getInstance(currentAccount).getMessageReadDate(dialogId, messageId);
+                if (fallback > 0) {
+                    valueTextView.setText(LocaleController.formatPmSeenDate(fallback));
+                    premiumTextView.setVisibility(View.GONE);
+                    isPremiumLocked = false;
+                } else if ("USER_PRIVACY_RESTRICTED".equals(err.text)) {
                     valueTextView.setText(LocaleController.getString(R.string.PmReadUnknown));
                     premiumTextView.setVisibility(View.GONE);
                 } else if ("YOUR_PRIVACY_RESTRICTED".equals(err.text)) {
@@ -170,6 +184,7 @@ public class MessagePrivateSeenView extends FrameLayout {
                 }
             } else if (res instanceof TLRPC.TL_outboxReadDate) {
                 TLRPC.TL_outboxReadDate r = (TLRPC.TL_outboxReadDate) res;
+                org.telegram.messenger.HundredGramReadHistoryManager.getInstance(currentAccount).onOutboxRead(dialogId, messageId, r.date);
                 valueTextView.setText(LocaleController.formatPmSeenDate(r.date));
                 premiumTextView.setVisibility(View.GONE);
             }

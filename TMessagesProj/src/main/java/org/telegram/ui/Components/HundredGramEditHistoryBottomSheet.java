@@ -5,7 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StrikethroughSpan;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -16,6 +21,7 @@ import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLoader;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.HundredGramVaultManager;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
@@ -31,6 +37,8 @@ import org.telegram.messenger.Utilities;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerListView {
 
@@ -47,6 +55,7 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
         public final boolean isOriginal;
         public final boolean isDeleted;
         public final int revisionNumber;
+        public boolean showDiff;
 
         public RevisionItem(TLRPC.Message message, int versionDate, boolean isCurrent, boolean isOriginal, boolean isDeleted, int revisionNumber) {
             this.message = message;
@@ -55,6 +64,7 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
             this.isOriginal = isOriginal;
             this.isDeleted = isDeleted;
             this.revisionNumber = revisionNumber;
+            this.showDiff = !isOriginal;
         }
     }
 
@@ -188,7 +198,7 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
 
         for (int i = 0; i < revisions.size(); i++) {
             RevisionItem rev = revisions.get(i);
-            items.add(UItem.asCustom(createRevisionCardView(getContext(), rev)));
+            items.add(UItem.asCustom(createRevisionCardView(getContext(), rev, i)));
         }
 
         items.add(UItem.asShadow(LocaleController.getString("MessageEditHistoryHint", R.string.MessageEditHistoryHint)));
@@ -210,7 +220,15 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
         banner.setBackground(bg);
 
         ImageView icon = new ImageView(context);
-        icon.setImageResource(R.drawable.msg_delete);
+        int iconRes;
+        if (HundredGramConfig.deletedMarkIcon == HundredGramConfig.DELETED_MARK_CROSS) {
+            iconRes = R.drawable.msg_clear_input;
+        } else if (HundredGramConfig.deletedMarkIcon == HundredGramConfig.DELETED_MARK_EYE) {
+            iconRes = R.drawable.msg_archive_hide;
+        } else {
+            iconRes = R.drawable.msg_delete;
+        }
+        icon.setImageResource(iconRes);
         icon.setColorFilter(0xFFE53935);
         banner.addView(icon, LayoutHelper.createLinear(22, 22, Gravity.CENTER_VERTICAL, 0, 0, 10, 0));
 
@@ -235,7 +253,7 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
         return container;
     }
 
-    private View createRevisionCardView(Context context, RevisionItem rev) {
+    private View createRevisionCardView(Context context, RevisionItem rev, int index) {
         FrameLayout root = new FrameLayout(context);
         root.setPadding(AndroidUtilities.dp(14), AndroidUtilities.dp(5), AndroidUtilities.dp(14), AndroidUtilities.dp(5));
 
@@ -247,6 +265,11 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
         cardBg.setCornerRadius(AndroidUtilities.dp(12));
         cardBg.setColor(Theme.getColor(Theme.key_dialogBackground, resourcesProvider));
         card.setBackground(cardBg);
+
+        CharSequence copyText = getMessageText(rev.message);
+        RevisionItem prevRev = (index + 1 < revisions.size()) ? revisions.get(index + 1) : null;
+        CharSequence prevText = prevRev != null ? getMessageText(prevRev.message) : null;
+        boolean diffAvailable = prevRev != null && !TextUtils.isEmpty(copyText) && !TextUtils.isEmpty(prevText) && !TextUtils.equals(copyText, prevText);
 
         // Header Row
         LinearLayout header = new LinearLayout(context);
@@ -301,12 +324,34 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
         View spacer = new View(context);
         header.addView(spacer, LayoutHelper.createLinear(0, 0, 1.0f));
 
+        TextView diffToggleBtn = null;
+        if (diffAvailable) {
+            diffToggleBtn = new TextView(context);
+            diffToggleBtn.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            diffToggleBtn.setTypeface(AndroidUtilities.bold());
+            diffToggleBtn.setPadding(AndroidUtilities.dp(7), AndroidUtilities.dp(3), AndroidUtilities.dp(7), AndroidUtilities.dp(3));
+            diffToggleBtn.setTextColor(Theme.getColor(Theme.key_dialogButton, resourcesProvider));
+            GradientDrawable diffToggleBg = new GradientDrawable();
+            diffToggleBg.setCornerRadius(AndroidUtilities.dp(6));
+            diffToggleBg.setColor(Theme.getColor(Theme.key_dialogButton, resourcesProvider) & 0x22FFFFFF);
+            diffToggleBtn.setBackground(diffToggleBg);
+            diffToggleBtn.setText(rev.showDiff ? LocaleController.getString("EditHistoryPlain", R.string.EditHistoryPlain) : LocaleController.getString("EditHistoryDiff", R.string.EditHistoryDiff));
+            header.addView(diffToggleBtn, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, 0, 0, 8, 0));
+        }
+
         // Date
         TextView dateView = new TextView(context);
         dateView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         dateView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
         if (rev.versionDate > 0) {
-            dateView.setText(LocaleController.formatDateTime(rev.versionDate, false));
+            String dateStr = LocaleController.formatDateTime(rev.versionDate, false);
+            if (!rev.isOriginal && !revisions.isEmpty()) {
+                int originalDate = revisions.get(revisions.size() - 1).versionDate;
+                if (originalDate > 0 && rev.versionDate > originalDate) {
+                    dateStr += " (" + formatDeltaTime(rev.versionDate - originalDate) + ")";
+                }
+            }
+            dateView.setText(dateStr);
         }
         header.addView(dateView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, 0, 0, 8, 0));
 
@@ -317,15 +362,13 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
         copyBtn.setBackground(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector, resourcesProvider), 1));
         copyBtn.setScaleType(ImageView.ScaleType.CENTER);
         copyBtn.setPadding(AndroidUtilities.dp(4), AndroidUtilities.dp(4), AndroidUtilities.dp(4), AndroidUtilities.dp(4));
-
-        CharSequence copyText = getMessageText(rev.message);
         copyBtn.setOnClickListener(v -> copyTextToClipboard(copyText));
         header.addView(copyBtn, LayoutHelper.createLinear(28, 28));
 
         card.addView(header, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         // Media preview — determines type and renders appropriately
-        String mediaLabel = getMediaDescription(rev.message);
+        CharSequence mediaLabel = getMediaDescription(rev.message);
         boolean hasMediaPreview = false;
 
         if (!TextUtils.isEmpty(mediaLabel) && rev.message.media != null
@@ -564,6 +607,21 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
                     LayoutHelper.WRAP_CONTENT, 0, 6, 0, 0));
         }
 
+        // Diff Legend (if diff is available)
+        TextView legendView = null;
+        SpannableStringBuilder diffSpannable = null;
+        if (diffAvailable) {
+            boolean isDark = Theme.isCurrentThemeDark();
+            diffSpannable = computeWordDiff(prevText.toString(), copyText.toString(), isDark);
+
+            legendView = new TextView(context);
+            legendView.setText(LocaleController.getString("EditHistoryDiffLegend", R.string.EditHistoryDiffLegend));
+            legendView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
+            legendView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
+            legendView.setVisibility(rev.showDiff ? View.VISIBLE : View.GONE);
+            card.addView(legendView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 6, 0, 0));
+        }
+
         // Text Content
         TextView textView = new TextView(context);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
@@ -571,7 +629,9 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
         textView.setLineSpacing(AndroidUtilities.dp(2), 1.0f);
         textView.setTextIsSelectable(true);
 
-        if (!TextUtils.isEmpty(copyText)) {
+        if (diffAvailable && rev.showDiff && diffSpannable != null) {
+            textView.setText(diffSpannable);
+        } else if (!TextUtils.isEmpty(copyText)) {
             textView.setText(copyText);
         } else if (!TextUtils.isEmpty(mediaLabel)) {
             textView.setText("(" + LocaleController.getString("NoCaption", R.string.NoCaption) + ")");
@@ -581,6 +641,24 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
             textView.setText("(" + LocaleController.getString("EmptyMessage", R.string.EmptyMessage) + ")");
             textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
             textView.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.ITALIC));
+        }
+
+        if (diffAvailable && diffToggleBtn != null) {
+            final TextView finalLegend = legendView;
+            final TextView finalToggle = diffToggleBtn;
+            final SpannableStringBuilder finalDiff = diffSpannable;
+            diffToggleBtn.setOnClickListener(v -> {
+                rev.showDiff = !rev.showDiff;
+                finalToggle.setText(rev.showDiff ? LocaleController.getString("EditHistoryPlain", R.string.EditHistoryPlain) : LocaleController.getString("EditHistoryDiff", R.string.EditHistoryDiff));
+                if (finalLegend != null) {
+                    finalLegend.setVisibility(rev.showDiff ? View.VISIBLE : View.GONE);
+                }
+                if (rev.showDiff && finalDiff != null) {
+                    textView.setText(finalDiff);
+                } else {
+                    textView.setText(copyText);
+                }
+            });
         }
 
         card.addView(textView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 8, 0, 0));
@@ -687,50 +765,60 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
         return message.message != null ? message.message : "";
     }
 
-    private String getMediaDescription(TLRPC.Message message) {
+    private CharSequence createMediaSpan(int iconRes, String title) {
+        if (title == null) return null;
+        SpannableStringBuilder ssb = new SpannableStringBuilder("  " + title);
+        ColoredImageSpan span = new ColoredImageSpan(iconRes);
+        span.setSize(AndroidUtilities.dp(14));
+        span.translate(0, AndroidUtilities.dp(-1));
+        ssb.setSpan(span, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return ssb;
+    }
+
+    private CharSequence getMediaDescription(TLRPC.Message message) {
         if (message == null || message.media == null || message.media instanceof TLRPC.TL_messageMediaEmpty) {
             return null;
         }
         TLRPC.MessageMedia m = message.media;
         if (m instanceof TLRPC.TL_messageMediaPhoto) {
-            return "📷 " + LocaleController.getString("AttachPhoto", R.string.AttachPhoto);
+            return createMediaSpan(R.drawable.msg_photos, LocaleController.getString("AttachPhoto", R.string.AttachPhoto));
         } else if (m instanceof TLRPC.TL_messageMediaDocument) {
             if (m.document != null) {
                 for (TLRPC.DocumentAttribute attr : m.document.attributes) {
                     if (attr instanceof TLRPC.TL_documentAttributeAudio) {
                         if (attr.voice) {
-                            return "🎤 " + LocaleController.getString("AttachAudio", R.string.AttachAudio);
+                            return createMediaSpan(R.drawable.msg_filled_data_voice, LocaleController.getString("AttachAudio", R.string.AttachAudio));
                         } else {
-                            return "🎵 " + LocaleController.getString("AttachMusic", R.string.AttachMusic);
+                            return createMediaSpan(R.drawable.msg_filled_data_music, LocaleController.getString("AttachMusic", R.string.AttachMusic));
                         }
                     } else if (attr instanceof TLRPC.TL_documentAttributeVideo) {
                         if (attr.round_message) {
-                            return "⭕ " + LocaleController.getString("AttachRound", R.string.AttachRound);
+                            return createMediaSpan(R.drawable.msg_video, LocaleController.getString("AttachRound", R.string.AttachRound));
                         } else {
-                            return "🎬 " + LocaleController.getString("AttachVideo", R.string.AttachVideo);
+                            return createMediaSpan(R.drawable.msg_video, LocaleController.getString("AttachVideo", R.string.AttachVideo));
                         }
                     } else if (attr instanceof TLRPC.TL_documentAttributeAnimated) {
-                        return "GIF";
+                        return createMediaSpan(R.drawable.msg_gif, "GIF");
                     } else if (attr instanceof TLRPC.TL_documentAttributeSticker) {
-                        return "🎭 " + LocaleController.getString("AttachSticker", R.string.AttachSticker);
+                        return createMediaSpan(R.drawable.msg_photo_sticker, LocaleController.getString("AttachSticker", R.string.AttachSticker));
                     }
                 }
                 String name = FileLoader.getDocumentFileName(m.document);
                 if (!TextUtils.isEmpty(name)) {
-                    return "📁 " + name;
+                    return createMediaSpan(R.drawable.msg_filehq, name);
                 }
             }
-            return "📁 " + LocaleController.getString("AttachDocument", R.string.AttachDocument);
+            return createMediaSpan(R.drawable.msg_filehq, LocaleController.getString("AttachDocument", R.string.AttachDocument));
         } else if (m instanceof TLRPC.TL_messageMediaPoll) {
             TLRPC.TL_messageMediaPoll pollMedia = (TLRPC.TL_messageMediaPoll) m;
             if (pollMedia.poll != null && pollMedia.poll.question != null) {
-                return "📊 " + pollMedia.poll.question.text;
+                return createMediaSpan(R.drawable.msg_list, pollMedia.poll.question.text);
             }
-            return "📊 " + LocaleController.getString("Poll", R.string.Poll);
+            return createMediaSpan(R.drawable.msg_list, LocaleController.getString("Poll", R.string.Poll));
         } else if (m instanceof TLRPC.TL_messageMediaGeo || m instanceof TLRPC.TL_messageMediaGeoLive) {
-            return "📍 " + LocaleController.getString("AttachLocation", R.string.AttachLocation);
+            return createMediaSpan(R.drawable.msg_location, LocaleController.getString("AttachLocation", R.string.AttachLocation));
         } else if (m instanceof TLRPC.TL_messageMediaContact) {
-            return "👤 " + LocaleController.getString("AttachContact", R.string.AttachContact);
+            return createMediaSpan(R.drawable.msg_contacts, LocaleController.getString("AttachContact", R.string.AttachContact));
         }
         return null;
     }
@@ -742,5 +830,124 @@ public class HundredGramEditHistoryBottomSheet extends BottomSheetWithRecyclerLi
                 BulletinFactory.of(fragment).createCopyBulletin(LocaleController.getString("TextCopied", R.string.TextCopied)).show();
             }
         }
+    }
+
+    private enum DiffType {
+        EQUAL, INSERT, DELETE
+    }
+
+    private static class DiffChunk {
+        final DiffType type;
+        final String text;
+
+        DiffChunk(DiffType type, String text) {
+            this.type = type;
+            this.text = text;
+        }
+    }
+
+    private static String formatDeltaTime(int seconds) {
+        if (seconds < 60) {
+            return "+" + Math.max(1, seconds) + "s";
+        } else if (seconds < 3600) {
+            return "+" + (seconds / 60) + "m";
+        } else if (seconds < 86400) {
+            return "+" + (seconds / 3600) + "h";
+        } else {
+            return "+" + (seconds / 86400) + "d";
+        }
+    }
+
+    private static List<String> tokenize(String text) {
+        if (text == null || text.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> tokens = new ArrayList<>();
+        int len = text.length();
+        int i = 0;
+        while (i < len) {
+            char c = text.charAt(i);
+            if (Character.isWhitespace(c)) {
+                int start = i;
+                while (i < len && Character.isWhitespace(text.charAt(i))) {
+                    i++;
+                }
+                tokens.add(text.substring(start, i));
+            } else if (Character.isLetterOrDigit(c)) {
+                int start = i;
+                while (i < len && Character.isLetterOrDigit(text.charAt(i))) {
+                    i++;
+                }
+                tokens.add(text.substring(start, i));
+            } else {
+                tokens.add(String.valueOf(c));
+                i++;
+            }
+        }
+        return tokens;
+    }
+
+    private static SpannableStringBuilder computeWordDiff(String oldText, String newText, boolean isDark) {
+        if (oldText == null) oldText = "";
+        if (newText == null) newText = "";
+
+        List<String> oldTokens = tokenize(oldText);
+        List<String> newTokens = tokenize(newText);
+        int m = oldTokens.size();
+        int n = newTokens.size();
+
+        SpannableStringBuilder ssb = new SpannableStringBuilder();
+        if ((long) m * n > 40000L) {
+            ssb.append(newText);
+            return ssb;
+        }
+
+        int[][] dp = new int[m + 1][n + 1];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (oldTokens.get(i).equals(newTokens.get(j))) {
+                    dp[i + 1][j + 1] = dp[i][j] + 1;
+                } else {
+                    dp[i + 1][j + 1] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+                }
+            }
+        }
+
+        List<DiffChunk> chunks = new ArrayList<>();
+        int i = m, j = n;
+        while (i > 0 || j > 0) {
+            if (i > 0 && j > 0 && oldTokens.get(i - 1).equals(newTokens.get(j - 1))) {
+                chunks.add(new DiffChunk(DiffType.EQUAL, oldTokens.get(i - 1)));
+                i--;
+                j--;
+            } else if (j > 0 && (i == 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                chunks.add(new DiffChunk(DiffType.INSERT, newTokens.get(j - 1)));
+                j--;
+            } else if (i > 0 && (j == 0 || dp[i][j - 1] < dp[i - 1][j])) {
+                chunks.add(new DiffChunk(DiffType.DELETE, oldTokens.get(i - 1)));
+                i--;
+            }
+        }
+        Collections.reverse(chunks);
+
+        int addFg = isDark ? 0xFF81C784 : 0xFF2E7D32;
+        int addBg = isDark ? 0x334CAF50 : 0x224CAF50;
+        int delFg = isDark ? 0xFFE57373 : 0xFFC62828;
+        int delBg = isDark ? 0x33E53935 : 0x22E53935;
+
+        for (DiffChunk chunk : chunks) {
+            int start = ssb.length();
+            ssb.append(chunk.text);
+            int end = ssb.length();
+            if (chunk.type == DiffType.INSERT) {
+                ssb.setSpan(new ForegroundColorSpan(addFg), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                ssb.setSpan(new BackgroundColorSpan(addBg), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            } else if (chunk.type == DiffType.DELETE) {
+                ssb.setSpan(new ForegroundColorSpan(delFg), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                ssb.setSpan(new BackgroundColorSpan(delBg), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                ssb.setSpan(new StrikethroughSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        }
+        return ssb;
     }
 }

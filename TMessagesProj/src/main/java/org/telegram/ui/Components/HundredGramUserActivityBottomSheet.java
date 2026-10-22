@@ -203,6 +203,9 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
             } else if (entry.triggerType == HundredGramActivityTracker.TRIGGER_MESSAGE) {
                 icon = R.drawable.msg_discussion;
                 triggerLabel = LocaleController.getString("ActivityTriggerMessage", R.string.ActivityTriggerMessage);
+            } else if (entry.triggerType == HundredGramActivityTracker.TRIGGER_REACTION) {
+                icon = R.drawable.msg_reactions2;
+                triggerLabel = LocaleController.getString("ActivityTriggerReaction", R.string.ActivityTriggerReaction);
             } else {
                 icon = R.drawable.msg_usersearch;
                 triggerLabel = LocaleController.getString("ActivityTriggerOnline", R.string.ActivityTriggerOnline);

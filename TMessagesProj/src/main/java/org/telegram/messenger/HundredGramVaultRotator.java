@@ -92,7 +92,48 @@ public class HundredGramVaultRotator {
                     }
                 }
 
-                final int deletedCount = filesToDelete.size();
+                // Also rotate files in hundredgram_vault directory
+                int vaultDeletedCount = 0;
+                File vaultDir = HundredGramVaultManager.getInstance(account).getVaultDir();
+                if (vaultDir != null && vaultDir.exists()) {
+                    File[] vFiles = vaultDir.listFiles();
+                    if (vFiles != null) {
+                        ArrayList<File> survivingVaultFiles = new ArrayList<>();
+                        long survivingVaultSize = 0;
+                        for (File vf : vFiles) {
+                            if (vf == null || !vf.isFile()) continue;
+                            if (vf.length() == 0) {
+                                vf.delete();
+                                continue;
+                            }
+                            if (ttlDays > 0 && (now - vf.lastModified() > maxAgeMs)) {
+                                long len = vf.length();
+                                if (vf.delete()) {
+                                    freedBytes += len;
+                                    vaultDeletedCount++;
+                                }
+                            } else {
+                                survivingVaultFiles.add(vf);
+                                survivingVaultSize += vf.length();
+                            }
+                        }
+
+                        if (maxSizeGb > 0 && survivingVaultSize > maxQuotaBytes) {
+                            Collections.sort(survivingVaultFiles, (a, b) -> Long.compare(a.lastModified(), b.lastModified()));
+                            for (File vf : survivingVaultFiles) {
+                                if (survivingVaultSize <= maxQuotaBytes) break;
+                                long len = vf.length();
+                                if (vf.delete()) {
+                                    survivingVaultSize -= len;
+                                    freedBytes += len;
+                                    vaultDeletedCount++;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                final int deletedCount = filesToDelete.size() + vaultDeletedCount;
                 final long totalFreed = freedBytes;
 
                 if (!filesToDelete.isEmpty()) {

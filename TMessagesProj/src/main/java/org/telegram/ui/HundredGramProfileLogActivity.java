@@ -2,6 +2,8 @@ package org.telegram.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -30,6 +32,7 @@ import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.BulletinFactory;
+import org.telegram.ui.Components.ColoredImageSpan;
 import org.telegram.ui.Components.EmptyTextProgressView;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
@@ -176,21 +179,46 @@ public class HundredGramProfileLogActivity extends BaseFragment {
         return fragmentView;
     }
 
-    private String getFieldDisplayName(String field) {
+    private int getFieldIcon(String field) {
         if ("name".equals(field)) {
-            return "👤 " + LocaleController.getString("ProfileFieldName", R.string.ProfileFieldName);
+            return R.drawable.msg_contact;
         } else if ("username".equals(field)) {
-            return "@ " + LocaleController.getString("ProfileFieldUsername", R.string.ProfileFieldUsername);
+            return R.drawable.msg_mention;
         } else if ("phone".equals(field)) {
-            return "📱 " + LocaleController.getString("ProfileFieldPhone", R.string.ProfileFieldPhone);
+            return R.drawable.msg_calls;
         } else if ("bio".equals(field)) {
-            return "📝 " + LocaleController.getString("ProfileFieldBio", R.string.ProfileFieldBio);
+            return R.drawable.msg_edit;
         } else if ("birthday".equals(field)) {
-            return "🎂 " + LocaleController.getString("ProfileFieldBirthday", R.string.ProfileFieldBirthday);
+            return R.drawable.msg_calendar;
         } else if ("gifts".equals(field)) {
-            return "🎁 " + LocaleController.getString("ProfileFieldGifts", R.string.ProfileFieldGifts);
+            return R.drawable.menu_gift;
         }
-        return field;
+        return R.drawable.msg_info;
+    }
+
+    private CharSequence getFieldDisplayName(String field) {
+        String title;
+        if ("name".equals(field)) {
+            title = LocaleController.getString("ProfileFieldName", R.string.ProfileFieldName);
+        } else if ("username".equals(field)) {
+            title = LocaleController.getString("ProfileFieldUsername", R.string.ProfileFieldUsername);
+        } else if ("phone".equals(field)) {
+            title = LocaleController.getString("ProfileFieldPhone", R.string.ProfileFieldPhone);
+        } else if ("bio".equals(field)) {
+            title = LocaleController.getString("ProfileFieldBio", R.string.ProfileFieldBio);
+        } else if ("birthday".equals(field)) {
+            title = LocaleController.getString("ProfileFieldBirthday", R.string.ProfileFieldBirthday);
+        } else if ("gifts".equals(field)) {
+            title = LocaleController.getString("ProfileFieldGifts", R.string.ProfileFieldGifts);
+        } else {
+            return field != null ? field : "";
+        }
+        SpannableStringBuilder ssb = new SpannableStringBuilder("  " + title);
+        ColoredImageSpan span = new ColoredImageSpan(getFieldIcon(field));
+        span.setSize(AndroidUtilities.dp(14));
+        span.translate(0, AndroidUtilities.dp(-1));
+        ssb.setSpan(span, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return ssb;
     }
 
     private class ListAdapter extends RecyclerListView.SelectionAdapter {
@@ -221,7 +249,7 @@ public class HundredGramProfileLogActivity extends BaseFragment {
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             ProfileChangeCell cell = (ProfileChangeCell) holder.itemView;
             HundredGramProfileLogger.ProfileChangeEntry entry = entries.get(position);
-            String fieldTitle = getFieldDisplayName(entry.fieldName);
+            CharSequence fieldTitle = getFieldDisplayName(entry.fieldName);
             String dateFormatted = dateFormat.format(new Date(entry.date * 1000L));
             boolean isLast = position == entries.size() - 1;
             cell.setData(fieldTitle, entry.oldValue, entry.newValue, dateFormatted, !isLast);
@@ -288,7 +316,7 @@ public class HundredGramProfileLogActivity extends BaseFragment {
                     Gravity.BOTTOM | Gravity.FILL_HORIZONTAL, 16, 0, 0, 0));
         }
 
-        void setData(String fieldTitle, String oldValue, String newValue, String dateText, boolean showDivider) {
+        void setData(CharSequence fieldTitle, String oldValue, String newValue, String dateText, boolean showDivider) {
             fieldTextView.setText(fieldTitle);
             dateTextView.setText(dateText);
 

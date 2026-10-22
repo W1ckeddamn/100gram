@@ -9279,4 +9279,16 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             return AndroidUtilities.fixedDispatchApplyWindowInsets(insets, this);
         }
     }
+
+    private org.telegram.messenger.icons.HundredGramResources hundredGramResources = null;
+
+    @Override
+    public android.content.res.Resources getResources() {
+        android.content.res.Resources base = super.getResources();
+        if (hundredGramResources == null || hundredGramResources.getSourceAssets() != base.getAssets()) {
+            hundredGramResources = new org.telegram.messenger.icons.HundredGramResources(base);
+        }
+        return hundredGramResources;
+    }
 }
+
