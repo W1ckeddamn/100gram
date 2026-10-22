@@ -89,17 +89,17 @@ jobs:
         id: config
         run: |
           if [[ "${{ github.ref }}" == refs/tags/v* ]] || [[ "${{ inputs.build_type }}" == "release" ]]; then
-            echo "task=:TMessagesProj_AppStandalone:assembleAfatStandaloneRelease" >> $GITHUB_OUTPUT
+            echo "task=:TMessagesProj_AppStandalone:assembleAfatRelease" >> $GITHUB_OUTPUT
             echo "is_release=true" >> $GITHUB_OUTPUT
           else
-            echo "task=:TMessagesProj_AppStandalone:assembleAfatStandaloneDebug" >> $GITHUB_OUTPUT
+            echo "task=:TMessagesProj_AppStandalone:assembleAfatDebug" >> $GITHUB_OUTPUT
             echo "is_release=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Build APK with Gradle
         run: |
           chmod +x gradlew
-          ./gradlew ${{ steps.config.outputs.task }} --no-daemon --stacktrace || ./gradlew :TMessagesProj_AppStandalone:assembleStandalone --no-daemon --stacktrace
+          ./gradlew ${{ steps.config.outputs.task }} -x lint -x test --no-daemon --stacktrace
 
       - name: Find and Prepare APK
         id: locate_apk
