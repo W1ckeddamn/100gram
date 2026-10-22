@@ -883,7 +883,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         @Override
         public void run() {
             if (delegate != null) {
-                if (recordingAudioVideo || isRecordingAudioVideo() || (parentFragment != null && parentFragment.instantCameraView != null && parentFragment.instantCameraView.getVisibility() == View.VISIBLE)) {
+                if (parentFragment != null && parentFragment.instantCameraView != null && parentFragment.instantCameraView.getVisibility() == View.VISIBLE) {
                     return;
                 }
                 if (HundredGramConfig.cameraRoundStartCamera == HundredGramConfig.CAMERA_ROUND_START_MENU) {
@@ -978,7 +978,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (this.parentActivity == null || this.parentFragment == null) {
             return;
         }
-        if (recordingAudioVideo || isRecordingAudioVideo() || (parentFragment != null && parentFragment.instantCameraView != null && parentFragment.instantCameraView.getVisibility() == View.VISIBLE)) {
+        if (parentFragment != null && parentFragment.instantCameraView != null && parentFragment.instantCameraView.getVisibility() == View.VISIBLE) {
             return;
         }
         View anchor = this.audioVideoSendButton != null ? this.audioVideoSendButton : this.recordCircle;
@@ -993,7 +993,10 @@ public class ChatActivityEnterView extends FrameLayout implements
                    .setDimAlpha(0)
                    .forceTop(true)
                    .setDismissOnMoveOutside(true)
-                   .setOnDismiss(() -> this.cameraChooserItemOptions = null)
+                   .setOnDismiss(() -> {
+                       this.cameraChooserItemOptions = null;
+                       this.recordAudioVideoRunnableStarted = false;
+                   })
                    .show();
         try {
             performHapticFeedback(HapticFeedbackConstants.LONG_PRESS, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
@@ -1004,18 +1007,19 @@ public class ChatActivityEnterView extends FrameLayout implements
     private void openCamera(boolean front) {
         calledRecordRunnable = true;
         recordAudioVideoRunnableStarted = false;
-        sendButtonVisible = true;
+        createRecordCircle();
         if (this.delegate != null) {
             this.delegate.setFrontface(front);
             this.delegate.needStartRecordVideo(0, true, 0, 0, 0, 0L, 0L);
         }
-        if (this.recordingAudioVideo) {
-            return;
-        }
         this.recordingAudioVideo = true;
         updateRecordInterface(RECORD_STATE_ENTER, true);
         if (this.recordCircle != null) {
+            this.startTranslation = 0;
+            this.lockAnimatedTranslation = 0;
+            this.recordCircle.setLockTranslation(-AndroidUtilities.dp(60));
             this.recordCircle.showWaves(false, false);
+            this.recordCircle.invalidate();
         }
         if (this.recordTimerView != null) {
             this.recordTimerView.reset();
