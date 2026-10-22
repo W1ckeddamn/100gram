@@ -34,7 +34,7 @@ jobs:
 
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
-      CCACHE_MAXSIZE: 2G
+      CCACHE_MAXSIZE: 5G
       CCACHE_COMPILERCHECK: content
       CCACHE_NOHASHDIR: "1"
 
@@ -78,13 +78,13 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y ccache
           mkdir -p "${CCACHE_DIR}"
-          ccache -s
+          ccache -s -z
 
       - name: Cache ccache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.ccache
-          key: ${{ runner.os }}-ccache-ndk27-${{ hashFiles('TMessagesProj/jni/**', 'TMessagesProj/**/CMakeLists.txt') }}
+          key: ${{ runner.os }}-ccache-ndk27-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-ccache-ndk27-
 
@@ -104,6 +104,11 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew ${{ steps.config.outputs.task }} -x lint -x test --no-daemon --stacktrace
+
+      - name: Show ccache stats
+        if: always()
+        run: |
+          ccache -s
 
       - name: Find and Prepare APK
         id: locate_apk

@@ -113,6 +113,9 @@ android {
                 version '3.10.2'
                 arguments '-DANDROID_STL=c++_static',
                     '-DANDROID_PLATFORM=android-21'
+                if (System.getenv("CCACHE_DIR") != null) {
+                    arguments '-DANDROID_CCACHE=ccache'
+                }
             }
         }
     }
