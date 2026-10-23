@@ -8,6 +8,10 @@
 
 package org.telegram.ui;
 
+import static org.telegram.messenger.LocaleController.formatString;
+import static org.telegram.messenger.LocaleController.getString;
+import static org.telegram.ui.Components.Premium.LimitReachedBottomSheet.TYPE_ACCOUNTS;
+
 import android.animation.AnimatorSet;
 import android.app.Dialog;
 import android.content.Context;
@@ -42,6 +46,8 @@ import org.telegram.ui.Components.AlertsCreator;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.Premium.LimitReachedBottomSheet;
 import org.telegram.ui.Components.RecyclerListView;
+import org.telegram.ui.Wallet.GramWallet;
+import org.telegram.ui.Wallet.GramWalletStorage;
 
 import java.util.ArrayList;
 
@@ -68,7 +74,11 @@ public class LogoutActivity extends BaseFragment {
 
         rowCount = 0;
         alternativeHeaderRow = rowCount++;
-        addAccountRow = rowCount++;
+        if (UserConfig.getActivatedAccountsCount() < UserConfig.MAX_ACCOUNT_COUNT) {
+            addAccountRow = rowCount++;
+        } else {
+            addAccountRow = -1;
+        }
         if (SharedConfig.passcodeHash.length() <= 0) {
             passcodeRow = rowCount++;
         } else {
@@ -87,7 +97,7 @@ public class LogoutActivity extends BaseFragment {
     @Override
     public View createView(Context context) {
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
-        actionBar.setTitle(LocaleController.getString(R.string.LogOutTitle));
+        actionBar.setTitle(getString(R.string.LogOutTitle));
         if (parentLayout != null && parentLayout.isLayersLayout()) {
             actionBar.setOccupyStatusBar(false);
         }
@@ -114,14 +124,25 @@ public class LogoutActivity extends BaseFragment {
         listView.setAdapter(listAdapter);
         listView.setOnItemClickListener((view, position, x, y) -> {
             if (position == addAccountRow) {
-                int freeAccount = -1;
-                for (int a = 0; ; a++) {
-                    if (!SharedConfig.activeAccounts.contains(a)) {
-                        freeAccount = a;
-                        break;
+                int freeAccounts = 0;
+                Integer availableAccount = null;
+                for (int a = UserConfig.MAX_ACCOUNT_COUNT - 1; a >= 0; a--) {
+                    if (!UserConfig.getInstance(a).isClientActivated()) {
+                        freeAccounts++;
+                        if (availableAccount == null) {
+                            availableAccount = a;
+                        }
                     }
                 }
-                presentFragment(new LoginActivity(freeAccount));
+                if (!UserConfig.hasPremiumOnAccounts()) {
+                    freeAccounts -= (UserConfig.MAX_ACCOUNT_COUNT - UserConfig.MAX_ACCOUNT_DEFAULT_COUNT);
+                }
+                if (freeAccounts > 0 && availableAccount != null) {
+                    presentFragment(new LoginActivity(availableAccount));
+                } else if (!UserConfig.hasPremiumOnAccounts()) {
+                    LimitReachedBottomSheet limitReachedBottomSheet = new LimitReachedBottomSheet(this, getContext(), TYPE_ACCOUNTS, currentAccount, null);
+                    showDialog(limitReachedBottomSheet);
+                }
             } else if (position == passcodeRow) {
                 presentFragment(PasscodeActivity.determineOpenFragment());
             } else if (position == cacheRow) {
@@ -134,7 +155,7 @@ public class LogoutActivity extends BaseFragment {
                 if (getParentActivity() == null) {
                     return;
                 }
-                showDialog(makeLogOutDialog(getParentActivity(), currentAccount));
+                showLogOutDialog();
             }
         });
         listView.setSections();
@@ -143,18 +164,37 @@ public class LogoutActivity extends BaseFragment {
         return fragmentView;
     }
 
-    public static AlertDialog makeLogOutDialog(Context context, int currentAccount) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage(LocaleController.getString(R.string.AreYouSureLogout));
-        builder.setTitle(LocaleController.getString(R.string.LogOut));
-        builder.setPositiveButton(LocaleController.getString(R.string.LogOut), (dialogInterface, i) -> MessagesController.getInstance(currentAccount).performLogout(1));
-        builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
-        AlertDialog alertDialog = builder.create();
-        TextView button = (TextView) alertDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        if (button != null) {
-            button.setTextColor(Theme.getColor(Theme.key_text_RedBold));
-        }
-        return alertDialog;
+    public void showLogOutDialog() {
+        final AlertDialog progressDialog = new AlertDialog(getContext(), AlertDialog.ALERT_TYPE_SPINNER);
+        progressDialog.showDelayed(500);
+        GramWallet.ensureLocalWalletBalances(currentAccount, () -> {
+            progressDialog.dismiss();
+            long localGramBalance = 0L;
+            if (MessagesController.getInstance(currentAccount).config.walletAvailable.get()) {
+                final GramWallet wallet = GramWallet.getInstance(currentAccount);
+                if (wallet.getBalance() > 0 && !wallet.isBackupEnabled() && !wallet.cantAccessWallet()) {
+                    localGramBalance += wallet.getBalance();
+                }
+                for (GramWallet.PreviousWallet w : wallet.getPreviousWallets()) {
+                    if (!w.outdated && !w.loading && w.balance > 0) {
+                        localGramBalance += w.balance;
+                    }
+                }
+            }
+            showLogOutDialog(localGramBalance);
+        });
+    }
+
+    public void showLogOutDialog(long grams) {
+        new AlertDialog.Builder(getContext())
+            .setTitle(getString(R.string.LogOut))
+            .setMessage(AndroidUtilities.replaceTags(grams > 0 ? formatString(R.string.AreYouSureLogoutGrams, GramWallet.formatGramsWithUnit(grams)) : getString(R.string.AreYouSureLogout)))
+            .setPositiveButton(getString(R.string.LogOut), (dialogInterface, i) -> {
+                MessagesController.getInstance(currentAccount).performLogout(1);
+            })
+            .setNegativeButton(getString(R.string.Cancel), null)
+            .makeRed(DialogInterface.BUTTON_POSITIVE)
+            .show();
     }
 
     @Override
@@ -189,22 +229,22 @@ public class LogoutActivity extends BaseFragment {
                 case 0: {
                     HeaderCell view = (HeaderCell) holder.itemView;
                     if (position == alternativeHeaderRow) {
-                        view.setText(LocaleController.getString(R.string.AlternativeOptions));
+                        view.setText(getString(R.string.AlternativeOptions));
                     }
                     break;
                 }
                 case 1: {
                     TextDetailSettingsCell view = (TextDetailSettingsCell) holder.itemView;
                     if (position == addAccountRow) {
-                        view.setTextAndValueAndIcon(LocaleController.getString(R.string.AddAnotherAccount), LocaleController.getString(R.string.AddAnotherAccountInfo), R.drawable.msg_contact_add, true);
+                        view.setTextAndValueAndIcon(getString(R.string.AddAnotherAccount), getString(R.string.AddAnotherAccountInfo), R.drawable.msg_contact_add, true);
                     } else if (position == passcodeRow) {
-                        view.setTextAndValueAndIcon(LocaleController.getString(R.string.SetPasscode), LocaleController.getString(R.string.SetPasscodeInfo), R.drawable.msg_permissions, true);
+                        view.setTextAndValueAndIcon(getString(R.string.SetPasscode), getString(R.string.SetPasscodeInfo), R.drawable.msg_permissions, true);
                     } else if (position == cacheRow) {
-                        view.setTextAndValueAndIcon(LocaleController.getString(R.string.ClearCache), LocaleController.getString(R.string.ClearCacheInfo), R.drawable.msg_clearcache, true);
+                        view.setTextAndValueAndIcon(getString(R.string.ClearCache), getString(R.string.ClearCacheInfo), R.drawable.msg_clearcache, true);
                     } else if (position == phoneRow) {
-                        view.setTextAndValueAndIcon(LocaleController.getString(R.string.ChangePhoneNumber), LocaleController.getString(R.string.ChangePhoneNumberInfo), R.drawable.msg_newphone, true);
+                        view.setTextAndValueAndIcon(getString(R.string.ChangePhoneNumber), getString(R.string.ChangePhoneNumberInfo), R.drawable.msg_newphone, true);
                     } else if (position == supportRow) {
-                        view.setTextAndValueAndIcon(LocaleController.getString(R.string.ContactSupport), LocaleController.getString(R.string.ContactSupportInfo), R.drawable.msg_help, false);
+                        view.setTextAndValueAndIcon(getString(R.string.ContactSupport), getString(R.string.ContactSupportInfo), R.drawable.msg_help, false);
                     }
                     break;
                 }
@@ -212,14 +252,14 @@ public class LogoutActivity extends BaseFragment {
                     TextSettingsCell view = (TextSettingsCell) holder.itemView;
                     if (position == logoutRow) {
                         view.setTextColor(Theme.getColor(Theme.key_text_RedRegular));
-                        view.setText(LocaleController.getString(R.string.LogOutTitle), false);
+                        view.setText(getString(R.string.LogOutTitle), false);
                     }
                     break;
                 }
                 case 4: {
                     TextInfoPrivacyCell view = (TextInfoPrivacyCell) holder.itemView;
                     if (position == logoutSectionRow) {
-                        view.setText(LocaleController.getString(R.string.LogOutInfo));
+                        view.setText(getString(R.string.LogOutInfo));
                     }
                     break;
                 }

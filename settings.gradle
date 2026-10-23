@@ -1,3 +1,20 @@
 include ':TMessagesProj'
 include ':TMessagesProj_App'
 include ':TMessagesProj_AppStandalone'
+
+if (file('TMessagesProj/lib/jlatexmath/jlatexmath').exists()) {
+    include ':jlatexmath'
+    project(':jlatexmath').projectDir = file('TMessagesProj/lib/jlatexmath/jlatexmath')
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+if (file("TMessagesProj_Modules/media/core_settings.gradle").exists()) {
+    gradle.ext.androidxMediaModulePrefix = 'TMessagesProj_Modules:media3:media-'
+    apply from: file("TMessagesProj_Modules/media/core_settings.gradle")
+}

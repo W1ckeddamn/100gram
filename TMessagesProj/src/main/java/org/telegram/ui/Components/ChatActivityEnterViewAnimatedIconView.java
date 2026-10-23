@@ -16,16 +16,17 @@ public class ChatActivityEnterViewAnimatedIconView extends RLottieImageView {
     private TransitState animatingState;
     private final int sizeDp;
 
-    private Map<TransitState, RLottieDrawable> stateMap = new HashMap<TransitState, RLottieDrawable>() {
+    private final Map<TransitState, RLottieDrawable> stateMap = new HashMap<TransitState, RLottieDrawable>() {
         @Nullable
         @Override
         public RLottieDrawable get(@Nullable Object key) {
             RLottieDrawable obj = super.get(key);
-            if (obj == null && key instanceof TransitState) {
+            if (obj == null) {
                 TransitState state = (TransitState) key;
                 int res = state.resource;
-                obj = new RLottieDrawable(res, String.valueOf(res), AndroidUtilities.dp(sizeDp), AndroidUtilities.dp(sizeDp));
-                put(state, obj);
+                RLottieDrawable rLottieDrawable = new RLottieDrawable(res, AndroidUtilities.dp(sizeDp), AndroidUtilities.dp(sizeDp));
+                put(state, rLottieDrawable);
+                return rLottieDrawable;
             }
             return obj;
         }

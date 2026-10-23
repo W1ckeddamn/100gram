@@ -26,6 +26,7 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -55,8 +56,14 @@ import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.QueryProductDetailsParams;
+
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BillingController;
 import org.telegram.messenger.BirthdayController;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.DocumentObject;
 import org.telegram.messenger.Emoji;
@@ -68,7 +75,6 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
-import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SvgHelper;
@@ -145,7 +151,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
     private final int currentAccount;
     private UniversalAdapter adapter;
     private List<TLRPC.TL_premiumGiftCodeOption> options;
-    private final Runnable closeParentSheet;
+    private final Utilities.Callback<Boolean> closeParentSheet;
     private TLRPC.DisallowedGiftsSettings userSettings;
 
     private final long dialogId;
@@ -176,11 +182,11 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
 
     private boolean birthday;
 
-    public GiftSheet(Context context, int currentAccount, long userId, Runnable closeParentSheet) {
+    public GiftSheet(Context context, int currentAccount, long userId, Utilities.Callback<Boolean> closeParentSheet) {
         this(context, currentAccount, userId, null, closeParentSheet);
     }
 
-    public GiftSheet(Context context, int currentAccount, long dialogId, List<TLRPC.TL_premiumGiftCodeOption> options, Runnable closeParentSheet) {
+    public GiftSheet(Context context, int currentAccount, long dialogId, List<TLRPC.TL_premiumGiftCodeOption> options, Utilities.Callback<Boolean> closeParentSheet) {
         super(context, null, false, false, false, null);
 
         this.currentAccount = currentAccount;
@@ -391,7 +397,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                             if (lastFragment == null) return;
                             dismiss();
                             if (closeParentSheet != null) {
-                                closeParentSheet.run();
+                                closeParentSheet.run(false);
                             }
                             final Bundle args = new Bundle();
                             args.putLong("user_id", dialogId);
@@ -468,7 +474,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                     final GiftPremiumBottomSheet.GiftTier premiumTier = (GiftPremiumBottomSheet.GiftTier) item.object;
                     new SendGiftSheet(context, currentAccount, premiumTier, this.dialogId, () -> {
                         if (closeParentSheet != null) {
-                            closeParentSheet.run();
+                            closeParentSheet.run(false);
                         }
                         dismiss();
                     }) {
@@ -502,7 +508,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                             sheet.doTransfer(dialogId, err -> {
                                 progress.end();
                                 if (closeParentSheet != null) {
-                                    closeParentSheet.run();
+                                    closeParentSheet.run(false);
                                 }
                                 GiftSheet.this.dismiss();
                                 if (err != null) {
@@ -538,9 +544,12 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                                 observer.addOnPreDrawListener(onPreDrawListener);
                             }
                         };
-                        fragment.setCloseParentSheet(() -> {
+                        fragment.setCloseParentSheet((fragmentsImmediately) -> {
                             if (closeParentSheet != null) {
-                                closeParentSheet.run();
+                                closeParentSheet.run(fragmentsImmediately);
+                            }
+                            if (fragmentsImmediately) {
+                                skipDismissAnimation();
                             }
                             dismiss();
                         });
@@ -550,7 +559,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                     if (gift.auction) {
                         AuctionJoinSheet.show(context, resourcesProvider, currentAccount, dialogId, gift.id, () -> {
                             if (closeParentSheet != null) {
-                                closeParentSheet.run();
+                                closeParentSheet.run(false);
                             }
                             dismiss();
                         });
@@ -570,7 +579,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                     final Runnable openSendSheet = () -> {
                         new SendGiftSheet(context, currentAccount, gift, this.dialogId, () -> {
                             if (closeParentSheet != null) {
-                                closeParentSheet.run();
+                                closeParentSheet.run(false);
                             }
                             dismiss();
                         }, gift.limited && userSettings != null && userSettings.disallow_limited_stargifts, gift.limited && userSettings != null && userSettings.disallow_unique_stargifts) {
@@ -604,7 +613,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                                     ((EffectsTextView) textView).setOnLinkPressListener(link -> {
                                         dialog.dismiss();
                                         if (closeParentSheet != null) {
-                                            closeParentSheet.run();
+                                            closeParentSheet.run(false);
                                         }
                                         dismiss();
                                         link.onClick(textView);
@@ -753,7 +762,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
 
         dismiss();
         if (closeParentSheet != null) {
-            closeParentSheet.run();
+            closeParentSheet.run(false);
         }
     }
 
@@ -820,6 +829,78 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
 
     private void updatePremiumTiers() {
         premiumTiers.clear();
+        if (premiumTiers.isEmpty() && options != null && !options.isEmpty()) {
+            List<QueryProductDetailsParams.Product> products = new ArrayList<>();
+            long pricePerMonthMax = 0;
+            for (int i = options.size() - 1; i >= 0; i--) {
+                final TLRPC.TL_premiumGiftCodeOption option = options.get(i);
+                if ("XTR".equalsIgnoreCase(option.currency)) continue;
+                Object starsOption = null;
+                for (TLRPC.TL_premiumGiftCodeOption o : options) {
+                    if (o != option && "XTR".equalsIgnoreCase(o.currency) && o.months == option.months) {
+                        starsOption = o;
+                        break;
+                    }
+                }
+                final GiftPremiumBottomSheet.GiftTier giftTier = new GiftPremiumBottomSheet.GiftTier(option, starsOption);
+                premiumTiers.add(giftTier);
+                if (BuildVars.useInvoiceBilling()) {
+                    if (giftTier.getPricePerMonth() > pricePerMonthMax) {
+                        pricePerMonthMax = giftTier.getPricePerMonth();
+                    }
+                } else if (giftTier.getStoreProduct() != null && BillingController.getInstance().isReady()) {
+                    products.add(QueryProductDetailsParams.Product.newBuilder()
+                            .setProductType(BillingClient.ProductType.INAPP)
+                            .setProductId(giftTier.getStoreProduct())
+                            .build());
+                }
+            }
+            if (BuildVars.useInvoiceBilling()) {
+                for (GiftPremiumBottomSheet.GiftTier tier : premiumTiers) {
+                    tier.setPricePerMonthRegular(pricePerMonthMax);
+                }
+            } else if (!products.isEmpty()) {
+                long startMs = System.currentTimeMillis();
+                BillingController.getInstance().queryProductDetails(products, (billingResult, list) -> {
+                    long pricePerMonthMaxStore = 0;
+
+                    for (ProductDetails details : list) {
+                        for (GiftPremiumBottomSheet.GiftTier giftTier : premiumTiers) {
+                            if (giftTier.getStoreProduct() != null && giftTier.getStoreProduct().equals(details.getProductId())) {
+                                giftTier.setGooglePlayProductDetails(details);
+
+                                if (giftTier.getPricePerMonth() > pricePerMonthMaxStore) {
+                                    pricePerMonthMaxStore = giftTier.getPricePerMonth();
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    for (GiftPremiumBottomSheet.GiftTier giftTier : premiumTiers) {
+                        giftTier.setPricePerMonthRegular(pricePerMonthMaxStore);
+                    }
+                    AndroidUtilities.runOnUIThread(() -> {
+                        if (adapter != null) {
+                            adapter.update(false);
+                        }
+                    });
+                });
+            }
+        }
+        if (premiumTiers.isEmpty()) {
+            BoostRepository.loadGiftOptions(currentAccount, null, paymentOptions -> {
+                if (getContext() == null || !isShown()) return;
+                options = BoostRepository.filterGiftOptions(paymentOptions, 1);
+                options = BoostRepository.filterGiftOptionsByBilling(options);
+                if (!options.isEmpty()) {
+                    updatePremiumTiers();
+                    if (adapter != null) {
+                        adapter.update(true);
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -1170,14 +1251,8 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                 if (userGift != null && userGift.unsaved) {
                     sb.append(", ").append(getString(R.string.Gift2FilterHidden));
                 }
-                if (userGift != null && !userGift.name_hidden && avatarView != null && avatarView.getVisibility() == View.VISIBLE) {
-                    long fromDialogId = DialogObject.getPeerDialogId(userGift.from_id);
-                    if (fromDialogId == 0 && userGift.gift instanceof TL_stars.TL_starGiftUnique) {
-                        final TL_stars.starGiftAttributeOriginalDetails originalDetails = findAttribute(userGift.gift.attributes, TL_stars.starGiftAttributeOriginalDetails.class);
-                        if (originalDetails != null && originalDetails.sender_id != null) {
-                            fromDialogId = DialogObject.getPeerDialogId(originalDetails.sender_id);
-                        }
-                    }
+                if (userGift != null && !(userGift.gift instanceof TL_stars.TL_starGiftUnique) && !userGift.name_hidden && avatarView != null && avatarView.getVisibility() == View.VISIBLE) {
+                    final long fromDialogId = DialogObject.getPeerDialogId(userGift.from_id);
                     if (fromDialogId != 0) {
                         CharSequence fromName = null;
                         if (fromDialogId > 0) {
@@ -1282,7 +1357,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
 
             if (avatarView.getVisibility() == View.VISIBLE && avatarView.getAlpha() > 0) {
                 canvas.save();
-                canvas.translate(cardBackgroundPadding.left + dp(2) + avatarView.getTranslationX(), cardBackgroundPadding.top + dp(2));
+                canvas.translate(cardBackgroundPadding.left + dp(2), cardBackgroundPadding.top + dp(2));
                 avatarView.draw(canvas);
                 canvas.restore();
             }
@@ -1349,18 +1424,13 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
                         if (!pin) pinnedView.setVisibility(View.GONE);
                     })
                     .start();
-                if (avatarView != null) {
-                    avatarView.animate().translationX(pin ? dp(22) : 0).setDuration(200).start();
-                }
             } else {
                 pinnedView.setVisibility(pin ? View.VISIBLE : View.GONE);
                 pinnedView.setAlpha(pin ? 1.0f : 0.0f);
                 pinnedView.setScaleX(pin ? 1.0f : 0.3f);
                 pinnedView.setScaleY(pin ? 1.0f : 0.3f);
-                if (avatarView != null) {
-                    avatarView.setTranslationX(pin ? dp(22) : 0);
-                }
             }
+
             setShowPinIcon(!pinned && reordering && !inCollection && (userGift != null && userGift.gift instanceof TL_stars.TL_starGiftUnique), animated);
             updateRibbonText();
         }
@@ -1726,56 +1796,34 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
             final boolean unique = userGift.gift instanceof TL_stars.TL_starGiftUnique;
             avatarView.setColorFilter(null);
             avatarView.setLayoutParams(avatarViewLayout1);
-            avatarView.setTranslationX(userGift.pinned_to_top ? dp(22) : 0);
-
-            long dialogId = 0;
-            boolean isAnonymous = userGift.name_hidden;
-            if (userGift.from_id != null) {
-                dialogId = DialogObject.getPeerDialogId(userGift.from_id);
-            } else if (unique) {
-                final TL_stars.starGiftAttributeOriginalDetails originalDetails = findAttribute(userGift.gift.attributes, TL_stars.starGiftAttributeOriginalDetails.class);
-                if (originalDetails != null && originalDetails.sender_id != null) {
-                    dialogId = DialogObject.getPeerDialogId(originalDetails.sender_id);
-                }
-            }
-
-            if (isAnonymous) {
+            if (unique && userGift.name_hidden) {
+                avatarView.setVisibility(View.GONE);
+            } else if (userGift.name_hidden) {
                 avatarView.setVisibility(View.VISIBLE);
                 CombinedDrawable iconDrawable = getPlatformDrawable("anonymous");
                 iconDrawable.setIconSize(dp(16), dp(16));
                 avatarView.setImageDrawable(iconDrawable);
-            } else if (dialogId > 0) {
-                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(dialogId);
-                if (user == null) {
-                    user = MessagesStorage.getInstance(currentAccount).getUser(dialogId);
-                    if (user != null) {
-                        MessagesController.getInstance(currentAccount).putUser(user, true);
-                    }
-                }
-                if (user != null) {
-                    avatarView.setVisibility(View.VISIBLE);
-                    avatarDrawable.setInfo(user);
-                    avatarView.setForUserOrChat(user, avatarDrawable);
-                } else {
-                    avatarView.setVisibility(View.GONE);
-                }
-            } else if (dialogId < 0) {
-                TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-dialogId);
-                if (chat == null) {
-                    chat = MessagesStorage.getInstance(currentAccount).getChat(-dialogId);
-                    if (chat != null) {
-                        MessagesController.getInstance(currentAccount).putChat(chat, true);
-                    }
-                }
-                if (chat != null) {
-                    avatarView.setVisibility(View.VISIBLE);
-                    avatarDrawable.setInfo(chat);
-                    avatarView.setForUserOrChat(chat, avatarDrawable);
-                } else {
-                    avatarView.setVisibility(View.GONE);
-                }
             } else {
-                avatarView.setVisibility(View.GONE);
+                final long dialogId = DialogObject.getPeerDialogId(userGift.from_id);
+                if (dialogId > 0) {
+                    final TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(dialogId);
+                    if (user != null) {
+                        avatarView.setVisibility(View.VISIBLE);
+                        avatarDrawable.setInfo(user);
+                        avatarView.setForUserOrChat(user, avatarDrawable);
+                    } else {
+                        avatarView.setVisibility(View.GONE);
+                    }
+                } else {
+                    final TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-dialogId);
+                    if (chat != null) {
+                        avatarView.setVisibility(View.VISIBLE);
+                        avatarDrawable.setInfo(chat);
+                        avatarView.setForUserOrChat(chat, avatarDrawable);
+                    } else {
+                        avatarView.setVisibility(View.GONE);
+                    }
+                }
             }
 
             if (backdrop != null && userGift.gift.resell_amount != null) {
@@ -1841,7 +1889,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
             this.inCollection = inCollection;
             title = null;
             subtitle = null;
-            setPinned(userGift.pinned_to_top, oldUserGift == userGift);
+            setPinned(userGift.pinned_to_top && !(unique && !userGift.name_hidden), oldUserGift == userGift);
             updateRibbonText();
 
             return oldUserGift == userGift;
@@ -2073,7 +2121,11 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
     public static class RibbonDrawable extends CompatDrawable {
 
         private Text text;
+        private Text oldText;
+        private final AnimatedFloat textAnimation = new AnimatedFloat(this::invalidateSelf, 0, 320, CubicBezierInterpolator.EASE_OUT_QUINT);
         private Path path = new Path();
+        private final Path particleMaskPath = new Path();
+        private final Paint particleMaskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private float scale;
         private StarsReactionsSheet.Particles particles;
@@ -2096,6 +2148,7 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
         public RibbonDrawable(View view, float scale) {
             super(view);
             fillRibbonPath(path, this.scale = scale, false);
+            particleMaskPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
 
             paint.setColor(0xFFF55951);
             paint.setPathEffect(new CornerPathEffect(dp(2.33f)));
@@ -2141,7 +2194,24 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
         }
 
         public void setText(int textSizeDp, CharSequence text, boolean bold) {
+            oldText = null;
+            textAnimation.force(1);
             this.text = new Text(text, textSizeDp, bold ? AndroidUtilities.bold() : null);
+            invalidateSelf();
+        }
+
+        public void setTextAnimated(int textSizeDp, CharSequence text, boolean bold) {
+            if (this.text == null) {
+                setText(textSizeDp, text, bold);
+                return;
+            }
+            if (TextUtils.equals(this.text.getText(), text)) {
+                return;
+            }
+            oldText = this.text;
+            this.text = new Text(text, textSizeDp, bold ? AndroidUtilities.bold() : null);
+            textAnimation.force(0);
+            invalidateSelf();
         }
 
         private boolean left;
@@ -2164,20 +2234,44 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
             }
             canvas.drawPath(path, paint);
             if (particles != null) {
-                canvas.clipPath(path);
+                canvas.saveLayer(0, 0, dp(48 * scale), dp(48 * scale), null);
                 particles.setBounds(0, 0, dp(48), dp(48));
                 particles.process();
                 particles.draw(canvas, 0xFFFFFFFF);
+                particleMaskPath.set(path);
+                particleMaskPath.toggleInverseFillType();
+                canvas.drawPath(particleMaskPath, particleMaskPaint);
+                canvas.restore();
                 invalidateSelf();
             }
             if (text != null) {
+                final float progress = textAnimation.set(1);
+                if (!textAnimation.isInProgress()) {
+                    oldText = null;
+                }
                 canvas.save();
-                canvas.rotate(left ? -45 : 45, getBounds().width() / 2f + dp(left ? -7 : 6), getBounds().height() / 2f - dp(left ? 5 : 6));
-                final float scale = Math.min(1, dp(40) / text.getCurrentWidth());
-                canvas.scale(scale, scale, getBounds().width() / 2f + dp(left ? -7 : 6), getBounds().height() / 2f - dp(left ? 5 : 6));
-                text.draw(canvas, getBounds().width() / 2f + dp(left ? -7 : 6) - text.getWidth() / 2f, getBounds().height() / 2f - dp(left ? 4 : 5), textColor, 1f);
+                if (oldText != null && textAnimation.isInProgress()) {
+                    canvas.clipPath(path);
+                    final float distance = dp(64 * scale);
+                    drawText(canvas, oldText, distance * progress);
+                    drawText(canvas, text, -distance * (1 - progress));
+                } else {
+                    drawText(canvas, text, 0);
+                }
                 canvas.restore();
             }
+            canvas.restore();
+        }
+
+        private void drawText(Canvas canvas, Text text, float offset) {
+            canvas.save();
+            canvas.translate(offset, offset);
+            final float cx = getBounds().width() / 2f + dp(left ? -7 : 6);
+            final float cy = getBounds().height() / 2f - dp(left ? 5 : 6);
+            canvas.rotate(left ? -45 : 45, cx, cy);
+            final float textScale = Math.min(1, dp(40) / text.getCurrentWidth());
+            canvas.scale(textScale, textScale, cx, cy);
+            text.draw(canvas, cx - text.getWidth() / 2f, cy + dp(1), textColor, 1f);
             canvas.restore();
         }
     }
@@ -2204,6 +2298,15 @@ public class GiftSheet extends BottomSheetWithRecyclerListView implements Notifi
         public void setText(int textSizeDp, CharSequence text, boolean bold) {
             currentText = text;
             drawable.setText(textSizeDp, text, bold);
+        }
+
+        public void setTextAnimated(CharSequence text, boolean bold) {
+            setTextAnimated(bold ? 10 : 11, text, bold);
+        }
+
+        public void setTextAnimated(int textSizeDp, CharSequence text, boolean bold) {
+            currentText = text;
+            drawable.setTextAnimated(textSizeDp, text, bold);
         }
 
         public void setColor(int color) {

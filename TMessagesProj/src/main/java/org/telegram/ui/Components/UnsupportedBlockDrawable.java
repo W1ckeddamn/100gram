@@ -2,6 +2,7 @@ package org.telegram.ui.Components;
 
 import static org.telegram.messenger.AndroidUtilities.dp;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
@@ -25,6 +26,7 @@ import androidx.core.graphics.ColorUtils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.R;
+import org.telegram.messenger.RichMessageLayout;
 import org.telegram.messenger.utils.DrawableUtils;
 import org.telegram.ui.ActionBar.Theme;
 
@@ -193,6 +195,7 @@ public class UnsupportedBlockDrawable extends Drawable {
         final float s = buttonBounce.getScale(0.05f);
         canvas.save();
         canvas.scale(s, s, buttonRect.centerX(), buttonRect.centerY());
+        final int bgColor = Theme.multAlpha(0xFFFFFFFF, 0.18f);
         canvas.drawRoundRect(buttonRect, buttonRadius, buttonRadius, buttonBackgroundPaint);
         canvas.save();
         canvas.translate(
@@ -202,6 +205,7 @@ public class UnsupportedBlockDrawable extends Drawable {
         buttonLayout.draw(canvas);
         canvas.restore();
         canvas.restore();
+
 
         DrawableUtils.setBounds(bubbleDrawable, left + dp(29.66f), cy + 1, Gravity.CENTER);
         bubbleDrawable.draw(canvas);

@@ -19,6 +19,8 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.billingclient.api.ProductDetails;
+
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.BillingController;
 import org.telegram.messenger.BuildVars;
@@ -405,6 +407,7 @@ public class GiftPremiumBottomSheet extends BottomSheetWithRecyclerListView impl
         private long pricePerMonth;
 
         private long pricePerMonthRegular;
+        public ProductDetails googlePlayProductDetails;
 
         public int yOffset;
 
@@ -419,6 +422,14 @@ public class GiftPremiumBottomSheet extends BottomSheetWithRecyclerListView impl
             this.giftCodeOption = giftCodeOption;
             this.starsOption = starsOption instanceof TLRPC.TL_premiumGiftOption ? (TLRPC.TL_premiumGiftOption) starsOption : null;
             this.starsCodeOption = starsOption instanceof TLRPC.TL_premiumGiftCodeOption ? (TLRPC.TL_premiumGiftCodeOption) starsOption : null;
+        }
+
+        public ProductDetails getGooglePlayProductDetails() {
+            return googlePlayProductDetails;
+        }
+
+        public void setGooglePlayProductDetails(ProductDetails googlePlayProductDetails) {
+            this.googlePlayProductDetails = googlePlayProductDetails;
         }
 
         public void setPricePerMonthRegular(long pricePerMonthRegular) {

@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.telegram.messenger.BuildVars;
+import org.telegram.messenger.BuildConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.utils.settings.SharedSettings;
@@ -23,7 +23,7 @@ import org.telegram.ui.Cells.TextInfoPrivacyCell;
 import org.telegram.ui.Cells.TextSettingsCell;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
-import org.telegram.utils.camera.roundvideo.RoundVideoSession;
+import org.telegram.utils.recorder.round.RoundVideoSession;
 
 /** Configures the Camera2 round-video implementation. */
 public class RoundVideoSettingsActivity extends BaseFragment {
@@ -42,7 +42,7 @@ public class RoundVideoSettingsActivity extends BaseFragment {
     private static final int ROW_COMPOSITION_HEADER = 7;
     private static final int ROW_COMPOSITION = 8;
     private static final int ROW_COMPOSITION_INFO = 9;
-    private static final int ROW_COUNT = 10;
+    private static final int ROW_COUNT = BuildConfig.DEBUG_PRIVATE_VERSION ? 10 : 7;
 
     private static final int[] BITRATES = {
             750_000,
@@ -125,7 +125,7 @@ public class RoundVideoSettingsActivity extends BaseFragment {
             );
         } else if (position == ROW_BITRATE) {
             CharSequence[] labels = new CharSequence[BITRATES.length];
-            for (int i = 0; i < BITRATES.length; i++) {
+            for (int i = 0; i < (BITRATES.length - (BuildConfig.DEBUG_PRIVATE_VERSION ? 0 : 1)); i++) {
                 labels[i] = formatBitrate(BITRATES[i]);
             }
             showChoice(

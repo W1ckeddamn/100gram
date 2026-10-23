@@ -7,3 +7,9 @@
 [submodule "TMessagesProj/jni/third_party/ffmpeg"]
 	path = TMessagesProj/jni/third_party/ffmpeg
 	url = https://github.com/FFmpeg/FFmpeg.git
+[submodule "TMessagesProj/lib/jlatexmath"]
+	path = TMessagesProj/lib/jlatexmath
+	url = https://github.com/dkaraush/jlatexmath-android.git
+[submodule "TMessagesProj_Modules/media"]
+	path = TMessagesProj_Modules/media
+	url = https://github.com/Arseny271/media.git

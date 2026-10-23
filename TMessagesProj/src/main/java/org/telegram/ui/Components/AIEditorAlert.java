@@ -49,7 +49,26 @@ import androidx.core.math.MathUtils;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.telegram.messenger.*;
+import org.telegram.messenger.AiTonesController;
+import org.telegram.messenger.AndroidUtilities;
+import org.telegram.utils.code.highlight.CodeHighlighting;
+import org.telegram.messenger.Emoji;
+import org.telegram.messenger.FileLoader;
+import org.telegram.messenger.FileLog;
+import org.telegram.messenger.ImageLocation;
+import org.telegram.messenger.LanguageDetector;
+import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.MediaDataController;
+import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.NotificationCenter;
+import org.telegram.messenger.R;
+import org.telegram.messenger.RichMessageLayout;
+import org.telegram.messenger.SendMessagesHelper;
+import org.telegram.messenger.TranslateController;
+import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.UserObject;
+import org.telegram.messenger.Utilities;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
@@ -670,6 +689,14 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
 
     public AIEditorAlert setText(TL_iv.RichMessage richMessage) {
         this.textRich = richMessage;
+        if (LanguageDetector.hasSupport()) {
+            LanguageDetector.detectLanguage(format(textRich), lng -> {
+                from_lang = lng;
+                adapter.update(true);
+            }, e -> {
+                FileLog.e(e);
+            });
+        }
         updateStyles();
         return this;
     }
@@ -709,6 +736,7 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
         } else if (
             block instanceof TL_iv.pageBlockMap ||
             block instanceof TL_iv.pageBlockAudio ||
+            block instanceof TL_iv.pageBlockDocument ||
             block instanceof TL_iv.pageBlockVideo ||
             block instanceof TL_iv.pageBlockPhoto ||
             block instanceof TL_iv.pageBlockSlideshow ||
@@ -780,6 +808,7 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
         } else if (
             block instanceof TL_iv.pageBlockMap ||
             block instanceof TL_iv.pageBlockAudio ||
+            block instanceof TL_iv.pageBlockDocument ||
             block instanceof TL_iv.pageBlockVideo ||
             block instanceof TL_iv.pageBlockPhoto ||
             block instanceof TL_iv.pageBlockSlideshow ||
@@ -869,6 +898,14 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
     }
     public AIEditorAlert setText(CharSequence text) {
         this.text = copy(text);
+        if (LanguageDetector.hasSupport()) {
+            LanguageDetector.detectLanguage(text.toString(), lng -> {
+                from_lang = lng;
+                adapter.update(true);
+            }, e -> {
+                FileLog.e(e);
+            });
+        }
         return this;
     }
     public AIEditorAlert setOnUse(Utilities.Callback<CharSequence> onUse) {
@@ -919,7 +956,7 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
     protected CharSequence getTitle() {
         if (title == null) {
             title = getString(R.string.AIEditor);
-            titleLoadingDrawable = new RLottieDrawable(R.raw.emoji_stars, "emoji_stars", dp(24), dp(24));
+            titleLoadingDrawable = new RLottieDrawable(R.raw.emoji_stars, dp(24), dp(24));
             titleLoadingDrawable.setAllowDecodeSingleFrame(true);
             titleLoadingDrawable.setAutoRepeat(1);
         }
@@ -1810,7 +1847,7 @@ public class AIEditorAlert extends BottomSheetWithRecyclerListView implements No
 
                 int accountForEmoji = currentAccount;
                 if (ConnectionsManager.getInstance(accountForEmoji).isTestBackend()) {
-                    for (int i : SharedConfig.activeAccounts) {
+                    for (int i = 0; i < UserConfig.MAX_ACCOUNT_COUNT; ++i) {
                         if (UserConfig.getInstance(i).isClientActivated() && !ConnectionsManager.getInstance(i).isTestBackend()) {
                             accountForEmoji = i;
                             break;
