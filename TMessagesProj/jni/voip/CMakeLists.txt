@@ -1846,6 +1846,8 @@ target_include_directories(tgcalls PUBLIC
         third_party/libsrtp/crypto/include
         third_party/usrsctplib
         third_party
+        third_party/libvpx
+        third_party/dav1d/include
         voip/libtgvoip
         ffmpeg/include
         voip/webrtc/third_party/crc32c/src/include
@@ -2030,6 +2032,8 @@ target_include_directories(voipandroid PUBLIC
         third_party/libsrtp/crypto/include
         third_party/usrsctplib
         third_party
+        third_party/libvpx
+        third_party/dav1d/include
         voip/libtgvoip
         tde2e/include
 )
