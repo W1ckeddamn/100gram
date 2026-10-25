@@ -16,7 +16,6 @@
 #include <map>
 #include <atomic>
 #include <unordered_set>
-#include <vector>
 #include "Defines.h"
 
 #ifdef ANDROID
@@ -91,7 +90,6 @@ public:
 
 private:
     static void *ThreadProc(void *data);
-    static std::vector<ConnectionsManager*> _instances;
 
     void initDatacenters();
     void loadConfig();
@@ -106,7 +104,7 @@ private:
     void requestSaltsForDatacenter(Datacenter *datacenter, bool media, bool useTempConnection);
     void clearRequestsForDatacenter(Datacenter *datacenter, HandshakeType type);
     void registerForInternalPushUpdates();
-    void processRequestQueue(uint32_t connectionType, uint32_t datacenterId);
+    void processRequestQueue(uint32_t connectionType, uint32_t datacenterId, Connection *connectedDownload = nullptr);
     void authorizeOnMovingDatacenter();
     void authorizedOnMovingDatacenter();
     Datacenter *getDatacenterWithId(uint32_t datacenterId);
@@ -272,7 +270,7 @@ private:
 
 #ifdef ANDROID
 extern JavaVM *javaVm;
-extern std::vector<JNIEnv*> jniEnv;
+extern JNIEnv *jniEnv[MAX_ACCOUNT_COUNT];
 extern jclass jclass_ByteBuffer;
 extern jmethodID jclass_ByteBuffer_allocateDirect;
 #endif

@@ -24,9 +24,10 @@
 #define DC_UPDATE_TIME 60 * 60
 #define TEMP_AUTH_KEY_EXPIRE_TIME 24 * 60 * 60
 #define PROXY_CONNECTIONS_COUNT 4
-#define DOWNLOAD_CONNECTIONS_COUNT 2
+#define DOWNLOAD_CONNECTIONS_COUNT 8
 #define UPLOAD_CONNECTIONS_COUNT 4
 #define CONNECTION_BACKGROUND_KEEP_TIME 10000
+#define MAX_ACCOUNT_COUNT 5
 #define USE_DELEGATE_HOST_RESOLVE
 
 #define USE_IPV4_ONLY 0
@@ -153,6 +154,7 @@ typedef struct ConnectiosManagerDelegate {
     virtual void getHostByName(std::string domain, int32_t instanceNum, ConnectionSocket *socket) = 0;
     virtual int32_t getInitFlags(int32_t instanceNum) = 0;
     virtual void onPremiumFloodWait(int32_t instanceNum, int32_t requestToken, bool isUpload) = 0;
+    virtual void onIntegrityCheckClassic(int32_t instanceNum, int32_t requestToken, std::string project, std::string nonce) = 0;
     virtual void onCaptchaCheck(int32_t instanceNum, int32_t requestToken, std::string action, std::string key_id) = 0;
 } ConnectiosManagerDelegate;
 
@@ -176,7 +178,9 @@ enum RequestFlag {
     RequestFlagIgnoreFloodWait = 1024,
     RequestFlagListenAfterCancel = 2048,
     RequestFlagIsCancel = 32768,
-    RequestFlagFailOnServerErrorsExceptFloodWait = 65536
+    RequestFlagFailOnServerErrorsExceptFloodWait = 65536,
+    RequestFlagSmallDownload = 131072,
+    RequestFlagDownloadByteBudget = 262144
 };
 
 inline std::string to_string_int32(int32_t value) {
