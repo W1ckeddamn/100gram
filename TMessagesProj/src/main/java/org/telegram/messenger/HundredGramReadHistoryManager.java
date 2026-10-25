@@ -140,24 +140,33 @@ public class HundredGramReadHistoryManager {
 
         ArrayList<Pair<Long, Integer>> copy = new ArrayList<>(participants);
         MessagesStorage.getInstance(currentAccount).getStorageQueue().postRunnable(() -> {
+            SQLitePreparedStatement state = null;
             try {
                 SQLiteDatabase database = MessagesStorage.getInstance(currentAccount).getDatabase();
                 if (database != null) {
                     database.beginTransaction();
-                    SQLitePreparedStatement state = database.executeFast("INSERT OR REPLACE INTO hundredgram_read_history VALUES(?, ?, ?, ?)");
-                    for (Pair<Long, Integer> pair : copy) {
-                        state.requery();
-                        state.bindLong(1, dialogId);
-                        state.bindInteger(2, messageId);
-                        state.bindLong(3, pair.first);
-                        state.bindInteger(4, pair.second);
-                        state.step();
+                    try {
+                        state = database.executeFast("INSERT OR REPLACE INTO hundredgram_read_history VALUES(?, ?, ?, ?)");
+                        for (Pair<Long, Integer> pair : copy) {
+                            state.requery();
+                            state.bindLong(1, dialogId);
+                            state.bindInteger(2, messageId);
+                            state.bindLong(3, pair.first);
+                            state.bindInteger(4, pair.second);
+                            state.step();
+                        }
+                    } finally {
+                        // SQLiteDatabase has no rollback: closing the transaction is what keeps the
+                        // shared storage DB usable after a failed bind/step.
+                        database.commitTransaction();
                     }
-                    state.dispose();
-                    database.commitTransaction();
                 }
             } catch (Exception e) {
                 FileLog.e(e);
+            } finally {
+                if (state != null) {
+                    state.dispose();
+                }
             }
         });
     }

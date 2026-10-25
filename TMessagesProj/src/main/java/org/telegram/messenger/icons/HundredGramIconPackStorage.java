@@ -137,7 +137,7 @@ public class HundredGramIconPackStorage {
                     String name = entry.getName();
                     // Защита от Zip Slip уязвимости
                     File target = new File(tempDir, name);
-                    if (!target.getCanonicalPath().startsWith(tempDir.getCanonicalPath())) {
+                    if (!target.getCanonicalPath().startsWith(tempDir.getCanonicalPath() + File.separator)) {
                         continue;
                     }
                     if (entry.isDirectory()) {
@@ -164,7 +164,11 @@ public class HundredGramIconPackStorage {
                 targetId = "pack_" + System.currentTimeMillis();
             }
 
-            File finalDir = new File(root, targetId);
+            File finalDir = safeChild(root, targetId);
+            if (finalDir == null) {
+                deleteRecursive(tempDir);
+                return null;
+            }
             if (finalDir.exists()) {
                 deleteRecursive(finalDir);
             }
@@ -185,11 +189,30 @@ public class HundredGramIconPackStorage {
         if (root == null) {
             return false;
         }
-        File packDir = new File(root, packId);
-        if (packDir.exists()) {
+        File packDir = safeChild(root, packId);
+        if (packDir != null && packDir.exists()) {
             return deleteRecursive(packDir);
         }
         return false;
+    }
+
+    /**
+     * Resolves a pack id to a directory strictly inside the packs root. Returns null for ids containing
+     * path separators or "..", so a pack.json cannot point deleteRecursive() outside our own folder.
+     */
+    private static File safeChild(File root, String name) {
+        if (root == null || TextUtils.isEmpty(name) || name.contains("..") || name.contains("/") || name.contains("\\")) {
+            return null;
+        }
+        try {
+            File child = new File(root, name);
+            if (!child.getCanonicalPath().startsWith(root.getCanonicalPath() + File.separator)) {
+                return null;
+            }
+            return child;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static boolean deleteRecursive(File fileOrDirectory) {

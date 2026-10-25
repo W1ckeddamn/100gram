@@ -127,6 +127,12 @@ public class PluginsController implements PluginsHooks {
     }
 
     public void installPlugin(final String filePath, final BaseFragment fragment, final Utilities.Callback<Boolean> callback) {
+        // A plugin is native code with full app access: never install while plugins are off,
+        // safe mode is on, or the user disallowed unknown sources.
+        if (!HundredGramConfig.pluginsEngine || HundredGramConfig.pluginsSafeMode || !HundredGramConfig.pluginsInstallUnknownSources) {
+            if (callback != null) callback.run(false);
+            return;
+        }
         final File file = new File(filePath);
         final PluginsEngine engine = getPluginEngine(file);
         if (engine == null) {
@@ -171,10 +177,12 @@ public class PluginsController implements PluginsHooks {
     }
 
     public void deletePlugin(String pluginId, Utilities.Callback<String> callback) {
-        Plugin plugin = plugins.remove(pluginId);
+        // Resolve the engine while the plugin is still registered, otherwise it falls back to
+        // the native engine and a .plugin file is never removed from disk.
+        PluginsEngine engine = getPluginEngine(pluginId);
+        plugins.remove(pluginId);
         removeMenuItemsByPluginId(pluginId);
         removeHooksByPluginId(pluginId);
-        PluginsEngine engine = getPluginEngine(pluginId);
         if (engine != null) {
             engine.deletePlugin(pluginId, callback);
         } else {

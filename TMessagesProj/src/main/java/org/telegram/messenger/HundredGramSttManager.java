@@ -294,6 +294,10 @@ public class HundredGramSttManager {
 
         while ((ze = zis.getNextEntry()) != null) {
             File file = new File(targetDirectory, ze.getName());
+            // Zip Slip: a crafted entry like ../../shared_prefs/x.xml must never leave the model dir.
+            if (!file.getCanonicalPath().startsWith(targetDirectory.getCanonicalPath() + File.separator)) {
+                continue;
+            }
             File dir = ze.isDirectory() ? file : file.getParentFile();
             if (dir != null && !dir.isDirectory() && !dir.mkdirs()) {
                 throw new java.io.FileNotFoundException("Failed to ensure directory: " + dir.getAbsolutePath());

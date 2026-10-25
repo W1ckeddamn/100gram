@@ -14,6 +14,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -643,6 +644,35 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
             }
         }
         return total;
+    }
+
+    /**
+     * Names of vault files that belong to a chat marked "never expire" in the vault settings.
+     * Returns null when the vault table cannot be read, so rotation skips deletion instead of
+     * destroying protected media.
+     */
+    public Set<String> getNeverExpireVaultFileNames() {
+        HashSet<String> names = new HashSet<>();
+        if (HundredGramConfig.vaultProtectedDialogs.isEmpty()) {
+            return names;
+        }
+        org.telegram.SQLite.SQLiteCursor cursor = null;
+        try {
+            cursor = MessagesStorage.getInstance(currentAccount).getDatabase()
+                    .queryFinalized("SELECT file_name, uid FROM hundredgram_vault");
+            while (cursor.next()) {
+                String fileName = cursor.stringValue(0);
+                if (!TextUtils.isEmpty(fileName) && HundredGramConfig.isVaultNeverExpire(cursor.longValue(1))) {
+                    names.add(fileName);
+                }
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+            return null;
+        } finally {
+            if (cursor != null) cursor.dispose();
+        }
+        return names;
     }
 
     public void clearVault(long olderThanTimestamp) {
