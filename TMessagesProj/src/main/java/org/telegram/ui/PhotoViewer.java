@@ -18825,6 +18825,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (videoPlayer != null && playerLooping) {
             videoPlayer.setLooping(allowLoopingOnPause());
         }
+        // "Pause on minimize": without it the video keeps playing audio in the background
+        if (org.telegram.messenger.HundredGramConfig.pauseOnMinimizeVideo && !AndroidUtilities.isInPictureInPictureMode(parentActivity)) {
+            pauseVideoOrWeb();
+        }
     }
 
     private boolean allowLoopingOnPause() {

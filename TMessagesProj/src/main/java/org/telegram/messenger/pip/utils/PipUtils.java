@@ -58,7 +58,8 @@ public class PipUtils {
     }
 
     public static boolean useAutoEnterInPictureInPictureMode() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+        // "Swipe to PiP": swiping away from a playing video puts it into picture-in-picture
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && org.telegram.messenger.HundredGramConfig.swipeToPip;
     }
 
     public static void applyPictureInPictureParams(Activity activity, PipSource source) {

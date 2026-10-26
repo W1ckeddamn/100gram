@@ -139,7 +139,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_SHOW_ID_AND_DC = 24;
     private static final int ITEM_KEEPALIVE_FOREGROUND_SERVICE = 25;
     private static final int ITEM_BATTERY_OPTIMIZATIONS = 26;
-    private static final int ITEM_DISABLE_ALL_TELEMETRY = 194;
     private static final int ITEM_SHADOWBAN = 195;
     private static final int ITEM_ADBLOCK = 350;
 
@@ -617,11 +616,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.keepAliveForegroundService));
         items.add(UItem.asButton(ITEM_BATTERY_OPTIMIZATIONS, LocaleController.getString("BatteryOptimization", R.string.BatteryOptimization)));
         items.add(UItem.asShadow(LocaleController.getString("KeepAliveForegroundServiceInfo", R.string.KeepAliveForegroundServiceInfo)));
-
-        items.add(UItem.asHeader(LocaleController.getString("HundredGramTelemetrySection", R.string.HundredGramTelemetrySection)));
-        items.add(UItem.asCheck(ITEM_DISABLE_ALL_TELEMETRY, LocaleController.getString("HundredGramDisableTelemetry", R.string.HundredGramDisableTelemetry))
-                .setChecked(HundredGramConfig.disableAllTelemetry));
-        items.add(UItem.asShadow(LocaleController.getString("HundredGramDisableTelemetryInfo", R.string.HundredGramDisableTelemetryInfo)));
     }
 
     private void fillGhostItems(ArrayList<UItem> items) {
@@ -1330,13 +1324,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
             case ITEM_BATTERY_OPTIMIZATIONS:
                 openBatteryOptimizationSettings();
-                break;
-            case ITEM_DISABLE_ALL_TELEMETRY:
-                HundredGramConfig.toggleDisableAllTelemetry();
-                item.setChecked(HundredGramConfig.disableAllTelemetry);
-                if (view instanceof TextCheckCell) {
-                    ((TextCheckCell) view).setChecked(HundredGramConfig.disableAllTelemetry);
-                }
                 break;
             case ITEM_SHADOWBAN:
                 presentFragment(new HundredGramShadowbanActivity());

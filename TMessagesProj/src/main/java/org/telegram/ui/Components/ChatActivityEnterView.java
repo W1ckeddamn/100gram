@@ -7439,6 +7439,8 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
     }
 
+    private boolean translatingBeforeSend;
+
     protected boolean sendMessageInternal(boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars, boolean allowConfirm) {
         final boolean allowConfirmFinal = allowConfirm && !animatorEphemeralMessageVisibility.getValue();
 
@@ -7545,6 +7547,30 @@ public class ChatActivityEnterView extends FrameLayout implements
                 return;
             }
             CharSequence message = messageEditText == null ? "" : messageEditText.getTextToUse();
+            // "Translate before send": translate the draft first, then send the translated text (commands are never translated)
+            if (!translatingBeforeSend && org.telegram.messenger.HundredGramConfig.translateBeforeSend
+                    && message.length() > 0 && message.charAt(0) != '/') {
+                translatingBeforeSend = true;
+                org.telegram.messenger.translator.HundredGramTranslator.getInstance().translate(
+                        message.toString(), "auto", org.telegram.messenger.HundredGramConfig.sendTargetLanguage,
+                        new org.telegram.messenger.translator.HundredGramTranslator.TranslateCallback() {
+                            @Override
+                            public void onSuccess(String translatedText) {
+                                translatingBeforeSend = false;
+                                if (messageEditText != null && translatedText != null && !translatedText.isEmpty()) {
+                                    messageEditText.setText(translatedText);
+                                }
+                                sendMessageInternal(notify, scheduleDate, scheduleRepeatPeriod, payStars, false);
+                            }
+
+                            @Override
+                            public void onError(Throwable error) {
+                                translatingBeforeSend = false;
+                                sendMessageInternal(notify, scheduleDate, scheduleRepeatPeriod, payStars, false);
+                            }
+                        });
+                return;
+            }
             if (parentFragment != null) {
                 TLRPC.Chat chat = parentFragment.getCurrentChat();
                 if (chat != null && chat.slowmode_enabled && !ChatObject.hasAdminRights(chat)) {

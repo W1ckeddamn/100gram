@@ -98,7 +98,6 @@ public class HundredGramConfig {
     public static int stickerShape = STICKER_SHAPE_DEFAULT;
 
     // Privacy & Profile
-    public static boolean disableAllTelemetry = true;
     public static boolean hidePhoneNumber;
     public static boolean hideOtherPhoneNumbers;
     public static boolean hideUsername;
@@ -506,7 +505,6 @@ public class HundredGramConfig {
             stickerShape = preferences.getInt("stickerShape", STICKER_SHAPE_DEFAULT);
 
             // Privacy & Profile
-            disableAllTelemetry = preferences.getBoolean("disableAllTelemetry", true);
             hidePhoneNumber = preferences.getBoolean("hidePhoneNumber", false);
             hideOtherPhoneNumbers = preferences.getBoolean("hideOtherPhoneNumbers", false);
             hideUsername = preferences.getBoolean("hideUsername", false);
@@ -770,12 +768,6 @@ public class HundredGramConfig {
         iconPacksEnabled = !iconPacksEnabled;
         save("iconPacksEnabled", iconPacksEnabled);
         postNotificationToAllAccounts(NotificationCenter.didUpdateIconPack);
-    }
-
-    public static void toggleDisableAllTelemetry() {
-        disableAllTelemetry = !disableAllTelemetry;
-        save("disableAllTelemetry", disableAllTelemetry);
-        postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);
     }
 
     public static void setTranslationProvider(int provider) {
