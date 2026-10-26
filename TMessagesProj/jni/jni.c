@@ -14,7 +14,6 @@
 
 int registerNativeTgNetFunctions(JavaVM *vm, JNIEnv *env);
 int videoOnJNILoad(JavaVM *vm, JNIEnv *env);
-int tgvoipOnJNILoad(JavaVM *vm, JNIEnv *env);
 int ffmpegOnJNILoad(JavaVM *vm, JNIEnv *env);
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -37,9 +36,9 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         return -1;
     }
 
-    tgvoipOnJNILoad(vm, env);
-
-	return JNI_VERSION_1_6;
+    // legacy libtgvoip bindings: their Java classes (VoIPController, AudioRecordJNI, ...) were
+    // removed in 12.10 while our jni kept the old code, so FindClass aborted JNI_OnLoad
+    return JNI_VERSION_1_6;
 }
 
 void JNI_OnUnload(JavaVM *vm, void *reserved) {
