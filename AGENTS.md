@@ -41,3 +41,6 @@
 ## 🧪 Testing
 - Tests are skipped in default build commands for speed. To run:  
   `.\gradlew.bat :TMessagesProj_AppStandalone:testAfatDebugUnitTest`
+
+## 📱 Device automation
+- Skills `android*` drive the device through `Tools\android.cmd <command> --json` (the upstream `./tools/android` script plus a Windows wrapper that sets `ANDROID_SDK_ROOT` and PATH).

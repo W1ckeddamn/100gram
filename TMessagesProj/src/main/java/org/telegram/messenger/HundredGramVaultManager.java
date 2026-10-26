@@ -573,10 +573,41 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
         String key = dialogId + "_" + messageId;
         vaultCache.remove(key);
         MessagesStorage.getInstance(currentAccount).getStorageQueue().postRunnable(() -> {
+            // dialog id is stored in the `uid` column; there is no `did` column
+            final String where = String.format(java.util.Locale.US,
+                    "mid = %d AND uid = %d AND file_name NOT LIKE 'edit_%%'", messageId, dialogId);
+            ArrayList<File> files = new ArrayList<>();
+            org.telegram.SQLite.SQLiteCursor cursor = null;
             try {
-                MessagesStorage.getInstance(currentAccount).getDatabase().executeFast(
-                        String.format(java.util.Locale.US, "DELETE FROM hundredgram_vault WHERE mid = %d AND did = %d AND file_name NOT LIKE 'edit_%%'", messageId, dialogId)
-                ).stepThis().dispose();
+                cursor = MessagesStorage.getInstance(currentAccount).getDatabase()
+                        .queryFinalized("SELECT file_name, vault_path FROM hundredgram_vault WHERE " + where);
+                while (cursor.next()) {
+                    String fileName = cursor.stringValue(0);
+                    String vaultPath = cursor.stringValue(1);
+                    if (!TextUtils.isEmpty(fileName)) {
+                        vaultCache.remove(fileName);
+                    }
+                    File f = !TextUtils.isEmpty(vaultPath) ? new File(vaultPath)
+                            : (TextUtils.isEmpty(fileName) ? null : new File(vaultDir, fileName));
+                    if (f != null && f.exists()) {
+                        files.add(f);
+                    }
+                }
+            } catch (Throwable e) {
+                FileLog.e(e);
+            } finally {
+                if (cursor != null) cursor.dispose();
+            }
+            for (File f : files) {
+                try {
+                    f.delete();
+                } catch (Throwable e) {
+                    FileLog.e(e);
+                }
+            }
+            try {
+                MessagesStorage.getInstance(currentAccount).getDatabase()
+                        .executeFast("DELETE FROM hundredgram_vault WHERE " + where).stepThis().dispose();
             } catch (Throwable e) {
                 FileLog.e(e);
             }
@@ -908,6 +939,7 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
             int cleanedCount = 0;
             org.telegram.SQLite.SQLiteCursor cursor = null;
             ArrayList<Object[]> toDelete = new ArrayList<>();
+            Set<String> referenced = new HashSet<>();
             try {
                 cursor = MessagesStorage.getInstance(currentAccount).getDatabase().queryFinalized("SELECT mid, uid, file_name, vault_path FROM hundredgram_vault");
                 while (cursor.next()) {
@@ -915,6 +947,9 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                     long uid = cursor.longValue(1);
                     String fileName = cursor.stringValue(2);
                     String vaultPath = cursor.stringValue(3);
+                    if (!TextUtils.isEmpty(fileName)) {
+                        referenced.add(fileName);
+                    }
 
                     File file = null;
                     if (!TextUtils.isEmpty(vaultPath)) {
@@ -952,13 +987,25 @@ public class HundredGramVaultManager implements NotificationCenter.NotificationC
                 cleanedCount++;
             }
 
-            // Clean 0-byte orphan files from vaultDir
+            // Delete blobs no row references (rows for replaced/deleted media are removed elsewhere).
+            // Files younger than an hour are kept: they may belong to a download that has no row yet.
             if (vaultDir != null && vaultDir.exists()) {
                 File[] files = vaultDir.listFiles();
                 if (files != null) {
+                    long cutoff = System.currentTimeMillis() - 60 * 60 * 1000L;
                     for (File f : files) {
-                        if (f != null && f.isFile() && f.length() == 0) {
+                        if (f == null || !f.isFile()) {
+                            continue;
+                        }
+                        if (f.length() == 0) {
                             f.delete();
+                            continue;
+                        }
+                        if (referenced.contains(f.getName()) || pendingDownloads.containsKey(f.getName())) {
+                            continue;
+                        }
+                        if (f.lastModified() < cutoff && f.delete()) {
+                            vaultCache.remove(f.getName());
                         }
                     }
                 }
