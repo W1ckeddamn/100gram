@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import androidx.core.content.FileProvider;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
@@ -29,9 +30,11 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Менеджер резервного копирования и восстановления настроек 100gram.
@@ -152,6 +155,17 @@ public class HundredGramBackupManager {
                     editor.putFloat(key, ((Number) val).floatValue());
                 } else if (val instanceof String) {
                     editor.putString(key, (String) val);
+                } else if (val instanceof JSONArray) {
+                    // string sets (e.g. pinnedPlugins) are exported as arrays
+                    JSONArray arr = (JSONArray) val;
+                    Set<String> set = new HashSet<>();
+                    for (int i = 0; i < arr.length(); i++) {
+                        Object item = arr.opt(i);
+                        if (item != null) {
+                            set.add(item.toString());
+                        }
+                    }
+                    editor.putStringSet(key, set);
                 }
             }
             editor.apply();
