@@ -87,6 +87,16 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
         items.add(UItem.asHeader(LocaleController.getString("WhatsNewCurrentVersion", R.string.WhatsNewCurrentVersion)));
 
         items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.msg_theme,
+                LocaleController.getString("WhatsNewSliderStyle", R.string.WhatsNewSliderStyle),
+                LocaleController.getString("WhatsNewSliderStyleDesc", R.string.WhatsNewSliderStyleDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
                 R.drawable.msg_settings,
                 LocaleController.getString("WhatsNewUiElevationAndSearchTitle", R.string.WhatsNewUiElevationAndSearchTitle),
                 LocaleController.getString("WhatsNewUiElevationAndSearchDesc", R.string.WhatsNewUiElevationAndSearchDesc),

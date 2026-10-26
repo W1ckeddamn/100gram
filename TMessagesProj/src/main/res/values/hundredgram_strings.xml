@@ -907,6 +907,9 @@
     <string name="AvatarCornersInfo">Adjusts the corner radius for profile photos and chat avatars across the entire application.</string>
     <string name="Md3SwitchStyle">Material 3 switch style</string>
     <string name="Md3SwitchStyleInfo">Uses enlarged switch tracks with animated checkmark and cross indicators.</string>
+    <string name="NewSliderStyle">Material slider style</string>
+    <string name="WhatsNewSliderStyle">Material Slider Style</string>
+    <string name="WhatsNewSliderStyleDesc">Settings sliders get a thick rounded track and a slim vertical thumb; switch back to the classic look anytime in Interface settings</string>
     <string name="BottomNavHeader">Bottom Navigation Bar</string>
     <string name="BottomNavHideContacts">Hide Contacts tab</string>
     <string name="BottomNavHideContactsInfo">Removes the contacts tab from the bottom navigation bar.</string>

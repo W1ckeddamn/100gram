@@ -39,6 +39,7 @@ public class HundredGramConfig {
     public static int deletedMarkColor = DELETED_MARK_COLOR_THEME;
     public static float avatarCorners = 28.0f;
     public static boolean md3SwitchStyle;
+    public static boolean newSliderStyle = true;
     public static boolean squareFab;
     public static boolean inlineMath = true;
     public static boolean bottomNavHideContactsTab;
@@ -464,6 +465,7 @@ public class HundredGramConfig {
             deletedMarkColor = preferences.getInt("deletedMarkColor", DELETED_MARK_COLOR_THEME);
             avatarCorners = preferences.getFloat("avatarCorners", 28.0f);
             md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
+            newSliderStyle = preferences.getBoolean("newSliderStyle", true);
             squareFab = preferences.getBoolean("squareFab", false);
             inlineMath = preferences.getBoolean("inlineMath", true);
             bottomNavHideContactsTab = preferences.getBoolean("bottomNavHideContactsTab", false);
@@ -922,6 +924,11 @@ public class HundredGramConfig {
         md3SwitchStyle = !md3SwitchStyle;
         save("md3SwitchStyle", md3SwitchStyle);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleNewSliderStyle() {
+        newSliderStyle = !newSliderStyle;
+        save("newSliderStyle", newSliderStyle);
     }
 
     public static void toggleSquareFab() {

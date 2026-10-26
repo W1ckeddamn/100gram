@@ -66,6 +66,12 @@ public class AvatarCornersPreviewCell extends FrameLayout {
         addView(preview, LayoutHelper.createFrame(-1, -2.0f, 49, 16.0f, 108.0f, 16.0f, 16.0f));
     }
 
+    public void updateSliderStyle() {
+        if (seekBar != null) {
+            seekBar.updateSliderStyle();
+        }
+    }
+
     private void drawMock(Canvas canvas) {
         mockPaint.setColor(PreviewColors.getMockColor(false));
         brightMockPaint.setColor(PreviewColors.getMockColor(true));

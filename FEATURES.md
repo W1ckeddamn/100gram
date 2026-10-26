@@ -1443,3 +1443,14 @@
     * Добавлен защитный запрос в SQLite `MessagesStorage` при отсутствии пользователя в памяти RAM.
   * **Ключевые классы:** [`GiftSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Gifts/GiftSheet.java), [`StarGiftSheet.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Stars/StarGiftSheet.java), [`TableView.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/TableView.java).
   * **Статус:** В релизе.
+
+---
+
+## 57. Материальный стиль слайдеров (Material Slider Style)
+
+* **Краткий тезис функции**:
+  * **Описание:** Ползунки в настройках 100gram рисуются в материальном стиле (толстая скруглённая дорожка и тонкий вертикальный бегунок) вместо классического тонкого трека Telegram. Стиль перенесён из exteraGram, но реализован собственным виджетом — без зависимости от библиотеки Material Components.
+  * **Где включается (UI):** `Настройки 100gram -> Интерфейс -> Новый стиль слайдеров` (по умолчанию включено).
+  * **Ключ конфигурации:** `HundredGramConfig.newSliderStyle` (`boolean`).
+  * **Ключевые классы:** [`MaterialSlider.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/MaterialSlider.java), [`AltSeekbar.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AltSeekbar.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
+  * **Статус:** В релизе.

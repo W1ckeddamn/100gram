@@ -140,6 +140,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_KEEPALIVE_FOREGROUND_SERVICE = 25;
     private static final int ITEM_BATTERY_OPTIMIZATIONS = 26;
     private static final int ITEM_SHADOWBAN = 195;
+    private static final int ITEM_NEW_SLIDER_STYLE = 391;
     private static final int ITEM_ADBLOCK = 350;
 
     // Item IDs for CATEGORY_INTERFACE
@@ -681,6 +682,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCustom(ITEM_AVATAR_CORNERS_PREVIEW, avatarCornersPreviewCell));
         items.add(UItem.asCheck(ITEM_MD3_SWITCH_STYLE, LocaleController.getString("Md3SwitchStyle", R.string.Md3SwitchStyle))
                 .setChecked(HundredGramConfig.md3SwitchStyle));
+        items.add(UItem.asCheck(ITEM_NEW_SLIDER_STYLE, LocaleController.getString("NewSliderStyle", R.string.NewSliderStyle))
+                .setChecked(HundredGramConfig.newSliderStyle));
         items.add(UItem.asCheck(ITEM_SQUARE_FAB, LocaleController.getString("SquareFab", R.string.SquareFab))
                 .setChecked(HundredGramConfig.squareFab));
         items.add(UItem.asShadow(LocaleController.getString("AvatarCornersInfo", R.string.AvatarCornersInfo)));
@@ -1587,6 +1590,16 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 }
                 if (listView != null && listView.adapter != null) {
                     listView.adapter.update(true);
+                }
+                break;
+            case ITEM_NEW_SLIDER_STYLE:
+                HundredGramConfig.toggleNewSliderStyle();
+                item.setChecked(HundredGramConfig.newSliderStyle);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.newSliderStyle);
+                }
+                if (avatarCornersPreviewCell != null) {
+                    avatarCornersPreviewCell.updateSliderStyle();
                 }
                 break;
             case ITEM_SQUARE_FAB:

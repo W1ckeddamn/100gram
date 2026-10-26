@@ -916,6 +916,9 @@
     <string name="AvatarCornersInfo">Регулирует радиус скругления фото профилей и аватарок чатов во всем приложении.</string>
     <string name="Md3SwitchStyle">Переключатели в стиле Material 3</string>
     <string name="Md3SwitchStyleInfo">Использовать увеличенные переключатели со встроенными индикаторами статуса.</string>
+    <string name="NewSliderStyle">Новый стиль слайдеров</string>
+    <string name="WhatsNewSliderStyle">Новый стиль слайдеров</string>
+    <string name="WhatsNewSliderStyleDesc">Ползунки в настройках получают толстую скруглённую дорожку и тонкий вертикальный бегунок; вернуть классический вид можно в разделе «Интерфейс»</string>
     <string name="BottomNavHeader">Нижняя панель навигации</string>
     <string name="BottomNavHideContacts">Скрыть вкладку «Контакты»</string>
     <string name="BottomNavHideContactsInfo">Убирает вкладку контактов из нижней панели навигации.</string>

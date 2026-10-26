@@ -14,6 +14,7 @@ import androidx.core.graphics.ColorUtils;
 import androidx.core.math.MathUtils;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.LocaleController;
 import org.telegram.ui.ActionBar.Theme;
 
@@ -33,6 +34,7 @@ public class AltSeekbar extends FrameLayout {
     protected final TextView leftTextView;
     protected final TextView rightTextView;
     public SeekBarView seekBarView;
+    private MaterialSlider materialSlider;
     private int lastVibratedValue = -1;
 
     public AltSeekbar(Context context, OnDrag onDrag, int min, int max, String title, String leftLabel, String rightLabel) {
@@ -92,19 +94,51 @@ public class AltSeekbar extends FrameLayout {
 
         addView(labelsLayout, LayoutHelper.createFrame(-1, -2.0f, 55, 21.0f, 40.0f, 21.0f, 0.0f));
 
-        seekBarView = new SeekBarView(context, true, null);
-        seekBarView.setReportChanges(true);
-        seekBarView.setDelegate(new SeekBarView.SeekBarViewDelegate() {
-            @Override
-            public void onSeekBarDrag(boolean stop, float progress) {
-                float val = AltSeekbar.this.min + progress * (AltSeekbar.this.max - AltSeekbar.this.min);
-                setProgress(val);
-                if (AltSeekbar.this.onDrag != null) {
-                    AltSeekbar.this.onDrag.run(val);
+        initSlider();
+    }
+
+    private void initSlider() {
+        if (HundredGramConfig.newSliderStyle) {
+            materialSlider = new MaterialSlider(getContext());
+            materialSlider.setValueFrom(min);
+            materialSlider.setValueTo(max);
+            materialSlider.addOnChangeListener((value, fromUser) -> {
+                if (fromUser) {
+                    setProgress(value);
+                    if (onDrag != null) {
+                        onDrag.run(value);
+                    }
                 }
-            }
-        });
-        addView(seekBarView, LayoutHelper.createFrame(-1, 38.0f, 48, 6.0f, 62.0f, 6.0f, 6.0f));
+            });
+            addView(materialSlider, LayoutHelper.createFrame(-1, 40.0f, 48, 7.0f, 62.0f, 7.0f, 4.0f));
+        } else {
+            seekBarView = new SeekBarView(getContext(), true, null);
+            seekBarView.setReportChanges(true);
+            seekBarView.setDelegate(new SeekBarView.SeekBarViewDelegate() {
+                @Override
+                public void onSeekBarDrag(boolean stop, float progress) {
+                    float val = AltSeekbar.this.min + progress * (AltSeekbar.this.max - AltSeekbar.this.min);
+                    setProgress(val);
+                    if (AltSeekbar.this.onDrag != null) {
+                        AltSeekbar.this.onDrag.run(val);
+                    }
+                }
+            });
+            addView(seekBarView, LayoutHelper.createFrame(-1, 38.0f, 48, 6.0f, 62.0f, 6.0f, 6.0f));
+        }
+    }
+
+    public void updateSliderStyle() {
+        if (materialSlider != null) {
+            removeView(materialSlider);
+            materialSlider = null;
+        }
+        if (seekBarView != null) {
+            removeView(seekBarView);
+            seekBarView = null;
+        }
+        initSlider();
+        setProgress(currentValue);
     }
 
     public void setProgress(float value) {
@@ -112,7 +146,9 @@ public class AltSeekbar extends FrameLayout {
         currentValue = clamped;
         roundedValue = Math.round(clamped);
 
-        if (seekBarView != null && (max - min) > 0) {
+        if (materialSlider != null) {
+            materialSlider.setValue(currentValue);
+        } else if (seekBarView != null && (max - min) > 0) {
             seekBarView.setProgress((currentValue - min) / (float) (max - min));
         }
 
