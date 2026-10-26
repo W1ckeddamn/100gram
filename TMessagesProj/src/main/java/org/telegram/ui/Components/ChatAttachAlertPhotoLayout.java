@@ -1426,6 +1426,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
             }
             canSaveCameraPreview = false;
             cameraView.switchCamera();
+            org.telegram.messenger.HundredGramConfig.setCameraLastUsedLens(cameraView.isFrontface() ? 1 : 0);
             ObjectAnimator animator = ObjectAnimator.ofFloat(switchCameraButton, View.SCALE_X, 0.0f).setDuration(100);
             animator.addListener(new AnimatorListenerAdapter() {
                 @Override
@@ -2605,7 +2606,10 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         }
         if (cameraView == null) {
             final boolean lazy = !LiteMode.isEnabled(LiteMode.FLAGS_CHAT);
-            cameraView = new CameraViewInternal(getContext(), isCameraFrontfaceBeforeEnteringEditMode != null ? isCameraFrontfaceBeforeEnteringEditMode : parentAlert.openWithFrontFaceCamera, lazy);
+            // "Default camera" setting: back / front / last used (avatars still always open on the front lens)
+            final boolean defaultFrontface = org.telegram.messenger.HundredGramConfig.cameraDefaultLens == 1
+                    || (org.telegram.messenger.HundredGramConfig.cameraDefaultLens == 2 && org.telegram.messenger.HundredGramConfig.cameraLastUsedLens == 1);
+            cameraView = new CameraViewInternal(getContext(), isCameraFrontfaceBeforeEnteringEditMode != null ? isCameraFrontfaceBeforeEnteringEditMode : (parentAlert.openWithFrontFaceCamera || defaultFrontface), lazy);
             //if (lazy) {
             //    cameraView.setThumbDrawable(cameraViewItemDecoration.placeholderDrawable);
             //}
