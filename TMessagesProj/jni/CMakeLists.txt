@@ -60,6 +60,29 @@ set_target_properties(tdutils PROPERTIES IMPORTED_LOCATION ${CMAKE_HOME_DIRECTOR
 add_library(tlottie STATIC IMPORTED)
 set_target_properties(tlottie PROPERTIES IMPORTED_LOCATION ${CMAKE_HOME_DIRECTORY}/prebuild/lib/${ANDROID_ABI}/libtlottie.a)
 
+# Wallet Engine: prebuilt Rust archive plus the generated UniFFI C++20 bindings.
+set(WALLET_ENGINE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/include/wallet-engine)
+add_library(wallet_engine STATIC IMPORTED)
+set_target_properties(wallet_engine PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/lib/${ANDROID_ABI}/libwallet_engine.a)
+
+add_library(wallet_engine_cpp STATIC
+        ${WALLET_ENGINE_INCLUDE_DIR}/wallet_engine.cpp
+        ${WALLET_ENGINE_INCLUDE_DIR}/gram_wallet.cpp)
+# Wallet bindings need C++20; legacy JNI sources stay on C++17.
+target_compile_features(wallet_engine_cpp PRIVATE cxx_std_20)
+target_compile_options(wallet_engine_cpp PRIVATE -ffunction-sections -fdata-sections)
+target_include_directories(wallet_engine_cpp PUBLIC ${WALLET_ENGINE_INCLUDE_DIR})
+target_link_libraries(wallet_engine_cpp PUBLIC wallet_engine dl m)
+
+add_library(wallet_engine_jni OBJECT wallet/WalletEngineBridge.cpp wallet/GramWalletAdapter.cpp)
+target_compile_features(wallet_engine_jni PRIVATE cxx_std_20)
+set_target_properties(wallet_engine_jni PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_link_libraries(wallet_engine_jni PRIVATE wallet_engine_cpp)
+
+# libprisma: prebuilt tokenizer; only the bridge is compiled here.
+add_library(prisma STATIC IMPORTED)
+set_target_properties(prisma PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/prebuild/lib/${ANDROID_ABI}/libprisma.a)
+
 #tgnet
 #add_library(mozjpeg STATIC
 #        mozjpeg/cjpeg.c mozjpeg/cdjpeg.c mozjpeg/rdgif.c mozjpeg/rdppm.c mozjpeg/rdjpeg.c mozjpeg/rdswitch.c mozjpeg/rdbmp.c
@@ -636,6 +659,16 @@ target_include_directories(${NATIVE_LIB} PUBLIC
         tde2e/include
 )
 
+# libprisma JNI bridge: compiled into the shared library so its exports survive.
+set(PRISMA_BRIDGE_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/prisma/bridge/PrismaEngine.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/prisma/bridge/PrismaJni.cpp")
+target_sources(${NATIVE_LIB} PRIVATE ${PRISMA_BRIDGE_SOURCES})
+target_include_directories(${NATIVE_LIB} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/prisma/bridge"
+        "${CMAKE_CURRENT_SOURCE_DIR}/prisma/libprisma")
+set_property(SOURCE ${PRISMA_BRIDGE_SOURCES} APPEND PROPERTY COMPILE_OPTIONS -fexceptions -frtti)
+
 target_link_options(${NATIVE_LIB} PRIVATE "-Wl,-z,max-page-size=16384")
 target_link_options(${NATIVE_LIB} PRIVATE "-Wl,-z,common-page-size=16384")
 target_link_libraries(${NATIVE_LIB}
@@ -648,6 +681,9 @@ target_link_libraries(${NATIVE_LIB}
         flac
         rlottie
         tlottie
+        wallet_engine_jni
+        wallet_engine_cpp
+        prisma
         sqlite
         swscale
         avformat
