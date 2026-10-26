@@ -20973,18 +20973,19 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             int width = getContainerViewWidth();
             boolean forward = x >= width / 3 * 2;
             if (canDoubleTapSeekVideo(e)) {
+                final long seekMs = Math.max(1, org.telegram.messenger.HundredGramConfig.doubleTapSeekDuration) * 1000L;
                 long old = current;
                 if (x >= width / 3 * 2) {
-                    current += 10000;
+                    current += seekMs;
                 } else if (x < width / 3) {
-                    current -= 10000;
+                    current -= seekMs;
                 }
                 if (old != current) {
                     boolean apply = true;
                     if (current > total) {
                         current = total;
                     } else if (current < 0) {
-                        if (current < -9000) {
+                        if (current < -(seekMs - 1000)) {
                             apply = false;
                         }
                         current = 0;
@@ -20992,7 +20993,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     if (apply) {
                         videoForwardDrawable.setOneShootAnimation(true);
                         videoForwardDrawable.setLeftSide(x < width / 3);
-                        videoForwardDrawable.addTime(10000);
+                        videoForwardDrawable.addTime((int) seekMs);
                         seekVideoOrWebTo(current);
                         containerView.invalidate();
                         videoPlayerSeekbar.setProgress(current / (float) total, true);
@@ -23624,7 +23625,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         @Override
         public boolean dispatchKeyEvent(KeyEvent event) {
             int keyCode = event.getKeyCode();
-            if (!muteVideo && sendPhotoType != SELECT_TYPE_AVATAR && isCurrentVideo && videoPlayer != null && event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN && (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN)) {
+            if ((!muteVideo || org.telegram.messenger.HundredGramConfig.unmuteWithVolumeButtons) && sendPhotoType != SELECT_TYPE_AVATAR && isCurrentVideo && videoPlayer != null && event.getRepeatCount() == 0 && event.getAction() == KeyEvent.ACTION_DOWN && (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP || event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN)) {
                 videoPlayer.setVolume(1.0f);
             }
             return super.dispatchKeyEvent(event);
