@@ -57,6 +57,9 @@ set_target_properties(tde2e PROPERTIES IMPORTED_LOCATION ${CMAKE_HOME_DIRECTORY}
 add_library(tdutils STATIC IMPORTED)
 set_target_properties(tdutils PROPERTIES IMPORTED_LOCATION ${CMAKE_HOME_DIRECTORY}/tde2e/${ANDROID_ABI}/libtdutils.a)
 
+add_library(tlottie STATIC IMPORTED)
+set_target_properties(tlottie PROPERTIES IMPORTED_LOCATION ${CMAKE_HOME_DIRECTORY}/prebuild/lib/${ANDROID_ABI}/libtlottie.a)
+
 #tgnet
 #add_library(mozjpeg STATIC
 #        mozjpeg/cjpeg.c mozjpeg/cdjpeg.c mozjpeg/rdgif.c mozjpeg/rdppm.c mozjpeg/rdjpeg.c mozjpeg/rdswitch.c mozjpeg/rdbmp.c
@@ -644,6 +647,7 @@ target_link_libraries(${NATIVE_LIB}
         tgnet
         flac
         rlottie
+        tlottie
         sqlite
         swscale
         avformat
