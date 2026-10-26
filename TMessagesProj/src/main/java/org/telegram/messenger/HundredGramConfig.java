@@ -41,7 +41,6 @@ public class HundredGramConfig {
     public static boolean md3SwitchStyle;
     public static boolean squareFab;
     public static boolean inlineMath = true;
-    public static boolean bottomNavHideCallsTab;
     public static boolean bottomNavHideContactsTab;
     public static boolean bottomNavHideSettingsTab;
     public static boolean bottomNavArchiveTab;
@@ -198,7 +197,6 @@ public class HundredGramConfig {
     public static boolean feedWidePosts = true;
     public static boolean feedUnreadCounter = true;
     public static boolean enableNowPlaying = true;
-    public static boolean newSliderStyle = true;
 
     // Package 4: Navigation, Stickers & Gesture Safety
     public static boolean disableUnarchiveSwipe;
@@ -253,7 +251,6 @@ public class HundredGramConfig {
     public static int cameraRoundFps = 60; // 30, 60
     public static boolean cameraRoundHighBitrate = true;
     public static int cameraRoundBitrate; // 0 = Auto, 750, 1200, 2000, 3000
-    public static int cameraRoundCodec = 0; // 0 = H.264, 1 = H.265 (HEVC)
     public static boolean cameraRoundSquare; // Square format for round video notes
     public static boolean cameraRoundDisableBlur; // Disable background dimming/blur during recording
     public static boolean cameraRoundSensor16to9 = true; // 16:9 vs 4:3 sensor for legacy devices
@@ -325,7 +322,6 @@ public class HundredGramConfig {
 
     public static int uploadBoost = UPLOAD_BOOST_AUTO;
     public static boolean uploadBoostFileSizeAware = true;
-    public static boolean boostDownloadSpeed = true;
 
     // Throughput & Speed trackers
     private static final Object downloadBytesLock = new Object();
@@ -433,7 +429,6 @@ public class HundredGramConfig {
     public static boolean pluginsSafeMode = false;
     public static boolean pluginsDisableArtOpts = false;
     public static boolean pluginsInstallUnknownSources = true;
-    public static java.util.Set<String> pinnedPlugins = new java.util.HashSet<>();
 
     // Runtime state (current session)
     public static boolean currentStoryGhostSession;
@@ -472,7 +467,6 @@ public class HundredGramConfig {
             md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
             squareFab = preferences.getBoolean("squareFab", false);
             inlineMath = preferences.getBoolean("inlineMath", true);
-            bottomNavHideCallsTab = preferences.getBoolean("bottomNavHideCallsTab", false);
             bottomNavHideContactsTab = preferences.getBoolean("bottomNavHideContactsTab", false);
             bottomNavHideSettingsTab = preferences.getBoolean("bottomNavHideSettingsTab", false);
             bottomNavArchiveTab = preferences.getBoolean("bottomNavArchiveTab", false);
@@ -594,11 +588,6 @@ public class HundredGramConfig {
             cameraRoundFps = preferences.getInt("cameraRoundFps", 60);
             cameraRoundHighBitrate = preferences.getBoolean("cameraRoundHighBitrate", true);
             cameraRoundBitrate = preferences.getInt("cameraRoundBitrate", 0);
-            cameraRoundCodec = preferences.getInt("cameraRoundCodec", 0);
-            if (cameraRoundCodec != 0) {
-                cameraRoundCodec = 0;
-                saveInt("cameraRoundCodec", 0);
-            }
             cameraRoundSquare = preferences.getBoolean("cameraRoundSquare", false);
             cameraRoundDisableBlur = preferences.getBoolean("cameraRoundDisableBlur", false);
             cameraRoundSensor16to9 = preferences.getBoolean("cameraRoundSensor16to9", true);
@@ -625,7 +614,6 @@ public class HundredGramConfig {
             feedWidePosts = preferences.getBoolean("feedWidePosts", true);
             feedUnreadCounter = preferences.getBoolean("feedUnreadCounter", true);
             enableNowPlaying = preferences.getBoolean("enableNowPlaying", true);
-            newSliderStyle = preferences.getBoolean("newSliderStyle", true);
 
             saveAntiDeleteText = preferences.getBoolean("saveAntiDeleteText", true);
             saveEditHistory = preferences.getBoolean("saveEditHistory", true);
@@ -636,7 +624,6 @@ public class HundredGramConfig {
 
             autoDownloadMediaVault = preferences.getBoolean("autoDownloadMediaVault", true);
             autoDownloadMaxSizeMb = preferences.getInt("autoDownloadMaxSizeMb", 25);
-            vaultMaxAutodownloadSizeMb = autoDownloadMaxSizeMb;
             autoDownloadChatsScope = preferences.getInt("autoDownloadChatsScope", 0);
             autoDownloadOnlyWifi = preferences.getBoolean("autoDownloadOnlyWifi", false);
             vaultTtlDays = preferences.getInt("vaultTtlDays", 0);
@@ -679,9 +666,6 @@ public class HundredGramConfig {
             downloadBoost = preferences.getInt("downloadBoost", DOWNLOAD_BOOST_FAST);
             uploadBoost = preferences.getInt("uploadBoost", UPLOAD_BOOST_AUTO);
             uploadBoostFileSizeAware = preferences.getBoolean("uploadBoostFileSizeAware", true);
-            // boostDownloadSpeed — производный флаг, не загружаем отдельно
-            // (ранее вызывал конфликт: перезаписывал намеренный downloadBoost=OFF на FAST)
-            boostDownloadSpeed = (downloadBoost != DOWNLOAD_BOOST_OFF);
 
             // Calls & Links
             confirmCalls = preferences.getBoolean("confirmCalls", true);
@@ -736,12 +720,6 @@ public class HundredGramConfig {
             pluginsSafeMode = preferences.getBoolean("pluginsSafeMode", false);
             pluginsDisableArtOpts = preferences.getBoolean("pluginsDisableArtOpts", false);
             pluginsInstallUnknownSources = preferences.getBoolean("pluginsInstallUnknownSources", true);
-            java.util.Set<String> savedPinned = preferences.getStringSet("pinnedPlugins", null);
-            if (savedPinned != null) {
-                pinnedPlugins = new java.util.HashSet<>(savedPinned);
-            } else {
-                pinnedPlugins = new java.util.HashSet<>();
-            }
 
             streamerMode = preferences.getBoolean("streamerMode", false);
             streamerFakeName = preferences.getString("streamerFakeName", "Streamer");
@@ -957,12 +935,6 @@ public class HundredGramConfig {
     public static void toggleSquareFab() {
         squareFab = !squareFab;
         save("squareFab", squareFab);
-        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
-    }
-
-    public static void toggleBottomNavHideCallsTab() {
-        bottomNavHideCallsTab = !bottomNavHideCallsTab;
-        save("bottomNavHideCallsTab", bottomNavHideCallsTab);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 
@@ -1365,23 +1337,9 @@ public class HundredGramConfig {
         save("cameraRoundZoomSlider", cameraRoundZoomSlider);
     }
 
-    /**
-     * H.265/HEVC не поддерживается Telegram-сервером для видеосообщений (round video notes).
-     * Параметр {@code codec} игнорируется — всегда принудительно устанавливается H.264 (AVC).
-     */
-    public static void setCameraRoundCodec(int codec) {
-        // Сервер Telegram поддерживает только H.264 для round video notes
-        if (cameraRoundCodec != 0) {
-            cameraRoundCodec = 0;
-            saveInt("cameraRoundCodec", 0);
-        }
-    }
-
     public static void setDownloadBoost(int mode) {
         downloadBoost = mode;
-        boostDownloadSpeed = (downloadBoost != DOWNLOAD_BOOST_OFF);
         saveInt("downloadBoost", downloadBoost);
-        save("boostDownloadSpeed", boostDownloadSpeed);
     }
 
     public static void setUploadBoost(int mode) {
@@ -1594,7 +1552,6 @@ public class HundredGramConfig {
 
     public static void setAutoDownloadMaxSizeMb(int mb) {
         autoDownloadMaxSizeMb = mb;
-        vaultMaxAutodownloadSizeMb = mb;
         saveInt("autoDownloadMaxSizeMb", autoDownloadMaxSizeMb);
     }
 
@@ -1790,8 +1747,7 @@ public class HundredGramConfig {
     public static final int VAULT_MODE_ALWAYS = 1;
     public static final int VAULT_MODE_NEVER = 2;
 
-    // 100gram: Global fallback auto-download size limit for vault emergency downloads (MB)
-    public static int vaultMaxAutodownloadSizeMb = 100;
+    // 100gram: media vault settings
 
     public static final int VAULT_TYPE_PHOTO = 1;
     public static final int VAULT_TYPE_VIDEO = 2;
@@ -2283,6 +2239,14 @@ public class HundredGramConfig {
         return true;
     }
 
+    /** Auto-download scope: 0 = private chats, 1 = private + groups, 2 = also broadcast channels. */
+    private static boolean isDialogInAutoDownloadScope(long dialogId) {
+        if (autoDownloadChatsScope >= 2 || dialogId > 0) {
+            return true;
+        }
+        return isGroupDialog(dialogId) && autoDownloadChatsScope == 1;
+    }
+
     public static boolean isDialogInSaveScope(long dialogId) {
         if (dialogId > 0) {
             if (!saveScopeBots) {
@@ -2310,6 +2274,9 @@ public class HundredGramConfig {
         if (mode == VAULT_MODE_ALWAYS) return true;
         if (!autoDownloadMediaVault && !backgroundArchiverEnabled) return false;
         if (autoDownloadOnlyWifi && ApplicationLoader.getAutodownloadNetworkType() != StatsController.TYPE_WIFI) {
+            return false;
+        }
+        if (!isDialogInAutoDownloadScope(dialogId)) {
             return false;
         }
 
@@ -2354,6 +2321,9 @@ public class HundredGramConfig {
             }
 
             if (!isDialogInSaveScope(dialogId)) {
+                return false;
+            }
+            if (!isDialogInAutoDownloadScope(dialogId)) {
                 return false;
             }
 
@@ -2566,11 +2536,6 @@ public class HundredGramConfig {
     public static void toggleSendVideoAsDocument() {
         sendVideoAsDocument = !sendVideoAsDocument;
         save("sendVideoAsDocument", sendVideoAsDocument);
-    }
-
-    public static void toggleBoostDownloadSpeed() {
-        boostDownloadSpeed = !boostDownloadSpeed;
-        save("boostDownloadSpeed", boostDownloadSpeed);
     }
 
     public static void toggleConfirmCalls() {
@@ -2823,14 +2788,6 @@ public class HundredGramConfig {
         save("pluginsInstallUnknownSources", pluginsInstallUnknownSources);
     }
 
-    public static void savePinnedPlugins() {
-        if (ApplicationLoader.applicationContext == null) return;
-        ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
-                .edit()
-                .putStringSet("pinnedPlugins", pinnedPlugins)
-                .apply();
-    }
-
     public static void toggleInlineMath() {
         inlineMath = !inlineMath;
         save("inlineMath", inlineMath);
@@ -2985,11 +2942,6 @@ public class HundredGramConfig {
 
     public static int getAvatarCornerRadius() {
         return (int) avatarCorners;
-    }
-
-    public static void toggleNewSliderStyle() {
-        newSliderStyle = !newSliderStyle;
-        save("newSliderStyle", newSliderStyle);
     }
 }
 
