@@ -226,6 +226,10 @@ public class MessageObject {
     public String monthKey;
     public boolean deleted;
     public boolean deletedByThanos;
+    // 100gram: cached content-filter verdict, invalidated by HundredGramContentFilterController.rulesVersion
+    public int hgFilterVersion = -1;
+    public int hgFilterTextHash;
+    public boolean hgFilterResult;
     public float audioProgress;
     public float forceSeekTo = -1;
     public int audioProgressMs;

@@ -50,6 +50,8 @@ public class HundredGramContentFilterController {
     private static Pattern presetLinksCompiled;
 
     private static final AtomicInteger filteredCount = new AtomicInteger(0);
+    // bumped whenever the rules change, so cached per-message verdicts go stale
+    private static final AtomicInteger rulesVersion = new AtomicInteger(1);
 
     static {
         loadSettings();
@@ -111,6 +113,7 @@ public class HundredGramContentFilterController {
                 presetLinksCompiled = Pattern.compile(PRESET_LINKS_REGEX);
             } catch (Exception ignored) {
             }
+            rulesVersion.incrementAndGet();
         }
     }
 
@@ -352,6 +355,7 @@ public class HundredGramContentFilterController {
     }
 
     private static void notifyInterfaces() {
+        rulesVersion.incrementAndGet();
         AndroidUtilities.runOnUIThread(() -> {
             NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
         });
@@ -359,8 +363,26 @@ public class HundredGramContentFilterController {
 
     /**
      * Checks if the message should be filtered (suppressed) based on active rules.
+     * Called from ChatMessageCell.onMeasure/drawInternal, so the verdict is cached on the message.
      */
     public static boolean isMessageFiltered(MessageObject messageObject) {
+        if (!filterEnabled || messageObject == null) {
+            return false;
+        }
+        final int version = rulesVersion.get();
+        final CharSequence text = messageObject.messageText;
+        final int textHash = text == null ? 0 : text.hashCode();
+        if (messageObject.hgFilterVersion == version && messageObject.hgFilterTextHash == textHash) {
+            return messageObject.hgFilterResult;
+        }
+        final boolean result = computeFiltered(messageObject);
+        messageObject.hgFilterVersion = version;
+        messageObject.hgFilterTextHash = textHash;
+        messageObject.hgFilterResult = result;
+        return result;
+    }
+
+    private static boolean computeFiltered(MessageObject messageObject) {
         if (!filterEnabled || messageObject == null) {
             return false;
         }
