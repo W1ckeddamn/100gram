@@ -1206,6 +1206,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         if (account == UserConfig.selectedAccount || !UserConfig.isValidAccount(account)) {
             return;
         }
+        org.telegram.messenger.HundredGramHaptics.play(null, "account_switch");
         switchingAccount = true;
 
         org.telegram.messenger.HundredGramActivityTracker.getInstance(currentAccount).onSelfAppPause();

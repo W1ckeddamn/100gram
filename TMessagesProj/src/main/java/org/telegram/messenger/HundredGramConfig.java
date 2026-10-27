@@ -179,6 +179,12 @@ public class HundredGramConfig {
     public static boolean lockDelete;
     public static int lockGrace; // seconds, 0 = ask every time
     public static final java.util.HashSet<Long> lockedChats = new java.util.HashSet<>();
+
+    // Haptics
+    public static boolean hapticsEnabled = true;
+    public static int hapticStrength = 100; // percent, 10..200
+    public static final java.util.HashMap<String, Integer> hapticEffects = new java.util.HashMap<>();
+    public static final java.util.HashSet<String> hapticDisabled = new java.util.HashSet<>();
     public static boolean avatarHistoryEnabled = true;
     public static boolean profileHistoryEnabled = true;
     public static boolean developerModeEnabled = true;
@@ -775,6 +781,16 @@ public class HundredGramConfig {
                     lockedChats.add(Long.parseLong(id));
                 }
             } catch (NumberFormatException ignore) {
+            }
+        }
+        hapticsEnabled = preferences.getBoolean("hapticsEnabled", true);
+        hapticStrength = Math.max(10, Math.min(200, preferences.getInt("hapticStrength", 100)));
+        hapticEffects.clear();
+        hapticDisabled.clear();
+        for (String action : HundredGramHaptics.ACTION_NAMES) {
+            hapticEffects.put(action, preferences.getInt("hapticFx_" + action, HundredGramHaptics.defaultEffect(action)));
+            if (!preferences.getBoolean("hapticOn_" + action, true)) {
+                hapticDisabled.add(action);
             }
         }
             avatarHistoryEnabled = preferences.getBoolean("avatarHistoryEnabled", true);
@@ -2111,6 +2127,39 @@ public class HundredGramConfig {
     public static void setLockGrace(int seconds) {
         lockGrace = seconds;
         saveInt("lockGrace", lockGrace);
+    }
+
+    public static void toggleHaptics() {
+        hapticsEnabled = !hapticsEnabled;
+        save("hapticsEnabled", hapticsEnabled);
+    }
+
+    public static void setHapticStrength(int strength) {
+        hapticStrength = Math.max(10, Math.min(200, strength));
+        saveInt("hapticStrength", hapticStrength);
+    }
+
+    public static int getHapticEffect(String action) {
+        Integer effect = hapticEffects.get(action);
+        return effect == null ? HundredGramHaptics.defaultEffect(action) : effect;
+    }
+
+    public static void setHapticEffect(String action, int effect) {
+        hapticEffects.put(action, effect);
+        saveInt("hapticFx_" + action, effect);
+    }
+
+    public static boolean isHapticActionEnabled(String action) {
+        return !hapticDisabled.contains(action);
+    }
+
+    public static void setHapticActionEnabled(String action, boolean enabled) {
+        if (enabled) {
+            hapticDisabled.remove(action);
+        } else {
+            hapticDisabled.add(action);
+        }
+        save("hapticOn_" + action, enabled);
     }
 
     public static boolean isChatLocked(long dialogId) {

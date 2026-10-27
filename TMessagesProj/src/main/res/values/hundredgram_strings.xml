@@ -1673,6 +1673,41 @@
     <string name="LockPromptSubtitle">Confirm it is you</string>
     <string name="LockDeleteTitle">Delete confirmation</string>
     <string name="LockDeleteSubtitle">Confirm it is you before deleting</string>
+    <string name="Haptics">Haptics</string>
+    <string name="HapticsInfo">Tap an action to pick its effect or turn it off. Requires a device with a vibration motor.</string>
+    <string name="HapticStrength">Strength</string>
+    <string name="HapticSendMessage">Send message</string>
+    <string name="HapticSendMedia">Send media</string>
+    <string name="HapticAttachPick">Attach picker</string>
+    <string name="HapticMessageIncoming">Incoming message</string>
+    <string name="HapticReactionSet">Set reaction</string>
+    <string name="HapticSelectMessage">Select message</string>
+    <string name="HapticMessageAction">Message action</string>
+    <string name="HapticSwipeReply">Swipe to reply</string>
+    <string name="HapticTabSwitch">Tab switch</string>
+    <string name="HapticPullArchive">Archive pull</string>
+    <string name="HapticAccountSwitch">Account switch</string>
+    <string name="HapticSliderStep">Slider step</string>
+    <string name="HapticMenuSelect">Menu selection</string>
+    <string name="HapticPlayerTrack">Player track</string>
+    <string name="HapticPlayerSpeed">Player speed</string>
+    <string name="HapticPhotoSwipe">Photo swipe</string>
+    <string name="HapticPhotoDismiss">Photo dismiss</string>
+    <string name="HapticZoomEdge">Zoom edge</string>
+    <string name="HapticError">Error</string>
+    <string name="HapticSuccess">Success</string>
+    <string name="HapticEffectSelection">Selection</string>
+    <string name="HapticEffectTick">Tick</string>
+    <string name="HapticEffectSoft">Soft</string>
+    <string name="HapticEffectClick">Click</string>
+    <string name="HapticEffectRigid">Rigid</string>
+    <string name="HapticEffectHeavy">Heavy</string>
+    <string name="HapticEffectDouble">Double</string>
+    <string name="HapticEffectRise">Rise</string>
+    <string name="HapticEffectFall">Fall</string>
+    <string name="HapticEffectSuccess">Success</string>
+    <string name="HapticEffectWarning">Warning</string>
+    <string name="HapticEffectError">Error</string>
 </resources>
 
 

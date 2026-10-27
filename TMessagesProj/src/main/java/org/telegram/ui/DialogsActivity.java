@@ -109,6 +109,7 @@ import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.FilesMigrationService;
 import org.telegram.messenger.ImageLoader;
@@ -3745,6 +3746,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         return;
                     }
                     viewPages[1].selectedType = tab.id;
+                    HundredGramHaptics.play(viewPages[0], "tab_switch");
                     viewPages[1].setVisibility(View.VISIBLE);
                     viewPages[1].setTranslationX(viewPages[0].getMeasuredWidth());
                     showScrollbars(false);
@@ -4426,6 +4428,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         if (currentPosition == 0 && firstView != null && (firstView.getBottom() - pTop) >= dp(4)) {
                             if (startArchivePullingTime == 0) {
                                 startArchivePullingTime = System.currentTimeMillis();
+                                HundredGramHaptics.play(viewPage.listView, "pull_archive");
                             }
                             if (viewPage.archivePullViewState == ARCHIVE_ITEM_STATE_HIDDEN) {
                                 if (viewPage.pullForegroundDrawable != null) {

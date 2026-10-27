@@ -18,6 +18,7 @@ import org.telegram.messenger.FileLog;
 import org.telegram.messenger.HundredGramActivitySimulator;
 import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.HundredGramContentFilterController;
+import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
@@ -264,6 +265,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_LOCK_SAVED = 292;
     private static final int ITEM_LOCK_DELETE = 293;
     private static final int ITEM_LOCK_GRACE = 294;
+    private static final int ITEM_HAPTICS = 306;
+    private static final int ITEM_HAPTIC_STRENGTH = 307;
+    private static final int ITEM_HAPTIC_ACTION = 310;
 
     // Item IDs for Developer Mode
     private static final int ITEM_DEV_MODE = 100;
@@ -1000,6 +1004,24 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asButton(ITEM_DELETE_MY_MESSAGES, R.drawable.msg_chats_remove, LocaleController.getString("DeleteMyMessages", R.string.DeleteMyMessages)).red());
         items.add(UItem.asShadow(LocaleController.getString("DeleteMyMessagesInfo", R.string.DeleteMyMessagesInfo)));
 
+        items.add(UItem.asHeader(LocaleController.getString("Haptics", R.string.Haptics)));
+        items.add(UItem.asCheck(ITEM_HAPTICS, LocaleController.getString("Haptics", R.string.Haptics))
+                .setChecked(HundredGramConfig.hapticsEnabled));
+        if (HundredGramConfig.hapticsEnabled) {
+            items.add(UItem.asButton(ITEM_HAPTIC_STRENGTH,
+                    LocaleController.getString("HapticStrength", R.string.HapticStrength),
+                    HundredGramConfig.hapticStrength + "%"));
+            for (int i = 0; i < HundredGramHaptics.ACTION_NAMES.length; i++) {
+                String action = HundredGramHaptics.ACTION_NAMES[i];
+                items.add(UItem.asButton(ITEM_HAPTIC_ACTION + i,
+                        getHapticActionName(action),
+                        HundredGramConfig.isHapticActionEnabled(action)
+                                ? getHapticEffectName(HundredGramConfig.getHapticEffect(action))
+                                : LocaleController.getString("Disabled", R.string.Disabled)));
+            }
+        }
+        items.add(UItem.asShadow(LocaleController.getString("HapticsInfo", R.string.HapticsInfo)));
+
         items.add(UItem.asHeader(LocaleController.getString("DevCategory", R.string.DevCategory)));
         items.add(UItem.asCheck(ITEM_DEV_MODE, LocaleController.getString("DeveloperMode", R.string.DeveloperMode))
                 .setChecked(HundredGramConfig.developerModeEnabled));
@@ -1098,6 +1120,10 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     }
 
     private void onClick(UItem item, View view, int position, float x, float y) {
+        if (item.id >= ITEM_HAPTIC_ACTION && item.id < ITEM_HAPTIC_ACTION + HundredGramHaptics.ACTION_NAMES.length) {
+            showHapticEffectDialog(HundredGramHaptics.ACTION_NAMES[item.id - ITEM_HAPTIC_ACTION]);
+            return;
+        }
         switch (item.id) {
             // CATEGORY_VAULT
             case ITEM_SAVE_PRESET:
@@ -1577,6 +1603,22 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
             case ITEM_LOCK_GRACE:
                 showLockGraceDialog();
+                break;
+            case ITEM_HAPTICS:
+                HundredGramConfig.toggleHaptics();
+                item.setChecked(HundredGramConfig.hapticsEnabled);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.hapticsEnabled);
+                }
+                if (HundredGramConfig.hapticsEnabled) {
+                    HundredGramHaptics.playEffect(view, 10);
+                }
+                if (listView != null && listView.adapter != null) {
+                    listView.adapter.update(true);
+                }
+                break;
+            case ITEM_HAPTIC_STRENGTH:
+                showHapticStrengthDialog();
                 break;
             case ITEM_ADD_COMMA_AFTER_MENTION:
                 HundredGramConfig.toggleAddCommaAfterMention();
@@ -3172,8 +3214,131 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         showDialog(builder.create());
     }
 
-    private boolean lockAllowed(boolean current) {
-        if (!current && !HundredGramLocks.isSecure()) {
+    private String getHapticActionName(String action) {
+        switch (action) {
+            case "send_message":
+                return LocaleController.getString("HapticSendMessage", R.string.HapticSendMessage);
+            case "send_media":
+                return LocaleController.getString("HapticSendMedia", R.string.HapticSendMedia);
+            case "attach_pick":
+                return LocaleController.getString("HapticAttachPick", R.string.HapticAttachPick);
+            case "message_incoming":
+                return LocaleController.getString("HapticMessageIncoming", R.string.HapticMessageIncoming);
+            case "reaction_set":
+                return LocaleController.getString("HapticReactionSet", R.string.HapticReactionSet);
+            case "select_message":
+                return LocaleController.getString("HapticSelectMessage", R.string.HapticSelectMessage);
+            case "message_action":
+                return LocaleController.getString("HapticMessageAction", R.string.HapticMessageAction);
+            case "swipe_reply":
+                return LocaleController.getString("HapticSwipeReply", R.string.HapticSwipeReply);
+            case "tab_switch":
+                return LocaleController.getString("HapticTabSwitch", R.string.HapticTabSwitch);
+            case "pull_archive":
+                return LocaleController.getString("HapticPullArchive", R.string.HapticPullArchive);
+            case "account_switch":
+                return LocaleController.getString("HapticAccountSwitch", R.string.HapticAccountSwitch);
+            case "slider_step":
+                return LocaleController.getString("HapticSliderStep", R.string.HapticSliderStep);
+            case "menu_select":
+                return LocaleController.getString("HapticMenuSelect", R.string.HapticMenuSelect);
+            case "player_track":
+                return LocaleController.getString("HapticPlayerTrack", R.string.HapticPlayerTrack);
+            case "player_speed":
+                return LocaleController.getString("HapticPlayerSpeed", R.string.HapticPlayerSpeed);
+            case "photo_swipe":
+                return LocaleController.getString("HapticPhotoSwipe", R.string.HapticPhotoSwipe);
+            case "photo_dismiss":
+                return LocaleController.getString("HapticPhotoDismiss", R.string.HapticPhotoDismiss);
+            case "zoom_edge":
+                return LocaleController.getString("HapticZoomEdge", R.string.HapticZoomEdge);
+            case "error":
+                return LocaleController.getString("HapticError", R.string.HapticError);
+            default:
+                return LocaleController.getString("HapticSuccess", R.string.HapticSuccess);
+        }
+    }
+
+    private String getHapticEffectName(int effect) {
+        switch (effect) {
+            case 1:
+                return LocaleController.getString("HapticEffectSelection", R.string.HapticEffectSelection);
+            case 2:
+                return LocaleController.getString("HapticEffectTick", R.string.HapticEffectTick);
+            case 3:
+                return LocaleController.getString("HapticEffectSoft", R.string.HapticEffectSoft);
+            case 4:
+                return LocaleController.getString("HapticEffectClick", R.string.HapticEffectClick);
+            case 5:
+                return LocaleController.getString("HapticEffectRigid", R.string.HapticEffectRigid);
+            case 6:
+                return LocaleController.getString("HapticEffectHeavy", R.string.HapticEffectHeavy);
+            case 7:
+                return LocaleController.getString("HapticEffectDouble", R.string.HapticEffectDouble);
+            case 8:
+                return LocaleController.getString("HapticEffectRise", R.string.HapticEffectRise);
+            case 9:
+                return LocaleController.getString("HapticEffectFall", R.string.HapticEffectFall);
+            case 10:
+                return LocaleController.getString("HapticEffectSuccess", R.string.HapticEffectSuccess);
+            case 11:
+                return LocaleController.getString("HapticEffectWarning", R.string.HapticEffectWarning);
+            case 12:
+                return LocaleController.getString("HapticEffectError", R.string.HapticEffectError);
+            default:
+                return LocaleController.getString("Disabled", R.string.Disabled);
+        }
+    }
+
+    private void showHapticStrengthDialog() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        final int[] values = {20, 40, 60, 80, 100, 120, 150, 200};
+        String[] options = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            options[i] = values[i] + "%";
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("HapticStrength", R.string.HapticStrength));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setHapticStrength(values[which]);
+            HundredGramHaptics.playEffect(null, 4);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void showHapticEffectDialog(String action) {
+        if (getParentActivity() == null) {
+            return;
+        }
+        String[] options = new String[HundredGramHaptics.getEffectCount()];
+        for (int i = 0; i < options.length; i++) {
+            options[i] = getHapticEffectName(i);
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(getHapticActionName(action));
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                HundredGramConfig.setHapticActionEnabled(action, false);
+            } else {
+                HundredGramConfig.setHapticActionEnabled(action, true);
+                HundredGramConfig.setHapticEffect(action, which);
+                HundredGramHaptics.playEffect(null, which);
+            }
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private boolean lockAllowed(boolean current) {        if (!current && !HundredGramLocks.isSecure()) {
             BulletinFactory.of(this).createSimpleBulletin(R.raw.info, LocaleController.getString("LockUnavailable", R.string.LockUnavailable)).show();
             return false;
         }

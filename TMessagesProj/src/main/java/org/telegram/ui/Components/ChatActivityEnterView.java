@@ -150,6 +150,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.VideoEditedInfo;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.camera.CameraController;
@@ -2963,6 +2964,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                 if (adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress() || attachLayoutPaddingAlpha == 0f) {
                     return;
                 }
+                HundredGramHaptics.play(v, "attach_pick");
                 delegate.didPressAttachButton();
             });
             attachButton.setContentDescription(getString(R.string.AccDescrAttachButton));
@@ -7451,6 +7453,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                 }
                 return;
             }
+            HundredGramHaptics.play(ChatActivityEnterView.this, "send_message");
             if (parentFragment != null) {
                 TLRPC.Chat chat = parentFragment.getCurrentChat();
                 TLRPC.User user = parentFragment.getCurrentUser();

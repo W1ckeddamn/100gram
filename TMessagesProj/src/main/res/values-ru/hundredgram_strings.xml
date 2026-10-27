@@ -1684,6 +1684,41 @@
     <string name="LockPromptSubtitle">Подтвердите, что это вы</string>
     <string name="LockDeleteTitle">Подтверждение удаления</string>
     <string name="LockDeleteSubtitle">Подтвердите, что это вы, перед удалением</string>
+    <string name="Haptics">Вибрация</string>
+    <string name="HapticsInfo">Нажмите на действие, чтобы выбрать эффект или отключить его. Нужен вибромотор.</string>
+    <string name="HapticStrength">Сила</string>
+    <string name="HapticSendMessage">Отправка сообщения</string>
+    <string name="HapticSendMedia">Отправка медиа</string>
+    <string name="HapticAttachPick">Выбор вложения</string>
+    <string name="HapticMessageIncoming">Входящее сообщение</string>
+    <string name="HapticReactionSet">Установка реакции</string>
+    <string name="HapticSelectMessage">Выбор сообщения</string>
+    <string name="HapticMessageAction">Действие с сообщением</string>
+    <string name="HapticSwipeReply">Свайп для ответа</string>
+    <string name="HapticTabSwitch">Переключение вкладки</string>
+    <string name="HapticPullArchive">Открытие архива</string>
+    <string name="HapticAccountSwitch">Смена аккаунта</string>
+    <string name="HapticSliderStep">Шаг ползунка</string>
+    <string name="HapticMenuSelect">Выбор в меню</string>
+    <string name="HapticPlayerTrack">Смена трека</string>
+    <string name="HapticPlayerSpeed">Скорость плеера</string>
+    <string name="HapticPhotoSwipe">Свайп фото</string>
+    <string name="HapticPhotoDismiss">Закрытие фото</string>
+    <string name="HapticZoomEdge">Край зума</string>
+    <string name="HapticError">Ошибка</string>
+    <string name="HapticSuccess">Успех</string>
+    <string name="HapticEffectSelection">Выбор</string>
+    <string name="HapticEffectTick">Тик</string>
+    <string name="HapticEffectSoft">Мягкий</string>
+    <string name="HapticEffectClick">Клик</string>
+    <string name="HapticEffectRigid">Жёсткий</string>
+    <string name="HapticEffectHeavy">Тяжёлый</string>
+    <string name="HapticEffectDouble">Двойной</string>
+    <string name="HapticEffectRise">Подъём</string>
+    <string name="HapticEffectFall">Спад</string>
+    <string name="HapticEffectSuccess">Успех</string>
+    <string name="HapticEffectWarning">Предупреждение</string>
+    <string name="HapticEffectError">Ошибка</string>
 </resources>
 
 

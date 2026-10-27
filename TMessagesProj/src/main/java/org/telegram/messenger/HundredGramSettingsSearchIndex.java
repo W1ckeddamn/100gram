@@ -444,6 +444,13 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "блокировка", "lock", "биометрия", "отпечаток", "пароль");
 
+        addEntry(id++, "Haptics", "Вибрация",
+                null, "Сила вибрации и эффект для каждого действия",
+                "HundredGramCategoryActions", "Действия",
+                R.drawable.msg_settings, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 0,
+                HundredGramSubSettingsActivity.class,
+                "вибрация", "вибро", "haptics", "vibration", "тактильный");
+
         addEntry(id++, "HighlightDeleted", "Выделять удаленные сообщения цветом",
                 null, "Визуальная цветная рамка или плашка вокруг удаленных сообщений",
                 "HundredGramCategoryInterface", "Интерфейс",

@@ -16,6 +16,7 @@ import static org.telegram.messenger.LocaleController.getString;
 import static org.telegram.ui.bots.AffiliateProgramFragment.percents;
 
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.HundredGramContentFilterController;
 import org.telegram.messenger.HundredGramIpInfoController;
 import org.telegram.messenger.HundredGramShadowbanController;
@@ -11074,6 +11075,7 @@ public class ChatActivity extends BaseFragment implements
         if (selectedMessagesCountTextView != null || getContext() == null) {
             return;
         }
+        HundredGramHaptics.play(fragmentView, "select_message");
         final ActionBarMenu actionMode = actionBar.createActionMode();
 
         LayoutTransition transition = new LayoutTransition();
@@ -33831,6 +33833,7 @@ public class ChatActivity extends BaseFragment implements
         }
         ArrayList<ReactionsLayoutInBubble.VisibleReaction> visibleReactions = new ArrayList<>();
         visibleReactions.addAll(primaryMessage.getChoosenReactions());
+        HundredGramHaptics.play(fragmentView, "reaction_set");
         getSendMessagesHelper().sendReaction(primaryMessage, visibleReactions, added ? visibleReaction : null, bigEmoji, addToRecent, ChatActivity.this, updateReactionRunnable = new Runnable() {
             @Override
             public void run() {
@@ -36957,6 +36960,7 @@ public class ChatActivity extends BaseFragment implements
         if (photoEntry == null) {
             return;
         }
+        HundredGramHaptics.play(fragmentView, "send_media");
 
         animatorRoundMessageCameraVisibility.setValue(false, true);
 
