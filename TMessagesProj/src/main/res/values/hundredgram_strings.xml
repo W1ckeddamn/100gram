@@ -1638,6 +1638,15 @@
     <string name="MediaGlowMedium">Medium</string>
     <string name="MediaGlowHigh">High</string>
     <string name="ThanosDeleteEffect">Thanos delete effect</string>
+    <string name="ChatPageUpButton">Page up button</string>
+    <string name="ChatPageUpInfo">Show a button that jumps 100 messages back.</string>
+    <string name="ChatPageUpDescription">100 messages up</string>
+    <string name="ResetAllSettings">Reset all settings</string>
+    <string name="ResetAllSettingsTitle">Reset all settings?</string>
+    <string name="ResetAllSettingsInfo">Every 100gram option will return to its default value. Telegram settings are not affected.</string>
+    <string name="ResetAllSettingsDone">Settings reset</string>
+    <string name="HideStoriesProfile">Hide stories in profiles</string>
+    <string name="HideStoriesPosting">Hide story posting</string>
 </resources>
 
 

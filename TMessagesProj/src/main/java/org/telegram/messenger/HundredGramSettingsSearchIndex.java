@@ -402,6 +402,34 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "thanos", "удаление", "эффект", "delete", "effect");
 
+        addEntry(id++, "ChatPageUpButton", "Кнопка «страница вверх»",
+                null, "Кнопка для перехода на 100 сообщений назад в чате",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.pagedown, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 0,
+                HundredGramSubSettingsActivity.class,
+                "страница", "вверх", "page", "up", "100", "сообщений");
+
+        addEntry(id++, "ResetAllSettings", "Сбросить все настройки",
+                null, "Вернуть все параметры 100gram к значениям по умолчанию",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_reset, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 0,
+                HundredGramSubSettingsActivity.class,
+                "сброс", "настройки", "reset", "default");
+
+        addEntry(id++, "HideStoriesProfile", "Скрыть истории в профилях",
+                null, "Убрать кольцо историй с аватарок в профилях",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_stories_archive, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 0,
+                HundredGramSubSettingsActivity.class,
+                "истории", "профиль", "stories", "profile", "скрыть");
+
+        addEntry(id++, "HideStoriesPosting", "Скрыть публикацию историй",
+                null, "Убрать кнопки добавления и публикации историй",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_stories_add, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 0,
+                HundredGramSubSettingsActivity.class,
+                "истории", "публикация", "stories", "posting", "скрыть");
+
         addEntry(id++, "HighlightDeleted", "Выделять удаленные сообщения цветом",
                 null, "Визуальная цветная рамка или плашка вокруг удаленных сообщений",
                 "HundredGramCategoryInterface", "Интерфейс",

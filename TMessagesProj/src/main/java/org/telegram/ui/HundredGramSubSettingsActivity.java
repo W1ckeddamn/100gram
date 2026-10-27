@@ -253,6 +253,10 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_REPLY_COLORS = 262;
     private static final int ITEM_REPLY_EMOJI = 263;
     private static final int ITEM_CUSTOM_SAVE_PATH = 264;
+    private static final int ITEM_CHAT_PAGE_UP = 265;
+    private static final int ITEM_RESET_ALL = 266;
+    private static final int ITEM_HIDE_STORIES_PROFILE = 267;
+    private static final int ITEM_HIDE_STORIES_POSTING = 268;
 
     // Item IDs for Developer Mode
     private static final int ITEM_DEV_MODE = 100;
@@ -386,6 +390,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 fillStreamerItems(items);
                 break;
         }
+        items.add(UItem.asButton(ITEM_RESET_ALL, LocaleController.getString("ResetAllSettings", R.string.ResetAllSettings)).red());
+        items.add(UItem.asShadow(LocaleController.getString("ResetAllSettingsInfo", R.string.ResetAllSettingsInfo)));
     }
 
     private String getSavePresetName(int preset) {
@@ -816,6 +822,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.quickTopicTransition));
         items.add(UItem.asCheck(ITEM_HIDE_KEYBOARD_ON_SCROLL, LocaleController.getString("HundredGramHideKeyboardOnScroll", R.string.HundredGramHideKeyboardOnScroll))
                 .setChecked(HundredGramConfig.hideKeyboardOnScroll));
+        items.add(UItem.asCheck(ITEM_CHAT_PAGE_UP, LocaleController.getString("ChatPageUpButton", R.string.ChatPageUpButton))
+                .setChecked(HundredGramConfig.chatPageUpButton));
+        items.add(UItem.asShadow(LocaleController.getString("ChatPageUpInfo", R.string.ChatPageUpInfo)));
         items.add(UItem.asCheck(ITEM_ADD_COMMA_AFTER_MENTION, LocaleController.getString("HundredGramAddCommaAfterMention", R.string.HundredGramAddCommaAfterMention))
                 .setChecked(HundredGramConfig.addCommaAfterMention));
         items.add(UItem.asCheck(ITEM_INLINE_MATH, LocaleController.getString("InlineMathResult", R.string.InlineMathResult))
@@ -865,6 +874,10 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 getTabCounterModeName(HundredGramConfig.tabCounterMode)));
         items.add(UItem.asCheck(ITEM_HIDE_STORIES_BAR, LocaleController.getString("HideStoriesBar", R.string.HideStoriesBar))
                 .setChecked(HundredGramConfig.hideStoriesBar));
+        items.add(UItem.asCheck(ITEM_HIDE_STORIES_PROFILE, LocaleController.getString("HideStoriesProfile", R.string.HideStoriesProfile))
+                .setChecked(HundredGramConfig.hideStoriesProfile));
+        items.add(UItem.asCheck(ITEM_HIDE_STORIES_POSTING, LocaleController.getString("HideStoriesPosting", R.string.HideStoriesPosting))
+                .setChecked(HundredGramConfig.hideStoriesPosting));
         items.add(UItem.asCheck(ITEM_HIDE_ARCHIVE_FOLDER, LocaleController.getString("HundredGramHideArchiveFolder", R.string.HundredGramHideArchiveFolder))
                 .setChecked(HundredGramConfig.hideArchiveFolder));
         items.add(UItem.asCheck(ITEM_ARCHIVE_ON_PULL, LocaleController.getString("ArchiveOnPull", R.string.ArchiveOnPull))
@@ -1489,6 +1502,16 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.hideKeyboardOnScroll);
                 }
                 break;
+            case ITEM_CHAT_PAGE_UP:
+                HundredGramConfig.toggleChatPageUpButton();
+                item.setChecked(HundredGramConfig.chatPageUpButton);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.chatPageUpButton);
+                }
+                break;
+            case ITEM_RESET_ALL:
+                showResetAllDialog();
+                break;
             case ITEM_ADD_COMMA_AFTER_MENTION:
                 HundredGramConfig.toggleAddCommaAfterMention();
                 item.setChecked(HundredGramConfig.addCommaAfterMention);
@@ -1576,6 +1599,20 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.hideStoriesBar);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.hideStoriesBar);
+                }
+                break;
+            case ITEM_HIDE_STORIES_PROFILE:
+                HundredGramConfig.toggleHideStoriesProfile();
+                item.setChecked(HundredGramConfig.hideStoriesProfile);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.hideStoriesProfile);
+                }
+                break;
+            case ITEM_HIDE_STORIES_POSTING:
+                HundredGramConfig.toggleHideStoriesPosting();
+                item.setChecked(HundredGramConfig.hideStoriesPosting);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.hideStoriesPosting);
                 }
                 break;
             case ITEM_SHOW_SECONDS_IN_TIME:
@@ -3026,6 +3063,24 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
 
     private String getSelectionSpeedName() {
         return String.format(LocaleController.getString("SelectionSpeedValue", R.string.SelectionSpeedValue), HundredGramConfig.selectionSpeed);
+    }
+
+    private void showResetAllDialog() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("ResetAllSettingsTitle", R.string.ResetAllSettingsTitle));
+        builder.setMessage(LocaleController.getString("ResetAllSettingsInfo", R.string.ResetAllSettingsInfo));
+        builder.setPositiveButton(LocaleController.getString("Reset", R.string.Reset), (dialog, which) -> {
+            HundredGramConfig.resetAllSettings();
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+            BulletinFactory.of(this).createSimpleBulletin(R.raw.done, LocaleController.getString("ResetAllSettingsDone", R.string.ResetAllSettingsDone)).show();
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
     }
 
     private void showSelectionSpeedDialog() {

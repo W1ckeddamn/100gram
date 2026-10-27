@@ -521,6 +521,8 @@ public class ChatActivity extends BaseFragment implements
     // private ChatActivitySideControlsButtonsLayout topButtonsLayout;
     private ChatActivitySideControlsButtonsLayout sideControlsButtonsLayout;
     private boolean pagedownButtonShowedByScroll;
+    private boolean pageUpButtonShown;
+    private int pageUpDy;
     private int reactionsMentionCount;
     private int pollVotesMentionCount;
     public Bulletin messageSeenPrivacyBulletin;
@@ -7677,6 +7679,21 @@ public class ChatActivity extends BaseFragment implements
                                     updatePagedownButtonVisibility(true);
                                     totalDy = 0;
                                 }
+                            }
+                        }
+                        if (HundredGramConfig.chatPageUpButton && !searching && dy != 0) {
+                            if ((dy > 0) != (pageUpDy > 0)) {
+                                pageUpDy = 0;
+                            }
+                            pageUpDy += dy;
+                            if (!pageUpButtonShown && pageUpDy > AndroidUtilities.dp(100)) {
+                                pageUpDy = 0;
+                                pageUpButtonShown = true;
+                                sideControlsButtonsLayout.showButton(ChatActivitySideControlsButtonsLayout.BUTTON_PAGE_UP, true, true);
+                            } else if (pageUpButtonShown && pageUpDy < -AndroidUtilities.dp(100)) {
+                                pageUpDy = 0;
+                                pageUpButtonShown = false;
+                                sideControlsButtonsLayout.showButton(ChatActivitySideControlsButtonsLayout.BUTTON_PAGE_UP, false, true);
                             }
                         }
                     }
@@ -17934,6 +17951,8 @@ public class ChatActivity extends BaseFragment implements
         sideControlsButtonsLayout.showButton(ChatActivitySideControlsButtonsLayout.BUTTON_SEARCH_DOWN, show, animated);
         if (show) {
             sideControlsButtonsLayout.showButton(ChatActivitySideControlsButtonsLayout.BUTTON_PAGE_DOWN, false, animated);
+            pageUpButtonShown = false;
+            sideControlsButtonsLayout.showButton(ChatActivitySideControlsButtonsLayout.BUTTON_PAGE_UP, false, animated);
         }
 
         if (!show) {
@@ -48519,11 +48538,42 @@ public class ChatActivity extends BaseFragment implements
             goToNextOrPrevSearchMessage(true);
         } else if (buttonId == ChatActivitySideControlsButtonsLayout.BUTTON_SEARCH_DOWN) {
             goToNextOrPrevSearchMessage(false);
+        } else if (buttonId == ChatActivitySideControlsButtonsLayout.BUTTON_PAGE_UP) {
+            scrollPageUp();
         } else if (buttonId == ChatActivitySideControlsButtonsLayout.BUTTON_ATTACH) {
             if (chatAttachAlert != null) {
                 chatAttachAlert.setEditingMessageObject(0, null);
             }
             openAttachMenu();
+        }
+    }
+
+    private void scrollPageUp() {
+        if (chatLayoutManager == null || chatAdapter == null || messages.isEmpty()) {
+            return;
+        }
+        int lastVisible = chatLayoutManager.findLastVisibleItemPosition();
+        if (lastVisible == RecyclerView.NO_POSITION) {
+            return;
+        }
+        int index = Math.min(lastVisible, chatAdapter.messagesEndRow - 1) - chatAdapter.messagesStartRow;
+        int targetIndex = -1;
+        int remaining = 100;
+        for (int i = index + 1; i < messages.size(); i++) {
+            MessageObject m = messages.get(i);
+            if (m.getId() != 0 && !m.isDateObject && !m.isSponsored()) {
+                targetIndex = i;
+                if (--remaining == 0) {
+                    break;
+                }
+            }
+        }
+        wasManualScroll = true;
+        if (remaining == 0) {
+            MessageObject target = messages.get(targetIndex);
+            scrollToMessageId(target.getId(), 0, false, mergeDialogId != 0 && target.getDialogId() == mergeDialogId ? 1 : 0, true, 0);
+        } else {
+            jumpToDate(1);
         }
     }
 

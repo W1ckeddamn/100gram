@@ -3941,7 +3941,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             protected void onBottomButtonVisibilityChange() {
                 super.onBottomButtonVisibilityChange();
                 if (myProfile && bottomButtonContainer[0] != null && sharedMediaLayout != null) {
-                    bottomButtonContainer[0].setTranslationY(dp(72) * (1f - sharedMediaLayout.getBottomButtonStoriesVisibility()));
+                    bottomButtonContainer[0].setTranslationY(HundredGramConfig.hideStoriesPosting ? dp(72) : dp(72) * (1f - sharedMediaLayout.getBottomButtonStoriesVisibility()));
                 }
             }
 
@@ -10629,7 +10629,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     }
 
     private boolean needInsetForStories() {
-        return getMessagesController().getStoriesController().hasStories(getDialogId()) && !isTopic;
+        return !HundredGramConfig.hideStoriesProfile && getMessagesController().getStoriesController().hasStories(getDialogId()) && !isTopic;
     }
 
     public void setUserInfo(
@@ -12572,7 +12572,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     callItemVisible = call != null;
                     voiceChatAction = call != null || voiceChatAction;
                 }
-                if (getMessagesController().getStoriesController().canPostStories(chat)) {
+                if (!HundredGramConfig.hideStoriesPosting && getMessagesController().getStoriesController().canPostStories(chat)) {
                     otherItem.addSubItem(channel_stories, R.drawable.msg_archive, LocaleController.getString(R.string.OpenChannelArchiveStories));
                     addStoryAction = true;
                 } else if (getMessagesController().getStoriesController().canEditStories(chat)) {

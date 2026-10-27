@@ -1649,6 +1649,15 @@
     <string name="MediaGlowMedium">Среднее</string>
     <string name="MediaGlowHigh">Высокое</string>
     <string name="ThanosDeleteEffect">Эффект удаления Thanos</string>
+    <string name="ChatPageUpButton">Кнопка «страница вверх»</string>
+    <string name="ChatPageUpInfo">Показывать кнопку для перехода на 100 сообщений назад.</string>
+    <string name="ChatPageUpDescription">100 сообщений вверх</string>
+    <string name="ResetAllSettings">Сбросить все настройки</string>
+    <string name="ResetAllSettingsTitle">Сбросить все настройки?</string>
+    <string name="ResetAllSettingsInfo">Все параметры 100gram вернутся к значениям по умолчанию. Настройки Telegram не затрагиваются.</string>
+    <string name="ResetAllSettingsDone">Настройки сброшены</string>
+    <string name="HideStoriesProfile">Скрыть истории в профилях</string>
+    <string name="HideStoriesPosting">Скрыть публикацию историй</string>
 </resources>
 
 

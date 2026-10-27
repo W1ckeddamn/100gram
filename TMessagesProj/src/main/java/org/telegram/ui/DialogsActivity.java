@@ -5331,9 +5331,11 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         }
                         return;
                     }
-                    filterOptions.add(R.drawable.msg_stories_add, LocaleController.getString(R.string.AddStory), Theme.key_actionBarDefaultSubmenuItemIcon, Theme.key_actionBarDefaultSubmenuItem, () -> {
-                        dialogStoriesCell.openStoryRecorder();
-                    });
+                    if (!HundredGramConfig.hideStoriesPosting) {
+                        filterOptions.add(R.drawable.msg_stories_add, LocaleController.getString(R.string.AddStory), Theme.key_actionBarDefaultSubmenuItemIcon, Theme.key_actionBarDefaultSubmenuItem, () -> {
+                            dialogStoriesCell.openStoryRecorder();
+                        });
+                    }
                     filterOptions.add(R.drawable.msg_stories_archive, LocaleController.getString(R.string.ArchivedStories), Theme.key_actionBarDefaultSubmenuItemIcon, Theme.key_actionBarDefaultSubmenuItem, () -> {
                         Bundle args = new Bundle();
                         args.putLong("dialog_id", UserConfig.getInstance(currentAccount).getClientUserId());
@@ -5370,7 +5372,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                             stealthModeLockedDrawable = new CombinedDrawable(stealthDrawable, lockIcon);
                         }
                     }
-                    if (dialogId < 0 && getStoriesController().canPostStories(dialogId)) {
+                    if (!HundredGramConfig.hideStoriesPosting && dialogId < 0 && getStoriesController().canPostStories(dialogId)) {
                         filterOptions.add(R.drawable.msg_stories_add, LocaleController.getString(R.string.AddStory), Theme.key_actionBarDefaultSubmenuItemIcon, Theme.key_actionBarDefaultSubmenuItem, () -> {
                             dialogStoriesCell.openStoryRecorder(dialogId);
                         });
@@ -7516,7 +7518,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 showArchiveHelp();
             }
         }
-        if (canShowStoryHint && !storyHintShown && storyHint != null && storiesEnabled) {
+        if (!HundredGramConfig.hideStoriesPosting && canShowStoryHint && !storyHintShown && storyHint != null && storiesEnabled) {
             storyHintShown = true;
             canShowStoryHint = false;
             storyHint.show();
@@ -9003,7 +9005,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             floatingButton3.setButtonVisible(isVisible, animated);
         }
         if (floatingButtonStories != null) {
-            floatingButtonStories.setButtonVisible(isVisible, animated);
+            floatingButtonStories.setButtonVisible(isVisible && !HundredGramConfig.hideStoriesPosting, animated);
         }
     }
 

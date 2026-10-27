@@ -168,6 +168,9 @@ public class HundredGramConfig {
     public static boolean selectionNoLimit;
     public static int mediaGlowLevel; // 0 off, 1 low, 2 medium, 3 high
     public static boolean thanosDeleteEffect = true;
+    public static boolean chatPageUpButton = true;
+    public static boolean hideStoriesProfile;
+    public static boolean hideStoriesPosting;
     public static boolean avatarHistoryEnabled = true;
     public static boolean profileHistoryEnabled = true;
     public static boolean developerModeEnabled = true;
@@ -749,6 +752,9 @@ public class HundredGramConfig {
             selectionNoLimit = preferences.getBoolean("selectionNoLimit", false);
             mediaGlowLevel = preferences.getInt("mediaGlowLevel", 0);
             thanosDeleteEffect = preferences.getBoolean("thanosDeleteEffect", true);
+        chatPageUpButton = preferences.getBoolean("chatPageUpButton", true);
+        hideStoriesProfile = preferences.getBoolean("hideStoriesProfile", false);
+        hideStoriesPosting = preferences.getBoolean("hideStoriesPosting", false);
             avatarHistoryEnabled = preferences.getBoolean("avatarHistoryEnabled", true);
             profileHistoryEnabled = preferences.getBoolean("profileHistoryEnabled", true);
             developerModeEnabled = preferences.getBoolean("developerModeEnabled", true);
@@ -2043,6 +2049,32 @@ public class HundredGramConfig {
     public static void toggleThanosDeleteEffect() {
         thanosDeleteEffect = !thanosDeleteEffect;
         save("thanosDeleteEffect", thanosDeleteEffect);
+    }
+
+    public static void toggleChatPageUpButton() {
+        chatPageUpButton = !chatPageUpButton;
+        save("chatPageUpButton", chatPageUpButton);
+    }
+
+    public static void toggleHideStoriesProfile() {
+        hideStoriesProfile = !hideStoriesProfile;
+        save("hideStoriesProfile", hideStoriesProfile);
+    }
+
+    public static void toggleHideStoriesPosting() {
+        hideStoriesPosting = !hideStoriesPosting;
+        save("hideStoriesPosting", hideStoriesPosting);
+    }
+
+    public static void resetAllSettings() {
+        if (ApplicationLoader.applicationContext == null) {
+            return;
+        }
+        ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
+                .edit().clear().commit();
+        configLoaded = false;
+        loadConfig();
+        postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);
     }
 
     public static void toggleAvatarHistoryEnabled() {
