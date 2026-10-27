@@ -62,6 +62,7 @@ import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
@@ -269,10 +270,16 @@ public class Bulletin {
     }
 
     public boolean setCanHideOnShow = true;
+    private boolean hapticError;
+    public Bulletin hapticError() {
+        hapticError = true;
+        return this;
+    }
     public Bulletin show(boolean top) {
         if (!showing && containerLayout != null) {
             showing = true;
             layout.setTop(top);
+            HundredGramHaptics.play(layout, hapticError ? "error" : "success");
 
             CharSequence text = layout.getAccessibilityText();
             if (text != null) {

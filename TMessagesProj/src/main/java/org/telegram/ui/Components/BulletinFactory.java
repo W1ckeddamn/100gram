@@ -959,7 +959,7 @@ public final class BulletinFactory {
         layout.textView.setText(errorMessage);
         layout.textView.setSingleLine(false);
         layout.textView.setMaxLines(2);
-        return create(layout, Bulletin.DURATION_SHORT);
+        return create(layout, Bulletin.DURATION_SHORT).hapticError();
     }
 
     public Bulletin createSuccessBulletin(CharSequence successMessage) {
@@ -1032,7 +1032,7 @@ public final class BulletinFactory {
         layout.setAnimation(R.raw.chats_infotip);
         layout.titleTextView.setText(errorMessage);
         layout.subtitleTextView.setText(errorDescription);
-        return create(layout, Bulletin.DURATION_SHORT);
+        return create(layout, Bulletin.DURATION_SHORT).hapticError();
     }
 
     @CheckResult

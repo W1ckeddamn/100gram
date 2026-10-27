@@ -49,7 +49,16 @@ All six have rows in `HundredGramSubSettingsActivity` and entries in `HundredGra
 |---|---|
 | Haptics master + strength (`OpexgramHapticsEnable`) | `HundredGramHaptics` engine; `HundredGramConfig.hapticsEnabled` / `hapticStrength` (20–200%) |
 | Per-action effect (`OpexgramHapticsActive`) | 12 effects (selection, tick, soft, click, rigid, heavy, double, rise, fall, success, warning, error) picked per action; vibration primitives on Android 11+, waveform below |
-| Wired actions | send message, send media, attach picker, set reaction, select message, tab switch, archive pull, account switch, photo dismiss |
+| Wired actions | all 20 actions: send message, send media, attach picker, set reaction, select message, tab switch, archive pull, account switch, photo dismiss, message action, menu selection, swipe to reply, photo swipe, zoom edge, slider step, player track, player speed, error, success, incoming message |
+| System hooks | `AndroidUtilities.vibrate/vibrateCursor`, `ActionBarMenuSubItem.performClick`, `MediaController`, `ChatActivity` (swipe reply, message actions, incoming), `PhotoViewer` (swipe, zoom edge), `Bulletin` (success/error) |
+
+## Batch 6 — folder swipe animation
+
+| OpexGram setting | 100gram implementation |
+|---|---|
+| Folder swipe (`OpexgramFolderSwipe`) | `HundredGramConfig.folderSwipe` → `HundredGramFolderSwipe.apply()` from `DialogsActivity.ViewPage.setTranslationX`; scale `1 - shrink * sin(pi * progress)`, dp(28) rounded outline clipped to the tabs |
+| Shrink percent (`OpexgramFolderSwipeShrink`) | `folderSwipeShrink` 2–20 % (default 8), picker in Interface |
+| Spring (`OpexgramFolderSwipeSpring`) | `folderSwipeSpring` 0/1/2 → `HundredGramFolderSwipe.Spring` drives the page-snap animator (`DialogsActivity`) and the tab indicator (`FilterTabsView.animationRunnable`) |
 
 ## Already present before this batch
 

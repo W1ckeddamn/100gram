@@ -6697,6 +6697,7 @@ public class AndroidUtilities {
     }
 
     public static void vibrateCursor(View view) {
+        if (view != null && HundredGramHaptics.play(view, "slider_step")) return;
         try {
             if (view == null || view.getContext() == null) return;
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
@@ -6706,6 +6707,7 @@ public class AndroidUtilities {
     }
 
     public static void vibrate(View view) {
+        if (view != null && HundredGramHaptics.play(view, "menu_select")) return;
         try {
             if (view == null || view.getContext() == null) return;
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;

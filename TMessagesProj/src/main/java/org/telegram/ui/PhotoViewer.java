@@ -19247,9 +19247,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 float maxScale = sendPhotoType == SELECT_TYPE_STICKER ? 10.0f : 3.0f;
                 float minScale = sendPhotoType == SELECT_TYPE_STICKER ? 0.33f : 1f;
                 if (scale < minScale) {
+                    HundredGramHaptics.play(containerView, "zoom_edge");
                     updateMinMax(minScale);
                     animateTo(minScale, 0, 0, true);
                 } else if (scale > maxScale) {
+                    HundredGramHaptics.play(containerView, "zoom_edge");
                     float atx = (pinchCenterX - getContainerViewWidth() / 2) - ((pinchCenterX - getContainerViewWidth() / 2) - pinchStartX) * (maxScale / pinchStartScale);
                     float aty = (pinchCenterY - getContainerViewHeight() / 2) - ((pinchCenterY - getContainerViewHeight() / 2) - pinchStartY) * (maxScale / pinchStartScale);
                     updateMinMax(maxScale);
@@ -19357,6 +19359,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     }
 
     private void goToNext() {
+        HundredGramHaptics.play(containerView, "photo_swipe");
         float extra = 0;
         if (scale != 1) {
             extra = (getContainerViewWidth() - centerImage.getImageWidth()) / 2 * scale;
@@ -19366,6 +19369,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     }
 
     private void goToPrev() {
+        HundredGramHaptics.play(containerView, "photo_swipe");
         float extra = 0;
         if (scale != 1) {
             extra = (getContainerViewWidth() - centerImage.getImageWidth()) / 2 * scale;

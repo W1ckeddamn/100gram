@@ -21,6 +21,7 @@ import android.widget.TextView;
 import androidx.core.graphics.ColorUtils;
 
 import org.telegram.messenger.ImageLocation;
+import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.LocaleController;
 import org.telegram.ui.Components.AnimatedEmojiSpan;
 import org.telegram.ui.Components.BackupImageView;
@@ -316,6 +317,12 @@ public class ActionBarMenuSubItem extends FrameLayout {
         });
         enabledAnimator.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
         enabledAnimator.start();
+    }
+
+    @Override
+    public boolean performClick() {
+        HundredGramHaptics.play(this, "menu_select");
+        return super.performClick();
     }
 
     private int iconResId;

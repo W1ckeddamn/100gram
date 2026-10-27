@@ -2982,6 +2982,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     }
 
     public void playNextMessage() {
+        HundredGramHaptics.play(null, "player_track");
         playNextMessageWithoutOrder(false);
     }
 
@@ -3074,6 +3075,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     }
 
     public void playPreviousMessage() {
+        HundredGramHaptics.play(null, "player_track");
         ArrayList<MessageObject> currentPlayList = SharedConfig.shuffleMusic ? shuffledPlaylist : playlist;
         if (currentPlayList.isEmpty() || currentPlaylistNum < 0 || currentPlaylistNum >= currentPlayList.size()) {
             return;
@@ -3327,6 +3329,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     }
 
     public void setPlaybackSpeed(boolean music, float speed) {
+        HundredGramHaptics.play(null, "player_speed");
         if (music) {
             if (currentMusicPlaybackSpeed >= 6 && speed == 1f && playingMessageObject != null) {
                 audioPlayer.pause();

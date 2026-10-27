@@ -14,11 +14,15 @@ public class HundredGramHaptics {
 
     public static final String[] ACTION_NAMES = {
             "send_message", "send_media", "attach_pick", "reaction_set", "select_message",
-            "tab_switch", "pull_archive", "account_switch", "photo_dismiss"
+            "tab_switch", "pull_archive", "account_switch", "photo_dismiss",
+            "message_action", "menu_select", "swipe_reply", "photo_swipe", "zoom_edge",
+            "slider_step", "player_track", "player_speed", "error", "success", "message_incoming"
     };
 
     private static final int[] ACTION_DEFAULTS = {
-            4, 4, 1, 5, 1, 2, 5, 6, 9
+            4, 4, 1, 5, 1, 2, 5, 6, 9,
+            1, 1, 5, 2, 3,
+            1, 2, 1, 12, 10, 2
     };
 
     private static final class Effect {
@@ -79,11 +83,14 @@ public class HundredGramHaptics {
         }
     }
 
-    public static void play(View view, String action) {
-        if (!HundredGramConfig.hapticsEnabled || !HundredGramConfig.isHapticActionEnabled(action)) {
-            return;
+    public static boolean play(View view, String action) {
+        if (!HundredGramConfig.hapticsEnabled) {
+            return false;
         }
-        playEffect(view, HundredGramConfig.getHapticEffect(action));
+        if (HundredGramConfig.isHapticActionEnabled(action)) {
+            playEffect(view, HundredGramConfig.getHapticEffect(action));
+        }
+        return true;
     }
 
     public static void playEffect(View view, int effectIndex) {

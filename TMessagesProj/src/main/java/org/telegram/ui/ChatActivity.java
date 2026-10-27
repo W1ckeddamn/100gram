@@ -5808,9 +5808,11 @@ public class ChatActivity extends BaseFragment implements
                         } else {
                             if (Math.abs(dx) >= AndroidUtilities.dp(50)) {
                                 if (!wasTrackingVibrate) {
-                                    try {
-                                        performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
-                                    } catch (Exception ignore) {}
+                                    if (!HundredGramHaptics.play(this, "swipe_reply")) {
+                                        try {
+                                            performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+                                        } catch (Exception ignore) {}
+                                    }
                                     wasTrackingVibrate = true;
                                 }
                             } else {
@@ -26250,6 +26252,15 @@ public class ChatActivity extends BaseFragment implements
     }
     private void processNewMessages(ArrayList<MessageObject> arr, final boolean animatedFromBottom) {
         FileLog.d("processNewMessages " + arr.size() + " messages");
+        if (animatedFromBottom && fragmentView != null && !isPaused && !ApplicationLoader.mainInterfacePaused) {
+            for (int i = 0; i < arr.size(); i++) {
+                MessageObject incoming = arr.get(i);
+                if (incoming != null && !incoming.isOutOwner() && !incoming.isSponsored()) {
+                    HundredGramHaptics.play(fragmentView, "message_incoming");
+                    break;
+                }
+            }
+        }
 
         final boolean isBot = UserObject.isBot(currentUser);
         final boolean isStreamingTopic = isBot && BotForumHelper.getInstance(currentAccount).isStreamingTopic(getDialogId(), getTopicId());
@@ -34419,6 +34430,7 @@ public class ChatActivity extends BaseFragment implements
         if (selectedObject == null || getParentActivity() == null) {
             return;
         }
+        HundredGramHaptics.play(fragmentView, "message_action");
         boolean preserveDim = false;
         switch (option) {
             case OPTION_SAVE_MESSAGE: {
