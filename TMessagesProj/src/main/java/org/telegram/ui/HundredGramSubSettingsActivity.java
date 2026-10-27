@@ -1004,7 +1004,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asButton(ITEM_DELETE_MY_MESSAGES, R.drawable.msg_chats_remove, LocaleController.getString("DeleteMyMessages", R.string.DeleteMyMessages)).red());
         items.add(UItem.asShadow(LocaleController.getString("DeleteMyMessagesInfo", R.string.DeleteMyMessagesInfo)));
 
-        items.add(UItem.asHeader(LocaleController.getString("Haptics", R.string.Haptics)));
         items.add(UItem.asCheck(ITEM_HAPTICS, LocaleController.getString("Haptics", R.string.Haptics))
                 .setChecked(HundredGramConfig.hapticsEnabled));
         if (HundredGramConfig.hapticsEnabled) {
