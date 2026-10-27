@@ -1647,6 +1647,15 @@
     <string name="ResetAllSettingsDone">Settings reset</string>
     <string name="HideStoriesProfile">Hide stories in profiles</string>
     <string name="HideStoriesPosting">Hide story posting</string>
+    <string name="DeleteMyMessages">Delete my messages</string>
+    <string name="DeleteMyMessagesInfo">All your messages in this chat will be deleted for everyone. This cannot be undone.</string>
+    <string name="DeleteMyMessagesInfoChats">Your messages in %1$d chats will be deleted for everyone. This cannot be undone.</string>
+    <string name="DeleteMyMessagesProgress">Deleted: %1$d</string>
+    <string name="DeleteMyMessagesProgressChats">Chat %1$d/%2$d · deleted: %3$d</string>
+    <string name="DeleteMyMessagesDone">Deleted %1$d messages</string>
+    <string name="DeleteMyMessagesEmpty">No messages to delete</string>
+    <string name="DeleteMyMessagesFailed">Couldn\'t delete some messages</string>
+    <string name="DeleteMyMessagesBusy">Deletion is already running</string>
 </resources>
 
 

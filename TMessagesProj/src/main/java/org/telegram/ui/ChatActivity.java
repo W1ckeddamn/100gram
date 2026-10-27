@@ -1885,6 +1885,7 @@ public class ChatActivity extends BaseFragment implements
     private final static int hundredgram_chat_settings = 80;
     private final static int hundredgram_export_chat = 81;
     private final static int hundredgram_force_scan_media = 82;
+    private final static int hundredgram_delete_my_messages = 83;
 
     private final static int id_chat_compose_panel = 1000;
 
@@ -4652,6 +4653,8 @@ public class ChatActivity extends BaseFragment implements
                     new org.telegram.ui.Components.HundredGramChatSettingsBottomSheet(ChatActivity.this, dialog_id).show();
                 } else if (id == hundredgram_export_chat) {
                     new org.telegram.ui.Components.HundredGramChatExportBottomSheet(ChatActivity.this, dialog_id).show();
+                } else if (id == hundredgram_delete_my_messages) {
+                    HundredGramDeleteMyMessages.show(ChatActivity.this, dialog_id);
                 } else if (id == change_colors) {
                     showChatThemeBottomSheet();
                 } else if (id == topic_close) {
@@ -5129,6 +5132,9 @@ public class ChatActivity extends BaseFragment implements
             headerItem.lazilyAddSubItem(hundredgram_export_chat, R.drawable.msg_log, LocaleController.getString("ChatExport", R.string.ChatExport));
             headerItem.lazilyAddSubItem(hundredgram_go_to_first_message, R.drawable.msg_go_up, LocaleController.getString("GoToFirstMessage", R.string.GoToFirstMessage));
             headerItem.lazilyAddSubItem(hundredgram_clear_chat_cache, R.drawable.msg_clear, LocaleController.getString(R.string.ClearChatCache));
+            if (!isTopic && !DialogObject.isEncryptedDialog(dialog_id)) {
+                headerItem.lazilyAddSubItem(hundredgram_delete_my_messages, R.drawable.msg_chats_remove, LocaleController.getString("DeleteMyMessages", R.string.DeleteMyMessages)).setColors(getThemedColor(Theme.key_text_RedRegular), getThemedColor(Theme.key_text_RedRegular));
+            }
             if (currentUser != null && !currentUser.bot) {
                 if (!currentUser.self) {
                     boolean tracked = org.telegram.messenger.HundredGramConfig.isUserTrackedForOnline(currentUser.id);

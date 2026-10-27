@@ -430,6 +430,13 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "истории", "публикация", "stories", "posting", "скрыть");
 
+        addEntry(id++, "DeleteMyMessages", "Удалить мои сообщения",
+                null, "Удалить все ваши сообщения в выбранных чатах",
+                "HundredGramCategoryActions", "Действия",
+                R.drawable.msg_chats_remove, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 0,
+                HundredGramSubSettingsActivity.class,
+                "удалить", "мои", "сообщения", "delete", "my", "messages");
+
         addEntry(id++, "HighlightDeleted", "Выделять удаленные сообщения цветом",
                 null, "Визуальная цветная рамка или плашка вокруг удаленных сообщений",
                 "HundredGramCategoryInterface", "Интерфейс",

@@ -19,6 +19,7 @@ import org.telegram.messenger.HundredGramActivitySimulator;
 import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.HundredGramContentFilterController;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.messenger.HundredGramVaultManager;
@@ -257,6 +258,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_RESET_ALL = 266;
     private static final int ITEM_HIDE_STORIES_PROFILE = 267;
     private static final int ITEM_HIDE_STORIES_POSTING = 268;
+    private static final int ITEM_DELETE_MY_MESSAGES = 269;
 
     // Item IDs for Developer Mode
     private static final int ITEM_DEV_MODE = 100;
@@ -976,6 +978,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 modelStatus));
         items.add(UItem.asShadow(LocaleController.getString("LocalSttEnabledInfo", R.string.LocalSttEnabledInfo)));
 
+        items.add(UItem.asButton(ITEM_DELETE_MY_MESSAGES, R.drawable.msg_chats_remove, LocaleController.getString("DeleteMyMessages", R.string.DeleteMyMessages)).red());
+        items.add(UItem.asShadow(LocaleController.getString("DeleteMyMessagesInfo", R.string.DeleteMyMessagesInfo)));
+
         items.add(UItem.asHeader(LocaleController.getString("DevCategory", R.string.DevCategory)));
         items.add(UItem.asCheck(ITEM_DEV_MODE, LocaleController.getString("DeveloperMode", R.string.DeveloperMode))
                 .setChecked(HundredGramConfig.developerModeEnabled));
@@ -1511,6 +1516,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
             case ITEM_RESET_ALL:
                 showResetAllDialog();
+                break;
+            case ITEM_DELETE_MY_MESSAGES:
+                openDeleteMyMessagesPicker();
                 break;
             case ITEM_ADD_COMMA_AFTER_MENTION:
                 HundredGramConfig.toggleAddCommaAfterMention();
@@ -3063,6 +3071,29 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
 
     private String getSelectionSpeedName() {
         return String.format(LocaleController.getString("SelectionSpeedValue", R.string.SelectionSpeedValue), HundredGramConfig.selectionSpeed);
+    }
+
+    private void openDeleteMyMessagesPicker() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        Bundle args = new Bundle();
+        args.putBoolean("onlySelect", true);
+        args.putBoolean("allowMultiple", true);
+        DialogsActivity fragment = new DialogsActivity(args);
+        fragment.setDelegate((f, dids, message, param, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment) -> {
+            ArrayList<Long> ids = new ArrayList<>();
+            for (MessagesStorage.TopicKey key : dids) {
+                if (key.dialogId != 0 && key.topicId == 0) {
+                    ids.add(key.dialogId);
+                }
+            }
+            if (!ids.isEmpty()) {
+                HundredGramDeleteMyMessages.show(HundredGramSubSettingsActivity.this, ids);
+            }
+            return true;
+        });
+        presentFragment(fragment);
     }
 
     private void showResetAllDialog() {

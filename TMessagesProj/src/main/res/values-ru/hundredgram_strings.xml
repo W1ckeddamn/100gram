@@ -1658,6 +1658,15 @@
     <string name="ResetAllSettingsDone">Настройки сброшены</string>
     <string name="HideStoriesProfile">Скрыть истории в профилях</string>
     <string name="HideStoriesPosting">Скрыть публикацию историй</string>
+    <string name="DeleteMyMessages">Удалить мои сообщения</string>
+    <string name="DeleteMyMessagesInfo">Все ваши сообщения в этом чате будут удалены для всех. Отменить это нельзя.</string>
+    <string name="DeleteMyMessagesInfoChats">Ваши сообщения в %1$d чатах будут удалены для всех. Отменить это нельзя.</string>
+    <string name="DeleteMyMessagesProgress">Удалено: %1$d</string>
+    <string name="DeleteMyMessagesProgressChats">Чат %1$d/%2$d · удалено: %3$d</string>
+    <string name="DeleteMyMessagesDone">Удалено сообщений: %1$d</string>
+    <string name="DeleteMyMessagesEmpty">Нет сообщений для удаления</string>
+    <string name="DeleteMyMessagesFailed">Не удалось удалить часть сообщений</string>
+    <string name="DeleteMyMessagesBusy">Удаление уже выполняется</string>
 </resources>
 
 
