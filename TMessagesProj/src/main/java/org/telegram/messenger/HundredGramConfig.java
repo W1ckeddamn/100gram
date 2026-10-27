@@ -183,6 +183,11 @@ public class HundredGramConfig {
     // Haptics
     public static boolean hapticsEnabled = true;
     public static int hapticStrength = 100; // percent, 10..200
+
+    // Folder swipe
+    public static boolean folderSwipe;
+    public static int folderSwipeShrink = 8; // percent, 2..20
+    public static int folderSwipeSpring; // 0 = off, 1 = standard, 2 = expressive
     public static final java.util.HashMap<String, Integer> hapticEffects = new java.util.HashMap<>();
     public static final java.util.HashSet<String> hapticDisabled = new java.util.HashSet<>();
     public static boolean avatarHistoryEnabled = true;
@@ -785,6 +790,9 @@ public class HundredGramConfig {
         }
         hapticsEnabled = preferences.getBoolean("hapticsEnabled", true);
         hapticStrength = Math.max(10, Math.min(200, preferences.getInt("hapticStrength", 100)));
+        folderSwipe = preferences.getBoolean("folderSwipe", false);
+        folderSwipeShrink = Math.max(2, Math.min(20, preferences.getInt("folderSwipeShrink", 8)));
+        folderSwipeSpring = Math.max(0, Math.min(2, preferences.getInt("folderSwipeSpring", 0)));
         hapticEffects.clear();
         hapticDisabled.clear();
         for (String action : HundredGramHaptics.ACTION_NAMES) {
@@ -2132,6 +2140,21 @@ public class HundredGramConfig {
     public static void toggleHaptics() {
         hapticsEnabled = !hapticsEnabled;
         save("hapticsEnabled", hapticsEnabled);
+    }
+
+    public static void toggleFolderSwipe() {
+        folderSwipe = !folderSwipe;
+        save("folderSwipe", folderSwipe);
+    }
+
+    public static void setFolderSwipeShrink(int percent) {
+        folderSwipeShrink = Math.max(2, Math.min(20, percent));
+        saveInt("folderSwipeShrink", folderSwipeShrink);
+    }
+
+    public static void setFolderSwipeSpring(int mode) {
+        folderSwipeSpring = Math.max(0, Math.min(2, mode));
+        saveInt("folderSwipeSpring", folderSwipeSpring);
     }
 
     public static void setHapticStrength(int strength) {

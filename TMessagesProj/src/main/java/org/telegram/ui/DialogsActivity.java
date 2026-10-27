@@ -109,6 +109,7 @@ import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramFolderSwipe;
 import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.FilesMigrationService;
@@ -449,6 +450,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         public void setTranslationX(float translationX) {
             if (getTranslationX() != translationX) {
                 super.setTranslationX(translationX);
+                HundredGramFolderSwipe.apply(this, translationX, filterTabsView, getThemedColor(Theme.key_windowBackgroundWhite));
                 if (tabsAnimationInProgress) {
                     if (viewPages[0] == this) {
                         float scrollProgress = Math.abs(viewPages[0].getTranslationX()) / (float) viewPages[0].getMeasuredWidth();
@@ -1529,6 +1531,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         int halfWidth = width / 2;
                         float distanceRatio = Math.min(1.0f, 1.0f * dx / (float) width);
                         float distance = (float) halfWidth + (float) halfWidth * AndroidUtilities.distanceInfluenceForSnapDuration(distanceRatio);
+                        float rawVelX = velX;
                         velX = Math.abs(velX);
                         int duration;
                         if (velX > 0) {
@@ -1540,6 +1543,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         duration = Math.max(150, Math.min(duration, 600));
 
                         tabsAnimation.setDuration(duration);
+                        if (HundredGramConfig.folderSwipe && HundredGramConfig.folderSwipeSpring != 0) {
+                            HundredGramFolderSwipe.applySpring(tabsAnimation, (animatingForward ^ backAnimation ? -rawVelX : rawVelX) / Math.max(1f, dx));
+                        }
                         tabsAnimation.addListener(new AnimatorListenerAdapter() {
                             @Override
                             public void onAnimationEnd(Animator animator) {

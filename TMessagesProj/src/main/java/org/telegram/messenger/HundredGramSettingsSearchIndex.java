@@ -451,6 +451,13 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "вибрация", "вибро", "haptics", "vibration", "тактильный");
 
+        addEntry(id++, "FolderSwipe", "Анимация свайпа папок",
+                null, "Уменьшение страниц и пружинная анимация при перелистывании папок",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_folders, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 383,
+                HundredGramSubSettingsActivity.class,
+                "папки", "свайп", "анимация", "folder", "swipe", "spring");
+
         addEntry(id++, "HighlightDeleted", "Выделять удаленные сообщения цветом",
                 null, "Визуальная цветная рамка или плашка вокруг удаленных сообщений",
                 "HundredGramCategoryInterface", "Интерфейс",

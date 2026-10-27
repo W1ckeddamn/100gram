@@ -1708,6 +1708,12 @@
     <string name="HapticEffectSuccess">Success</string>
     <string name="HapticEffectWarning">Warning</string>
     <string name="HapticEffectError">Error</string>
+    <string name="FolderSwipe">Folder swipe animation</string>
+    <string name="FolderSwipeInfo">Pages shrink while swiping between folders</string>
+    <string name="FolderSwipeShrink">Shrink</string>
+    <string name="FolderSwipeSpring">Spring</string>
+    <string name="FolderSwipeSpringStandard">Standard</string>
+    <string name="FolderSwipeSpringExpressive">Expressive</string>
 </resources>
 
 

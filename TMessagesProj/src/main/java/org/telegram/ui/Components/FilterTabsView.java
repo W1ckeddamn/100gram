@@ -56,6 +56,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Emoji;
+import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramFolderSwipe;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
@@ -844,6 +846,7 @@ public class FilterTabsView extends FrameLayout {
     private boolean animationRunning;
     private long lastAnimationTime;
     private float animationTime;
+    private long lastSpringTime;
     private int previousPosition;
     private int previousId;
     DefaultItemAnimator itemAnimator;
@@ -861,9 +864,21 @@ public class FilterTabsView extends FrameLayout {
             if (dt > 17) {
                 dt = 17;
             }
-            animationTime += dt / 320.0f;
-            setAnimationIdicatorProgress(interpolator.getInterpolation(animationTime));
-            if (animationTime > 1.0f) {
+            float step = dt / 320.0f;
+            float interpolation = interpolator.getInterpolation(animationTime);
+            if (HundredGramConfig.folderSwipe && HundredGramConfig.folderSwipeSpring != 0) {
+                long now = SystemClock.uptimeMillis();
+                long frame = now - lastSpringTime;
+                lastSpringTime = now;
+                if (frame <= 0 || frame > 64) {
+                    frame = 16;
+                }
+                HundredGramFolderSwipe.Spring spring = HundredGramFolderSwipe.spring();
+                step = frame / (spring.durationSeconds * 1000f);
+                interpolation = spring.getInterpolation(animationTime);
+            }
+            animationTime += step;
+            setAnimationIdicatorProgress(interpolation);            if (animationTime > 1.0f) {
                 animationTime = 1.0f;
             }
             if (animationTime < 1.0f) {

@@ -1719,6 +1719,12 @@
     <string name="HapticEffectSuccess">Успех</string>
     <string name="HapticEffectWarning">Предупреждение</string>
     <string name="HapticEffectError">Ошибка</string>
+    <string name="FolderSwipe">Анимация свайпа папок</string>
+    <string name="FolderSwipeInfo">Страницы уменьшаются при перелистывании папок</string>
+    <string name="FolderSwipeShrink">Уменьшение</string>
+    <string name="FolderSwipeSpring">Пружина</string>
+    <string name="FolderSwipeSpringStandard">Стандартная</string>
+    <string name="FolderSwipeSpringExpressive">Выразительная</string>
 </resources>
 
 

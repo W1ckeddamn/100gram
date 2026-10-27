@@ -143,6 +143,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_BATTERY_OPTIMIZATIONS = 26;
     private static final int ITEM_SHADOWBAN = 195;
     private static final int ITEM_NEW_SLIDER_STYLE = 391;
+    private static final int ITEM_FOLDER_SWIPE = 383;
+    private static final int ITEM_FOLDER_SWIPE_SHRINK = 384;
+    private static final int ITEM_FOLDER_SWIPE_SPRING = 385;
     private static final int ITEM_ADBLOCK = 350;
 
     // Item IDs for CATEGORY_INTERFACE
@@ -756,6 +759,13 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
         }
         items.add(UItem.asButton(ITEM_DIVIDER_STYLE, LocaleController.getString("DividerStyle", R.string.DividerStyle), dividerName));
+        items.add(UItem.asCheck(ITEM_FOLDER_SWIPE, LocaleController.getString("FolderSwipe", R.string.FolderSwipe))
+                .setChecked(HundredGramConfig.folderSwipe));
+        if (HundredGramConfig.folderSwipe) {
+            items.add(UItem.asButton(ITEM_FOLDER_SWIPE_SHRINK, LocaleController.getString("FolderSwipeShrink", R.string.FolderSwipeShrink), HundredGramConfig.folderSwipeShrink + "%"));
+            items.add(UItem.asButton(ITEM_FOLDER_SWIPE_SPRING, LocaleController.getString("FolderSwipeSpring", R.string.FolderSwipeSpring), getFolderSwipeSpringName()));
+        }
+        items.add(UItem.asShadow(LocaleController.getString("FolderSwipeInfo", R.string.FolderSwipeInfo)));
         items.add(UItem.asShadow(LocaleController.getString("TransitionsAndDividersInfo", R.string.TransitionsAndDividersInfo)));
 
         // Section 3: Message Bubbles (LIVE PREVIEW DIRECTLY WITH ITS 5 CONTROLS!)
@@ -2016,6 +2026,22 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
             case ITEM_DIVIDER_STYLE:
                 showDividerStyleDialog();
                 break;
+            case ITEM_FOLDER_SWIPE:
+                HundredGramConfig.toggleFolderSwipe();
+                item.setChecked(HundredGramConfig.folderSwipe);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.folderSwipe);
+                }
+                if (listView != null && listView.adapter != null) {
+                    listView.adapter.update(true);
+                }
+                break;
+            case ITEM_FOLDER_SWIPE_SHRINK:
+                showFolderSwipeShrinkDialog();
+                break;
+            case ITEM_FOLDER_SWIPE_SPRING:
+                showFolderSwipeSpringDialog();
+                break;
             case ITEM_DISABLE_NOTIFICATION_DELAY:
                 HundredGramConfig.toggleDisableNotificationDelay();
                 item.setChecked(HundredGramConfig.disableNotificationDelay);
@@ -3137,9 +3163,57 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         showDialog(builder.create());
     }
 
-    private void showDividerStyleDialog() {
+    private String getFolderSwipeSpringName() {
+        switch (HundredGramConfig.folderSwipeSpring) {
+            case 1:
+                return LocaleController.getString("FolderSwipeSpringStandard", R.string.FolderSwipeSpringStandard);
+            case 2:
+                return LocaleController.getString("FolderSwipeSpringExpressive", R.string.FolderSwipeSpringExpressive);
+            default:
+                return LocaleController.getString("Disabled", R.string.Disabled);
+        }
+    }
+
+    private void showFolderSwipeShrinkDialog() {
+        if (getParentActivity() == null) return;
+        final int[] values = {2, 4, 6, 8, 10, 12, 14, 16, 18, 20};
+        String[] options = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            options[i] = values[i] + "%";
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("FolderSwipeShrink", R.string.FolderSwipeShrink));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setFolderSwipeShrink(values[which]);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void showFolderSwipeSpringDialog() {
         if (getParentActivity() == null) return;
         String[] options = new String[] {
+            LocaleController.getString("Disabled", R.string.Disabled),
+            LocaleController.getString("FolderSwipeSpringStandard", R.string.FolderSwipeSpringStandard),
+            LocaleController.getString("FolderSwipeSpringExpressive", R.string.FolderSwipeSpringExpressive)
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("FolderSwipeSpring", R.string.FolderSwipeSpring));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setFolderSwipeSpring(which);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void showDividerStyleDialog() {
+        if (getParentActivity() == null) return;        String[] options = new String[] {
             LocaleController.getString("DividerStyleLine", R.string.DividerStyleLine),
             LocaleController.getString("DividerStyleSegments", R.string.DividerStyleSegments),
             LocaleController.getString("DividerStyleHidden", R.string.DividerStyleHidden)
