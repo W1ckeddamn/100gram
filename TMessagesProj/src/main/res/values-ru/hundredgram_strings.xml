@@ -1667,6 +1667,23 @@
     <string name="DeleteMyMessagesEmpty">Нет сообщений для удаления</string>
     <string name="DeleteMyMessagesFailed">Не удалось удалить часть сообщений</string>
     <string name="DeleteMyMessagesBusy">Удаление уже выполняется</string>
+    <string name="LockHeader">Блокировка</string>
+    <string name="LockArchive">Архив</string>
+    <string name="LockSecret">Секретные чаты</string>
+    <string name="LockSaved">Избранное</string>
+    <string name="LockDelete">Удаление чатов</string>
+    <string name="LockGrace">Не спрашивать снова в течение</string>
+    <string name="LockGraceOff">Выкл.</string>
+    <string name="LockInfo">Чтобы заблокировать отдельный чат, удерживайте его в списке чатов. Нужна блокировка экрана устройства.</string>
+    <string name="LockUnavailable">Сначала настройте блокировку экрана</string>
+    <string name="LockChat">Заблокировать чат</string>
+    <string name="UnlockChat">Разблокировать чат</string>
+    <string name="LockChatLocked">Этот чат заблокирован</string>
+    <string name="LockArchiveLocked">Архив заблокирован</string>
+    <string name="LockUnlock">Разблокировать</string>
+    <string name="LockPromptSubtitle">Подтвердите, что это вы</string>
+    <string name="LockDeleteTitle">Подтверждение удаления</string>
+    <string name="LockDeleteSubtitle">Подтвердите, что это вы, перед удалением</string>
 </resources>
 
 

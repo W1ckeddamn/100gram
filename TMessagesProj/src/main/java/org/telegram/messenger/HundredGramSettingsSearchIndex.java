@@ -437,6 +437,13 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "удалить", "мои", "сообщения", "delete", "my", "messages");
 
+        addEntry(id++, "LockHeader", "Блокировка",
+                null, "Защита чатов, архива и удаления чатов биометрией или паролем устройства",
+                "HundredGramCategoryPrivacy", "Конфиденциальность",
+                R.drawable.msg_permissions, HundredGramSubSettingsActivity.CATEGORY_PRIVACY, 0,
+                HundredGramSubSettingsActivity.class,
+                "блокировка", "lock", "биометрия", "отпечаток", "пароль");
+
         addEntry(id++, "HighlightDeleted", "Выделять удаленные сообщения цветом",
                 null, "Визуальная цветная рамка или плашка вокруг удаленных сообщений",
                 "HundredGramCategoryInterface", "Интерфейс",

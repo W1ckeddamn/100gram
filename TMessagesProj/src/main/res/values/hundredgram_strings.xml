@@ -1656,6 +1656,23 @@
     <string name="DeleteMyMessagesEmpty">No messages to delete</string>
     <string name="DeleteMyMessagesFailed">Couldn\'t delete some messages</string>
     <string name="DeleteMyMessagesBusy">Deletion is already running</string>
+    <string name="LockHeader">Lock</string>
+    <string name="LockArchive">Archive</string>
+    <string name="LockSecret">Secret chats</string>
+    <string name="LockSaved">Saved messages</string>
+    <string name="LockDelete">Deleting chats</string>
+    <string name="LockGrace">Don\'t ask again for</string>
+    <string name="LockGraceOff">Off</string>
+    <string name="LockInfo">To lock a single chat, hold it in the chat list. Requires a screen lock on the device.</string>
+    <string name="LockUnavailable">Set up a screen lock first</string>
+    <string name="LockChat">Lock chat</string>
+    <string name="UnlockChat">Unlock chat</string>
+    <string name="LockChatLocked">This chat is locked</string>
+    <string name="LockArchiveLocked">The archive is locked</string>
+    <string name="LockUnlock">Unlock</string>
+    <string name="LockPromptSubtitle">Confirm it is you</string>
+    <string name="LockDeleteTitle">Delete confirmation</string>
+    <string name="LockDeleteSubtitle">Confirm it is you before deleting</string>
 </resources>
 
 

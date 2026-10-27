@@ -259,6 +259,11 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_HIDE_STORIES_PROFILE = 267;
     private static final int ITEM_HIDE_STORIES_POSTING = 268;
     private static final int ITEM_DELETE_MY_MESSAGES = 269;
+    private static final int ITEM_LOCK_ARCHIVE = 290;
+    private static final int ITEM_LOCK_SECRET = 291;
+    private static final int ITEM_LOCK_SAVED = 292;
+    private static final int ITEM_LOCK_DELETE = 293;
+    private static final int ITEM_LOCK_GRACE = 294;
 
     // Item IDs for Developer Mode
     private static final int ITEM_DEV_MODE = 100;
@@ -613,6 +618,20 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_ADBLOCK, LocaleController.getString("BlockAds", R.string.BlockAds))
                 .setChecked(HundredGramConfig.enableAdBlock));
         items.add(UItem.asShadow(LocaleController.getString("BlockAdsInfo", R.string.BlockAdsInfo)));
+
+        items.add(UItem.asHeader(LocaleController.getString("LockHeader", R.string.LockHeader)));
+        items.add(UItem.asCheck(ITEM_LOCK_ARCHIVE, LocaleController.getString("LockArchive", R.string.LockArchive))
+                .setChecked(HundredGramConfig.lockArchive));
+        items.add(UItem.asCheck(ITEM_LOCK_SECRET, LocaleController.getString("LockSecret", R.string.LockSecret))
+                .setChecked(HundredGramConfig.lockSecret));
+        items.add(UItem.asCheck(ITEM_LOCK_SAVED, LocaleController.getString("LockSaved", R.string.LockSaved))
+                .setChecked(HundredGramConfig.lockSaved));
+        items.add(UItem.asCheck(ITEM_LOCK_DELETE, LocaleController.getString("LockDelete", R.string.LockDelete))
+                .setChecked(HundredGramConfig.lockDelete));
+        items.add(UItem.asButton(ITEM_LOCK_GRACE,
+                LocaleController.getString("LockGrace", R.string.LockGrace),
+                getLockGraceName()));
+        items.add(UItem.asShadow(LocaleController.getString("LockInfo", R.string.LockInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("HundredGramProfileSection", R.string.HundredGramProfileSection)));
         String idDcValue;
@@ -1519,6 +1538,45 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
             case ITEM_DELETE_MY_MESSAGES:
                 openDeleteMyMessagesPicker();
+                break;
+            case ITEM_LOCK_ARCHIVE:
+                if (lockAllowed(HundredGramConfig.lockArchive)) {
+                    HundredGramConfig.toggleLockArchive();
+                }
+                item.setChecked(HundredGramConfig.lockArchive);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.lockArchive);
+                }
+                break;
+            case ITEM_LOCK_SECRET:
+                if (lockAllowed(HundredGramConfig.lockSecret)) {
+                    HundredGramConfig.toggleLockSecret();
+                }
+                item.setChecked(HundredGramConfig.lockSecret);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.lockSecret);
+                }
+                break;
+            case ITEM_LOCK_SAVED:
+                if (lockAllowed(HundredGramConfig.lockSaved)) {
+                    HundredGramConfig.toggleLockSaved();
+                }
+                item.setChecked(HundredGramConfig.lockSaved);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.lockSaved);
+                }
+                break;
+            case ITEM_LOCK_DELETE:
+                if (lockAllowed(HundredGramConfig.lockDelete)) {
+                    HundredGramConfig.toggleLockDelete();
+                }
+                item.setChecked(HundredGramConfig.lockDelete);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.lockDelete);
+                }
+                break;
+            case ITEM_LOCK_GRACE:
+                showLockGraceDialog();
                 break;
             case ITEM_ADD_COMMA_AFTER_MENTION:
                 HundredGramConfig.toggleAddCommaAfterMention();
@@ -3114,8 +3172,52 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         showDialog(builder.create());
     }
 
-    private void showSelectionSpeedDialog() {
+    private boolean lockAllowed(boolean current) {
+        if (!current && !HundredGramLocks.isSecure()) {
+            BulletinFactory.of(this).createSimpleBulletin(R.raw.info, LocaleController.getString("LockUnavailable", R.string.LockUnavailable)).show();
+            return false;
+        }
+        return true;
+    }
+
+    private String getLockGraceName() {
+        if (HundredGramConfig.lockGrace <= 0) {
+            return LocaleController.getString("LockGraceOff", R.string.LockGraceOff);
+        }
+        if (HundredGramConfig.lockGrace % 3600 == 0) {
+            return LocaleController.formatPluralString("Hours", HundredGramConfig.lockGrace / 3600);
+        }
+        return LocaleController.formatPluralString("Minutes", HundredGramConfig.lockGrace / 60);
+    }
+
+    private void showLockGraceDialog() {
         if (getParentActivity() == null) {
+            return;
+        }
+        final int[] values = {0, 60, 300, 900, 3600};
+        String[] options = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == 0) {
+                options[i] = LocaleController.getString("LockGraceOff", R.string.LockGraceOff);
+            } else if (values[i] % 3600 == 0) {
+                options[i] = LocaleController.formatPluralString("Hours", values[i] / 3600);
+            } else {
+                options[i] = LocaleController.formatPluralString("Minutes", values[i] / 60);
+            }
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("LockGrace", R.string.LockGrace));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setLockGrace(values[which]);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void showSelectionSpeedDialog() {        if (getParentActivity() == null) {
             return;
         }
         String[] options = new String[7];

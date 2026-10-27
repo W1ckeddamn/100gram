@@ -171,6 +171,14 @@ public class HundredGramConfig {
     public static boolean chatPageUpButton = true;
     public static boolean hideStoriesProfile;
     public static boolean hideStoriesPosting;
+
+    // Locks (device credential / biometrics)
+    public static boolean lockArchive;
+    public static boolean lockSecret;
+    public static boolean lockSaved;
+    public static boolean lockDelete;
+    public static int lockGrace; // seconds, 0 = ask every time
+    public static final java.util.HashSet<Long> lockedChats = new java.util.HashSet<>();
     public static boolean avatarHistoryEnabled = true;
     public static boolean profileHistoryEnabled = true;
     public static boolean developerModeEnabled = true;
@@ -755,6 +763,20 @@ public class HundredGramConfig {
         chatPageUpButton = preferences.getBoolean("chatPageUpButton", true);
         hideStoriesProfile = preferences.getBoolean("hideStoriesProfile", false);
         hideStoriesPosting = preferences.getBoolean("hideStoriesPosting", false);
+        lockArchive = preferences.getBoolean("lockArchive", false);
+        lockSecret = preferences.getBoolean("lockSecret", false);
+        lockSaved = preferences.getBoolean("lockSaved", false);
+        lockDelete = preferences.getBoolean("lockDelete", false);
+        lockGrace = preferences.getInt("lockGrace", 0);
+        lockedChats.clear();
+        for (String id : preferences.getString("lockedChats", "").split(",")) {
+            try {
+                if (!id.isEmpty()) {
+                    lockedChats.add(Long.parseLong(id));
+                }
+            } catch (NumberFormatException ignore) {
+            }
+        }
             avatarHistoryEnabled = preferences.getBoolean("avatarHistoryEnabled", true);
             profileHistoryEnabled = preferences.getBoolean("profileHistoryEnabled", true);
             developerModeEnabled = preferences.getBoolean("developerModeEnabled", true);
@@ -2064,6 +2086,51 @@ public class HundredGramConfig {
     public static void toggleHideStoriesPosting() {
         hideStoriesPosting = !hideStoriesPosting;
         save("hideStoriesPosting", hideStoriesPosting);
+    }
+
+    public static void toggleLockArchive() {
+        lockArchive = !lockArchive;
+        save("lockArchive", lockArchive);
+    }
+
+    public static void toggleLockSecret() {
+        lockSecret = !lockSecret;
+        save("lockSecret", lockSecret);
+    }
+
+    public static void toggleLockSaved() {
+        lockSaved = !lockSaved;
+        save("lockSaved", lockSaved);
+    }
+
+    public static void toggleLockDelete() {
+        lockDelete = !lockDelete;
+        save("lockDelete", lockDelete);
+    }
+
+    public static void setLockGrace(int seconds) {
+        lockGrace = seconds;
+        saveInt("lockGrace", lockGrace);
+    }
+
+    public static boolean isChatLocked(long dialogId) {
+        return lockedChats.contains(dialogId);
+    }
+
+    public static void setChatLocked(long dialogId, boolean locked) {
+        if (locked) {
+            lockedChats.add(dialogId);
+        } else {
+            lockedChats.remove(dialogId);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Long id : lockedChats) {
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append(id);
+        }
+        saveString("lockedChats", sb.toString());
     }
 
     public static void resetAllSettings() {

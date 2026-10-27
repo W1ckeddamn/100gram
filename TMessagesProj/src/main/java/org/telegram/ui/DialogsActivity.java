@@ -592,7 +592,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private ActionBarMenuSubItem readItem;
     @Nullable
     private ActionBarMenuSubItem blockItem;
-
+    private ActionBarMenuSubItem lockItem;
+    private boolean hundredgramDeleteAuthorized;
     private float additionalFloatingTranslation;
     private float floatingButtonPanOffset;
 
@@ -714,6 +715,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private final static int add_to_folder = 109;
     private final static int remove_from_folder = 110;
     private final static int community_ungroup = 111;
+    private final static int hundredgram_lock_chat = 200;
 
     private final static int ARCHIVE_ITEM_STATE_PINNED = 0;
     private final static int ARCHIVE_ITEM_STATE_SHOWED = 1;
@@ -4151,6 +4153,12 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         undoView.showWithAction(did, UndoView.ACTION_REMOVED_FROM_FOLDER, neverShow.size(), filter, null, null);
                     }
                     hideActionMode(false);
+                } else if (id == hundredgram_lock_chat) {
+                    if (selectedDialogs.size() == 1) {
+                        long did = selectedDialogs.get(0);
+                        HundredGramConfig.setChatLocked(did, !HundredGramConfig.isChatLocked(did));
+                        hideActionMode(false);
+                    }
                 } else if (id == pin || id == read || id == delete || id == clear || id == mute || id == archive || id == block || id == archive2 || id == pin2) {
                     performSelectedDialogsAction(selectedDialogs, id, true, false);
                 }
@@ -5786,6 +5794,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         checkUi_searchFieldStyle();
 
         ViewCompat.setOnApplyWindowInsetsListener(fragmentView, this::onApplyWindowInsets);
+        if (isArchive()) {
+            HundredGramLocks.guardArchive(this);
+        }
         return fragmentView;
     }
 
@@ -6895,6 +6906,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         readItem = otherItem.addSubItem(read, R.drawable.msg_markread, LocaleController.getString(R.string.MarkAsRead));
         clearItem = otherItem.addSubItem(clear, R.drawable.msg_clear, LocaleController.getString(R.string.ClearHistory));
         blockItem = otherItem.addSubItem(block, R.drawable.msg_block, LocaleController.getString(R.string.BlockUser));
+        lockItem = otherItem.addSubItem(hundredgram_lock_chat, R.drawable.msg_permissions, LocaleController.getString("LockChat", R.string.LockChat));
 
         muteItem.setOnLongClickListener(e -> {
             performSelectedDialogsAction(selectedDialogs, mute, true, true);
@@ -9304,6 +9316,20 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         if (getParentActivity() == null) {
             return;
         }
+        if ((action == delete || action == clear) && HundredGramConfig.lockDelete && !hundredgramDeleteAuthorized && HundredGramLocks.shouldAsk()) {
+            HundredGramLocks.authenticate(
+                    LocaleController.getString("LockDeleteTitle", R.string.LockDeleteTitle),
+                    LocaleController.getString("LockDeleteSubtitle", R.string.LockDeleteSubtitle),
+                    () -> {
+                        hundredgramDeleteAuthorized = true;
+                        try {
+                            performSelectedDialogsAction(selectedDialogs, action, alert, longPress, dialogsIdsToRevoke);
+                        } finally {
+                            hundredgramDeleteAuthorized = false;
+                        }
+                    });
+            return;
+        }
         MessagesController.DialogFilter filter;
         boolean containsFilter = (viewPages[0].dialogsType == 7 || viewPages[0].dialogsType == 8) && (!actionBar.isActionModeShowed() || actionBar.isActionModeShowed(null));
         if (containsFilter) {
@@ -10081,6 +10107,15 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 blockItem.setVisibility(View.GONE);
             } else {
                 blockItem.setVisibility(View.VISIBLE);
+            }
+        }
+        if (lockItem != null) {
+            if (count == 1 && !DialogObject.isEncryptedDialog(selectedDialogs.get(0))) {
+                lockItem.setVisibility(View.VISIBLE);
+                lockItem.setText(LocaleController.getString(HundredGramConfig.isChatLocked(selectedDialogs.get(0)) ? "UnlockChat" : "LockChat",
+                        HundredGramConfig.isChatLocked(selectedDialogs.get(0)) ? R.string.UnlockChat : R.string.LockChat));
+            } else {
+                lockItem.setVisibility(View.GONE);
             }
         }
         if (removeFromFolderItem != null) {
