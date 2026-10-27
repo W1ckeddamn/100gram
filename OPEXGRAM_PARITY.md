@@ -86,14 +86,14 @@ All six have rows in `HundredGramSubSettingsActivity` and entries in `HundredGra
 
 | Feature | Why it is not done yet | Rough touch points |
 |---|---|---|
-| Chat box animations / motion / contrast | Needs bubble color/alpha math and enter-view animation changes | `ChatMessageCell`, `ChatActivityEnterView`, `Theme` |
+| Chat box styles (Telegram / Expressive, motion, contrast) | OpexGram renders the field with its own `lc.u` class: several spring-animated capsule rects, per-element colors and a contrast alpha. Porting it means porting that renderer, not a few paddings | `ChatActivityEnterView`, new renderer class |
 | Glass message bubbles + transparency + border + chat edge blur | Big renderer change; upstream `LiquidGlassEffect` exists but is not wired to bubbles | `ChatMessageCell.drawBackground`, blur3 |
-| Quotes | Needs a message-menu action and quote rendering | `ChatActivity` menu, `ChatMessageCell` |
-| Message menu customization | Needs a reorderable list and menu builder changes | `ChatActivity`, message menu |
-| Profile name switch | Action-bar title source change | `ProfileActivity`, `ChatAvatarContainer` |
+| Quotes | OpexGram renders selected messages into a sticker bitmap (background, mask, hide names/media/time, anonymity). Needs a renderer plus a menu action | `ChatActivity` menu, new renderer |
+| Message menu customization | Self-contained config exists in OpexGram (`ac.h2`, 27 items, order + hidden). Needs a drag-and-drop settings screen plus a filter/sort pass at the end of `ChatActivity.fillMessageMenu` | `ChatActivity.fillMessageMenu`, new settings activity |
+| Profile name switch | Needs a per-account cache of real names (`MessagesController` user updates), a title swap and a swipe gesture on the profile name | `MessagesController`, `ProfileActivity` |
 | Folder menu style / segments | Partially covered by tab title style | `DialogsActivity`, `MainTabsActivity` |
 | Icon color source (monet / rainbow) | Icon pack engine exists, color source does not | `IconPacksActivity` |
-| AI FX glow / rainbow | Visual-only AI chrome | AI chat UI |
+| AI FX glow / rainbow | OpexGram's glow sits on its "Ask AI" chat message; this fork answers in bottom sheets, so the effect has nothing to attach to yet | AI chat UI |
 | Bulk gifts / scheduled gifts | Needs new TL flows and gift picker UI | `StarGiftSheet`, `ApiWrap` |
 
 ## Not implementable client-side
