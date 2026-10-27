@@ -20019,7 +20019,7 @@ public class ChatActivity extends BaseFragment implements
                     }
                 }
             } else {
-                if (selectedMessagesIds[0].size() + selectedMessagesIds[1].size() >= 100) {
+                if (!HundredGramConfig.selectionNoLimit && selectedMessagesIds[0].size() + selectedMessagesIds[1].size() >= 100) {
                     AndroidUtilities.shakeView(selectedMessagesCountTextView);
                     Vibrator vibrator = (Vibrator) ApplicationLoader.applicationContext.getSystemService(Context.VIBRATOR_SERVICE);
                     if (vibrator != null) {
@@ -45831,11 +45831,11 @@ public class ChatActivity extends BaseFragment implements
     }
 
     public boolean supportsThanosEffect() {
-        return ThanosEffect.supports() && LiteMode.isEnabled(LiteMode.FLAG_CHAT_THANOS);
+        return HundredGramConfig.thanosDeleteEffect && ThanosEffect.supports() && LiteMode.isEnabled(LiteMode.FLAG_CHAT_THANOS);
     }
 
     public ThanosEffect getChatThanosEffect() {
-        if (!LiteMode.isEnabled(LiteMode.FLAG_CHAT_THANOS) || !ThanosEffect.supports()) {
+        if (!HundredGramConfig.thanosDeleteEffect || !LiteMode.isEnabled(LiteMode.FLAG_CHAT_THANOS) || !ThanosEffect.supports()) {
             return null;
         }
         if (chatListThanosEffect == null || chatListThanosEffect.destroyed) {

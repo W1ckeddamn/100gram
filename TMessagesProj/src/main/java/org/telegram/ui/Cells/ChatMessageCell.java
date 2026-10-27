@@ -19330,6 +19330,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     if (currentForwardName == null || messageObject.messageOwner.fwd_from.from_id != null) {
                         stringBuilder.setSpan(new TypefaceSpan(AndroidUtilities.bold()), 0, stringBuilder.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                     }
+                    if (HundredGramConfig.forwardTime && messageObject.messageOwner.fwd_from != null && messageObject.messageOwner.fwd_from.date != 0) {
+                        stringBuilder.append(" · ").append(LocaleController.getInstance().getFormatterDay().format(new java.util.Date(messageObject.messageOwner.fwd_from.date * 1000L)));
+                    }
                     lastLine = stringBuilder;
                 }
                 try {
@@ -21047,12 +21050,12 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 lastCheckBoxAnimationTime = newTime;
 
                 if (checkBoxVisible) {
-                    checkBoxAnimationProgress += dt / 200.0f;
+                    checkBoxAnimationProgress += dt / (200.0f * 4.0f / HundredGramConfig.selectionSpeed);
                     if (checkBoxAnimationProgress > 1.0f) {
                         checkBoxAnimationProgress = 1.0f;
                     }
                 } else {
-                    checkBoxAnimationProgress -= dt / 200.0f;
+                    checkBoxAnimationProgress -= dt / (200.0f * 4.0f / HundredGramConfig.selectionSpeed);
                     if (checkBoxAnimationProgress <= 0.0f) {
                         checkBoxAnimationProgress = 0.0f;
                     }
@@ -29494,7 +29497,36 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         );
     }
 
+    private Paint mediaGlowPaint;
+
+    private void drawMediaGlow(Canvas canvas) {
+        final int level = HundredGramConfig.mediaGlowLevel;
+        final float w = photoImage.getImageWidth();
+        final float h = photoImage.getImageHeight();
+        if (w <= 0 || h <= 0) {
+            return;
+        }
+        if (mediaGlowPaint == null) {
+            mediaGlowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            mediaGlowPaint.setStyle(Paint.Style.STROKE);
+        }
+        final int color = Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4) & 0xFFFFFF;
+        final float step = dp(2 + level);
+        final float radius = dp(12);
+        final float x = photoImage.getImageX();
+        final float y = photoImage.getImageY();
+        for (int i = 0; i <= level; i++) {
+            mediaGlowPaint.setColor(color | ((0x1E / (i + 1)) << 24));
+            mediaGlowPaint.setStrokeWidth(step);
+            final float o = step * (i + 0.5f);
+            canvas.drawRoundRect(x - o, y - o, x + w + o, y + h + o, radius, radius, mediaGlowPaint);
+        }
+    }
+
     protected boolean drawPhotoImage(Canvas canvas) {
+        if (HundredGramConfig.mediaGlowLevel > 0) {
+            drawMediaGlow(canvas);
+        }
         if (currentMessageObject != null && currentMessageObject.isLivePhoto()) {
             final AnimatedFileDrawable animation = photoImage.getAnimation();
             if (animation != null && animation.getDurationMs() > 0) {

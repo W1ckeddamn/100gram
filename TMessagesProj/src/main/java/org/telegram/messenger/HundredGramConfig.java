@@ -162,6 +162,12 @@ public class HundredGramConfig {
     public static boolean hideSimilarChannels = true;
     public static boolean hideStoriesBar;
     public static boolean showSecondsInTime;
+    public static boolean showWeekdayInDate;
+    public static boolean forwardTime = true;
+    public static int selectionSpeed = 4; // 2..8, 4 = stock animation speed
+    public static boolean selectionNoLimit;
+    public static int mediaGlowLevel; // 0 off, 1 low, 2 medium, 3 high
+    public static boolean thanosDeleteEffect = true;
     public static boolean avatarHistoryEnabled = true;
     public static boolean profileHistoryEnabled = true;
     public static boolean developerModeEnabled = true;
@@ -737,6 +743,12 @@ public class HundredGramConfig {
             hideSimilarChannels = preferences.getBoolean("hideSimilarChannels", true);
             hideStoriesBar = preferences.getBoolean("hideStoriesBar", false);
             showSecondsInTime = preferences.getBoolean("showSecondsInTime", false);
+            showWeekdayInDate = preferences.getBoolean("showWeekdayInDate", false);
+            forwardTime = preferences.getBoolean("forwardTime", true);
+            selectionSpeed = preferences.getInt("selectionSpeed", 4);
+            selectionNoLimit = preferences.getBoolean("selectionNoLimit", false);
+            mediaGlowLevel = preferences.getInt("mediaGlowLevel", 0);
+            thanosDeleteEffect = preferences.getBoolean("thanosDeleteEffect", true);
             avatarHistoryEnabled = preferences.getBoolean("avatarHistoryEnabled", true);
             profileHistoryEnabled = preferences.getBoolean("profileHistoryEnabled", true);
             developerModeEnabled = preferences.getBoolean("developerModeEnabled", true);
@@ -1998,6 +2010,39 @@ public class HundredGramConfig {
         showSecondsInTime = !showSecondsInTime;
         save("showSecondsInTime", showSecondsInTime);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleShowWeekdayInDate() {
+        showWeekdayInDate = !showWeekdayInDate;
+        save("showWeekdayInDate", showWeekdayInDate);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleForwardTime() {
+        forwardTime = !forwardTime;
+        save("forwardTime", forwardTime);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setSelectionSpeed(int speed) {
+        selectionSpeed = Math.max(2, Math.min(8, speed));
+        saveInt("selectionSpeed", selectionSpeed);
+    }
+
+    public static void toggleSelectionNoLimit() {
+        selectionNoLimit = !selectionNoLimit;
+        save("selectionNoLimit", selectionNoLimit);
+    }
+
+    public static void setMediaGlowLevel(int level) {
+        mediaGlowLevel = Math.max(0, Math.min(3, level));
+        saveInt("mediaGlowLevel", mediaGlowLevel);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleThanosDeleteEffect() {
+        thanosDeleteEffect = !thanosDeleteEffect;
+        save("thanosDeleteEffect", thanosDeleteEffect);
     }
 
     public static void toggleAvatarHistoryEnabled() {

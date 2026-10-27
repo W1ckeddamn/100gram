@@ -161,6 +161,12 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_HIDE_SIMILAR_CHANNELS = 93;
     private static final int ITEM_HIDE_STORIES_BAR = 94;
     private static final int ITEM_SHOW_SECONDS_IN_TIME = 95;
+    private static final int ITEM_SHOW_WEEKDAY_IN_DATE = 300;
+    private static final int ITEM_FORWARD_TIME = 301;
+    private static final int ITEM_SELECTION_SPEED = 302;
+    private static final int ITEM_SELECTION_NO_LIMIT = 303;
+    private static final int ITEM_MEDIA_GLOW = 304;
+    private static final int ITEM_THANOS_DELETE_EFFECT = 305;
     private static final int ITEM_PILL_STACK_ENABLED = 96;
     private static final int ITEM_PILL_STACK_SETTINGS = 193;
     private static final int ITEM_AVATAR_CORNERS_PREVIEW = 195;
@@ -735,6 +741,10 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.replaceEditedWithIcon));
         items.add(UItem.asCheck(ITEM_SHOW_SECONDS_IN_TIME, LocaleController.getString("ShowSecondsInTime", R.string.ShowSecondsInTime))
                 .setChecked(HundredGramConfig.showSecondsInTime));
+        items.add(UItem.asCheck(ITEM_SHOW_WEEKDAY_IN_DATE, LocaleController.getString("ShowWeekdayInDate", R.string.ShowWeekdayInDate))
+                .setChecked(HundredGramConfig.showWeekdayInDate));
+        items.add(UItem.asCheck(ITEM_FORWARD_TIME, LocaleController.getString("ForwardTime", R.string.ForwardTime))
+                .setChecked(HundredGramConfig.forwardTime));
         items.add(UItem.asCheck(ITEM_SHOW_FORWARDS_COUNT, LocaleController.getString("ShowForwardsCount", R.string.ShowForwardsCount))
                 .setChecked(HundredGramConfig.showForwardsCount));
         items.add(UItem.asCheck(ITEM_WIDE_POSTS_IN_CHANNELS, LocaleController.getString("WidePostsInChannels", R.string.WidePostsInChannels))
@@ -746,6 +756,12 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_HIDE_REACTIONS_IN_GROUPS, LocaleController.getString("HideReactionsInGroups", R.string.HideReactionsInGroups))
                 .setChecked(HundredGramConfig.hideReactionsInGroups));
         items.add(UItem.asShadow(LocaleController.getString("MessageBubblePreviewInfo", R.string.MessageBubblePreviewInfo)));
+
+        items.add(UItem.asHeader(LocaleController.getString("SelectionHeader", R.string.SelectionHeader)));
+        items.add(UItem.asButton(ITEM_SELECTION_SPEED, LocaleController.getString("SelectionSpeed", R.string.SelectionSpeed), getSelectionSpeedName()));
+        items.add(UItem.asCheck(ITEM_SELECTION_NO_LIMIT, LocaleController.getString("SelectionNoLimit", R.string.SelectionNoLimit))
+                .setChecked(HundredGramConfig.selectionNoLimit));
+        items.add(UItem.asShadow(LocaleController.getString("SelectionNoLimitInfo", R.string.SelectionNoLimitInfo)));
 
         // Reply Styling
         items.add(UItem.asHeader(LocaleController.getString("ReplyBackground", R.string.ReplyBackground)));
@@ -813,6 +829,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         if (HundredGramConfig.highlightDeletedMessages) {
             items.add(UItem.asButton(ITEM_DELETED_MARK_ICON, LocaleController.getString("DeletedMarkIcon", R.string.DeletedMarkIcon), getDeletedMarkIconTitle(HundredGramConfig.deletedMarkIcon)));
             items.add(UItem.asButton(ITEM_DELETED_MARK_COLOR, LocaleController.getString("DeletedMarkColor", R.string.DeletedMarkColor), getDeletedMarkColorTitle(HundredGramConfig.deletedMarkColor)));
+            items.add(UItem.asCheck(ITEM_THANOS_DELETE_EFFECT, LocaleController.getString("ThanosDeleteEffect", R.string.ThanosDeleteEffect))
+                    .setChecked(HundredGramConfig.thanosDeleteEffect));
         }
         items.add(UItem.asCheck(ITEM_HIDE_SIMILAR_CHANNELS, LocaleController.getString("HideSimilarChannels", R.string.HideSimilarChannels))
                 .setChecked(HundredGramConfig.hideSimilarChannels));
@@ -971,6 +989,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
             resValue = LocaleController.getString("PhotoMaxRes3840", R.string.PhotoMaxRes3840);
         }
         items.add(UItem.asButton(ITEM_PHOTO_MAX_RESOLUTION, LocaleController.getString("PhotoMaxResolution", R.string.PhotoMaxResolution), resValue));
+        items.add(UItem.asButton(ITEM_MEDIA_GLOW, LocaleController.getString("MediaGlow", R.string.MediaGlow), getMediaGlowName()));
         items.add(UItem.asShadow(LocaleController.getString("AlwaysHighQualityPhotosInfo", R.string.AlwaysHighQualityPhotosInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("HundredGramVideosSection", R.string.HundredGramVideosSection)));
@@ -1567,6 +1586,40 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 }
                 if (messageBubblePreviewCell != null) {
                     messageBubblePreviewCell.update();
+                }
+                break;
+            case ITEM_SHOW_WEEKDAY_IN_DATE:
+                HundredGramConfig.toggleShowWeekdayInDate();
+                item.setChecked(HundredGramConfig.showWeekdayInDate);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.showWeekdayInDate);
+                }
+                break;
+            case ITEM_FORWARD_TIME:
+                HundredGramConfig.toggleForwardTime();
+                item.setChecked(HundredGramConfig.forwardTime);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.forwardTime);
+                }
+                break;
+            case ITEM_SELECTION_SPEED:
+                showSelectionSpeedDialog();
+                break;
+            case ITEM_SELECTION_NO_LIMIT:
+                HundredGramConfig.toggleSelectionNoLimit();
+                item.setChecked(HundredGramConfig.selectionNoLimit);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.selectionNoLimit);
+                }
+                break;
+            case ITEM_MEDIA_GLOW:
+                showMediaGlowDialog();
+                break;
+            case ITEM_THANOS_DELETE_EFFECT:
+                HundredGramConfig.toggleThanosDeleteEffect();
+                item.setChecked(HundredGramConfig.thanosDeleteEffect);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.thanosDeleteEffect);
                 }
                 break;
             case ITEM_PILL_STACK_ENABLED:
@@ -2969,6 +3022,65 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
             default:
                 return LocaleController.getString("DeletedMarkTrash", R.string.DeletedMarkTrash);
         }
+    }
+
+    private String getSelectionSpeedName() {
+        return String.format(LocaleController.getString("SelectionSpeedValue", R.string.SelectionSpeedValue), HundredGramConfig.selectionSpeed);
+    }
+
+    private void showSelectionSpeedDialog() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        String[] options = new String[7];
+        for (int i = 0; i < options.length; i++) {
+            options[i] = String.format(LocaleController.getString("SelectionSpeedValue", R.string.SelectionSpeedValue), i + 2);
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("SelectionSpeed", R.string.SelectionSpeed));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setSelectionSpeed(which + 2);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private String getMediaGlowName() {
+        switch (HundredGramConfig.mediaGlowLevel) {
+            case 1:
+                return LocaleController.getString("MediaGlowLow", R.string.MediaGlowLow);
+            case 2:
+                return LocaleController.getString("MediaGlowMedium", R.string.MediaGlowMedium);
+            case 3:
+                return LocaleController.getString("MediaGlowHigh", R.string.MediaGlowHigh);
+            default:
+                return LocaleController.getString("Disabled", R.string.Disabled);
+        }
+    }
+
+    private void showMediaGlowDialog() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        String[] options = new String[]{
+                LocaleController.getString("Disabled", R.string.Disabled),
+                LocaleController.getString("MediaGlowLow", R.string.MediaGlowLow),
+                LocaleController.getString("MediaGlowMedium", R.string.MediaGlowMedium),
+                LocaleController.getString("MediaGlowHigh", R.string.MediaGlowHigh)
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("MediaGlow", R.string.MediaGlow));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setMediaGlowLevel(which);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
     }
 
     private void showDeletedMarkIconDialog() {

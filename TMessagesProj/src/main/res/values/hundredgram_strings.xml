@@ -1624,6 +1624,20 @@
     <string name="SettingsSearchFoundCount">Found: %1$d</string>
     <string name="WhatsNewUiElevationAndSearchTitle">Settings Search &amp; UI Redesign 2.0</string>
     <string name="WhatsNewUiElevationAndSearchDesc">Universal instant search across all fork settings with deep navigation and pulse highlight, grouped card sections, enhanced status dashboard, and tactile Liquid Glass haptics.</string>
+
+    <!-- OpexGram parity: chat details, selection and media -->
+    <string name="ShowWeekdayInDate">Weekday in date</string>
+    <string name="ForwardTime">Forward time</string>
+    <string name="SelectionHeader">Selection</string>
+    <string name="SelectionSpeed">Selection speed</string>
+    <string name="SelectionSpeedValue">%1$d×</string>
+    <string name="SelectionNoLimit">No selection limit</string>
+    <string name="SelectionNoLimitInfo">Allow selecting more than 100 messages at once.</string>
+    <string name="MediaGlow">Media glow</string>
+    <string name="MediaGlowLow">Low</string>
+    <string name="MediaGlowMedium">Medium</string>
+    <string name="MediaGlowHigh">High</string>
+    <string name="ThanosDeleteEffect">Thanos delete effect</string>
 </resources>
 
 

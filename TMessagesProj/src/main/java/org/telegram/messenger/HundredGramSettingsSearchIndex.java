@@ -360,6 +360,48 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "секунды", "время", "часы", "seconds", "time");
 
+        addEntry(id++, "ShowWeekdayInDate", "День недели в дате",
+                null, "Показывать день недели в заголовках дат чата",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_discussion, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 300,
+                HundredGramSubSettingsActivity.class,
+                "день недели", "дата", "weekday", "date");
+
+        addEntry(id++, "ForwardTime", "Время пересылки",
+                null, "Показывать время оригинала в шапке пересланного сообщения",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_discussion, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 301,
+                HundredGramSubSettingsActivity.class,
+                "пересылка", "время", "forward", "time");
+
+        addEntry(id++, "SelectionSpeed", "Скорость выделения сообщений",
+                null, "Скорость анимации галочки при выборе сообщений",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_discussion, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 302,
+                HundredGramSubSettingsActivity.class,
+                "выделение", "скорость", "selection", "speed");
+
+        addEntry(id++, "SelectionNoLimit", "Без лимита выделения",
+                null, "Разрешить выбирать больше 100 сообщений одновременно",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_discussion, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 303,
+                HundredGramSubSettingsActivity.class,
+                "лимит", "выделение", "100", "selection", "limit");
+
+        addEntry(id++, "MediaGlow", "Свечение медиа",
+                null, "Подсветка фотографий и видео в чате",
+                "HundredGramCategoryMediaQuality", "Медиа",
+                R.drawable.msg_media, HundredGramSubSettingsActivity.CATEGORY_MEDIA, 304,
+                HundredGramSubSettingsActivity.class,
+                "свечение", "медиа", "glow", "media");
+
+        addEntry(id++, "ThanosDeleteEffect", "Эффект удаления Thanos",
+                null, "Анимация рассыпания сообщений при удалении",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_discussion, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 305,
+                HundredGramSubSettingsActivity.class,
+                "thanos", "удаление", "эффект", "delete", "effect");
+
         addEntry(id++, "HighlightDeleted", "Выделять удаленные сообщения цветом",
                 null, "Визуальная цветная рамка или плашка вокруг удаленных сообщений",
                 "HundredGramCategoryInterface", "Интерфейс",

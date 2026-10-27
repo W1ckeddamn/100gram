@@ -172,6 +172,19 @@ public class LocaleController {
         return formatterDayMonth;
     }
 
+    private volatile FastDateFormat formatterWeekdayDayMonth;
+    public FastDateFormat getFormatterWeekdayDayMonth() {
+        if (formatterWeekdayDayMonth == null) {
+            synchronized (this) {
+                if (formatterWeekdayDayMonth == null) {
+                    final Locale locale = currentLocale == null ? Locale.getDefault() : currentLocale;
+                    formatterWeekdayDayMonth = createFormatter(locale, null, "EEE, d MMM");
+                }
+            }
+        }
+        return formatterWeekdayDayMonth;
+    }
+
     private volatile FastDateFormat formatterYear;
     public FastDateFormat getFormatterYear() {
         if (formatterYear == null) {
@@ -2150,6 +2163,9 @@ public class LocaleController {
             } else if (dateDay + 1 == day && year == dateYear) {
                 return getString("Yesterday", R.string.Yesterday);
             } else if (Math.abs(System.currentTimeMillis() - date) < 31536000000L) {
+                if (HundredGramConfig.showWeekdayInDate) {
+                    return getInstance().getFormatterWeekdayDayMonth().format(new Date(date));
+                }
                 return getInstance().getFormatterDayMonth().format(new Date(date));
             } else {
                 return getInstance().getFormatterYear().format(new Date(date));
@@ -2696,6 +2712,7 @@ public class LocaleController {
         formatterMonthYear = null;
         formatterMonthOnly = null;
         formatterDayMonth = null;
+        formatterWeekdayDayMonth = null;
         formatterYear = null;
         formatterYearMax = null;
         chatDate = null;
