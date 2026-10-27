@@ -1636,6 +1636,19 @@
     <string name="SettingsSearchFoundCount">Найдено: %1$d</string>
     <string name="WhatsNewUiElevationAndSearchTitle">Поиск по настройкам и Редизайн интерфейса 2.0</string>
     <string name="WhatsNewUiElevationAndSearchDesc">Универсальный мгновенный поиск по всем параметрам форка с автопереходом и подсветкой, сгруппированные карточки настроек, обновленный статус-панель и тактильный отклик Liquid Glass навигации.</string>
+    <string name="WhatsNewBatch4FeaturesDesc">Автоотключение прокси при VPN, мобильной сети и Wi-Fi, свои папки сохранения, настройка оформления ответов и формы стикеров</string>
+    <string name="ShowWeekdayInDate">День недели в дате</string>
+    <string name="ForwardTime">Время пересылки</string>
+    <string name="SelectionHeader">Выделение</string>
+    <string name="SelectionSpeed">Скорость выделения</string>
+    <string name="SelectionSpeedValue">%1$d×</string>
+    <string name="SelectionNoLimit">Без лимита выделения</string>
+    <string name="SelectionNoLimitInfo">Разрешить выбирать больше 100 сообщений одновременно.</string>
+    <string name="MediaGlow">Свечение медиа</string>
+    <string name="MediaGlowLow">Низкое</string>
+    <string name="MediaGlowMedium">Среднее</string>
+    <string name="MediaGlowHigh">Высокое</string>
+    <string name="ThanosDeleteEffect">Эффект удаления Thanos</string>
 </resources>
 
 
