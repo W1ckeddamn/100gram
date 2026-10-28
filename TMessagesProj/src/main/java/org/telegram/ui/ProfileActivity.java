@@ -11668,6 +11668,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             CharSequence newString = UserObject.getUserName(user);
             if (user.id == getUserConfig().getClientUserId() && HundredGramConfig.isStreamerMode()) {
                 newString = HundredGramConfig.streamerFakeName != null && !HundredGramConfig.streamerFakeName.isEmpty() ? HundredGramConfig.streamerFakeName : "Streamer";
+            } else if (HundredGramConfig.showRealName && user.id == getUserConfig().getClientUserId()) {
+                String cachedRealName = HundredGramRealNameCache.getRealName(currentAccount, user.id);
+                if (cachedRealName != null && !cachedRealName.isEmpty()) {
+                    newString = cachedRealName;
+                }
             }
             String newString2;
             boolean hiddenStatusButton = false;

@@ -168,6 +168,7 @@ public class HundredGramConfig {
     public static boolean selectionNoLimit;
     public static int mediaGlowLevel; // 0 off, 1 low, 2 medium, 3 high
     public static boolean thanosDeleteEffect = true;
+    public static boolean showRealName = false;
     public static boolean chatPageUpButton = true;
     public static boolean hideStoriesProfile;
     public static boolean hideStoriesPosting;
@@ -771,6 +772,7 @@ public class HundredGramConfig {
             selectionNoLimit = preferences.getBoolean("selectionNoLimit", false);
             mediaGlowLevel = preferences.getInt("mediaGlowLevel", 0);
             thanosDeleteEffect = preferences.getBoolean("thanosDeleteEffect", true);
+            showRealName = preferences.getBoolean("showRealName", false);
         chatPageUpButton = preferences.getBoolean("chatPageUpButton", true);
         hideStoriesProfile = preferences.getBoolean("hideStoriesProfile", false);
         hideStoriesPosting = preferences.getBoolean("hideStoriesPosting", false);
@@ -808,6 +810,11 @@ public class HundredGramConfig {
             prettyJsonViewerEnabled = preferences.getBoolean("prettyJsonViewerEnabled", true);
 
             configLoaded = true;
+            for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+                if (UserConfig.getInstance(a).isClientActivated()) {
+                    HundredGramRealNameCache.load(a);
+                }
+            }
         }
     }
 
@@ -1050,6 +1057,13 @@ public class HundredGramConfig {
         save("hideUsername", hideUsername);
         postNotificationToAllAccounts(NotificationCenter.mainUserInfoChanged);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleShowRealName() {
+        showRealName = !showRealName;
+        save("showRealName", showRealName);
+        postNotificationToAllAccounts(NotificationCenter.mainUserInfoChanged);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_NAME);
     }
 
     public static void toggleHideOtherUsernames() {
