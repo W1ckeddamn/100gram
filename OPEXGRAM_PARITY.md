@@ -60,6 +60,13 @@ All six have rows in `HundredGramSubSettingsActivity` and entries in `HundredGra
 | Shrink percent (`OpexgramFolderSwipeShrink`) | `folderSwipeShrink` 2–20 % (default 8), picker in Interface |
 | Spring (`OpexgramFolderSwipeSpring`) | `folderSwipeSpring` 0/1/2 → `HundredGramFolderSwipe.Spring` drives the page-snap animator (`DialogsActivity`) and the tab indicator (`FilterTabsView.animationRunnable`) |
 
+## Batch 8 — message menu customization
+
+| OpexGram setting | 100gram implementation |
+|---|---|
+| Message menu order & visibility | `HundredGramMessageMenu` config (`order` + `hidden` prefs); 23 entries across 6 groups (reply/forward, copy, manage, translation, save, other) with icons; `apply()` filter/sort pass at the end of `ChatActivity.fillMessageMenu` reorders/hides items; `HundredGramMessageMenuActivity` drag-and-drop settings with per-item tap-to-hide and Reset |
+| Settings entry | Row "Пункты меню" in `HundredGramSubSettingsActivity` (Actions category) + `HundredGramSettingsSearchIndex` entry |
+
 ## Already present before this batch
 
 | OpexGram feature | Existing 100gram feature |
@@ -89,7 +96,6 @@ All six have rows in `HundredGramSubSettingsActivity` and entries in `HundredGra
 | Chat box styles (Telegram / Expressive, motion, contrast) | OpexGram renders the field with its own `lc.u` class: several spring-animated capsule rects, per-element colors and a contrast alpha. Porting it means porting that renderer, not a few paddings | `ChatActivityEnterView`, new renderer class |
 | Glass message bubbles + transparency + border + chat edge blur | Big renderer change; upstream `LiquidGlassEffect` exists but is not wired to bubbles | `ChatMessageCell.drawBackground`, blur3 |
 | Quotes | OpexGram renders selected messages into a sticker bitmap (background, mask, hide names/media/time, anonymity). Needs a renderer plus a menu action | `ChatActivity` menu, new renderer |
-| Message menu customization | Self-contained config exists in OpexGram (`ac.h2`, 27 items, order + hidden). Needs a drag-and-drop settings screen plus a filter/sort pass at the end of `ChatActivity.fillMessageMenu` | `ChatActivity.fillMessageMenu`, new settings activity |
 | Profile name switch | Needs a per-account cache of real names (`MessagesController` user updates), a title swap and a swipe gesture on the profile name | `MessagesController`, `ProfileActivity` |
 | Folder menu style / segments | Partially covered by tab title style | `DialogsActivity`, `MainTabsActivity` |
 | Icon color source (monet / rainbow) | Icon pack engine exists, color source does not | `IconPacksActivity` |
