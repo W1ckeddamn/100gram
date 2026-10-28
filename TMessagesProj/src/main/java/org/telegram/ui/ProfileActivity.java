@@ -321,6 +321,7 @@ import org.telegram.ui.Stories.recorder.DualCameraView;
 import org.telegram.ui.Stories.recorder.HintView2;
 import org.telegram.ui.Stories.recorder.StoryRecorder;
 import org.telegram.ui.TON.TONIntroActivity;
+import org.telegram.messenger.HundredGramRealNameCache;
 import org.telegram.ui.bots.AffiliateProgramFragment;
 import org.telegram.ui.bots.BotBiometry;
 import org.telegram.ui.bots.BotDownloads;
