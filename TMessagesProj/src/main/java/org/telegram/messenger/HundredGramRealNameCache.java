@@ -1,5 +1,6 @@
 package org.telegram.messenger;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
