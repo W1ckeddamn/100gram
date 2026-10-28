@@ -727,6 +727,15 @@
     <string name="ShowDetailsButtonInfo">Shows detailed message metadata (ID, author, date, media, DC)</string>
     <string name="ShowCopyPhotoButtonInfo">Allows quickly copying image to clipboard from message menu</string>
     <string name="ShowEditHistoryButtonInfo">Displays &quot;Edit History&quot; item for edited and deleted messages</string>
+    <string name="MessageMenuCustomize">Menu items</string>
+    <string name="MessageMenuInfo">Long-press a message to open this menu. Drag rows to reorder them, tap a row to hide or show the item.</string>
+    <string name="MessageMenuReset">Reset</string>
+    <string name="MessageMenuGroupReply">Reply &amp; forward</string>
+    <string name="MessageMenuGroupCopy">Copy</string>
+    <string name="MessageMenuGroupManage">Manage</string>
+    <string name="MessageMenuGroupAi">Translation</string>
+    <string name="MessageMenuGroupSave">Save</string>
+    <string name="MessageMenuGroupOther">Other</string>
     <string name="HundredGramDeleteSection">Deletion</string>
     <string name="HundredGramSendAndForwardSection">Sending &amp; Forwarding</string>
     <string name="HundredGramPhotosSection">Photos</string>

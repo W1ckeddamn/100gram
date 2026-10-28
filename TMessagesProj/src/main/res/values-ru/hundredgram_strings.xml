@@ -736,6 +736,15 @@
     <string name="ShowDetailsButtonInfo">Показывает подробные метаданные сообщения (ID, автор, дата, медиа, DC)</string>
     <string name="ShowCopyPhotoButtonInfo">Позволяет быстро скопировать изображение в буфер обмена</string>
     <string name="ShowEditHistoryButtonInfo">Отображает пункт «История изменений» для отредактированных и удалённых сообщений</string>
+    <string name="MessageMenuCustomize">Пункты меню</string>
+    <string name="MessageMenuInfo">Долгое нажатие на сообщение открывает это меню. Перетаскивайте строки, чтобы изменить порядок, нажмите на строку, чтобы скрыть или показать пункт.</string>
+    <string name="MessageMenuReset">Сбросить</string>
+    <string name="MessageMenuGroupReply">Ответ и пересылка</string>
+    <string name="MessageMenuGroupCopy">Копирование</string>
+    <string name="MessageMenuGroupManage">Управление</string>
+    <string name="MessageMenuGroupAi">Перевод</string>
+    <string name="MessageMenuGroupSave">Сохранение</string>
+    <string name="MessageMenuGroupOther">Прочее</string>
     <string name="HundredGramDeleteSection">Удаление</string>
     <string name="HundredGramSendAndForwardSection">Отправка и пересылка</string>
     <string name="HundredGramPhotosSection">Фотографии</string>

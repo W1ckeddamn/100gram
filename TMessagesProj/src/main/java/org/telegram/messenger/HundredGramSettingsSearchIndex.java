@@ -11,6 +11,7 @@ import org.telegram.ui.HundredGramAutomationActivity;
 import org.telegram.ui.HundredGramBackupActivity;
 import org.telegram.ui.HundredGramCameraActivity;
 import org.telegram.ui.HundredGramIconPacksActivity;
+import org.telegram.ui.HundredGramMessageMenuActivity;
 import org.telegram.ui.HundredGramMusicActivity;
 import org.telegram.ui.HundredGramNetworkBoostActivity;
 import org.telegram.ui.HundredGramPillStackSettingsActivity;
@@ -599,6 +600,14 @@ public class HundredGramSettingsSearchIndex {
                 R.drawable.msg_actions, 0, 0,
                 HundredGramSwipeActionsActivity.class,
                 "свайп", "жесты", "ответ", "перевод", "цитирование", "swipe", "actions");
+
+        // 13b. Пункты меню сообщения (Message Menu)
+        addEntry(id++, "MessageMenuCustomize", "Пункты меню сообщения",
+                "MessageMenuInfo", "Порядок и видимость пунктов контекстного меню сообщения",
+                "HundredGramCategoryActions", "Действия",
+                R.drawable.msg_list, 0, 0,
+                HundredGramMessageMenuActivity.class,
+                "меню", "сообщение", "пункты", "порядок", "скрыть", "menu", "items", "context", "reorder");
 
         // 14. Режим стримера (Streamer Mode)
         addEntry(id++, "StreamerMode", "Режим стримера",

@@ -146,6 +146,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_FOLDER_SWIPE = 383;
     private static final int ITEM_FOLDER_SWIPE_SHRINK = 384;
     private static final int ITEM_FOLDER_SWIPE_SPRING = 385;
+    private static final int ITEM_MESSAGE_MENU_ORDER = 392;
     private static final int ITEM_ADBLOCK = 350;
 
     // Item IDs for CATEGORY_INTERFACE
@@ -968,6 +969,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asShadow(LocaleController.getString("DoubleTapActionIncomingDesc", R.string.DoubleTapActionIncomingDesc)));
 
         items.add(UItem.asHeader(LocaleController.getString("MessageMenuSection", R.string.MessageMenuSection)));
+        items.add(UItem.asButton(ITEM_MESSAGE_MENU_ORDER, R.drawable.msg_list, LocaleController.getString("MessageMenuCustomize", R.string.MessageMenuCustomize)));
         items.add(UItem.asCheck(ITEM_SHOW_SAVE_MESSAGE, LocaleController.getString("ShowSaveMessageButton", R.string.ShowSaveMessageButton))
                 .setChecked(HundredGramConfig.showSaveMessageButton));
         items.add(UItem.asCheck(ITEM_SHOW_DETAILS, LocaleController.getString("ShowDetailsButton", R.string.ShowDetailsButton))
@@ -2060,6 +2062,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
 
             // CATEGORY_ACTIONS
+            case ITEM_MESSAGE_MENU_ORDER:
+                presentFragment(new HundredGramMessageMenuActivity());
+                break;
             case ITEM_DOUBLE_TAP_INCOMING:
                 showDoubleTapDialog(false);
                 break;
