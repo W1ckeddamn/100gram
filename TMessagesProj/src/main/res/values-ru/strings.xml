@@ -314,4 +314,7 @@
     <string name="ArticleAIPrompt">Напишите запрос...</string>
     <string name="ArticleAIGenerate">Сгенерировать</string>
     <string name="ArticleAIAddToPage">Добавить на страницу</string>
+    <string name="HundredGramShowRealName">Показывать реальное имя</string>
+    <string name="HundredGramShowRealNameInfo">Отображать закэшированное имя в профиле при включении</string>
+    <string name="HundredGramCategoryActions">Действия</string>
 </resources>
