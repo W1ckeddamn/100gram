@@ -239,6 +239,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_SHOW_CLEAR_INPUT = 205;
     private static final int ITEM_DISABLE_UNARCHIVE_SWIPE = 216;
     private static final int ITEM_SHOW_REAL_NAME = 299;
+    private static final int ITEM_PINNED_DOWNLOADS = 330;
+    private static final int ITEM_HIDE_ALL_CHATS_FOLDER = 331;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;
@@ -768,6 +770,11 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
             items.add(UItem.asButton(ITEM_FOLDER_SWIPE_SPRING, LocaleController.getString("FolderSwipeSpring", R.string.FolderSwipeSpring), getFolderSwipeSpringName()));
         }
         items.add(UItem.asShadow(LocaleController.getString("FolderSwipeInfo", R.string.FolderSwipeInfo)));
+        items.add(UItem.asCheck(ITEM_HIDE_ALL_CHATS_FOLDER, LocaleController.getString("HideAllChatsFolder", R.string.HideAllChatsFolder))
+                .setChecked(HundredGramConfig.hideAllChatsFolder));
+        items.add(UItem.asCheck(ITEM_PINNED_DOWNLOADS, LocaleController.getString("PinnedDownloads", R.string.PinnedDownloads))
+                .setChecked(HundredGramConfig.pinnedDownloads));
+        items.add(UItem.asShadow(LocaleController.getString("PinnedDownloadsInfo", R.string.PinnedDownloadsInfo)));
         items.add(UItem.asShadow(LocaleController.getString("TransitionsAndDividersInfo", R.string.TransitionsAndDividersInfo)));
 
         // Section 3: Message Bubbles (LIVE PREVIEW DIRECTLY WITH ITS 5 CONTROLS!)
@@ -2091,6 +2098,20 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.showRealName);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.showRealName);
+                }
+                break;
+            case ITEM_PINNED_DOWNLOADS:
+                HundredGramConfig.togglePinnedDownloads();
+                item.setChecked(HundredGramConfig.pinnedDownloads);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.pinnedDownloads);
+                }
+                break;
+            case ITEM_HIDE_ALL_CHATS_FOLDER:
+                HundredGramConfig.toggleHideAllChatsFolder();
+                item.setChecked(HundredGramConfig.hideAllChatsFolder);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.hideAllChatsFolder);
                 }
                 break;
             case ITEM_SHOW_SAVE_MESSAGE:

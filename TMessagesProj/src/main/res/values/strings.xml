@@ -11565,4 +11565,7 @@
     <string name="CreateManagedBotUsernameCheckFailed">Couldn\'t check this username. Please try again.</string>
     <string name="HundredGramShowRealName">Show Real Name</string>
     <string name="HundredGramShowRealNameInfo">Display cached real name in profile when enabled</string>
+    <string name="HideAllChatsFolder">Hide "All chats" folder</string>
+    <string name="PinnedDownloads">Always show downloads</string>
+    <string name="PinnedDownloadsInfo">Keeps the downloads entry pinned at the top of the chat list.</string>
 </resources>

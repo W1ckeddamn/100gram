@@ -316,4 +316,7 @@
     <string name="ArticleAIAddToPage">Добавить на страницу</string>
     <string name="HundredGramShowRealName">Показывать реальное имя</string>
     <string name="HundredGramShowRealNameInfo">Отображать закэшированное имя в профиле при включении</string>
+    <string name="HideAllChatsFolder">Скрыть папку «Все чаты»</string>
+    <string name="PinnedDownloads">Всегда показывать загрузки</string>
+    <string name="PinnedDownloadsInfo">Закрепляет пункт загрузок вверху списка чатов.</string>
 </resources>

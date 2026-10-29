@@ -172,6 +172,8 @@ public class HundredGramConfig {
     public static boolean chatPageUpButton = true;
     public static boolean hideStoriesProfile;
     public static boolean hideStoriesPosting;
+    public static boolean pinnedDownloads;
+    public static boolean hideAllChatsFolder;
 
     // Locks (device credential / biometrics)
     public static boolean lockArchive;
@@ -776,6 +778,8 @@ public class HundredGramConfig {
         chatPageUpButton = preferences.getBoolean("chatPageUpButton", true);
         hideStoriesProfile = preferences.getBoolean("hideStoriesProfile", false);
         hideStoriesPosting = preferences.getBoolean("hideStoriesPosting", false);
+        pinnedDownloads = preferences.getBoolean("pinnedDownloads", false);
+        hideAllChatsFolder = preferences.getBoolean("hideAllChatsFolder", false);
         lockArchive = preferences.getBoolean("lockArchive", false);
         lockSecret = preferences.getBoolean("lockSecret", false);
         lockSaved = preferences.getBoolean("lockSaved", false);
@@ -1064,6 +1068,17 @@ public class HundredGramConfig {
         save("showRealName", showRealName);
         postNotificationToAllAccounts(NotificationCenter.mainUserInfoChanged);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_NAME);
+    }
+
+    public static void togglePinnedDownloads() {
+        pinnedDownloads = !pinnedDownloads;
+        save("pinnedDownloads", pinnedDownloads);
+    }
+
+    public static void toggleHideAllChatsFolder() {
+        hideAllChatsFolder = !hideAllChatsFolder;
+        save("hideAllChatsFolder", hideAllChatsFolder);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 
     public static void toggleHideOtherUsernames() {

@@ -556,6 +556,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         final ItemOptions o = ItemOptions.makeOptions(this, anchor);
         for (int i = 0; i < filters.size(); i++) {
             final MessagesController.DialogFilter folder = filters.get(i);
+            if (folder.isDefault() && HundredGramConfig.hideAllChatsFolder) {
+                continue;
+            }
             final ActionBarMenuSubItem folderItem = new ActionBarMenuSubItem(getParentActivity(), 2, false, false, getResourceProvider());
             folderItem.setPadding(dp(18), 0, dp(18), 0);
             CharSequence title = folder.isDefault() ? getString(R.string.FilterAllChats) : folder.name;
