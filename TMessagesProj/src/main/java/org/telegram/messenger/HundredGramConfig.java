@@ -53,6 +53,9 @@ public class HundredGramConfig {
     public static boolean pauseOnMinimizeVideo;
     public static boolean pauseOnMinimizeVoice;
     public static boolean pauseOnMinimizeRound;
+    public static boolean autoplayVoice = true;
+    public static boolean autoplayRound = true;
+    public static boolean autoplayMusic = true;
     public static boolean hideSendAsPeer;
     public static boolean hideShareButton;
     public static boolean hideReactionsInChannels;
@@ -508,6 +511,9 @@ public class HundredGramConfig {
             pauseOnMinimizeVideo = preferences.getBoolean("pauseOnMinimizeVideo", false);
             pauseOnMinimizeVoice = preferences.getBoolean("pauseOnMinimizeVoice", false);
             pauseOnMinimizeRound = preferences.getBoolean("pauseOnMinimizeRound", false);
+            autoplayVoice = preferences.getBoolean("autoplayVoice", true);
+            autoplayRound = preferences.getBoolean("autoplayRound", true);
+            autoplayMusic = preferences.getBoolean("autoplayMusic", true);
             hideSendAsPeer = preferences.getBoolean("hideSendAsPeer", false);
             hideShareButton = preferences.getBoolean("hideShareButton", false);
             hideReactionsInChannels = preferences.getBoolean("hideReactionsInChannels", false);
@@ -910,6 +916,28 @@ public class HundredGramConfig {
         hideFloatingButton = !hideFloatingButton;
         save("hideFloatingButton", hideFloatingButton);
         postNotificationToAllAccounts(NotificationCenter.dialogsNeedReload);
+    }
+
+    public static boolean isAutoplayAllowed(MessageObject msg) {
+        if (msg == null) return true;
+        if (msg.isRoundVideo()) return autoplayRound;
+        if (msg.isVoice()) return autoplayVoice;
+        return autoplayMusic;
+    }
+
+    public static void toggleAutoplayVoice() {
+        autoplayVoice = !autoplayVoice;
+        save("autoplayVoice", autoplayVoice);
+    }
+
+    public static void toggleAutoplayRound() {
+        autoplayRound = !autoplayRound;
+        save("autoplayRound", autoplayRound);
+    }
+
+    public static void toggleAutoplayMusic() {
+        autoplayMusic = !autoplayMusic;
+        save("autoplayMusic", autoplayMusic);
     }
 
     public static void toggleDisableJumpToNextChannel() {

@@ -2624,7 +2624,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                         voiceMessagesPlaylistMap = null;
                     }
                 }
-                if (voiceMessagesPlaylist != null && index < voiceMessagesPlaylist.size()) {
+                if (voiceMessagesPlaylist != null && index < voiceMessagesPlaylist.size() && HundredGramConfig.isAutoplayAllowed(lastFile)) {
                     MessageObject nextVoiceMessage = voiceMessagesPlaylist.get(index);
                     playMessage(nextVoiceMessage);
                     playingNext = true;
@@ -3024,7 +3024,12 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             return;
         }
 
+        final int startPlaylistNum = currentPlaylistNum;
         boolean last = traversePlaylist(currentPlayList, SharedConfig.playOrderReversed ? +1 : -1);
+        if (byStop && SharedConfig.repeatMode == 0 && !forceLoopCurrentPlaylist && !HundredGramConfig.isAutoplayAllowed(playingMessageObject)) {
+            currentPlaylistNum = startPlaylistNum;
+            last = true;
+        }
         if (last && byStop && SharedConfig.repeatMode == 0 && !forceLoopCurrentPlaylist) {
             if (audioPlayer != null || videoPlayer != null) {
                 if (audioPlayer != null) {

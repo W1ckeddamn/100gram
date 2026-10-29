@@ -319,4 +319,9 @@
     <string name="HideAllChatsFolder">Скрыть папку «Все чаты»</string>
     <string name="PinnedDownloads">Всегда показывать загрузки</string>
     <string name="PinnedDownloadsInfo">Закрепляет пункт загрузок вверху списка чатов.</string>
+    <string name="AutoplayHeader">Автовоспроизведение</string>
+    <string name="AutoplayVoice">Голосовые сообщения</string>
+    <string name="AutoplayRound">Кружки</string>
+    <string name="AutoplayMusic">Музыка и аудио</string>
+    <string name="AutoplayInfo">Если выключено, воспроизведение останавливается на текущем элементе, не переходя к следующему.</string>
 </resources>

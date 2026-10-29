@@ -11568,4 +11568,9 @@
     <string name="HideAllChatsFolder">Hide "All chats" folder</string>
     <string name="PinnedDownloads">Always show downloads</string>
     <string name="PinnedDownloadsInfo">Keeps the downloads entry pinned at the top of the chat list.</string>
+    <string name="AutoplayHeader">Autoplay</string>
+    <string name="AutoplayVoice">Voice messages</string>
+    <string name="AutoplayRound">Video messages</string>
+    <string name="AutoplayMusic">Music and audio</string>
+    <string name="AutoplayInfo">When disabled, playback stops after the current item instead of continuing with the next one.</string>
 </resources>

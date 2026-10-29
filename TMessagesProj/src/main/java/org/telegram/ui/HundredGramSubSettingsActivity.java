@@ -241,6 +241,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_SHOW_REAL_NAME = 299;
     private static final int ITEM_PINNED_DOWNLOADS = 330;
     private static final int ITEM_HIDE_ALL_CHATS_FOLDER = 331;
+    private static final int ITEM_AUTOPLAY_VOICE = 332;
+    private static final int ITEM_AUTOPLAY_ROUND = 333;
+    private static final int ITEM_AUTOPLAY_MUSIC = 334;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;
@@ -1089,6 +1092,15 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 LocaleController.getString("DoubleTapSeekDuration", R.string.DoubleTapSeekDuration),
                 String.format(LocaleController.getString("DoubleTapSeekSeconds", R.string.DoubleTapSeekSeconds), HundredGramConfig.doubleTapSeekDuration)));
         items.add(UItem.asShadow(LocaleController.getString("DoubleTapSeekDurationInfo", R.string.DoubleTapSeekDurationInfo)));
+
+        items.add(UItem.asHeader(LocaleController.getString("AutoplayHeader", R.string.AutoplayHeader)));
+        items.add(UItem.asCheck(ITEM_AUTOPLAY_VOICE, LocaleController.getString("AutoplayVoice", R.string.AutoplayVoice))
+                .setChecked(HundredGramConfig.autoplayVoice));
+        items.add(UItem.asCheck(ITEM_AUTOPLAY_ROUND, LocaleController.getString("AutoplayRound", R.string.AutoplayRound))
+                .setChecked(HundredGramConfig.autoplayRound));
+        items.add(UItem.asCheck(ITEM_AUTOPLAY_MUSIC, LocaleController.getString("AutoplayMusic", R.string.AutoplayMusic))
+                .setChecked(HundredGramConfig.autoplayMusic));
+        items.add(UItem.asShadow(LocaleController.getString("AutoplayInfo", R.string.AutoplayInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("PauseOnMinimize", R.string.PauseOnMinimize)));
         items.add(UItem.asCheck(ITEM_PAUSE_ON_MINIMIZE_VIDEO, LocaleController.getString("PauseOnMinimizeVideo", R.string.PauseOnMinimizeVideo))
@@ -2112,6 +2124,27 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.hideAllChatsFolder);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.hideAllChatsFolder);
+                }
+                break;
+            case ITEM_AUTOPLAY_VOICE:
+                HundredGramConfig.toggleAutoplayVoice();
+                item.setChecked(HundredGramConfig.autoplayVoice);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.autoplayVoice);
+                }
+                break;
+            case ITEM_AUTOPLAY_ROUND:
+                HundredGramConfig.toggleAutoplayRound();
+                item.setChecked(HundredGramConfig.autoplayRound);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.autoplayRound);
+                }
+                break;
+            case ITEM_AUTOPLAY_MUSIC:
+                HundredGramConfig.toggleAutoplayMusic();
+                item.setChecked(HundredGramConfig.autoplayMusic);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.autoplayMusic);
                 }
                 break;
             case ITEM_SHOW_SAVE_MESSAGE:
