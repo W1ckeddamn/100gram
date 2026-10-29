@@ -238,6 +238,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_SHOW_RESULTS_BEFORE_VOTING = 204;
     private static final int ITEM_SHOW_CLEAR_INPUT = 205;
     private static final int ITEM_DISABLE_UNARCHIVE_SWIPE = 216;
+    private static final int ITEM_SHOW_REAL_NAME = 217;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;
@@ -1012,6 +1013,10 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 LocaleController.getString("LocalSttModelTitle", R.string.LocalSttModelTitle),
                 modelStatus));
         items.add(UItem.asShadow(LocaleController.getString("LocalSttEnabledInfo", R.string.LocalSttEnabledInfo)));
+
+        items.add(UItem.asCheck(ITEM_SHOW_REAL_NAME, LocaleController.getString("HundredGramShowRealName", R.string.HundredGramShowRealName))
+                .setChecked(HundredGramConfig.showRealName));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramShowRealNameInfo", R.string.HundredGramShowRealNameInfo)));
 
         items.add(UItem.asButton(ITEM_DELETE_MY_MESSAGES, R.drawable.msg_chats_remove, LocaleController.getString("DeleteMyMessages", R.string.DeleteMyMessages)).red());
         items.add(UItem.asShadow(LocaleController.getString("DeleteMyMessagesInfo", R.string.DeleteMyMessagesInfo)));
@@ -2079,6 +2084,13 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.disableUnarchiveSwipe);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.disableUnarchiveSwipe);
+                }
+                break;
+            case ITEM_SHOW_REAL_NAME:
+                HundredGramConfig.toggleShowRealName();
+                item.setChecked(HundredGramConfig.showRealName);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.showRealName);
                 }
                 break;
             case ITEM_SHOW_SAVE_MESSAGE:
