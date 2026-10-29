@@ -11669,9 +11669,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             CharSequence newString = UserObject.getUserName(user);
             if (user.id == getUserConfig().getClientUserId() && HundredGramConfig.isStreamerMode()) {
                 newString = HundredGramConfig.streamerFakeName != null && !HundredGramConfig.streamerFakeName.isEmpty() ? HundredGramConfig.streamerFakeName : "Streamer";
-            } else if (HundredGramConfig.showRealName && user.id == getUserConfig().getClientUserId()) {
+            } else if (HundredGramConfig.showRealName && user.contact && !user.self) {
                 String cachedRealName = HundredGramRealNameCache.getRealName(currentAccount, user.id);
-                if (cachedRealName != null && !cachedRealName.isEmpty()) {
+                if (cachedRealName != null && !cachedRealName.isEmpty() && !cachedRealName.equals(newString)) {
                     newString = cachedRealName;
                 }
             }

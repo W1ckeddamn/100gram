@@ -238,7 +238,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_SHOW_RESULTS_BEFORE_VOTING = 204;
     private static final int ITEM_SHOW_CLEAR_INPUT = 205;
     private static final int ITEM_DISABLE_UNARCHIVE_SWIPE = 216;
-    private static final int ITEM_SHOW_REAL_NAME = 217;
+    private static final int ITEM_SHOW_REAL_NAME = 299;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;

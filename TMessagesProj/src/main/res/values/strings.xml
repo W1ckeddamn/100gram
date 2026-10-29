@@ -11565,5 +11565,4 @@
     <string name="CreateManagedBotUsernameCheckFailed">Couldn\'t check this username. Please try again.</string>
     <string name="HundredGramShowRealName">Show Real Name</string>
     <string name="HundredGramShowRealNameInfo">Display cached real name in profile when enabled</string>
-    <string name="HundredGramCategoryActions">Actions</string>
 </resources>

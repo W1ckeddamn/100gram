@@ -6890,17 +6890,15 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (user.id == getUserConfig().getClientUserId()) {
                     getUserConfig().setCurrentUser(user);
                     getUserConfig().saveConfig(true);
-                    HundredGramRealNameCache.putRealName(currentAccount, user.id, UserObject.getUserName(user));
-                    HundredGramRealNameCache.save(currentAccount);
                 }
+                HundredGramRealNameCache.putIfStranger(currentAccount, user);
                 getUserNameResolver().update(oldUser, user);
                 if (oldUser != null && user.status != null && oldUser.status != null && user.status.expires != oldUser.status.expires) {
                     return true;
                 }
             } else if (oldUser == null) {
                 users.put(user.id, user);
-                HundredGramRealNameCache.putRealName(currentAccount, user.id, UserObject.getUserName(user));
-                HundredGramRealNameCache.save(currentAccount);
+                HundredGramRealNameCache.putIfStranger(currentAccount, user);
             } else if (oldUser.min) {
                 if (oldUser.bot) {
                     if (oldUser.username != null) {
@@ -6919,6 +6917,9 @@ public class MessagesController extends BaseController implements NotificationCe
                         user.flags = user.flags & ~32;
                         user.photo = null;
                     }
+                }
+                if (oldUser.contact && (!TextUtils.equals(user.first_name, oldUser.first_name) || !TextUtils.equals(user.last_name, oldUser.last_name))) {
+                    HundredGramRealNameCache.put(currentAccount, user.id, user.first_name, user.last_name);
                 }
                 users.put(user.id, user);
             }

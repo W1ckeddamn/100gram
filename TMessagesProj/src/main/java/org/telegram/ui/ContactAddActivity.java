@@ -40,6 +40,7 @@ import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.HundredGramRealNameCache;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
@@ -197,6 +198,9 @@ public class ContactAddActivity extends BaseFragment implements NotificationCent
                     if (firstNameField.getText().length() != 0) {
                         final TLRPC.User user = getMessagesController().getUser(user_id);
                         final TLRPC.UserFull userInfo = getMessagesController().getUserFull(user_id);
+                        if (!user.contact) {
+                            HundredGramRealNameCache.put(getCurrentAccount(), user.id, user.first_name, user.last_name);
+                        }
                         user.first_name = firstNameField.getText().toString();
                         user.last_name = lastNameField.getText().toString();
                         user.contact = true;
