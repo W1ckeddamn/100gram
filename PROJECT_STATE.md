@@ -2,8 +2,8 @@
 
 > **Generated:** 2026-10-30 19:18 UTC  
 > **Branch:** `main`  
-> **Head Commit:** `04f4ba316` (docs: update PROJECT_STATE.md)  
-> **Working Tree:** `DIRTY (14 changes)`
+> **Head Commit:** `03b25261c` (feat(media): interactive circular crop for round video messages with 6-point contract)  
+> **Working Tree:** `Clean`
 
 ---
 
@@ -45,6 +45,7 @@ Antigravity sessions established the core architectural foundations of 100gram:
 ## 4. Recent Commits (Last 10)
 
 ```text
+03b25261c feat(media): interactive circular crop for round video messages with 6-point contract
 04f4ba316 docs: update PROJECT_STATE.md
 2295007ab fix(policy): enforce vanilla defaults and 6-point contract for sliders and UI mods
 5224a973c feat: peek warning once, big reactions, transcript quotes, swipe-to-hide keyboard (from OpexGram)
@@ -54,7 +55,6 @@ b0cadbb57 feat: autoplay toggles for voice, round video and music (from OpexGram
 8ff3d2aa7 feat: bubble tails toggle now works, pinned downloads, hide all-chats folder (from OpexGram)
 c33cd5774 feat: full OpexGram real-name cache parity (strangers-only cache, 3000->2000 trim, contact switch)
 0731e1edc feat: add localization strings for profile name switch
-24c01debf feat: add profile name switch toggle in settings
 ```
 
 ---
