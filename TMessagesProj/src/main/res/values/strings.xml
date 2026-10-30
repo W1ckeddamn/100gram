@@ -11575,4 +11575,9 @@
     <string name="AutoplayInfo">When disabled, playback stops after the current item instead of continuing with the next one.</string>
     <string name="RememberLastFolder">Remember last folder</string>
     <string name="RememberLastFolderInfo">Reopen the app on the folder you were in last time.</string>
+    <string name="JoinDate">Joined</string>
+    <string name="JoinDateInfo">Show the date you joined a group or channel in its profile.</string>
+    <string name="PollPeekTitle">Show results?</string>
+    <string name="PollPeekText">This poll hides its results until you vote. To show them, the app will vote for the first answer and immediately take the vote back.</string>
+    <string name="PollPeekButton">Show</string>
 </resources>

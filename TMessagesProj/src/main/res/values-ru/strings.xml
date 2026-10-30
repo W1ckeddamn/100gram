@@ -326,4 +326,9 @@
     <string name="AutoplayInfo">Если выключено, воспроизведение останавливается на текущем элементе, не переходя к следующему.</string>
     <string name="RememberLastFolder">Запоминать последнюю папку</string>
     <string name="RememberLastFolderInfo">При запуске открывать папку, в которой вы были в прошлый раз.</string>
+    <string name="JoinDate">Вступил</string>
+    <string name="JoinDateInfo">Показывать дату вступления в группу или канал в профиле.</string>
+    <string name="PollPeekTitle">Показать результаты?</string>
+    <string name="PollPeekText">В этом опросе результаты скрыты до голосования. Чтобы показать их, приложение проголосует за первый ответ и сразу отзовёт голос.</string>
+    <string name="PollPeekButton">Показать</string>
 </resources>

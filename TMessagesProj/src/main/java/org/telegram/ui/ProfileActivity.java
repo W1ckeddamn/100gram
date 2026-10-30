@@ -157,6 +157,7 @@ import org.telegram.messenger.HundredGramActivityTracker;
 import org.telegram.messenger.HundredGramAvatarHistory;
 import org.telegram.messenger.HundredGramProfileLogger;
 import org.telegram.messenger.HundredGramRegDateController;
+import org.telegram.messenger.HundredGramJoinDate;
 import org.telegram.messenger.FlagSecureReason;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.ImageLocation;
@@ -687,6 +688,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private int channelInfoRow;
     private int usernameRow;
     private int idDcRow;
+    private int joinDateRow;
     private int notificationsDividerRow;
     private int notificationsRow;
     private int trackActivityRow;
@@ -10808,6 +10810,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         channelInfoRow = -1;
         usernameRow = -1;
         idDcRow = -1;
+        joinDateRow = -1;
         settingsTimerRow = -1;
         settingsKeyRow = -1;
         notificationsDividerRow = -1;
@@ -11154,7 +11157,15 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 sharedMediaRow = rowCount++;
             }
         } else if (chatId != 0) {
-            if (chatInfo != null && (!TextUtils.isEmpty(chatInfo.about) || chatInfo.location instanceof TLRPC.TL_channelLocation) || ChatObject.isPublic(currentChat)) {
+            if (!isTopic) {
+                HundredGramJoinDate.load(currentAccount, currentChat, chatInfo, () -> {
+                    if (listAdapter != null && joinDateRow < 0) {
+                        updateListAnimated(false);
+                    }
+                });
+            }
+            final boolean hasJoinDate = !isTopic && HundredGramJoinDate.has(currentAccount, chatId);
+            if (chatInfo != null && (!TextUtils.isEmpty(chatInfo.about) || chatInfo.location instanceof TLRPC.TL_channelLocation) || ChatObject.isPublic(currentChat) || hasJoinDate) {
                 if (emptyRow < 0 && emptyRow2 < 0) {
                     if (hasMusic || peerColor != null || actionsView == null) {
                         emptyRow2 = rowCount++;
@@ -11179,6 +11190,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 }
                 if (HundredGramConfig.showIdAndDc != 0 && !HundredGramConfig.isStreamerHideIdAndDc()) {
                     idDcRow = rowCount++;
+                }
+                if (hasJoinDate) {
+                    joinDateRow = rowCount++;
                 }
             }
             if (emptyRow < 0 && emptyRow2 < 0) {
@@ -14029,6 +14043,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                             detailCell.setImage(null);
                             detailCell.setImageClickListener(null);
                         }
+                    } else if (position == joinDateRow) {
+                        detailCell.setImage(null);
+                        detailCell.setImageClickListener(null);
+                        detailCell.setTextAndValue(HundredGramJoinDate.format(HundredGramJoinDate.get(currentAccount, chatId)), LocaleController.getString(R.string.JoinDate), false);
                     } else if (position == setUsernameRow) {
                         TLRPC.User user = UserConfig.getInstance(currentAccount).getCurrentUser();
                         String text = "";
@@ -14774,7 +14792,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             if (position == infoHeaderRow || position == membersHeaderRow || position == settingsSectionRow2 ||
                     position == numberSectionRow || position == helpHeaderRow || position == debugHeaderRow || position == botPermissionsHeader) {
                 return VIEW_TYPE_HEADER;
-            } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow || position == idDcRow) {
+            } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow || position == idDcRow || position == joinDateRow) {
                 return VIEW_TYPE_TEXT_DETAIL;
             } else if (position == usernameRow || position == setUsernameRow) {
                 return VIEW_TYPE_TEXT_DETAIL_MULTILINE;

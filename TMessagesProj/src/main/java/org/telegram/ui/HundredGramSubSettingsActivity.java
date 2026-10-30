@@ -245,6 +245,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_AUTOPLAY_ROUND = 333;
     private static final int ITEM_AUTOPLAY_MUSIC = 334;
     private static final int ITEM_REMEMBER_LAST_FOLDER = 335;
+    private static final int ITEM_SHOW_JOIN_DATE = 336;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;
@@ -659,6 +660,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         }
         items.add(UItem.asButton(ITEM_SHOW_ID_AND_DC, LocaleController.getString("HundredGramShowIdAndDc", R.string.HundredGramShowIdAndDc), idDcValue));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramShowIdAndDcInfo", R.string.HundredGramShowIdAndDcInfo)));
+        items.add(UItem.asCheck(ITEM_SHOW_JOIN_DATE, LocaleController.getString("JoinDate", R.string.JoinDate))
+                .setChecked(HundredGramConfig.showJoinDate));
+        items.add(UItem.asShadow(LocaleController.getString("JoinDateInfo", R.string.JoinDateInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("HundredGramBackgroundSyncSection", R.string.HundredGramBackgroundSyncSection)));
         items.add(UItem.asCheck(ITEM_KEEPALIVE_FOREGROUND_SERVICE, LocaleController.getString("KeepAliveForegroundService", R.string.KeepAliveForegroundService))
@@ -2142,6 +2146,13 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.rememberLastFolder);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.rememberLastFolder);
+                }
+                break;
+            case ITEM_SHOW_JOIN_DATE:
+                HundredGramConfig.toggleShowJoinDate();
+                item.setChecked(HundredGramConfig.showJoinDate);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.showJoinDate);
                 }
                 break;
             case ITEM_AUTOPLAY_ROUND:

@@ -158,6 +158,7 @@ import org.telegram.ui.ActionBar.MessageDrawable;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.AvatarSpan;
 import org.telegram.ui.ChatActivity;
+import org.telegram.ui.HundredGramPollPeek;
 import org.telegram.ui.Components.AnimatedEmojiDrawable;
 import org.telegram.ui.Components.AnimatedEmojiSpan;
 import org.telegram.ui.Components.AnimatedFileDrawable;
@@ -1015,6 +1016,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     public static final int INSTANT_BUTTON_TYPE_VOTE_MULTISELECT = 83;
     public static final int INSTANT_BUTTON_TYPE_ADD_OPTION = 84;
     public static final int INSTANT_BUTTON_TYPE_AI_STYLE = 85;
+    public static final int INSTANT_BUTTON_TYPE_PEEK_POLL_RESULTS = 86;
 
     private static class InstantViewButton {
         private int type;
@@ -3888,9 +3890,13 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                                 }
                                 delegate.didPressVoteButtons(this, currentMessageObject.checkedVotes, -1, 0, namesOffset);
                             } else if (drawInstantViewType == INSTANT_BUTTON_TYPE_VIEW_VOTES_AS_AUTHOR_LIST) {
-                                currentMessageObject.forceShowPollResults = true;
-                                pollVoteInProgress = true;
-                                delegate.didTogglePollPreview(this);
+                                if (HundredGramPollPeek.canPeek(currentMessageObject)) {
+                                    delegate.didPressInstantButton(this, INSTANT_BUTTON_TYPE_PEEK_POLL_RESULTS);
+                                } else {
+                                    currentMessageObject.forceShowPollResults = true;
+                                    pollVoteInProgress = true;
+                                    delegate.didTogglePollPreview(this);
+                                }
                             } else if (drawInstantViewType == INSTANT_BUTTON_TYPE_BACK_TO_VOTE) {
                                 currentMessageObject.forceShowPollResults = false;
                                 delegate.didTogglePollPreview(this);
@@ -12122,7 +12128,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         }
 
         final TLRPC.PollResults results = media.results;
-        final boolean canViewHiddenResultsWithoutVote = !pollVoted && !pollClosed && pollHasResults && results != null && results.total_voters != 0 && (media.poll.creator || HundredGramConfig.showResultsBeforeVoting); //pollHideResults;
+        final boolean canViewHiddenResultsWithoutVote = !pollVoted && !pollClosed && results != null && results.total_voters != 0 && (media.poll.creator || HundredGramConfig.showResultsBeforeVoting) && (pollHasResults || HundredGramPollPeek.canPeek(messageObject)); //pollHideResults;
         final boolean canVote = !pollVoted && !pollClosed && !pollHasVoteRestrictions;
         final boolean isAnonymousPoll = !media.poll.public_voters;
 

@@ -43253,6 +43253,8 @@ public class ChatActivity extends BaseFragment implements
                 pollAddOptionModeComplete(cell);
             } else if (type == ChatMessageCell.INSTANT_BUTTON_TYPE_VIEW_VOTES_PUBLIC_LIST) {
                 PollVotesAlert.showForPoll(ChatActivity.this, messageObject);
+            } else if (type == ChatMessageCell.INSTANT_BUTTON_TYPE_PEEK_POLL_RESULTS) {
+                HundredGramPollPeek.peek(ChatActivity.this, cell, messageObject);
             } else if (type == 0) {
                 if (messageObject.messageOwner.media != null && messageObject.messageOwner.media.webpage != null && messageObject.messageOwner.media.webpage.cached_page != null) {
                     if (LaunchActivity.instance != null && LaunchActivity.instance.getBottomSheetTabs() != null && LaunchActivity.instance.getBottomSheetTabs().tryReopenTab(messageObject) != null) {
