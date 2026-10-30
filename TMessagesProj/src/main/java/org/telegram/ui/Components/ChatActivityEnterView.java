@@ -4866,6 +4866,38 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (!shouldDrawBackground) {
             return;
         }
+        if (org.telegram.messenger.HundredGramConfig.chatBoxStyle > 0) {
+            int panelColor = getThemedColor(Theme.key_chat_messagePanelBackground);
+            backgroundPaint.setColor(panelColor);
+            float radius = AndroidUtilities.dp(22);
+            if (org.telegram.messenger.HundredGramConfig.chatBoxStyle == 1) {
+                int left = AndroidUtilities.dp(8);
+                int right = getMeasuredWidth() - AndroidUtilities.dp(8);
+                int top = textFieldContainer != null ? textFieldContainer.getTop() : animatedTop;
+                int bottom = getMeasuredHeight() - AndroidUtilities.dp(6);
+                if (bottom > top) {
+                    AndroidUtilities.rectTmp.set(left, top, right, bottom);
+                    canvas.drawRoundRect(AndroidUtilities.rectTmp, radius, radius, backgroundPaint);
+                }
+            } else if (org.telegram.messenger.HundredGramConfig.chatBoxStyle == 2) {
+                int left = AndroidUtilities.dp(8);
+                int right = getMeasuredWidth() - AndroidUtilities.dp(62);
+                int top = textFieldContainer != null ? textFieldContainer.getTop() : animatedTop;
+                int bottom = getMeasuredHeight() - AndroidUtilities.dp(6);
+                if (bottom > top) {
+                    AndroidUtilities.rectTmp.set(left, top, right, bottom);
+                    canvas.drawRoundRect(AndroidUtilities.rectTmp, radius, radius, backgroundPaint);
+
+                    int btnRight = getMeasuredWidth() - AndroidUtilities.dp(8);
+                    int btnLeft = btnRight - AndroidUtilities.dp(48);
+                    int btnBottom = getMeasuredHeight() - AndroidUtilities.dp(6);
+                    int btnTop = btnBottom - AndroidUtilities.dp(48);
+                    AndroidUtilities.rectTmp.set(btnLeft, btnTop, btnRight, btnBottom);
+                    canvas.drawRoundRect(AndroidUtilities.rectTmp, radius, radius, backgroundPaint);
+                }
+            }
+            return;
+        }
         int top = animatedTop;
         top += Theme.chat_composeShadowDrawable.getIntrinsicHeight() * (1f - composeShadowAlpha);
         if (topView != null && topView.getVisibility() == View.VISIBLE) {
@@ -14842,6 +14874,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
         }
         updateBotCommandsMenuContainerTopPadding();
+        checkChatBoxStyle();
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (botWebViewButton != null) {
@@ -15954,6 +15987,59 @@ public class ChatActivityEnterView extends FrameLayout implements
 
     private float currentIslandTotalHeight;
     private float currentIslandTotalHeightTarget;
+
+    public void checkChatBoxStyle() {
+        if (textFieldContainer == null || messageEditTextContainer == null || sendButtonContainer == null) {
+            return;
+        }
+        int style = org.telegram.messenger.HundredGramConfig.chatBoxStyle;
+        if (style == 1) {
+            MarginLayoutParams tfLp = (MarginLayoutParams) textFieldContainer.getLayoutParams();
+            if (tfLp != null) {
+                tfLp.leftMargin = dp(8);
+                tfLp.rightMargin = dp(8);
+                tfLp.bottomMargin = dp(6);
+            }
+            MarginLayoutParams editLp = (MarginLayoutParams) messageEditTextContainer.getLayoutParams();
+            if (editLp != null) {
+                editLp.rightMargin = DEFAULT_HEIGHT;
+            }
+            MarginLayoutParams sendLp = (MarginLayoutParams) sendButtonContainer.getLayoutParams();
+            if (sendLp != null) {
+                sendLp.rightMargin = 0;
+            }
+        } else if (style == 2) {
+            MarginLayoutParams tfLp = (MarginLayoutParams) textFieldContainer.getLayoutParams();
+            if (tfLp != null) {
+                tfLp.leftMargin = dp(8);
+                tfLp.rightMargin = dp(8);
+                tfLp.bottomMargin = dp(6);
+            }
+            MarginLayoutParams editLp = (MarginLayoutParams) messageEditTextContainer.getLayoutParams();
+            if (editLp != null) {
+                editLp.rightMargin = dp(54);
+            }
+            MarginLayoutParams sendLp = (MarginLayoutParams) sendButtonContainer.getLayoutParams();
+            if (sendLp != null) {
+                sendLp.rightMargin = 0;
+            }
+        } else {
+            MarginLayoutParams tfLp = (MarginLayoutParams) textFieldContainer.getLayoutParams();
+            if (tfLp != null) {
+                tfLp.leftMargin = 0;
+                tfLp.rightMargin = 0;
+                tfLp.bottomMargin = 0;
+            }
+            MarginLayoutParams editLp = (MarginLayoutParams) messageEditTextContainer.getLayoutParams();
+            if (editLp != null) {
+                editLp.rightMargin = DEFAULT_HEIGHT;
+            }
+            MarginLayoutParams sendLp = (MarginLayoutParams) sendButtonContainer.getLayoutParams();
+            if (sendLp != null) {
+                sendLp.rightMargin = 0;
+            }
+        }
+    }
 
     private void checkUi_IslandTotalHeight() {
         currentIslandTotalHeightTarget = calculateIslandTotalHeight(true);

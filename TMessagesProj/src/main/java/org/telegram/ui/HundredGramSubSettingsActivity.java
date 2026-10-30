@@ -297,6 +297,11 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_STICKER_PACK_OWNER = 410;
     private static final int ITEM_SECRET_VIEW_TTL = 411;
     private static final int ITEM_SOCIAL_LINK_FIXER = 412;
+    private static final int ITEM_CHAT_BOX_STYLE = 413;
+    private static final int ITEM_GLASS_MESSAGES = 414;
+    private static final int ITEM_GLASS_MESSAGES_TRANSPARENCY = 415;
+    private static final int ITEM_GLASS_MESSAGES_BORDER = 416;
+    private static final int ITEM_STICKER_QUOTES = 417;
 
     // Item IDs for Developer Mode
     private static final int ITEM_DEV_MODE = 100;
@@ -787,6 +792,24 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         }
         items.add(UItem.asShadow(LocaleController.getString("Md3SuiteInfo", R.string.Md3SuiteInfo)));
 
+        // Phase 4: Chat Box Style & Glass Message Bubbles
+        String chatBoxStyleStr;
+        if (HundredGramConfig.chatBoxStyle == 1) {
+            chatBoxStyleStr = LocaleController.getString("ChatBoxStylePill", R.string.ChatBoxStylePill);
+        } else if (HundredGramConfig.chatBoxStyle == 2) {
+            chatBoxStyleStr = LocaleController.getString("ChatBoxStyleSeparated", R.string.ChatBoxStyleSeparated);
+        } else {
+            chatBoxStyleStr = LocaleController.getString("ChatBoxStyleClassic", R.string.ChatBoxStyleClassic);
+        }
+        items.add(UItem.asButton(ITEM_CHAT_BOX_STYLE, LocaleController.getString("ChatBoxStyle", R.string.ChatBoxStyle), chatBoxStyleStr));
+        items.add(UItem.asCheck(ITEM_GLASS_MESSAGES, LocaleController.getString("GlassMessages", R.string.GlassMessages))
+                .setChecked(HundredGramConfig.glassMessages));
+        if (HundredGramConfig.glassMessages) {
+            items.add(UItem.asButton(ITEM_GLASS_MESSAGES_TRANSPARENCY, LocaleController.getString("GlassMessagesTransparency", R.string.GlassMessagesTransparency), HundredGramConfig.glassMessagesTransparency + "%"));
+            items.add(UItem.asCheck(ITEM_GLASS_MESSAGES_BORDER, LocaleController.getString("GlassMessagesBorder", R.string.GlassMessagesBorder))
+                    .setChecked(HundredGramConfig.glassMessagesBorder));
+        }
+
         // Section 2: Transitions & Dividers
         items.add(UItem.asHeader(LocaleController.getString("TransitionsAndDividersSection", R.string.TransitionsAndDividersSection)));
         String transitionName;
@@ -912,6 +935,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
         }
         items.add(UItem.asButton(ITEM_STICKER_SHAPE, LocaleController.getString("StickerShape", R.string.StickerShape), stickerShapeValue));
+        items.add(UItem.asCheck(ITEM_STICKER_QUOTES, LocaleController.getString("StickerQuotes", R.string.StickerQuotes))
+                .setChecked(HundredGramConfig.stickerQuotes));
         items.add(UItem.asShadow(LocaleController.getString("UnlimitedRecentStickersInfo", R.string.UnlimitedRecentStickersInfo)));
 
         // Section 4: Chat Behavior & Features
@@ -1950,6 +1975,36 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.secretViewTTL);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.secretViewTTL);
+                }
+                break;
+            case ITEM_CHAT_BOX_STYLE:
+                showChatBoxStyleDialog();
+                break;
+            case ITEM_GLASS_MESSAGES:
+                HundredGramConfig.toggleGlassMessages();
+                item.setChecked(HundredGramConfig.glassMessages);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.glassMessages);
+                }
+                if (listView != null && listView.adapter != null) {
+                    listView.adapter.update(true);
+                }
+                break;
+            case ITEM_GLASS_MESSAGES_TRANSPARENCY:
+                showGlassMessagesTransparencyDialog();
+                break;
+            case ITEM_GLASS_MESSAGES_BORDER:
+                HundredGramConfig.toggleGlassMessagesBorder();
+                item.setChecked(HundredGramConfig.glassMessagesBorder);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.glassMessagesBorder);
+                }
+                break;
+            case ITEM_STICKER_QUOTES:
+                HundredGramConfig.toggleStickerQuotes();
+                item.setChecked(HundredGramConfig.stickerQuotes);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.stickerQuotes);
                 }
                 break;
             case ITEM_SOCIAL_LINK_FIXER:
@@ -3454,6 +3509,43 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         builder.setTitle(LocaleController.getString("FolderSwipeSpring", R.string.FolderSwipeSpring));
         builder.setItems(options, (dialog, which) -> {
             HundredGramConfig.setFolderSwipeSpring(which);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void showChatBoxStyleDialog() {
+        if (getParentActivity() == null) return;
+        String[] options = new String[] {
+            LocaleController.getString("ChatBoxStyleClassic", R.string.ChatBoxStyleClassic),
+            LocaleController.getString("ChatBoxStylePill", R.string.ChatBoxStylePill),
+            LocaleController.getString("ChatBoxStyleSeparated", R.string.ChatBoxStyleSeparated)
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("ChatBoxStyle", R.string.ChatBoxStyle));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setChatBoxStyle(which);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void showGlassMessagesTransparencyDialog() {
+        if (getParentActivity() == null) return;
+        String[] options = new String[] {
+            "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("GlassMessagesTransparency", R.string.GlassMessagesTransparency));
+        builder.setItems(options, (dialog, which) -> {
+            int val = (which + 1) * 10;
+            HundredGramConfig.setGlassMessagesTransparency(val);
             if (listView != null && listView.adapter != null) {
                 listView.adapter.update(true);
             }

@@ -1288,6 +1288,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_REPEAT = 214; // 100gram: repeat message
     public final static int OPTION_SHADOWBAN = 215; // 100gram: local shadowban toggle
     public final static int OPTION_QUICK_BAN = 216; // 100gram: quick ban in groups
+    public final static int OPTION_QUOTE_STICKER = 217; // 100gram: quote to sticker
     public final static int OPTION_PLUGIN_START = 1000; // 100gram: custom plugin menu items base
 
     public final static int OPTION_SUGGESTION_EDIT_PRICE = 111;
@@ -1331,6 +1332,8 @@ public class ChatActivity extends BaseFragment implements
                 return 105;
             case OPTION_PRETTY_JSON:
                 return 106;
+            case OPTION_QUOTE_STICKER:
+                return 107;
             case OPTION_COPY_PHOTO:
                 return 110;
             case OPTION_COPY_LINK:
@@ -34562,6 +34565,12 @@ public class ChatActivity extends BaseFragment implements
                 }
                 break;
             }
+            case OPTION_QUOTE_STICKER: {
+                if (selectedObject != null) {
+                    showDialog(new org.telegram.ui.Components.HundredGramQuoteStickerAlert(this, selectedObject));
+                }
+                break;
+            }
             case OPTION_PRETTY_JSON: {
                 if (selectedObject != null) {
                     CharSequence text = selectedObject.messageText != null ? selectedObject.messageText : selectedObject.caption;
@@ -48055,6 +48064,13 @@ public class ChatActivity extends BaseFragment implements
                         options.add(OPTION_PRETTY_JSON);
                         icons.add(R.drawable.msg_view_file);
                     }
+                }
+            }
+            if (HundredGramConfig.stickerQuotes && selectedObject != null && !selectedObject.isSponsored() && !noforwardsOrPaidMedia) {
+                if (!options.contains(OPTION_QUOTE_STICKER)) {
+                    items.add(LocaleController.getString("QuoteToSticker", R.string.QuoteToSticker));
+                    options.add(OPTION_QUOTE_STICKER);
+                    icons.add(R.drawable.msg_sticker);
                 }
             }
             // 100gram: Plugin items from PluginsController

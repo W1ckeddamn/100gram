@@ -715,6 +715,41 @@ public class HundredGramSettingsSearchIndex {
                 R.drawable.msg_link, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 412,
                 HundredGramSubSettingsActivity.class,
                 "ссылка", "фикс", "твиттер", "инстаграм", "превью", "fxtwitter", "fixupx", "ddinstagram");
+
+        addEntry(id++, "ChatBoxStyle", "Стиль поля ввода",
+                "ChatBoxStyleInfo", "Настройка внешнего вида панели ввода сообщений в стиле Material Design",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_edit, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 413,
+                HundredGramSubSettingsActivity.class,
+                "поле ввода", "панель ввода", "капсула", "плавающий", "chatbox", "pill", "input");
+
+        addEntry(id++, "GlassMessages", "Стеклянные пузыри сообщений",
+                "GlassMessagesInfo", "Полупрозрачный матовый стеклянный эффект для пузырей сообщений в чате",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_theme, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 414,
+                HundredGramSubSettingsActivity.class,
+                "стекло", "прозрачность", "пузыри", "сообщения", "glass", "bubble", "transparent");
+
+        addEntry(id++, "GlassMessagesTransparency", "Прозрачность пузырей",
+                "GlassMessagesInfo", "Степень прозрачности стеклянных пузырей сообщений",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_theme, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 415,
+                HundredGramSubSettingsActivity.class,
+                "прозрачность", "уровень", "стекло", "transparency", "glass");
+
+        addEntry(id++, "GlassMessagesBorder", "Контур пузырей",
+                "GlassMessagesBorderInfo", "Тонкая аккуратная обводка вокруг контура пузырей сообщений",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_theme, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 416,
+                HundredGramSubSettingsActivity.class,
+                "контур", "обводка", "граница", "border", "outline", "glass");
+
+        addEntry(id++, "StickerQuotes", "Стикер-цитаты",
+                "StickerQuotesInfo", "Создание красивых стикер-карточек из сообщений для отправки в чат",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_sticker, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 417,
+                HundredGramSubSettingsActivity.class,
+                "стикер", "цитата", "стикерпак", "карточка", "quote", "sticker");
     }
 
     private void addEntry(int id, String titleKey, String defaultTitle,

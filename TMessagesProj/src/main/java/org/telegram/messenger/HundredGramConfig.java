@@ -52,6 +52,13 @@ public class HundredGramConfig {
     public static boolean stickerPackOwner;
     public static boolean secretViewTTL;
     public static boolean socialLinkFixer;
+
+    // Phase 4: Advanced Visuals
+    public static boolean glassMessages;
+    public static int glassMessagesTransparency = 30; // 10..90%
+    public static boolean glassMessagesBorder;
+    public static int chatBoxStyle = 0; // 0 = Classic, 1 = Expressive Floating Pill, 2 = Floating with Separated Action Buttons
+    public static boolean stickerQuotes = true;
     public static boolean md3SwitchStyle;
     public static boolean newSliderStyle;
     public static boolean squareFab;
@@ -531,6 +538,11 @@ public class HundredGramConfig {
             stickerPackOwner = preferences.getBoolean("stickerPackOwner", false);
             secretViewTTL = preferences.getBoolean("secretViewTTL", false);
             socialLinkFixer = preferences.getBoolean("socialLinkFixer", false);
+            glassMessages = preferences.getBoolean("glassMessages", false);
+            glassMessagesTransparency = preferences.getInt("glassMessagesTransparency", 30);
+            glassMessagesBorder = preferences.getBoolean("glassMessagesBorder", false);
+            chatBoxStyle = preferences.getInt("chatBoxStyle", 0);
+            stickerQuotes = preferences.getBoolean("stickerQuotes", true);
             md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
             newSliderStyle = preferences.getBoolean("newSliderStyle", false);
             squareFab = preferences.getBoolean("squareFab", false);
@@ -1170,6 +1182,35 @@ public class HundredGramConfig {
         socialLinkFixer = !socialLinkFixer;
         save("socialLinkFixer", socialLinkFixer);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleGlassMessages() {
+        glassMessages = !glassMessages;
+        save("glassMessages", glassMessages);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_REORDER);
+    }
+
+    public static void setGlassMessagesTransparency(int val) {
+        glassMessagesTransparency = Math.max(10, Math.min(90, val));
+        save("glassMessagesTransparency", glassMessagesTransparency);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_REORDER);
+    }
+
+    public static void toggleGlassMessagesBorder() {
+        glassMessagesBorder = !glassMessagesBorder;
+        save("glassMessagesBorder", glassMessagesBorder);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_REORDER);
+    }
+
+    public static void setChatBoxStyle(int style) {
+        chatBoxStyle = style;
+        save("chatBoxStyle", chatBoxStyle);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_REORDER);
+    }
+
+    public static void toggleStickerQuotes() {
+        stickerQuotes = !stickerQuotes;
+        save("stickerQuotes", stickerQuotes);
     }
 
     public static void toggleMd3MediaLoaderWave() {
@@ -2014,6 +2055,10 @@ public class HundredGramConfig {
         }
     }
 
+    public static void save(String key, int val) {
+        saveInt(key, val);
+    }
+
     public static void saveInt(String key, int val) {
         if (ApplicationLoader.applicationContext != null) {
             ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
@@ -2472,6 +2517,11 @@ public class HundredGramConfig {
         stickerPackOwner = false;
         secretViewTTL = false;
         socialLinkFixer = false;
+        glassMessages = false;
+        glassMessagesTransparency = 30;
+        glassMessagesBorder = false;
+        chatBoxStyle = 0;
+        stickerQuotes = true;
         configLoaded = false;
         loadConfig();
         postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);

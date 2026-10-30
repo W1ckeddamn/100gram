@@ -1762,6 +1762,30 @@
 
     <string name="SocialLinkFixer">Social Link Previews Fixer</string>
     <string name="SocialLinkFixerInfo">Automatically replace links to X (Twitter), Instagram, TikTok, and Pixiv with embed-friendly preview proxies</string>
+    <!-- Phase 4: Advanced Visuals -->
+    <string name="ChatBoxStyle">Input Box Style</string>
+    <string name="ChatBoxStyleClassic">Classic (Telegram)</string>
+    <string name="ChatBoxStylePill">Floating Pill</string>
+    <string name="ChatBoxStyleSeparated">Floating with Separated Buttons</string>
+    <string name="ChatBoxStyleInfo">Customize the appearance of the message input box with modern floating styles</string>
+
+    <string name="GlassMessages">Glass Message Bubbles</string>
+    <string name="GlassMessagesInfo">Semi-transparent frosted glass effect for message bubbles</string>
+    <string name="GlassMessagesTransparency">Bubble Transparency</string>
+    <string name="GlassMessagesBorder">Bubble Outline Border</string>
+    <string name="GlassMessagesBorderInfo">Draw a subtle, elegant outline around message bubbles</string>
+
+    <string name="StickerQuotes">Sticker Quotes</string>
+    <string name="StickerQuotesInfo">Create styled quote cards from messages and send them as stickers</string>
+    <string name="QuoteToSticker">Quote to Sticker</string>
+    <string name="QuoteStickerTitle">Quote to Sticker</string>
+    <string name="QuoteHideName">Hide Name</string>
+    <string name="QuoteHideAvatar">Hide Avatar</string>
+    <string name="QuoteHideTime">Hide Time</string>
+    <string name="QuoteHideMedia">Hide Media</string>
+    <string name="QuoteSendSticker">Send as Sticker</string>
+    <string name="QuoteCopy">Copy</string>
+    <string name="QuoteShare">Share</string>
+    <string name="QuoteStickerSent">Sticker sent!</string>
+    <string name="QuoteStickerCopied">Quote copied to clipboard</string>
 </resources>
-
-

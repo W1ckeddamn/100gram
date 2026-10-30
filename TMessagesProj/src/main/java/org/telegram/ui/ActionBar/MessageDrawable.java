@@ -36,6 +36,7 @@ public class MessageDrawable extends Drawable {
     private int currentBackgroundHeight;
     public Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint selectedPaint;
+    private Paint glassBorderPaint;
     private int currentColor;
     private int currentGradientColor1;
     private int currentGradientColor2;
@@ -560,7 +561,7 @@ public class MessageDrawable extends Drawable {
 
     public void draw(Canvas canvas, Paint paintToUse) {
         Rect bounds = getBounds();
-        if (paintToUse == null && paint.getStyle() == Paint.Style.FILL && gradientShader == null && overrideRoundRadius == 0 && overrideRounding <= 0) {
+        if (!HundredGramConfig.glassMessages && paintToUse == null && paint.getStyle() == Paint.Style.FILL && gradientShader == null && overrideRoundRadius == 0 && overrideRounding <= 0) {
             Drawable background = getBackgroundDrawable();
             if (background != null) {
                 background.setBounds(bounds);
@@ -618,7 +619,29 @@ public class MessageDrawable extends Drawable {
             generatePath(path, bounds, padding, rad, smallRad, nearRad, top, drawFullBottom, drawFullTop, paintToUse != null);
         }
 
+        int oldAlpha = p.getAlpha();
+        if (HundredGramConfig.glassMessages && paintToUse == null) {
+            float factor = (100 - HundredGramConfig.glassMessagesTransparency) / 100.0f;
+            p.setAlpha((int) (oldAlpha * factor));
+        }
+
         canvas.drawPath(path, p);
+
+        if (HundredGramConfig.glassMessages && paintToUse == null) {
+            p.setAlpha(oldAlpha);
+            if (HundredGramConfig.glassMessagesBorder) {
+                if (glassBorderPaint == null) {
+                    glassBorderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                    glassBorderPaint.setStyle(Paint.Style.STROKE);
+                    glassBorderPaint.setStrokeWidth(AndroidUtilities.dpf2(1.0f));
+                }
+                boolean isDark = AndroidUtilities.computePerceivedBrightness(getColor(Theme.key_chat_inBubble)) < 0.721f;
+                int borderColor = isDark ? 0xffffffff : 0xff000000;
+                int borderAlpha = (int) ((isDark ? 55 : 35) * (alpha / 255.0f));
+                glassBorderPaint.setColor(ColorUtils.setAlphaComponent(borderColor, borderAlpha));
+                canvas.drawPath(path, glassBorderPaint);
+            }
+        }
         if (gradientShader != null && isSelected && paintToUse == null) {
             int color = getColor(Theme.key_chat_outBubbleGradientSelectedOverlay);
             selectedPaint.setColor(ColorUtils.setAlphaComponent(color, (int) (Color.alpha(color) * alpha / 255f)));

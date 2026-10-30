@@ -1,6 +1,7 @@
 package org.telegram.messenger;
 
 import android.content.ClipData;
+import android.graphics.Bitmap;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.net.Uri;
@@ -115,5 +116,34 @@ public class HundredGramUtils {
                 FileLog.e(e);
             }
         }
+    }
+
+    public static void copyBitmapToClipboard(Bitmap bitmap, Runnable onCopied) {
+        if (bitmap == null) return;
+        Utilities.globalQueue.postRunnable(() -> {
+            try {
+                Context context = ApplicationLoader.applicationContext;
+                File cacheDir = context.getCacheDir();
+                File file = new File(cacheDir, "quote_" + System.currentTimeMillis() + ".png");
+                try (java.io.FileOutputStream fos = new java.io.FileOutputStream(file)) {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                }
+                Uri uri = FileProvider.getUriForFile(context, ApplicationLoader.getApplicationId() + ".provider", file);
+                AndroidUtilities.runOnUIThread(() -> {
+                    try {
+                        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newUri(context.getContentResolver(), "Quote", uri);
+                        clipboard.setPrimaryClip(clip);
+                        if (onCopied != null) {
+                            onCopied.run();
+                        }
+                    } catch (Exception e) {
+                        FileLog.e(e);
+                    }
+                });
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        });
     }
 }

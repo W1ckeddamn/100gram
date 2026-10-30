@@ -1773,6 +1773,30 @@
 
     <string name="SocialLinkFixer">Автофикс ссылок соцсетей</string>
     <string name="SocialLinkFixerInfo">Автоматическая замена ссылок X (Twitter), Instagram, TikTok и Pixiv на сервисы с поддержкой полного предпросмотра</string>
+    <!-- Phase 4: Advanced Visuals -->
+    <string name="ChatBoxStyle">Стиль поля ввода</string>
+    <string name="ChatBoxStyleClassic">Классический (Telegram)</string>
+    <string name="ChatBoxStylePill">Плавающая капсула</string>
+    <string name="ChatBoxStyleSeparated">Плавающий с отдельными кнопками</string>
+    <string name="ChatBoxStyleInfo">Настройка внешнего вида панели ввода сообщений в стиле Material Design</string>
+
+    <string name="GlassMessages">Стеклянные пузыри сообщений</string>
+    <string name="GlassMessagesInfo">Полупрозрачный матовый стеклянный эффект для пузырей сообщений в чате</string>
+    <string name="GlassMessagesTransparency">Прозрачность пузырей</string>
+    <string name="GlassMessagesBorder">Контур пузырей</string>
+    <string name="GlassMessagesBorderInfo">Тонкая аккуратная обводка вокруг контура пузырей сообщений</string>
+
+    <string name="StickerQuotes">Стикер-цитаты</string>
+    <string name="StickerQuotesInfo">Создание красивых стикер-карточек из сообщений для отправки в чат</string>
+    <string name="QuoteToSticker">Создать цитату</string>
+    <string name="QuoteStickerTitle">Цитата в стикер</string>
+    <string name="QuoteHideName">Скрыть имя</string>
+    <string name="QuoteHideAvatar">Скрыть аватар</string>
+    <string name="QuoteHideTime">Скрыть время</string>
+    <string name="QuoteHideMedia">Скрыть медиа</string>
+    <string name="QuoteSendSticker">Отправить как стикер</string>
+    <string name="QuoteCopy">Скопировать</string>
+    <string name="QuoteShare">Поделиться</string>
+    <string name="QuoteStickerSent">Стикер отправлен!</string>
+    <string name="QuoteStickerCopied">Цитата скопирована в буфер</string>
 </resources>
-
-
