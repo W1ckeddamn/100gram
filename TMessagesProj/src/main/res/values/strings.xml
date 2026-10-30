@@ -11573,4 +11573,6 @@
     <string name="AutoplayRound">Video messages</string>
     <string name="AutoplayMusic">Music and audio</string>
     <string name="AutoplayInfo">When disabled, playback stops after the current item instead of continuing with the next one.</string>
+    <string name="RememberLastFolder">Remember last folder</string>
+    <string name="RememberLastFolderInfo">Reopen the app on the folder you were in last time.</string>
 </resources>

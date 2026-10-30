@@ -177,6 +177,7 @@ public class HundredGramConfig {
     public static boolean hideStoriesPosting;
     public static boolean pinnedDownloads;
     public static boolean hideAllChatsFolder;
+    public static boolean rememberLastFolder;
 
     // Locks (device credential / biometrics)
     public static boolean lockArchive;
@@ -786,6 +787,7 @@ public class HundredGramConfig {
         hideStoriesPosting = preferences.getBoolean("hideStoriesPosting", false);
         pinnedDownloads = preferences.getBoolean("pinnedDownloads", false);
         hideAllChatsFolder = preferences.getBoolean("hideAllChatsFolder", false);
+        rememberLastFolder = preferences.getBoolean("rememberLastFolder", false);
         lockArchive = preferences.getBoolean("lockArchive", false);
         lockSecret = preferences.getBoolean("lockSecret", false);
         lockSaved = preferences.getBoolean("lockSaved", false);
@@ -1107,6 +1109,11 @@ public class HundredGramConfig {
         hideAllChatsFolder = !hideAllChatsFolder;
         save("hideAllChatsFolder", hideAllChatsFolder);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleRememberLastFolder() {
+        rememberLastFolder = !rememberLastFolder;
+        save("rememberLastFolder", rememberLastFolder);
     }
 
     public static void toggleHideOtherUsernames() {

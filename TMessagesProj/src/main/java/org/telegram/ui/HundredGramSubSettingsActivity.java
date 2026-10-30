@@ -244,6 +244,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_AUTOPLAY_VOICE = 332;
     private static final int ITEM_AUTOPLAY_ROUND = 333;
     private static final int ITEM_AUTOPLAY_MUSIC = 334;
+    private static final int ITEM_REMEMBER_LAST_FOLDER = 335;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;
@@ -778,6 +779,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_PINNED_DOWNLOADS, LocaleController.getString("PinnedDownloads", R.string.PinnedDownloads))
                 .setChecked(HundredGramConfig.pinnedDownloads));
         items.add(UItem.asShadow(LocaleController.getString("PinnedDownloadsInfo", R.string.PinnedDownloadsInfo)));
+        items.add(UItem.asCheck(ITEM_REMEMBER_LAST_FOLDER, LocaleController.getString("RememberLastFolder", R.string.RememberLastFolder))
+                .setChecked(HundredGramConfig.rememberLastFolder));
+        items.add(UItem.asShadow(LocaleController.getString("RememberLastFolderInfo", R.string.RememberLastFolderInfo)));
         items.add(UItem.asShadow(LocaleController.getString("TransitionsAndDividersInfo", R.string.TransitionsAndDividersInfo)));
 
         // Section 3: Message Bubbles (LIVE PREVIEW DIRECTLY WITH ITS 5 CONTROLS!)
@@ -2131,6 +2135,13 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.autoplayVoice);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.autoplayVoice);
+                }
+                break;
+            case ITEM_REMEMBER_LAST_FOLDER:
+                HundredGramConfig.toggleRememberLastFolder();
+                item.setChecked(HundredGramConfig.rememberLastFolder);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.rememberLastFolder);
                 }
                 break;
             case ITEM_AUTOPLAY_ROUND:

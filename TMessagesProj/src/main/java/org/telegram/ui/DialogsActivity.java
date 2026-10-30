@@ -698,6 +698,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private boolean canDeletePsaSelected;
 
     private int folderId;
+    private boolean lastFolderChecked;
 
     private DialogsActivity parentForwardDialogFragment;
     private long communityId;
@@ -3789,6 +3790,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         checkListLoad(viewPages[0]);
                         viewPages[0].dialogsAdapter.resume();
                         viewPages[1].dialogsAdapter.pause();
+                        saveLastFolder();
                         updateHundredGramActionBarTitle(false);
                     }
                 }
@@ -7016,6 +7018,52 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
     }
 
+    private boolean canRememberLastFolder() {
+        return !onlySelect && folderId == 0 && initialDialogsType == DIALOGS_TYPE_DEFAULT && isMainDialogList() && HundredGramConfig.rememberLastFolder;
+    }
+
+    private int restoreLastFolder() {
+        if (lastFolderChecked) {
+            return -1;
+        }
+        lastFolderChecked = true;
+        if (!canRememberLastFolder() || filterTabsView == null) {
+            return -1;
+        }
+        final int savedId = MessagesController.getMainSettings(currentAccount).getInt("hundredgramLastFolder", 0);
+        if (savedId == 0) {
+            return -1;
+        }
+        final ArrayList<MessagesController.DialogFilter> filters = getMessagesController().getDialogFilters();
+        for (int i = 0; i < filters.size(); i++) {
+            final MessagesController.DialogFilter filter = filters.get(i);
+            if (filter.id == savedId && !filter.locked) {
+                if (!filterTabsView.selectTabWithStableId(filterTabsView.getStableId(i))) {
+                    return -1;
+                }
+                viewPages[0].selectedType = i;
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void saveLastFolder() {
+        if (!lastFolderChecked || !canRememberLastFolder() || filterTabsView == null || viewPages == null || viewPages.length == 0) {
+            return;
+        }
+        final int type = viewPages[0].selectedType;
+        final ArrayList<MessagesController.DialogFilter> filters = getMessagesController().getDialogFilters();
+        if (type < 0 || type >= filters.size()) {
+            return;
+        }
+        final int id = filters.get(type).id;
+        final SharedPreferences prefs = MessagesController.getMainSettings(currentAccount);
+        if (prefs.getInt("hundredgramLastFolder", 0) != id) {
+            prefs.edit().putInt("hundredgramLastFolder", id).apply();
+        }
+    }
+
     private void updateFilterTabs(boolean force, boolean animated) {
         if (filterTabsView == null || inPreviewMode || searchIsShowed || (rightSlidingDialogContainer != null && rightSlidingDialogContainer.hasFragment())) {
             return;
@@ -7074,8 +7122,13 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     }
                     viewPages[a].listView.setScrollingTouchSlop(RecyclerView.TOUCH_SLOP_PAGING);
                 }
+                final int restoredFolderPos = restoreLastFolder();
+                final boolean updateCurrentTabAfterRestore = restoredFolderPos < 0 ? updateCurrentTab : true;
                 filterTabsView.finishAddingTabs(animatedUpdateItems);
-                if (updateCurrentTab) {
+                if (restoredFolderPos >= 0) {
+                    filterTabsView.getTabsContainer().scrollToPosition(restoredFolderPos);
+                }
+                if (updateCurrentTabAfterRestore) {
                     switchToCurrentSelectedMode(false);
                 }
                 if (filterTabsView.isLocked(filterTabsView.getCurrentTabId())) {
@@ -7411,6 +7464,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onPause() {
         super.onPause();
+        saveLastFolder();
         if (storiesBulletin != null) {
             storiesBulletin.hide();
             storiesBulletin = null;
