@@ -53,6 +53,7 @@ public class HundredGramCameraActivity extends BaseFragment {
     private static final int ITEM_ROUND_BITRATE = 17;
     private static final int ITEM_ROUND_SENSOR_RATIO = 18;
     private static final int ITEM_ROUND_ZOOM_SLIDER = 19;
+    private static final int ITEM_ROUND_INTERACTIVE_CROP = 20;
 
     private UniversalRecyclerView listView;
     private CameraXUtils.CameraReport cameraReport;
@@ -302,6 +303,11 @@ public class HundredGramCameraActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.cameraRoundZoomSlider));
         items.add(UItem.asShadow(LocaleController.getString("CameraXZoomSliderInfo", R.string.CameraXZoomSliderInfo)));
 
+        // Interactive Crop for Round Video Notes from Gallery
+        items.add(UItem.asCheck(ITEM_ROUND_INTERACTIVE_CROP, LocaleController.getString("HundredGramRoundVideoCrop", R.string.HundredGramRoundVideoCrop))
+                .setChecked(HundredGramConfig.roundVideoInteractiveCrop));
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramRoundVideoCropInfo", R.string.HundredGramRoundVideoCropInfo)));
+
         // Square Video Notes
         items.add(UItem.asCheck(ITEM_ROUND_SQUARE, LocaleController.getString("RoundVideoSquare", R.string.RoundVideoSquare))
                 .setChecked(HundredGramConfig.cameraRoundSquare));
@@ -415,6 +421,13 @@ public class HundredGramCameraActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.cameraRoundZoomSlider);
                 if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
                     ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.cameraRoundZoomSlider);
+                }
+                break;
+            case ITEM_ROUND_INTERACTIVE_CROP:
+                HundredGramConfig.toggleRoundVideoInteractiveCrop();
+                item.setChecked(HundredGramConfig.roundVideoInteractiveCrop);
+                if (view instanceof org.telegram.ui.Cells.TextCheckCell) {
+                    ((org.telegram.ui.Cells.TextCheckCell) view).setChecked(HundredGramConfig.roundVideoInteractiveCrop);
                 }
                 break;
             case ITEM_ROUND_SQUARE:

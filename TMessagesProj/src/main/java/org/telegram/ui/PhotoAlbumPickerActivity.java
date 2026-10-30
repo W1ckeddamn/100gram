@@ -519,6 +519,32 @@ public class PhotoAlbumPickerActivity extends BaseFragment implements Notificati
                         if (sendPopupWindow != null && sendPopupWindow.isShowing()) {
                             sendPopupWindow.dismiss();
                         }
+                        if (HundredGramConfig.roundVideoInteractiveCrop) {
+                            MediaController.PhotoEntry videoEntry = null;
+                            for (Object obj : selectedPhotos.values()) {
+                                if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
+                                    videoEntry = (MediaController.PhotoEntry) obj;
+                                    break;
+                                }
+                            }
+                            if (videoEntry != null) {
+                                ArrayList<Object> arrayList = new ArrayList<>(selectedPhotos.values());
+                                int position = arrayList.indexOf(videoEntry);
+                                PhotoViewer.getInstance().setParentActivity(PhotoAlbumPickerActivity.this);
+                                PhotoViewer.getInstance().setMaxSelectedPhotos(maxSelectedPhotos, allowOrder);
+                                PhotoViewer.getInstance().openPhotoForSelect(arrayList, Math.max(0, position), 0, false, new PhotoViewer.EmptyPhotoViewerProvider() {
+                                    @Override
+                                    public void sendButtonPressed(int index, VideoEditedInfo videoEditedInfo, boolean notify, int scheduleDate, int scheduleRepeatPeriod, boolean forceDocument) {
+                                        sendSelectedPhotos(selectedPhotos, selectedPhotosOrder, notify, scheduleDate);
+                                        finishFragment();
+                                    }
+                                }, chatActivity);
+                                AndroidUtilities.runOnUIThread(() -> {
+                                    PhotoViewer.getInstance().openRoundVideoCropMode();
+                                }, 250);
+                                return;
+                            }
+                        }
                         for (Object obj : selectedPhotos.values()) {
                             if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
                                 MediaController.PhotoEntry pe = (MediaController.PhotoEntry) obj;

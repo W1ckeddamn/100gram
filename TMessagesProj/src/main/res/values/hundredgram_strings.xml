@@ -660,6 +660,10 @@
     <string name="HundredGramSendAsRoundVideo">Send as video message</string>
     <string name="HundredGramRoundVideoHint">Video will be cropped to 1:1 round message</string>
     <string name="HundredGramRoundVideoMaxDuration">Video message cannot exceed 60 seconds</string>
+    <string name="HundredGramRoundVideoCrop">Interactive crop for video messages</string>
+    <string name="HundredGramRoundVideoCropInfo">Allows adjusting circular crop and position before sending a gallery video as a video message</string>
+    <string name="HundredGramCropCircle">Circle (Video message)</string>
+    <string name="HundredGramRoundCropHint">Drag or pinch to frame inside circle, then tap Send</string>
 
     <!-- Sticker & GIF Size Settings -->
     <string name="StickersAndGifsHeader">Stickers &amp; GIFs</string>

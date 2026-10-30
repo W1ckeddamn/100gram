@@ -1,9 +1,9 @@
 # 100gram Project State & Handoff
 
-> **Generated:** 2026-10-30 18:44 UTC  
+> **Generated:** 2026-10-30 19:18 UTC  
 > **Branch:** `main`  
-> **Head Commit:** `2295007ab` (fix(policy): enforce vanilla defaults and 6-point contract for sliders and UI mods)  
-> **Working Tree:** `Clean`
+> **Head Commit:** `04f4ba316` (docs: update PROJECT_STATE.md)  
+> **Working Tree:** `DIRTY (14 changes)`
 
 ---
 
@@ -38,12 +38,14 @@ Antigravity sessions established the core architectural foundations of 100gram:
   *Key artifacts (21):* `ayugram_features_audit_and_plan.md, bugfix_plan.md, build_apk_plan.md, changelog_system_plan.md, exteragram_audit_and_ui_plan.md`
 - **`34a35936-5716-4850-97ce-a5a3742fbccc`** — REA reverse engineering of exteraGram & AyuGram APKs into D:\exteragram
 - **`c62ff3ad-d3c3-41c1-99af-c5f825ca711a`** — State inspection & synchronization between OpenCode and Antigravity
+  *Key artifacts (1):* `ROADMAP_PLAN.md`
 
 ---
 
 ## 4. Recent Commits (Last 10)
 
 ```text
+04f4ba316 docs: update PROJECT_STATE.md
 2295007ab fix(policy): enforce vanilla defaults and 6-point contract for sliders and UI mods
 5224a973c feat: peek warning once, big reactions, transcript quotes, swipe-to-hide keyboard (from OpexGram)
 61f638df9 feat: profile join date and poll results peek (from OpexGram)
@@ -53,7 +55,6 @@ b0cadbb57 feat: autoplay toggles for voice, round video and music (from OpexGram
 c33cd5774 feat: full OpexGram real-name cache parity (strangers-only cache, 3000->2000 trim, contact switch)
 0731e1edc feat: add localization strings for profile name switch
 24c01debf feat: add profile name switch toggle in settings
-7bc3cac11 fix: add HundredGramRealNameCache import in ProfileActivity
 ```
 
 ---

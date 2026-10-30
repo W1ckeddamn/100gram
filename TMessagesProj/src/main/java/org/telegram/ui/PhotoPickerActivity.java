@@ -1156,6 +1156,19 @@ public class PhotoPickerActivity extends BaseFragment implements NotificationCen
                             if (sendPopupWindow != null && sendPopupWindow.isShowing()) {
                                 sendPopupWindow.dismiss();
                             }
+                            if (HundredGramConfig.roundVideoInteractiveCrop) {
+                                MediaController.PhotoEntry videoEntry = null;
+                                for (Object obj : selectedPhotos.values()) {
+                                    if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
+                                        videoEntry = (MediaController.PhotoEntry) obj;
+                                        break;
+                                    }
+                                }
+                                if (videoEntry != null) {
+                                    openPhotoViewerForRoundCrop(videoEntry);
+                                    return;
+                                }
+                            }
                             for (Object obj : selectedPhotos.values()) {
                                 if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
                                     MediaController.PhotoEntry pe = (MediaController.PhotoEntry) obj;
@@ -2073,5 +2086,22 @@ public class PhotoPickerActivity extends BaseFragment implements NotificationCen
     @Override
     public boolean isLightStatusBar() {
         return AndroidUtilities.computePerceivedBrightness(Theme.getColor(Theme.key_windowBackgroundGray)) > 0.721f;
+    }
+
+    public void openPhotoViewerForRoundCrop(MediaController.PhotoEntry entry) {
+        if (entry == null) return;
+        ArrayList<Object> arrayList = selectedAlbum != null && selectedAlbum.photos != null ? new ArrayList<>(selectedAlbum.photos) : new ArrayList<>(selectedPhotos.values());
+        int position = arrayList.indexOf(entry);
+        if (position < 0) {
+            arrayList = new ArrayList<>();
+            arrayList.add(entry);
+            position = 0;
+        }
+        PhotoViewer.getInstance().setParentActivity(PhotoPickerActivity.this);
+        PhotoViewer.getInstance().setMaxSelectedPhotos(maxSelectedPhotos, allowOrder);
+        PhotoViewer.getInstance().openPhotoForSelect(arrayList, position, 0, isDocumentsPicker, provider, chatActivity);
+        AndroidUtilities.runOnUIThread(() -> {
+            PhotoViewer.getInstance().openRoundVideoCropMode();
+        }, 250);
     }
 }

@@ -936,6 +936,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private PhotoProgressView[] photoProgressViews = new PhotoProgressView[3];
     private RadialProgressView miniProgressView;
     private ImageView paintItem;
+    public boolean isRoundVideoCrop;
     private ImageView cropItem;
     private ImageView mirrorItem;
     private ImageView rotateItem;
@@ -5583,6 +5584,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                             Instance = null;
                             isVisible = false;
                             isVisibleOrAnimating = false;
+        isRoundVideoCrop = false;
                             if (currentPlaceObject != null && !currentPlaceObject.imageReceiver.getVisible()) {
                                 currentPlaceObject.imageReceiver.setVisible(true, true);
                             }
@@ -7443,6 +7445,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 }
             }
 
+            final boolean canSendRound = isCurrentVideo && (parentChatActivity == null || parentChatActivity.getCurrentChat() == null || ChatObject.canSendRoundVideo(parentChatActivity.getCurrentChat()));
             final boolean showSendAsFile = !canEdit && !captionEdit.hasTimer() && (placeProvider == null || placeProvider.canSendAsFile()) && !hasVideoEditsLostAsDocument();
             final boolean showSchedule = !canEdit && canScheduleMessage && !hasTtl;
             final boolean showWithoutSound = !(canEdit && canReplace) && !userIsSelf;
@@ -7452,6 +7455,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 .addIf(showSendAsFile, R.drawable.msg_sendfile, getString(multipleSelected ? R.string.SendAsFiles : R.string.SendAsFile), () -> sendPressed(true, 0, 0, false, true, false))
                 .addIf(canReplace, R.drawable.msg_send, getString(R.string.SendAsNewPhoto), () -> sendPressed(true, 0, 0))
                 .addIf(canReplace, R.drawable.msg_replace, getString(R.string.ReplacePhoto), this::replacePressed)
+                .addIf(canSendRound, R.drawable.photo_circle, getString(R.string.HundredGramSendAsRoundVideo), this::openRoundVideoCropMode)
                 .addIf(showSchedule, R.drawable.msg_calendar2, getString(userIsSelf ? R.string.SetReminder : R.string.ScheduleMessage), this::showScheduleDatePickerDialog)
                 .addIf(showWithoutSound, R.drawable.input_notify_off, getString(R.string.SendWithoutSound), () -> sendPressed(false, 0, 0));
 
@@ -7692,6 +7696,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (imageMoveAnimation != null) {
                 return;
             }
+            if (isRoundVideoCrop) {
+                isRoundVideoCrop = false;
+                closePhoto(true, false);
+                return;
+            }
             Runnable onEnd = () -> {
                 cropTransform.setViewTransform(previousHasTransform, previousCropPx, previousCropPy, previousCropRotation, previousCropOrientation, previousCropScale, scale1(), scale1(), previousCropPw, previousCropPh, 0, 0, previousCropMirrored);
 //                if (previousHasTransform) {
@@ -7725,7 +7734,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 return;
             }
             applyCurrentEditMode();
-            switchToEditMode(EDIT_MODE_NONE);
+            if (isRoundVideoCrop) {
+                sendPressed(true, 0, 0);
+            } else {
+                switchToEditMode(EDIT_MODE_NONE);
+            }
         });
 
         resetButton = new TextView(activityContext);
@@ -8093,6 +8106,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 Object entry = imagesArrLocals.get(currentIndex);
                 if (entry instanceof MediaController.MediaEditState) {
                     ((MediaController.MediaEditState) entry).editedInfo = videoEditedInfo;
+                }
+                if (entry instanceof MediaController.PhotoEntry && (isRoundVideoCrop || (videoEditedInfo != null && videoEditedInfo.roundVideo))) {
+                    ((MediaController.PhotoEntry) entry).isRound = true;
                 }
             }
             if (parentChatActivity != null && parentChatActivity.getCurrentChat() != null) {
@@ -9902,6 +9918,35 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (sendPhotoType == SELECT_TYPE_AVATAR) {
             videoEditedInfo.avatarStartTime = avatarStartTime;
             videoEditedInfo.originalBitrate = originalBitrate;
+        }
+        Object currentEntry = !imagesArrLocals.isEmpty() && currentIndex >= 0 && currentIndex < imagesArrLocals.size() ? imagesArrLocals.get(currentIndex) : null;
+        if (isRoundVideoCrop || (currentEntry instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) currentEntry).isRound)) {
+            videoEditedInfo.roundVideo = true;
+            videoEditedInfo.fromCamera = false;
+            int roundRes = Math.min(480, org.telegram.messenger.HundredGramConfig.cameraRoundResolution > 0 ? org.telegram.messenger.HundredGramConfig.cameraRoundResolution : 360);
+            videoEditedInfo.resultWidth = roundRes;
+            videoEditedInfo.resultHeight = roundRes;
+            videoEditedInfo.framerate = (org.telegram.messenger.HundredGramConfig.cameraRoundFps == 60) ? 60 : 30;
+            videoEditedInfo.bitrate = org.telegram.messenger.HundredGramConfig.cameraRoundBitrate > 0 ? (org.telegram.messenger.HundredGramConfig.cameraRoundBitrate * 1024) : 1000000;
+            if (videoEditedInfo.cropState != null) {
+                videoEditedInfo.cropState.transformWidth = roundRes;
+                videoEditedInfo.cropState.transformHeight = roundRes;
+            } else {
+                int side = Math.min(originalWidth > 0 ? originalWidth : roundRes, originalHeight > 0 ? originalHeight : roundRes);
+                MediaController.CropState crop = new MediaController.CropState();
+                crop.cropPw = originalWidth > 0 ? (float) side / originalWidth : 1.0f;
+                crop.cropPh = originalHeight > 0 ? (float) side / originalHeight : 1.0f;
+                crop.cropPx = 0.0f;
+                crop.cropPy = 0.0f;
+                crop.transformWidth = roundRes;
+                crop.transformHeight = roundRes;
+                crop.cropScale = 1.0f;
+                videoEditedInfo.cropState = crop;
+            }
+            if (videoEditedInfo.endTime - videoEditedInfo.startTime > 60000L * 1000L) {
+                videoEditedInfo.endTime = videoEditedInfo.startTime + 60000L * 1000L;
+            }
+            videoEditedInfo.estimatedDuration = Math.min(60000L, (videoEditedInfo.endTime - videoEditedInfo.startTime) / 1000L);
         }
         videoEditedInfo.muted = muteVideo || sendPhotoType == SELECT_TYPE_AVATAR;
         return videoEditedInfo;
@@ -12336,7 +12381,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             previousCropMirrored = cropTransform.isMirrored();
             photoCropView.onAppear();
 
-            editorDoneLayout.doneButton.setText(getString(R.string.Crop));
+            if (isRoundVideoCrop) {
+                editorDoneLayout.doneButton.setText(getString(R.string.Send));
+            } else {
+                editorDoneLayout.doneButton.setText(getString(R.string.Crop));
+            }
             editorDoneLayout.doneButton.setTextColor(getThemedColor(Theme.key_chat_editMediaButton));
 
             changeModeAnimation = new AnimatorSet();
@@ -12410,7 +12459,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
                     final Bitmap bitmap = centerImage.getBitmap();
                     if (bitmap != null || isCurrentVideo) {
-                        photoCropView.setBitmap(bitmap, centerImage.getOrientation(), sendPhotoType != SELECT_TYPE_AVATAR, false, paintingOverlay, cropTransform, isCurrentVideo ? (VideoEditTextureView) videoTextureView : null, editState.cropState);
+                        photoCropView.setBitmap(bitmap, centerImage.getOrientation(), sendPhotoType != SELECT_TYPE_AVATAR && !isRoundVideoCrop, false, paintingOverlay, cropTransform, isCurrentVideo ? (VideoEditTextureView) videoTextureView : null, editState.cropState);
                         photoCropView.onDisappear();
                         int bitmapWidth = centerImage.getBitmapWidth();
                         int bitmapHeight = centerImage.getBitmapHeight();
@@ -12430,7 +12479,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         float newScaleY = (float) getContainerViewHeight(1) / (float) bitmapHeight;
                         float scale = Math.min(scaleX, scaleY);
                         float newScale = Math.min(newScaleX, newScaleY);
-                        if (sendPhotoType == SELECT_TYPE_AVATAR) {
+                        if (sendPhotoType == SELECT_TYPE_AVATAR || isRoundVideoCrop) {
                             float minSide = Math.min(getContainerViewWidth(1), getContainerViewHeight(1));
                             newScaleX = minSide / (float) bitmapWidth;
                             newScaleY = minSide / (float) bitmapHeight;
@@ -23818,6 +23867,27 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     invalidate();
                 }
             }
+        }
+    }
+
+    public void openRoundVideoCropMode() {
+        if (!isCurrentVideo) {
+            return;
+        }
+        isRoundVideoCrop = true;
+        if (currentEditMode != EDIT_MODE_CROP) {
+            switchToEditMode(EDIT_MODE_CROP);
+        }
+        if (photoCropView != null) {
+            photoCropView.setFreeform(false);
+            photoCropView.setAspectRatio(1.0f);
+        }
+        if (videoTimelineView != null && videoDuration > 60000) {
+            videoTimelineView.setRightProgress(60000.0f / videoDuration);
+        }
+        try {
+            BulletinFactory.of(containerView, resourcesProvider).createSimpleBulletin(R.drawable.photo_circle, LocaleController.getString(R.string.HundredGramRoundCropHint)).show();
+        } catch (Exception ignore) {
         }
     }
 }

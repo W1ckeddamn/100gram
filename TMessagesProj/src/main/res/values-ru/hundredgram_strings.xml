@@ -669,6 +669,10 @@
     <string name="HundredGramSendAsRoundVideo">Отправить как видеосообщение</string>
     <string name="HundredGramRoundVideoHint">Видео будет обрезано в круг 1:1 и отправлено в виде кружка</string>
     <string name="HundredGramRoundVideoMaxDuration">Видеосообщение не может длиться дольше 60 секунд</string>
+    <string name="HundredGramRoundVideoCrop">Интерактивная обрезка кружочков</string>
+    <string name="HundredGramRoundVideoCropInfo">Позволяет выбрать область кадрирования перед отправкой видео из галереи в виде видеосообщения</string>
+    <string name="HundredGramCropCircle">Круг (Кружочек)</string>
+    <string name="HundredGramRoundCropHint">Перемещайте и масштабируйте видео в круге, затем нажмите Отправить</string>
 
     <!-- Sticker & GIF Size Settings -->
     <string name="StickersAndGifsHeader">Стикеры и GIF</string>

@@ -30,6 +30,7 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.BubbleActivity;
 import org.telegram.ui.Components.PaintingOverlay;
 import org.telegram.ui.Components.VideoEditTextureView;
+import org.telegram.ui.PhotoViewer;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -1301,7 +1302,8 @@ public class CropView extends FrameLayout implements CropAreaView.AreaViewListen
 
         hasAspectRatioDialog = true;
 
-        String[] actions = new String[8];
+        final boolean hasVideo = videoEditTextureView != null;
+        String[] actions = new String[hasVideo ? 9 : 8];
 
         final Integer[][] ratios = new Integer[][]{
                 new Integer[]{3, 2},
@@ -1314,8 +1316,11 @@ public class CropView extends FrameLayout implements CropAreaView.AreaViewListen
 
         actions[0] = LocaleController.getString(R.string.CropOriginal);
         actions[1] = LocaleController.getString(R.string.CropSquare);
+        if (hasVideo) {
+            actions[2] = LocaleController.getString(R.string.HundredGramCropCircle);
+        }
 
-        int i = 2;
+        int i = hasVideo ? 3 : 2;
         for (Integer[] ratioPair : ratios) {
             if (areaView.getAspectRatio() > 1.0f) {
                 actions[i] = String.format("%d:%d", ratioPair[0], ratioPair[1]);
@@ -1330,6 +1335,10 @@ public class CropView extends FrameLayout implements CropAreaView.AreaViewListen
                     hasAspectRatioDialog = false;
                     switch (which) {
                         case 0: {
+                            if (PhotoViewer.hasInstance()) {
+                                PhotoViewer.getInstance().isRoundVideoCrop = false;
+                            }
+                            setFreeform(true);
                             float w = state.getBaseRotation() % 180 != 0 ? state.getHeight() : state.getWidth();
                             float h = state.getBaseRotation() % 180 != 0 ? state.getWidth() : state.getHeight();
                             setLockedAspectRatio(w / h);
@@ -1337,17 +1346,37 @@ public class CropView extends FrameLayout implements CropAreaView.AreaViewListen
                         break;
 
                         case 1: {
+                            if (PhotoViewer.hasInstance()) {
+                                PhotoViewer.getInstance().isRoundVideoCrop = false;
+                            }
+                            setFreeform(true);
                             setLockedAspectRatio(1.0f);
                         }
                         break;
 
+                        case 2: {
+                            if (hasVideo) {
+                                if (PhotoViewer.hasInstance()) {
+                                    PhotoViewer.getInstance().isRoundVideoCrop = true;
+                                }
+                                setFreeform(false);
+                                setLockedAspectRatio(1.0f);
+                                break;
+                            }
+                        }
                         default: {
-                            Integer[] ratioPair = ratios[which - 2];
-
-                            if (areaView.getAspectRatio() > 1.0f) {
-                                setLockedAspectRatio(ratioPair[0] / (float) ratioPair[1]);
-                            } else {
-                                setLockedAspectRatio(ratioPair[1] / (float) ratioPair[0]);
+                            if (PhotoViewer.hasInstance()) {
+                                PhotoViewer.getInstance().isRoundVideoCrop = false;
+                            }
+                            setFreeform(true);
+                            int idx = which - (hasVideo ? 3 : 2);
+                            if (idx >= 0 && idx < ratios.length) {
+                                Integer[] ratioPair = ratios[idx];
+                                if (areaView.getAspectRatio() > 1.0f) {
+                                    setLockedAspectRatio(ratioPair[0] / (float) ratioPair[1]);
+                                } else {
+                                    setLockedAspectRatio(ratioPair[1] / (float) ratioPair[0]);
+                                }
                             }
                         }
                         break;

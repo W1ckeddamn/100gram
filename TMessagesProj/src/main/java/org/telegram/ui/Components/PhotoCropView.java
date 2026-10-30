@@ -28,6 +28,7 @@ import android.widget.FrameLayout;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ImageReceiver;
+import org.telegram.ui.PhotoViewer;
 import org.telegram.messenger.MediaController;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.BubbleActivity;
@@ -260,7 +261,7 @@ public class PhotoCropView extends FrameLayout {
             wheelView.setRotated(false);
             wheelView.setMirrored(false);
         }
-        wheelView.setVisibility(freeform ? VISIBLE : INVISIBLE);
+        wheelView.setVisibility(freeform || (PhotoViewer.hasInstance() && PhotoViewer.getInstance().isRoundVideoCrop) ? VISIBLE : INVISIBLE);
     }
 
     public void setVideoThumbFlashAlpha(float alpha) {

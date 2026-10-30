@@ -4049,6 +4049,21 @@ public class ChatAttachAlert extends BottomSheet implements NotificationCenter.N
             final boolean canSendRound = chatActivity == null || chatActivity.getCurrentChat() == null || ChatObject.canSendRoundVideo(chatActivity.getCurrentChat());
             if (editingMessageObject == null && (currentAttachLayout == photoLayout || currentAttachLayout == photoPreviewLayout) && hasVideo && canSendRound) {
                 options.add(R.drawable.photo_circle, getString(R.string.HundredGramSendAsRoundVideo), () -> {
+                    if (HundredGramConfig.roundVideoInteractiveCrop && photoLayout != null && (currentAttachLayout == photoLayout || currentAttachLayout == photoPreviewLayout)) {
+                        MediaController.PhotoEntry videoEntry = null;
+                        if (photoLayout.getSelectedPhotos() != null) {
+                            for (Object obj : photoLayout.getSelectedPhotos().values()) {
+                                if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {
+                                    videoEntry = (MediaController.PhotoEntry) obj;
+                                    break;
+                                }
+                            }
+                        }
+                        if (videoEntry != null) {
+                            photoLayout.openPhotoViewerForRoundCrop(videoEntry);
+                            return;
+                        }
+                    }
                     if (photoLayout != null && photoLayout.getSelectedPhotos() != null) {
                         for (Object obj : photoLayout.getSelectedPhotos().values()) {
                             if (obj instanceof MediaController.PhotoEntry && ((MediaController.PhotoEntry) obj).isVideo) {

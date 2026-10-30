@@ -381,6 +381,28 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         }
     }
 
+
+    public void openPhotoViewerForRoundCrop(MediaController.PhotoEntry entry) {
+        if (entry == null) return;
+        ArrayList<Object> arrayList = getAllPhotosArray();
+        int position = arrayList.indexOf(entry);
+        if (position < 0) {
+            arrayList = new ArrayList<>();
+            arrayList.add(entry);
+            position = 0;
+        }
+        BaseFragment fragment = parentAlert.baseFragment != null ? parentAlert.baseFragment : org.telegram.ui.LaunchActivity.getLastFragment();
+        if (fragment == null) return;
+        org.telegram.ui.ChatActivity chatActivity = fragment instanceof org.telegram.ui.ChatActivity ? (org.telegram.ui.ChatActivity) fragment : null;
+        org.telegram.ui.PhotoViewer.getInstance().setParentActivity(fragment);
+        org.telegram.ui.PhotoViewer.getInstance().setParentAlert(parentAlert);
+        org.telegram.ui.PhotoViewer.getInstance().setMaxSelectedPhotos(parentAlert.maxSelectedPhotos, parentAlert.allowOrder);
+        org.telegram.ui.PhotoViewer.getInstance().openPhotoForSelect(arrayList, position, 0, false, photoViewerProvider, chatActivity);
+        org.telegram.messenger.AndroidUtilities.runOnUIThread(() -> {
+            org.telegram.ui.PhotoViewer.getInstance().openRoundVideoCropMode();
+        }, 250);
+    }
+
     public PhotoViewer.PhotoViewerProvider photoViewerProvider = new BasePhotoProvider() {
         @Override
         public void onOpen() {

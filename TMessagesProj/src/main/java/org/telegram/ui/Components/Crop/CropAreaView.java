@@ -246,6 +246,7 @@ public class CropAreaView extends ViewGroup {
 
     public void setFreeform(boolean fform) {
         freeform = fform;
+        invalidate();
     }
 
     public void setActualRect(float aspectRatio) {

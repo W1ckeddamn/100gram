@@ -295,6 +295,7 @@ public class HundredGramConfig {
     public static boolean cameraRoundDisableBlur; // Disable background dimming/blur during recording
     public static boolean cameraRoundSensor16to9 = true; // 16:9 vs 4:3 sensor for legacy devices
     public static boolean cameraRoundZoomSlider = true; // Interactive camera zoom slider with stops
+    public static boolean roundVideoInteractiveCrop = true; // Interactive crop before sending gallery video as round note
 
     // Media Vault & Archiver
     public static final int PRESET_SMART = 0;          // Рекомендуемый (ЛС + группы, без каналов и ботов, фото/видео/кружки)
@@ -640,6 +641,7 @@ public class HundredGramConfig {
             cameraRoundSensor16to9 = preferences.getBoolean("cameraRoundSensor16to9", true);
             SharedConfig.roundCamera16to9 = cameraRoundSensor16to9;
             cameraRoundZoomSlider = preferences.getBoolean("cameraRoundZoomSlider", true);
+            roundVideoInteractiveCrop = preferences.getBoolean("roundVideoInteractiveCrop", true);
 
             // Media Vault & Archiver
             backgroundArchiverEnabled = preferences.getBoolean("backgroundArchiverEnabled", false);
@@ -1499,6 +1501,11 @@ public class HundredGramConfig {
     public static void toggleCameraRoundZoomSlider() {
         cameraRoundZoomSlider = !cameraRoundZoomSlider;
         save("cameraRoundZoomSlider", cameraRoundZoomSlider);
+    }
+
+    public static void toggleRoundVideoInteractiveCrop() {
+        roundVideoInteractiveCrop = !roundVideoInteractiveCrop;
+        save("roundVideoInteractiveCrop", roundVideoInteractiveCrop);
     }
 
     public static void setDownloadBoost(int mode) {

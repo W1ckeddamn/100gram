@@ -319,6 +319,13 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "ползунок", "слайдер", "slider", "seekbar", "material", "стиль");
 
+        addEntry(id++, "HundredGramRoundVideoCrop", "Интерактивная обрезка кружочков",
+                "HundredGramRoundVideoCropInfo", "Выбор области кадрирования перед отправкой видеосообщения",
+                "RoundVideoHeader", "Кружочки",
+                R.drawable.photo_circle, HundredGramSubSettingsActivity.CATEGORY_MEDIA, 392,
+                HundredGramCameraActivity.class,
+                "кружок", "видеосообщение", "обрезка", "round", "video", "crop", "кадрирование");
+
         addEntry(id++, "BottomNavShowArchive", "Вкладка «Архив» в нижней панели",
                 null, "Отображение кнопки архива в нижней навигационной панели Liquid Glass",
                 "HundredGramCategoryInterface", "Интерфейс",
