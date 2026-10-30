@@ -7566,6 +7566,13 @@ public class MessageObject {
         if (!TextUtils.isEmpty(text)) {
             text = Emoji.replaceEmoji(text, Theme.chat_msgTextPaint.getFontMetricsInt(), false);
         }
+        if (HundredGramConfig.voiceTranscriptQuote && !TextUtils.isEmpty(text)) {
+            try {
+                SpannableStringBuilder quoted = new SpannableStringBuilder(text);
+                QuoteSpan.putQuote(quoted, 0, quoted.length(), true);
+                return quoted;
+            } catch (Throwable ignore) {}
+        }
         return text;
     }
 

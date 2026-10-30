@@ -5742,7 +5742,49 @@ public class ChatActivity extends BaseFragment implements
                 chatActionBackgroundDarkenPaint.setColor(wasDarkenColor);
             }
 
+            private float swipeHideKeyboardAnchorY;
+            private boolean swipeHideKeyboardTracking;
+
+            private void checkSwipeHidesKeyboard(MotionEvent e) {
+                if (e == null || !HundredGramConfig.swipeHideKeyboard) {
+                    return;
+                }
+                final int action = e.getActionMasked();
+                if (action == MotionEvent.ACTION_DOWN) {
+                    swipeHideKeyboardAnchorY = e.getY();
+                    swipeHideKeyboardTracking = true;
+                    return;
+                }
+                if (action != MotionEvent.ACTION_MOVE) {
+                    swipeHideKeyboardTracking = false;
+                    return;
+                }
+                if (!swipeHideKeyboardTracking) {
+                    return;
+                }
+                if (startedTrackingSlidingView || (textSelectionHelper != null && textSelectionHelper.isInSelectionMode())) {
+                    swipeHideKeyboardTracking = false;
+                    return;
+                }
+                if (e.getY() < swipeHideKeyboardAnchorY) {
+                    swipeHideKeyboardAnchorY = e.getY();
+                    return;
+                }
+                if (e.getY() - swipeHideKeyboardAnchorY >= AndroidUtilities.dp(56)) {
+                    swipeHideKeyboardTracking = false;
+                    if (chatActivityEnterView == null) {
+                        return;
+                    }
+                    if (isKeyboardVisible()) {
+                        chatActivityEnterView.closeKeyboard();
+                    } else if (chatActivityEnterView.isPopupShowing()) {
+                        chatActivityEnterView.hidePopup(true);
+                    }
+                }
+            }
+
             private void processTouchEvent(MotionEvent e) {
+                checkSwipeHidesKeyboard(e);
                 if (e != null) {
                     wasManualScroll = true;
                 }
@@ -33806,6 +33848,10 @@ public class ChatActivity extends BaseFragment implements
                 overlay.tap(loc[0] - loc2[0] + x, loc[1] - loc2[1] + y + (cell instanceof ChatMessageCell ? ((ChatMessageCell) cell).starsPriceTopPadding : 0), false, true);
             }
             return;
+        }
+
+        if (!bigEmoji && HundredGramConfig.bigReactions && visibleReaction != null && !primaryMessage.hasChosenReaction(visibleReaction)) {
+            bigEmoji = true;
         }
 
         if (getDialogId() == getUserConfig().getClientUserId() && !getUserConfig().isPremium() && primaryMessage.messageOwner != null && (primaryMessage.messageOwner.reactions == null || (primaryMessage.messageOwner.reactions.reactions_as_tags || primaryMessage.messageOwner.reactions.results.isEmpty()))) {

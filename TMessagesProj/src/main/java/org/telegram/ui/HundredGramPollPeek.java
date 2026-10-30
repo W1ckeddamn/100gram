@@ -117,10 +117,17 @@ public class HundredGramPollPeek {
             return;
         }
         final int totalVoters = media.results.total_voters;
+        if (HundredGramConfig.pollPeekWarned) {
+            voteAndRetract(fragment, cell, msg, media, account, totalVoters);
+            return;
+        }
         new AlertDialog.Builder(fragment.getContext(), fragment.getResourceProvider())
                 .setTitle(LocaleController.getString(R.string.PollPeekTitle))
                 .setMessage(LocaleController.getString(R.string.PollPeekText))
-                .setPositiveButton(LocaleController.getString(R.string.PollPeekButton), (dialog, which) -> voteAndRetract(fragment, cell, msg, media, account, totalVoters))
+                .setPositiveButton(LocaleController.getString(R.string.PollPeekButton), (dialog, which) -> {
+                    HundredGramConfig.setPollPeekWarned();
+                    voteAndRetract(fragment, cell, msg, media, account, totalVoters);
+                })
                 .setNegativeButton(LocaleController.getString(R.string.Cancel), null)
                 .show();
     }

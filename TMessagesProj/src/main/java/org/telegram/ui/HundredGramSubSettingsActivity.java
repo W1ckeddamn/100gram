@@ -246,6 +246,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_AUTOPLAY_MUSIC = 334;
     private static final int ITEM_REMEMBER_LAST_FOLDER = 335;
     private static final int ITEM_SHOW_JOIN_DATE = 336;
+    private static final int ITEM_SWIPE_HIDE_KEYBOARD = 337;
+    private static final int ITEM_BIG_REACTIONS = 338;
+    private static final int ITEM_VOICE_TRANSCRIPT_QUOTE = 339;
 
     // Item IDs for CATEGORY_MEDIA
     private static final int ITEM_ALWAYS_HD_PHOTOS = 60;
@@ -816,6 +819,10 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.hideReactionsInChannels));
         items.add(UItem.asCheck(ITEM_HIDE_REACTIONS_IN_GROUPS, LocaleController.getString("HideReactionsInGroups", R.string.HideReactionsInGroups))
                 .setChecked(HundredGramConfig.hideReactionsInGroups));
+        items.add(UItem.asCheck(ITEM_BIG_REACTIONS, LocaleController.getString("BigReactions", R.string.BigReactions))
+                .setChecked(HundredGramConfig.bigReactions));
+        items.add(UItem.asCheck(ITEM_VOICE_TRANSCRIPT_QUOTE, LocaleController.getString("VoiceTranscriptQuote", R.string.VoiceTranscriptQuote))
+                .setChecked(HundredGramConfig.voiceTranscriptQuote));
         items.add(UItem.asShadow(LocaleController.getString("MessageBubblePreviewInfo", R.string.MessageBubblePreviewInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("SelectionHeader", R.string.SelectionHeader)));
@@ -880,6 +887,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_CHAT_PAGE_UP, LocaleController.getString("ChatPageUpButton", R.string.ChatPageUpButton))
                 .setChecked(HundredGramConfig.chatPageUpButton));
         items.add(UItem.asShadow(LocaleController.getString("ChatPageUpInfo", R.string.ChatPageUpInfo)));
+        items.add(UItem.asCheck(ITEM_SWIPE_HIDE_KEYBOARD, LocaleController.getString("SwipeHidesKeyboard", R.string.SwipeHidesKeyboard))
+                .setChecked(HundredGramConfig.swipeHideKeyboard));
+        items.add(UItem.asShadow(LocaleController.getString("SwipeHidesKeyboardInfo", R.string.SwipeHidesKeyboardInfo)));
         items.add(UItem.asCheck(ITEM_ADD_COMMA_AFTER_MENTION, LocaleController.getString("HundredGramAddCommaAfterMention", R.string.HundredGramAddCommaAfterMention))
                 .setChecked(HundredGramConfig.addCommaAfterMention));
         items.add(UItem.asCheck(ITEM_INLINE_MATH, LocaleController.getString("InlineMathResult", R.string.InlineMathResult))
@@ -2153,6 +2163,27 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.showJoinDate);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.showJoinDate);
+                }
+                break;
+            case ITEM_SWIPE_HIDE_KEYBOARD:
+                HundredGramConfig.toggleSwipeHideKeyboard();
+                item.setChecked(HundredGramConfig.swipeHideKeyboard);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.swipeHideKeyboard);
+                }
+                break;
+            case ITEM_BIG_REACTIONS:
+                HundredGramConfig.toggleBigReactions();
+                item.setChecked(HundredGramConfig.bigReactions);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.bigReactions);
+                }
+                break;
+            case ITEM_VOICE_TRANSCRIPT_QUOTE:
+                HundredGramConfig.toggleVoiceTranscriptQuote();
+                item.setChecked(HundredGramConfig.voiceTranscriptQuote);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.voiceTranscriptQuote);
                 }
                 break;
             case ITEM_AUTOPLAY_ROUND:

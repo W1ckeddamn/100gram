@@ -331,4 +331,8 @@
     <string name="PollPeekTitle">Показать результаты?</string>
     <string name="PollPeekText">В этом опросе результаты скрыты до голосования. Чтобы показать их, приложение проголосует за первый ответ и сразу отзовёт голос.</string>
     <string name="PollPeekButton">Показать</string>
+    <string name="SwipeHidesKeyboard">Свайп вниз скрывает клавиатуру</string>
+    <string name="SwipeHidesKeyboardInfo">Смахните вниз по чату, чтобы скрыть клавиатуру или открытую панель.</string>
+    <string name="BigReactions">Большие реакции</string>
+    <string name="VoiceTranscriptQuote">Цитата в расшифровке</string>
 </resources>

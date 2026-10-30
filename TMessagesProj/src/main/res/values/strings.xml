@@ -11580,4 +11580,8 @@
     <string name="PollPeekTitle">Show results?</string>
     <string name="PollPeekText">This poll hides its results until you vote. To show them, the app will vote for the first answer and immediately take the vote back.</string>
     <string name="PollPeekButton">Show</string>
+    <string name="SwipeHidesKeyboard">Swipe down hides keyboard</string>
+    <string name="SwipeHidesKeyboardInfo">Swipe down over the chat to hide the keyboard or an open panel.</string>
+    <string name="BigReactions">Big reactions</string>
+    <string name="VoiceTranscriptQuote">Quote in transcripts</string>
 </resources>

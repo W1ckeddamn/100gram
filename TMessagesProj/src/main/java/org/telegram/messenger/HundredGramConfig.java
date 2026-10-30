@@ -157,6 +157,10 @@ public class HundredGramConfig {
     public static boolean showEditHistoryButton;
     public static boolean showRepeatMessageButton = true;
     public static boolean showResultsBeforeVoting;
+    public static boolean pollPeekWarned;
+    public static boolean bigReactions;
+    public static boolean voiceTranscriptQuote;
+    public static boolean swipeHideKeyboard;
     public static boolean filterZalgo = true;
     public static boolean replaceEditedWithIcon;
     public static boolean showClearInputButton = true;
@@ -566,6 +570,10 @@ public class HundredGramConfig {
             showForwardWithoutAuthorButton = preferences.getBoolean("showForwardWithoutAuthorButton", true);
             showRepeatMessageButton = preferences.getBoolean("showRepeatMessageButton", true);
             showResultsBeforeVoting = preferences.getBoolean("showResultsBeforeVoting", false);
+            pollPeekWarned = preferences.getBoolean("pollPeekWarned", false);
+            bigReactions = preferences.getBoolean("bigReactions", false);
+            voiceTranscriptQuote = preferences.getBoolean("voiceTranscriptQuote", true);
+            swipeHideKeyboard = preferences.getBoolean("swipeHideKeyboard", false);
             filterZalgo = preferences.getBoolean("filterZalgo", true);
             replaceEditedWithIcon = preferences.getBoolean("replaceEditedWithIcon", false);
             showClearInputButton = preferences.getBoolean("showClearInputButton", true);
@@ -1218,6 +1226,27 @@ public class HundredGramConfig {
         showResultsBeforeVoting = !showResultsBeforeVoting;
         save("showResultsBeforeVoting", showResultsBeforeVoting);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setPollPeekWarned() {
+        pollPeekWarned = true;
+        save("pollPeekWarned", true);
+    }
+
+    public static void toggleBigReactions() {
+        bigReactions = !bigReactions;
+        save("bigReactions", bigReactions);
+    }
+
+    public static void toggleVoiceTranscriptQuote() {
+        voiceTranscriptQuote = !voiceTranscriptQuote;
+        save("voiceTranscriptQuote", voiceTranscriptQuote);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleSwipeHideKeyboard() {
+        swipeHideKeyboard = !swipeHideKeyboard;
+        save("swipeHideKeyboard", swipeHideKeyboard);
     }
 
     public static void toggleFilterZalgo() {
