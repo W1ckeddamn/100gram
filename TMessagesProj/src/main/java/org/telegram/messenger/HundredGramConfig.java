@@ -38,6 +38,20 @@ public class HundredGramConfig {
     public static final int DELETED_MARK_COLOR_RED = 1;
     public static int deletedMarkColor = DELETED_MARK_COLOR_THEME;
     public static float avatarCorners = 28.0f;
+    public static boolean md3MasterEnabled;
+    public static boolean md3ChatList;
+    public static boolean md3Sections;
+    public static boolean md3Controls;
+    public static boolean md3Menus;
+    public static int md3NavigationStyle = 0; // 0 = Classic, 1 = Floating Pill, 2 = Expressive
+    public static boolean md3MediaLoader;
+    public static int md3MediaLoaderThickness = 4; // 2..8 dp
+    public static boolean md3MediaLoaderWave;
+
+    // Phase 3 features
+    public static boolean stickerPackOwner;
+    public static boolean secretViewTTL;
+    public static boolean socialLinkFixer;
     public static boolean md3SwitchStyle;
     public static boolean newSliderStyle;
     public static boolean squareFab;
@@ -505,6 +519,18 @@ public class HundredGramConfig {
             deletedMarkIcon = preferences.getInt("deletedMarkIcon", DELETED_MARK_TRASH);
             deletedMarkColor = preferences.getInt("deletedMarkColor", DELETED_MARK_COLOR_THEME);
             avatarCorners = preferences.getFloat("avatarCorners", 28.0f);
+            md3MasterEnabled = preferences.getBoolean("md3MasterEnabled", false);
+            md3ChatList = preferences.getBoolean("md3ChatList", false);
+            md3Sections = preferences.getBoolean("md3Sections", false);
+            md3Controls = preferences.getBoolean("md3Controls", false);
+            md3Menus = preferences.getBoolean("md3Menus", false);
+            md3NavigationStyle = preferences.getInt("md3NavigationStyle", 0);
+            md3MediaLoader = preferences.getBoolean("md3MediaLoader", false);
+            md3MediaLoaderThickness = preferences.getInt("md3MediaLoaderThickness", 4);
+            md3MediaLoaderWave = preferences.getBoolean("md3MediaLoaderWave", false);
+            stickerPackOwner = preferences.getBoolean("stickerPackOwner", false);
+            secretViewTTL = preferences.getBoolean("secretViewTTL", false);
+            socialLinkFixer = preferences.getBoolean("socialLinkFixer", false);
             md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
             newSliderStyle = preferences.getBoolean("newSliderStyle", false);
             squareFab = preferences.getBoolean("squareFab", false);
@@ -1034,6 +1060,121 @@ public class HundredGramConfig {
     public static void setAvatarCorners(float value) {
         avatarCorners = Math.max(0.0f, Math.min(28.0f, value));
         saveFloat("avatarCorners", avatarCorners);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleMd3Master() {
+        md3MasterEnabled = !md3MasterEnabled;
+        save("md3MasterEnabled", md3MasterEnabled);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleMd3ChatList() {
+        md3ChatList = !md3ChatList;
+        save("md3ChatList", md3ChatList);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleMd3Sections() {
+        md3Sections = !md3Sections;
+        save("md3Sections", md3Sections);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleMd3Controls() {
+        md3Controls = !md3Controls;
+        save("md3Controls", md3Controls);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleMd3Menus() {
+        md3Menus = !md3Menus;
+        save("md3Menus", md3Menus);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setMd3NavigationStyle(int style) {
+        md3NavigationStyle = Math.max(0, Math.min(2, style));
+        saveInt("md3NavigationStyle", md3NavigationStyle);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleMd3MediaLoader() {
+        md3MediaLoader = !md3MediaLoader;
+        save("md3MediaLoader", md3MediaLoader);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setMd3MediaLoaderThickness(int thickness) {
+        md3MediaLoaderThickness = Math.max(2, Math.min(8, thickness));
+        saveInt("md3MediaLoaderThickness", md3MediaLoaderThickness);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static long extractStickerOwnerId(long stickerSetId) {
+        long ownerId = stickerSetId >> 32;
+        if (((stickerSetId >> 16) & 255) == 63) {
+            ownerId |= 2147483648L;
+        }
+        return ((stickerSetId >> 24) & 255) != 0 ? ownerId + 4294967296L : ownerId;
+    }
+
+    public static CharSequence fixSocialLinks(CharSequence text) {
+        if (!socialLinkFixer || TextUtils.isEmpty(text)) {
+            return text;
+        }
+        String str = text.toString();
+        boolean changed = false;
+        if (str.contains("twitter.com/")) {
+            str = str.replace("https://twitter.com/", "https://fxtwitter.com/")
+                     .replace("http://twitter.com/", "https://fxtwitter.com/");
+            changed = true;
+        }
+        if (str.contains("x.com/")) {
+            str = str.replace("https://x.com/", "https://fixupx.com/")
+                     .replace("http://x.com/", "https://fixupx.com/");
+            changed = true;
+        }
+        if (str.contains("instagram.com/")) {
+            str = str.replace("https://www.instagram.com/", "https://ddinstagram.com/")
+                     .replace("https://instagram.com/", "https://ddinstagram.com/")
+                     .replace("http://instagram.com/", "https://ddinstagram.com/");
+            changed = true;
+        }
+        if (str.contains("tiktok.com/")) {
+            str = str.replace("https://www.tiktok.com/", "https://vxtiktok.com/")
+                     .replace("https://tiktok.com/", "https://vxtiktok.com/");
+            changed = true;
+        }
+        if (str.contains("pixiv.net/")) {
+            str = str.replace("https://www.pixiv.net/", "https://phixiv.net/")
+                     .replace("https://pixiv.net/", "https://phixiv.net/");
+            changed = true;
+        }
+        return changed ? str : text;
+    }
+
+    public static void toggleStickerPackOwner() {
+        stickerPackOwner = !stickerPackOwner;
+        save("stickerPackOwner", stickerPackOwner);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleSecretViewTTL() {
+        secretViewTTL = !secretViewTTL;
+        save("secretViewTTL", secretViewTTL);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleSocialLinkFixer() {
+        socialLinkFixer = !socialLinkFixer;
+        save("socialLinkFixer", socialLinkFixer);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleMd3MediaLoaderWave() {
+        md3MediaLoaderWave = !md3MediaLoaderWave;
+        save("md3MediaLoaderWave", md3MediaLoaderWave);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 
@@ -2319,6 +2460,18 @@ public class HundredGramConfig {
         }
         ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
                 .edit().clear().commit();
+        md3MasterEnabled = false;
+        md3ChatList = false;
+        md3Sections = false;
+        md3Controls = false;
+        md3Menus = false;
+        md3NavigationStyle = 0;
+        md3MediaLoader = false;
+        md3MediaLoaderThickness = 4;
+        md3MediaLoaderWave = false;
+        stickerPackOwner = false;
+        secretViewTTL = false;
+        socialLinkFixer = false;
         configLoaded = false;
         loadConfig();
         postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);

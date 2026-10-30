@@ -58,6 +58,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
@@ -1214,6 +1215,53 @@ public class StickersAlert extends BottomSheet implements NotificationCenter.Not
     private void updateDescription() {
         if (containerView == null) {
             return;
+        }
+        if (HundredGramConfig.stickerPackOwner && stickerSet != null && stickerSet.set != null) {
+            String authorName = null;
+            long ownerId = HundredGramConfig.extractStickerOwnerId(stickerSet.set.id);
+            if (stickerSet.set.creator) {
+                authorName = LocaleController.getString("StickerPackOwnerSelf", R.string.StickerPackOwnerSelf);
+            } else if (ownerId > 0) {
+                TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(ownerId);
+                if (user != null) {
+                    authorName = org.telegram.messenger.UserObject.getUserName(user);
+                }
+            }
+            if (TextUtils.isEmpty(authorName) && !TextUtils.isEmpty(stickerSet.set.short_name)) {
+                int idx = stickerSet.set.short_name.indexOf("_by_");
+                if (idx != -1 && idx + 4 < stickerSet.set.short_name.length()) {
+                    authorName = "@" + stickerSet.set.short_name.substring(idx + 4);
+                }
+            }
+            if (!TextUtils.isEmpty(authorName)) {
+                if (descriptionTextView == null) {
+                    descriptionTextView = new TextView(getContext());
+                    descriptionTextView.setTextColor(getThemedColor(Theme.key_chat_emojiPanelTrendingDescription));
+                    descriptionTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+                    descriptionTextView.setPadding(AndroidUtilities.dp(18), 0, AndroidUtilities.dp(18), 0);
+                    descriptionTextView.setSingleLine(true);
+                    descriptionTextView.setEllipsize(TextUtils.TruncateAt.END);
+                    containerView.addView(descriptionTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 48, 40, 0));
+                }
+                String text = LocaleController.formatString("StickerPackOwner", R.string.StickerPackOwner, authorName);
+                descriptionTextView.setText(text);
+                descriptionTextView.setVisibility(View.VISIBLE);
+                final String finalAuthorName = authorName;
+                final long finalOwnerId = ownerId;
+                descriptionTextView.setOnClickListener(v -> {
+                    if (finalAuthorName.startsWith("@")) {
+                        MessagesController.getInstance(currentAccount).openByUserName(finalAuthorName.substring(1), parentFragment, 1);
+                        dismiss();
+                    } else if (finalOwnerId > 0 && parentFragment != null) {
+                        android.os.Bundle args = new android.os.Bundle();
+                        args.putLong("user_id", finalOwnerId);
+                        parentFragment.presentFragment(new ProfileActivity(args));
+                        dismiss();
+                    }
+                });
+            } else if (descriptionTextView != null) {
+                descriptionTextView.setVisibility(View.GONE);
+            }
         }
         if (!UserConfig.getInstance(currentAccount).isPremium() && MessageObject.isPremiumEmojiPack(stickerSet)) {
 //            descriptionTextView = new TextView(getContext());

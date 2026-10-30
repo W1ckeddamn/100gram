@@ -1739,6 +1739,40 @@
     <string name="FolderSwipeSpring">Пружина</string>
     <string name="FolderSwipeSpringStandard">Стандартная</string>
     <string name="FolderSwipeSpringExpressive">Выразительная</string>
+    <!-- Material Design 3 (MD3) Suite -->
+    <string name="Md3SuiteHeader">Material Design 3 (MD3)</string>
+    <string name="Md3Master">Material Design 3 (MD3)</string>
+    <string name="Md3MasterInfo">Включить современный дизайн Material 3 для интерфейса приложения</string>
+    <string name="Md3ChatList">Список чатов MD3</string>
+    <string name="Md3ChatListInfo">Отображение диалогов в виде скруглённых карточек с отступами</string>
+    <string name="Md3Sections">Секции и блоки MD3</string>
+    <string name="Md3SectionsInfo">Скруглённые контейнеры разделов и списков с разделяющими отступами</string>
+    <string name="Md3Controls">Элементы управления MD3</string>
+    <string name="Md3ControlsInfo">Стилизованные кнопки, чипы и поверхности нажатия Material 3</string>
+    <string name="Md3Menus">Контекстные меню MD3</string>
+    <string name="Md3MenusInfo">Плавающие скруглённые всплывающие и контекстные меню</string>
+    <string name="Md3NavigationStyle">Стиль нижней навигации</string>
+    <string name="Md3NavigationStyleClassic">Классический (Telegram)</string>
+    <string name="Md3NavigationStylePill">Плавающая капсула</string>
+    <string name="Md3NavigationStyleExpressive">Material 3 Expressive</string>
+    <string name="Md3MediaLoader">Индикатор загрузки MD3</string>
+    <string name="Md3MediaLoaderInfo">Круглый анимированный индикатор загрузки медиафайлов</string>
+    <string name="Md3MediaLoaderThickness">Толщина кольца загрузчика</string>
+    <string name="Md3MediaLoaderWave">Волновой эффект кольца</string>
+    <string name="Md3MediaLoaderWaveInfo">Плавная динамическая волна кольца при загрузке медиа</string>
+    <string name="Md3SuiteInfo">Пакет Material Design 3 с тонкой настройкой карточек чатов, секций, меню, элементов управления, навигации и индикаторов.</string>
+    <!-- Phase 3: Utilities & Chat Enhancements -->
+    <string name="StickerPackOwnerHeader">Автор стикерпака</string>
+    <string name="StickerPackOwner">Автор: %1$s</string>
+    <string name="StickerPackOwnerSelf">Вы</string>
+    <string name="StickerPackOwnerTitle">Показывать автора стикерпака</string>
+    <string name="StickerPackOwnerInfo">Отображать имя или юзернейм создателя в окне предпросмотра стикеров с переходом в профиль</string>
+
+    <string name="SecretViewTTL">Секретный просмотр таймерных медиа</string>
+    <string name="SecretViewTTLInfo">Просмотр самоуничтожающихся фото и видео без запуска таймера удаления и отметки о прочтении</string>
+
+    <string name="SocialLinkFixer">Автофикс ссылок соцсетей</string>
+    <string name="SocialLinkFixerInfo">Автоматическая замена ссылок X (Twitter), Instagram, TikTok и Pixiv на сервисы с поддержкой полного предпросмотра</string>
 </resources>
 
 

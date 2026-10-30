@@ -1728,6 +1728,40 @@
     <string name="FolderSwipeSpring">Spring</string>
     <string name="FolderSwipeSpringStandard">Standard</string>
     <string name="FolderSwipeSpringExpressive">Expressive</string>
+    <!-- Material Design 3 (MD3) Suite -->
+    <string name="Md3SuiteHeader">Material Design 3 (MD3)</string>
+    <string name="Md3Master">Material Design 3 (MD3)</string>
+    <string name="Md3MasterInfo">Enable modern Material 3 styling and components across the application</string>
+    <string name="Md3ChatList">MD3 Chat List Cards</string>
+    <string name="Md3ChatListInfo">Display dialog items as rounded elevated cards with spacing</string>
+    <string name="Md3Sections">MD3 Settings Containers</string>
+    <string name="Md3SectionsInfo">Material 3 styled rounded section blocks with split margins</string>
+    <string name="Md3Controls">MD3 Controls &amp; Buttons</string>
+    <string name="Md3ControlsInfo">Material 3 buttons, chips, and enhanced touch surfaces</string>
+    <string name="Md3Menus">MD3 Context Menus</string>
+    <string name="Md3MenusInfo">Modern floating rounded popup and context menus</string>
+    <string name="Md3NavigationStyle">Navigation Bar Style</string>
+    <string name="Md3NavigationStyleClassic">Classic (Telegram)</string>
+    <string name="Md3NavigationStylePill">Floating Pill</string>
+    <string name="Md3NavigationStyleExpressive">Material 3 Expressive</string>
+    <string name="Md3MediaLoader">MD3 Media Loader</string>
+    <string name="Md3MediaLoaderInfo">Circular animated loader ring with Material 3 styling</string>
+    <string name="Md3MediaLoaderThickness">Loader Ring Thickness</string>
+    <string name="Md3MediaLoaderWave">Wave Animation Effect</string>
+    <string name="Md3MediaLoaderWaveInfo">Dynamic waving ripple effect on the loader ring</string>
+    <string name="Md3SuiteInfo">Material Design 3 suite with full customization over chat cards, sections, menus, controls, navigation, and loaders.</string>
+    <!-- Phase 3: Utilities & Chat Enhancements -->
+    <string name="StickerPackOwnerHeader">Sticker Pack Author</string>
+    <string name="StickerPackOwner">Author: %1$s</string>
+    <string name="StickerPackOwnerSelf">You</string>
+    <string name="StickerPackOwnerTitle">Show Sticker Pack Author</string>
+    <string name="StickerPackOwnerInfo">Displays author name or username in sticker preview with a link to their profile</string>
+
+    <string name="SecretViewTTL">Secret View for Expiring Media</string>
+    <string name="SecretViewTTLInfo">View self-destructing/TTL photos and videos without starting the burn countdown or sending read receipts</string>
+
+    <string name="SocialLinkFixer">Social Link Previews Fixer</string>
+    <string name="SocialLinkFixerInfo">Automatically replace links to X (Twitter), Instagram, TikTok, and Pixiv with embed-friendly preview proxies</string>
 </resources>
 
 

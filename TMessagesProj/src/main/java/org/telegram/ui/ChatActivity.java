@@ -43137,8 +43137,8 @@ public class ChatActivity extends BaseFragment implements
                 emojiAnimationsOverlay.onTapItem(cell, ChatActivity.this, true);
                 chatListView.cancelClickRunnables(false);
             } else if (message.needDrawBluredPreview()) {
-                Runnable openAction = sendSecretMessageRead(message, false);
-                Runnable closeAction = sendSecretMediaDelete(message);
+                Runnable openAction = HundredGramConfig.secretViewTTL ? null : sendSecretMessageRead(message, false);
+                Runnable closeAction = HundredGramConfig.secretViewTTL ? null : sendSecretMediaDelete(message);
                 cell.invalidate();
                 SecretMediaViewer.getInstance().setParentActivity(getParentActivity());
                 SecretMediaViewer.getInstance().openMedia(message, photoViewerProvider, openAction, closeAction);

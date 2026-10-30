@@ -284,6 +284,20 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_HAPTIC_STRENGTH = 307;
     private static final int ITEM_HAPTIC_ACTION = 310;
 
+    // Item IDs for Material Design 3 Suite
+    private static final int ITEM_MD3_MASTER = 401;
+    private static final int ITEM_MD3_CHAT_LIST = 402;
+    private static final int ITEM_MD3_SECTIONS = 403;
+    private static final int ITEM_MD3_CONTROLS = 404;
+    private static final int ITEM_MD3_MENUS = 405;
+    private static final int ITEM_MD3_NAVIGATION_STYLE = 406;
+    private static final int ITEM_MD3_MEDIA_LOADER = 407;
+    private static final int ITEM_MD3_MEDIA_LOADER_THICKNESS = 408;
+    private static final int ITEM_MD3_MEDIA_LOADER_WAVE = 409;
+    private static final int ITEM_STICKER_PACK_OWNER = 410;
+    private static final int ITEM_SECRET_VIEW_TTL = 411;
+    private static final int ITEM_SOCIAL_LINK_FIXER = 412;
+
     // Item IDs for Developer Mode
     private static final int ITEM_DEV_MODE = 100;
     private static final int ITEM_COPY_CODE_BUTTON = 101;
@@ -735,13 +749,43 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
             avatarCornersPreviewCell.updateProgress();
         }
         items.add(UItem.asCustom(ITEM_AVATAR_CORNERS_PREVIEW, avatarCornersPreviewCell));
+        items.add(UItem.asCheck(ITEM_SQUARE_FAB, LocaleController.getString("SquareFab", R.string.SquareFab))
+                .setChecked(HundredGramConfig.squareFab));
+        items.add(UItem.asShadow(LocaleController.getString("AvatarCornersInfo", R.string.AvatarCornersInfo)));
+
+        // Section: Material Design 3 (MD3) Suite
+        items.add(UItem.asHeader(LocaleController.getString("Md3SuiteHeader", R.string.Md3SuiteHeader)));
+        items.add(UItem.asCheck(ITEM_MD3_MASTER, LocaleController.getString("Md3Master", R.string.Md3Master))
+                .setChecked(HundredGramConfig.md3MasterEnabled));
+        items.add(UItem.asCheck(ITEM_MD3_CHAT_LIST, LocaleController.getString("Md3ChatList", R.string.Md3ChatList))
+                .setChecked(HundredGramConfig.md3ChatList));
+        items.add(UItem.asCheck(ITEM_MD3_SECTIONS, LocaleController.getString("Md3Sections", R.string.Md3Sections))
+                .setChecked(HundredGramConfig.md3Sections));
+        items.add(UItem.asCheck(ITEM_MD3_CONTROLS, LocaleController.getString("Md3Controls", R.string.Md3Controls))
+                .setChecked(HundredGramConfig.md3Controls));
+        items.add(UItem.asCheck(ITEM_MD3_MENUS, LocaleController.getString("Md3Menus", R.string.Md3Menus))
+                .setChecked(HundredGramConfig.md3Menus));
         items.add(UItem.asCheck(ITEM_MD3_SWITCH_STYLE, LocaleController.getString("Md3SwitchStyle", R.string.Md3SwitchStyle))
                 .setChecked(HundredGramConfig.md3SwitchStyle));
         items.add(UItem.asCheck(ITEM_NEW_SLIDER_STYLE, LocaleController.getString("NewSliderStyle", R.string.NewSliderStyle))
                 .setChecked(HundredGramConfig.newSliderStyle));
-        items.add(UItem.asCheck(ITEM_SQUARE_FAB, LocaleController.getString("SquareFab", R.string.SquareFab))
-                .setChecked(HundredGramConfig.squareFab));
-        items.add(UItem.asShadow(LocaleController.getString("AvatarCornersInfo", R.string.AvatarCornersInfo)));
+        String navStyleStr;
+        if (HundredGramConfig.md3NavigationStyle == 1) {
+            navStyleStr = LocaleController.getString("Md3NavigationStylePill", R.string.Md3NavigationStylePill);
+        } else if (HundredGramConfig.md3NavigationStyle == 2) {
+            navStyleStr = LocaleController.getString("Md3NavigationStyleExpressive", R.string.Md3NavigationStyleExpressive);
+        } else {
+            navStyleStr = LocaleController.getString("Md3NavigationStyleClassic", R.string.Md3NavigationStyleClassic);
+        }
+        items.add(UItem.asButton(ITEM_MD3_NAVIGATION_STYLE, LocaleController.getString("Md3NavigationStyle", R.string.Md3NavigationStyle), navStyleStr));
+        items.add(UItem.asCheck(ITEM_MD3_MEDIA_LOADER, LocaleController.getString("Md3MediaLoader", R.string.Md3MediaLoader))
+                .setChecked(HundredGramConfig.md3MediaLoader));
+        if (HundredGramConfig.md3MediaLoader) {
+            items.add(UItem.asButton(ITEM_MD3_MEDIA_LOADER_THICKNESS, LocaleController.getString("Md3MediaLoaderThickness", R.string.Md3MediaLoaderThickness), HundredGramConfig.md3MediaLoaderThickness + " dp"));
+            items.add(UItem.asCheck(ITEM_MD3_MEDIA_LOADER_WAVE, LocaleController.getString("Md3MediaLoaderWave", R.string.Md3MediaLoaderWave))
+                    .setChecked(HundredGramConfig.md3MediaLoaderWave));
+        }
+        items.add(UItem.asShadow(LocaleController.getString("Md3SuiteInfo", R.string.Md3SuiteInfo)));
 
         // Section 2: Transitions & Dividers
         items.add(UItem.asHeader(LocaleController.getString("TransitionsAndDividersSection", R.string.TransitionsAndDividersSection)));
@@ -1832,6 +1876,88 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
             case ITEM_PILL_STACK_SETTINGS:
                 presentFragment(new HundredGramPillStackSettingsActivity());
+                break;
+            case ITEM_MD3_MASTER:
+                HundredGramConfig.toggleMd3Master();
+                item.setChecked(HundredGramConfig.md3MasterEnabled);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.md3MasterEnabled);
+                }
+                if (listView != null && listView.adapter != null) {
+                    listView.adapter.update(true);
+                }
+                break;
+            case ITEM_MD3_CHAT_LIST:
+                HundredGramConfig.toggleMd3ChatList();
+                item.setChecked(HundredGramConfig.md3ChatList);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.md3ChatList);
+                }
+                break;
+            case ITEM_MD3_SECTIONS:
+                HundredGramConfig.toggleMd3Sections();
+                item.setChecked(HundredGramConfig.md3Sections);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.md3Sections);
+                }
+                break;
+            case ITEM_MD3_CONTROLS:
+                HundredGramConfig.toggleMd3Controls();
+                item.setChecked(HundredGramConfig.md3Controls);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.md3Controls);
+                }
+                break;
+            case ITEM_MD3_MENUS:
+                HundredGramConfig.toggleMd3Menus();
+                item.setChecked(HundredGramConfig.md3Menus);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.md3Menus);
+                }
+                break;
+            case ITEM_MD3_NAVIGATION_STYLE:
+                showMd3NavigationStyleDialog();
+                break;
+            case ITEM_MD3_MEDIA_LOADER:
+                HundredGramConfig.toggleMd3MediaLoader();
+                item.setChecked(HundredGramConfig.md3MediaLoader);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.md3MediaLoader);
+                }
+                if (listView != null && listView.adapter != null) {
+                    listView.adapter.update(true);
+                }
+                break;
+            case ITEM_MD3_MEDIA_LOADER_THICKNESS:
+                showMd3MediaLoaderThicknessDialog();
+                break;
+            case ITEM_MD3_MEDIA_LOADER_WAVE:
+                HundredGramConfig.toggleMd3MediaLoaderWave();
+                item.setChecked(HundredGramConfig.md3MediaLoaderWave);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.md3MediaLoaderWave);
+                }
+                break;
+            case ITEM_STICKER_PACK_OWNER:
+                HundredGramConfig.toggleStickerPackOwner();
+                item.setChecked(HundredGramConfig.stickerPackOwner);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.stickerPackOwner);
+                }
+                break;
+            case ITEM_SECRET_VIEW_TTL:
+                HundredGramConfig.toggleSecretViewTTL();
+                item.setChecked(HundredGramConfig.secretViewTTL);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.secretViewTTL);
+                }
+                break;
+            case ITEM_SOCIAL_LINK_FIXER:
+                HundredGramConfig.toggleSocialLinkFixer();
+                item.setChecked(HundredGramConfig.socialLinkFixer);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.socialLinkFixer);
+                }
                 break;
             case ITEM_MD3_SWITCH_STYLE:
                 HundredGramConfig.toggleMd3SwitchStyle();
@@ -3328,6 +3454,42 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         builder.setTitle(LocaleController.getString("FolderSwipeSpring", R.string.FolderSwipeSpring));
         builder.setItems(options, (dialog, which) -> {
             HundredGramConfig.setFolderSwipeSpring(which);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void showMd3NavigationStyleDialog() {
+        if (getParentActivity() == null) return;
+        String[] options = new String[] {
+            LocaleController.getString("Md3NavigationStyleClassic", R.string.Md3NavigationStyleClassic),
+            LocaleController.getString("Md3NavigationStylePill", R.string.Md3NavigationStylePill),
+            LocaleController.getString("Md3NavigationStyleExpressive", R.string.Md3NavigationStyleExpressive)
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("Md3NavigationStyle", R.string.Md3NavigationStyle));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setMd3NavigationStyle(which);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
+    }
+
+    private void showMd3MediaLoaderThicknessDialog() {
+        if (getParentActivity() == null) return;
+        String[] options = new String[] {
+            "2 dp", "3 dp", "4 dp", "5 dp", "6 dp", "7 dp", "8 dp"
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+        builder.setTitle(LocaleController.getString("Md3MediaLoaderThickness", R.string.Md3MediaLoaderThickness));
+        builder.setItems(options, (dialog, which) -> {
+            HundredGramConfig.setMd3MediaLoaderThickness(which + 2);
             if (listView != null && listView.adapter != null) {
                 listView.adapter.update(true);
             }

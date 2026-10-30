@@ -40,6 +40,7 @@ import androidx.core.graphics.ColorUtils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.Utilities;
@@ -60,6 +61,7 @@ public class SeekBarView extends FrameLayout {
     private int selectorWidth;
     private int thumbX;
     private AnimatedFloat animatedThumbX = new AnimatedFloat(this, 0, 60, CubicBezierInterpolator.EASE_OUT);
+    private AnimatedFloat pressedAnimated = new AnimatedFloat(this, 0, 150, CubicBezierInterpolator.DEFAULT);
     private int thumbDX;
     private float progressToSet = -100;
     private float minProgress = -1;
@@ -444,6 +446,11 @@ public class SeekBarView extends FrameLayout {
             float step = (getMeasuredWidth() - selectorWidth) / ((float) delegate.getStepsCount() - 1f);
             thumbX = (int) (Math.round((thumbX) / step) * step);
         }
+        if (HundredGramConfig.newSliderStyle && !twoSided) {
+            drawMd3(canvas, thumbX);
+            drawTimestampLabel(canvas);
+            return;
+        }
         int y = (getMeasuredHeight() - thumbSize) / 2;
         innerPaint1.setColor(getThemedColor(Theme.key_player_progressBackground));
 
@@ -652,6 +659,102 @@ public class SeekBarView extends FrameLayout {
                 return 0;
             }
         });
+    }
+
+    private void drawMd3(Canvas canvas, int thumbX) {
+        float left = selectorWidth / 2.0f;
+        float right = getMeasuredWidth() - (selectorWidth / 2.0f);
+        float centerY = getMeasuredHeight() / 2.0f;
+
+        float trackHeight = Math.min(AndroidUtilities.dpf2(10.0f), getMeasuredHeight());
+        float thumbHeight = Math.min(AndroidUtilities.dpf2(22.0f), getMeasuredHeight());
+        float thumbWidth = AndroidUtilities.dpf2(AndroidUtilities.lerp(4.0f, 2.0f, pressedAnimated.set(pressed ? 1.0f : 0.0f)));
+        float gap = AndroidUtilities.dpf2(4.0f);
+
+        float thumbCenter = (selectorWidth / 2.0f) + thumbX;
+        float halfTrack = trackHeight / 2.0f;
+        float trackTop = centerY - halfTrack;
+        float trackBottom = centerY + halfTrack;
+
+        float halfThumbWidth = thumbWidth / 2.0f;
+        float thumbLeft = thumbCenter - halfThumbWidth;
+        float thumbRight = thumbCenter + halfThumbWidth;
+
+        float activeTrackRight = thumbLeft - gap;
+        float inactiveTrackLeft = thumbRight + gap;
+
+        // Inactive track (right)
+        innerPaint1.setColor(getThemedColor(Theme.key_player_progressBackground));
+        if (inactiveTrackLeft < right) {
+            rect.set(inactiveTrackLeft, trackTop, right, trackBottom);
+            drawMd3Track(canvas, rect, innerPaint1, left, right);
+        }
+
+        // Buffered track
+        if (bufferedProgress > 0.0f) {
+            float bufferedX = left + bufferedProgress * (right - left);
+            if (bufferedX > inactiveTrackLeft) {
+                innerPaint1.setColor(getThemedColor(Theme.key_player_progressCachedBackground));
+                rect.set(inactiveTrackLeft, trackTop, Math.min(bufferedX, right), trackBottom);
+                drawMd3Track(canvas, rect, innerPaint1, left, right);
+            }
+        }
+
+        // Active track (left)
+        if (activeTrackRight > left) {
+            if (minProgress >= 0.0f) {
+                float minProgressX = Math.min(left + minProgress * (right - left), activeTrackRight);
+                rect.set(minProgressX, trackTop, activeTrackRight, trackBottom);
+                drawMd3Track(canvas, rect, outerPaint1, left, right);
+                int alpha = outerPaint1.getAlpha();
+                outerPaint1.setAlpha((int) (alpha * 0.5f));
+                rect.set(left, trackTop, minProgressX, trackBottom);
+                drawMd3Track(canvas, rect, outerPaint1, left, right);
+                outerPaint1.setAlpha(alpha);
+            } else {
+                rect.set(left, trackTop, activeTrackRight, trackBottom);
+                drawMd3Track(canvas, rect, outerPaint1, left, right);
+            }
+        }
+
+        // Stop dots for discrete steps
+        if (separatorsCount > 1) {
+            float dotRadius = AndroidUtilities.dpf2(3.0f) / 2.0f;
+            float step = (right - left) / (separatorsCount - 1);
+            for (int i = 0; i < separatorsCount; i++) {
+                float dotX = left + i * step;
+                if (Math.abs(dotX - thumbCenter) >= (halfThumbWidth + gap + dotRadius)) {
+                    Paint dotPaint = dotX < thumbCenter ? outerPaint1 : innerPaint1;
+                    canvas.drawCircle(dotX, centerY, dotRadius, dotPaint);
+                }
+            }
+        }
+
+        // Hover effect if applicable
+        if (hoverDrawable != null) {
+            int dx = (int) (thumbCenter - AndroidUtilities.dp(16));
+            int dy = (int) (centerY - AndroidUtilities.dp(16));
+            hoverDrawable.setBounds(dx, dy, dx + AndroidUtilities.dp(32), dy + AndroidUtilities.dp(32));
+            hoverDrawable.draw(canvas);
+        }
+
+        // Draw vertical rounded pill thumb
+        float halfThumbHeight = thumbHeight / 2.0f;
+        rect.set(thumbLeft, centerY - halfThumbHeight, thumbRight, centerY + halfThumbHeight);
+        canvas.drawRoundRect(rect, halfThumbWidth, halfThumbWidth, outerPaint1);
+
+        if (pressedAnimated.get() > 0.0f && pressedAnimated.get() < 1.0f) {
+            postInvalidateOnAnimation();
+        }
+    }
+
+    private void drawMd3Track(Canvas canvas, RectF trackRect, Paint paint, float left, float right) {
+        if (timestamps != null && !timestamps.isEmpty()) {
+            drawProgressBar(canvas, trackRect, paint);
+        } else {
+            float radius = trackRect.height() / 2.0f;
+            canvas.drawRoundRect(trackRect, radius, radius, paint);
+        }
     }
 
     private void drawProgressBar(Canvas canvas, RectF rect, Paint paint) {

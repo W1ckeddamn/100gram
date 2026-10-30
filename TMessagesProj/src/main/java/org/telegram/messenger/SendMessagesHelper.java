@@ -10677,6 +10677,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
     public static void prepareSendingText(AccountInstance accountInstance, CharSequence text, long dialogId, long topicId, boolean notify, int scheduleDate, int scheduleRepeatPeriod, long effectId) {
         accountInstance.getMessagesStorage().getStorageQueue().postRunnable(() -> Utilities.stageQueue.postRunnable(() -> AndroidUtilities.runOnUIThread(() -> {
             CharSequence textFinal = getTrimmedString(text);
+            textFinal = HundredGramConfig.fixSocialLinks(textFinal);
             final int limit = accountInstance.getMessagesController().getMaxMessageLength();
             if (textFinal != null && textFinal.length() != 0) {
                 int count = (int) Math.ceil(textFinal.length() / (float) limit);

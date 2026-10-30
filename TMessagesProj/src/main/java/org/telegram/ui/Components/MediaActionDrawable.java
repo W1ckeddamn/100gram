@@ -16,6 +16,8 @@ import android.text.TextPaint;
 import android.view.animation.DecelerateInterpolator;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.HundredGramConfig;
+import android.os.SystemClock;
 import org.telegram.ui.ActionBar.MessageDrawable;
 import org.telegram.ui.ActionBar.Theme;
 
@@ -560,12 +562,22 @@ public class MediaActionDrawable extends Drawable {
                 int diff = AndroidUtilities.dp(isMini ? 2 : 4);
                 rect.set(bounds.left + diff, bounds.top + diff, bounds.right - diff, bounds.bottom - diff);
 
+                if (HundredGramConfig.md3MediaLoader) {
+                    paint.setStrokeWidth(AndroidUtilities.dp(isMini ? Math.max(1.5f, HundredGramConfig.md3MediaLoaderThickness * 0.7f) : HundredGramConfig.md3MediaLoaderThickness));
+                }
                 if (currentIcon == ICON_CANCEL_FILL || currentIcon == ICON_NONE && nextIcon == ICON_CANCEL_FILL) {
                     paint.setAlpha((int) (alpha * 0.15f * overrideAlpha));
                     canvas.drawArc(rect, 0, 360, false, paint);
                     paint.setAlpha(alpha);
                 }
-                canvas.drawArc(rect, downloadRadOffset, rad, false, paint);
+                float waveOffset = HundredGramConfig.md3MediaLoader && HundredGramConfig.md3MediaLoaderWave ? (float) Math.sin((SystemClock.elapsedRealtime() % 1200) / 1200.0 * 2.0 * Math.PI) * 15.0f : 0.0f;
+                canvas.drawArc(rect, downloadRadOffset + waveOffset, rad, false, paint);
+                if (HundredGramConfig.md3MediaLoader) {
+                    paint.setStrokeWidth(AndroidUtilities.dp(isMini ? 2 : (scale < 0.7f ? 2 : 3)));
+                }
+                if (HundredGramConfig.md3MediaLoader && HundredGramConfig.md3MediaLoaderWave) {
+                    invalidateSelf();
+                }
             }
             if (progressScale != 1.0f) {
                 canvas.restore();
@@ -586,7 +598,17 @@ public class MediaActionDrawable extends Drawable {
                 float rad = Math.max(4, 360 * animatedDownloadProgress);
                 int diff = AndroidUtilities.dp(isMini ? 2 : 4);
                 rect.set(bounds.left + diff, bounds.top + diff, bounds.right - diff, bounds.bottom - diff);
-                canvas.drawArc(rect, downloadRadOffset, rad, false, paint);
+                if (HundredGramConfig.md3MediaLoader) {
+                    paint.setStrokeWidth(AndroidUtilities.dp(isMini ? Math.max(1.5f, HundredGramConfig.md3MediaLoaderThickness * 0.7f) : HundredGramConfig.md3MediaLoaderThickness));
+                }
+                float waveOffset2 = HundredGramConfig.md3MediaLoader && HundredGramConfig.md3MediaLoaderWave ? (float) Math.sin((SystemClock.elapsedRealtime() % 1200) / 1200.0 * 2.0 * Math.PI) * 15.0f : 0.0f;
+                canvas.drawArc(rect, downloadRadOffset + waveOffset2, rad, false, paint);
+                if (HundredGramConfig.md3MediaLoader) {
+                    paint.setStrokeWidth(AndroidUtilities.dp(isMini ? 2 : (scale < 0.7f ? 2 : 3)));
+                }
+                if (HundredGramConfig.md3MediaLoader && HundredGramConfig.md3MediaLoaderWave) {
+                    invalidateSelf();
+                }
             }
         }
 

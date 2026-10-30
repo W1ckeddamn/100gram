@@ -630,6 +630,91 @@ public class HundredGramSettingsSearchIndex {
                 R.drawable.msg_channel, HundredGramSubSettingsActivity.CATEGORY_STREAMER, 1,
                 HundredGramSubSettingsActivity.class,
                 "стример", "streamer", "трансляция", "скрыть баланс", "фейковое имя");
+
+        // 15. Material Design 3 (MD3) Suite
+        addEntry(id++, "Md3Master", "Material Design 3 (MD3)",
+                "Md3MasterInfo", "Включить современный дизайн Material 3 для интерфейса приложения",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_theme, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 401,
+                HundredGramSubSettingsActivity.class,
+                "material", "md3", "материал", "дизайн", "тема");
+
+        addEntry(id++, "Md3ChatList", "Список чатов MD3",
+                "Md3ChatListInfo", "Отображение диалогов в виде скруглённых карточек с отступами",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_chats_remove, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 402,
+                HundredGramSubSettingsActivity.class,
+                "material", "md3", "чаты", "карточки", "dialogs", "cards");
+
+        addEntry(id++, "Md3Sections", "Секции и блоки MD3",
+                "Md3SectionsInfo", "Скруглённые контейнеры разделов и списков с разделяющими отступами",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_list, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 403,
+                HundredGramSubSettingsActivity.class,
+                "material", "md3", "секции", "блоки", "containers", "sections");
+
+        addEntry(id++, "Md3Controls", "Элементы управления MD3",
+                "Md3ControlsInfo", "Стилизованные кнопки, чипы и поверхности нажатия Material 3",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_settings, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 404,
+                HundredGramSubSettingsActivity.class,
+                "material", "md3", "кнопки", "чипы", "controls", "buttons");
+
+        addEntry(id++, "Md3Menus", "Контекстные меню MD3",
+                "Md3MenusInfo", "Плавающие скруглённые всплывающие и контекстные меню",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_openin, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 405,
+                HundredGramSubSettingsActivity.class,
+                "material", "md3", "меню", "всплывающие", "контекстное", "popup");
+
+        addEntry(id++, "Md3NavigationStyle", "Стиль нижней навигации",
+                null, "Классический, плавающая капсула или Material 3 Expressive",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_theme, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 406,
+                HundredGramSubSettingsActivity.class,
+                "material", "md3", "навигация", "капсула", "pill", "navigation", "expressive");
+
+        addEntry(id++, "Md3MediaLoader", "Индикатор загрузки MD3",
+                "Md3MediaLoaderInfo", "Круглый анимированный индикатор загрузки медиафайлов",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_download, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 407,
+                HundredGramSubSettingsActivity.class,
+                "material", "md3", "загрузка", "индикатор", "кольцо", "loader");
+
+        addEntry(id++, "Md3MediaLoaderThickness", "Толщина кольца загрузчика",
+                null, "Настройка толщины обводки индикатора загрузки от 2 до 8 dp",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_download, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 408,
+                HundredGramSubSettingsActivity.class,
+                "толщина", "кольцо", "loader", "thickness");
+
+        addEntry(id++, "Md3MediaLoaderWave", "Волновой эффект кольца",
+                "Md3MediaLoaderWaveInfo", "Плавная динамическая волна кольца при загрузке медиа",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_download, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 409,
+                HundredGramSubSettingsActivity.class,
+                "волна", "эффект", "wave", "loader");
+
+        addEntry(id++, "StickerPackOwnerTitle", "Показывать автора стикерпака",
+                "StickerPackOwnerInfo", "Отображать имя или юзернейм создателя в окне предпросмотра стикеров с переходом в профиль",
+                "HundredGramCategoryMediaQuality", "Медиа",
+                R.drawable.msg_sticker, HundredGramSubSettingsActivity.CATEGORY_MEDIA, 410,
+                HundredGramSubSettingsActivity.class,
+                "стикер", "автор", "создатель", "пак", "sticker", "owner", "author");
+
+        addEntry(id++, "SecretViewTTL", "Секретный просмотр таймерных медиа",
+                "SecretViewTTLInfo", "Просмотр самоуничтожающихся фото и видео без запуска таймера удаления и отметки о прочтении",
+                "HundredGramCategoryPrivacy", "Конфиденциальность",
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_PRIVACY, 411,
+                HundredGramSubSettingsActivity.class,
+                "таймер", "самоуничтожение", "секретный", "просмотр", "ttl", "secret", "view");
+
+        addEntry(id++, "SocialLinkFixer", "Автофикс ссылок соцсетей",
+                "SocialLinkFixerInfo", "Автоматическая замена ссылок X (Twitter), Instagram, TikTok и Pixiv на сервисы с поддержкой полного предпросмотра",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_link, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 412,
+                HundredGramSubSettingsActivity.class,
+                "ссылка", "фикс", "твиттер", "инстаграм", "превью", "fxtwitter", "fixupx", "ddinstagram");
     }
 
     private void addEntry(int id, String titleKey, String defaultTitle,
