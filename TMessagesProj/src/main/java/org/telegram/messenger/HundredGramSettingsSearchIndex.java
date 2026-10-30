@@ -312,6 +312,13 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "переключатели", "md3", "material", "тумблеры", "switch");
 
+        addEntry(id++, "NewSliderStyle", "Стиль ползунков Material",
+                "NewSliderStyleInfo", "Округлый трек и увеличенный бегунок в стиле Material",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.msg_theme, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 391,
+                HundredGramSubSettingsActivity.class,
+                "ползунок", "слайдер", "slider", "seekbar", "material", "стиль");
+
         addEntry(id++, "BottomNavShowArchive", "Вкладка «Архив» в нижней панели",
                 null, "Отображение кнопки архива в нижней навигационной панели Liquid Glass",
                 "HundredGramCategoryInterface", "Интерфейс",

@@ -1,5 +1,17 @@
 # 100gram Agent Instructions
 
+## 🎯 Project Philosophy: User Sovereignty & Total Customizability
+- **No Unconditional Mutations**: Every feature, visual restyling (e.g. MD3), gesture, animation, or behavioral change **MUST** be optional and controlled by a user setting. Never hardcode an invasive UI or logic change without a preference toggle.
+- **Pure Vanilla by Default or Non-Intrusive Defaults**: A user who wants a clean, vanilla Telegram experience should be able to turn off all tweaks. Default values must be safe, stable, and unintrusive.
+- **Granular Control over Monoliths**: Provide granular sub-toggles rather than all-or-nothing switches (e.g., MD3 theming split into Chat List, Navigation, Menus, Media Loaders, with an optional master toggle).
+- **The Mandatory 6-Point Feature Contract**: Any new feature or ported donor module must implement:
+  1. **Flag & Storage**: `HundredGramConfig.java` getter/setter + persistent prefs.
+  2. **Settings UI**: Row in `HundredGramSubSettingsActivity.java` or dedicated screen.
+  3. **Localization**: Clear, user-friendly strings in both `hundredgram_strings.xml` (EN) and `hundredgram_strings_ru.xml` (RU).
+  4. **Settings Search Index**: Entry in `HundredGramSettingsSearchIndex.java` so users can immediately find it via search.
+  5. **Backup & Restore**: Inclusion in `HundredGramBackupManager.java` JSON schema.
+  6. **Safe Reset**: Inclusion in `HundredGramConfig.resetAllSettings()`.
+
 ## 🔧 Setup
 - **Windows**: Set `JAVA_HOME` to Android Studio's JBR:  
   `$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"`

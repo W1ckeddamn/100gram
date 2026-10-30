@@ -67,6 +67,26 @@ All six have rows in `HundredGramSubSettingsActivity` and entries in `HundredGra
 | Message menu order & visibility | `HundredGramMessageMenu` config (`order` + `hidden` prefs); 23 entries across 6 groups (reply/forward, copy, manage, translation, save, other) with icons; `apply()` filter/sort pass at the end of `ChatActivity.fillMessageMenu` reorders/hides items; `HundredGramMessageMenuActivity` drag-and-drop settings with per-item tap-to-hide and Reset |
 | Settings entry | Row "Пункты меню" in `HundredGramSubSettingsActivity` (Actions category) + `HundredGramSettingsSearchIndex` entry |
 
+## Batch 9 — Profile real-name cache & name switch
+
+| OpexGram setting | 100gram implementation |
+|---|---|
+| Profile name switch (`OpexgramProfileNameSwitch`) | `HundredGramRealNameCache` (per-account real name storage, strangers-only cache, 3000->2000 LRU trim, contact switch); toggle in settings and UI hook in `ProfileActivity` |
+
+## Batch 10 — UI tweaks, autoplay & folders
+
+| OpexGram setting | 100gram implementation |
+|---|---|
+| Bubble tails (`OpexgramBubbleTails`) | Toggle in `HundredGramConfig` wired to `ChatMessageCell` bubble drawing |
+| Pinned downloads (`OpexgramPinnedDownloads`) | Pinned downloads bar in cache / media management |
+| Hide "All Chats" folder (`OpexgramHideAllChats`) | Toggle to omit the default all-chats tab when custom folders exist |
+| Autoplay toggles | Independent toggles for voice messages, round videos, and music playback |
+| Remember last folder | Persists and restores selected folder ID across app restarts |
+| Profile join date | Displays registration date / account age in `ProfileActivity` |
+| Poll results peek | `showResultsBeforeVoting` + `pollPeekWarned` to preview votes without submitting |
+| Big reactions & transcript quotes | Enlarge reactions on tap; direct quoting of speech-to-text transcriptions |
+| Swipe hides keyboard | `hideKeyboardOnScroll` in `ChatActivity` |
+
 ## Already present before this batch
 
 | OpexGram feature | Existing 100gram feature |
@@ -96,7 +116,7 @@ All six have rows in `HundredGramSubSettingsActivity` and entries in `HundredGra
 | Chat box styles (Telegram / Expressive, motion, contrast) | OpexGram renders the field with its own `lc.u` class: several spring-animated capsule rects, per-element colors and a contrast alpha. Porting it means porting that renderer, not a few paddings | `ChatActivityEnterView`, new renderer class |
 | Glass message bubbles + transparency + border + chat edge blur | Big renderer change; upstream `LiquidGlassEffect` exists but is not wired to bubbles | `ChatMessageCell.drawBackground`, blur3 |
 | Quotes | OpexGram renders selected messages into a sticker bitmap (background, mask, hide names/media/time, anonymity). Needs a renderer plus a menu action | `ChatActivity` menu, new renderer |
-| Profile name switch | Needs a per-account cache of real names (`MessagesController` user updates), a title swap and a swipe gesture on the profile name | `MessagesController`, `ProfileActivity` |
+| Material Design 3 (MD3) style | OpexGram has `md3ChatList`, `md3Sections`, `md3Controls`, `md3Menus`, `md3NavigationStyle`, `md3ProfileTabs`, `md3Player`, `md3MediaLoader`. Needs global/modular toggles and style adaptation | `SharedConfig`, `Theme`, `ActionBar`, components |
 | Folder menu style / segments | Partially covered by tab title style | `DialogsActivity`, `MainTabsActivity` |
 | Icon color source (monet / rainbow) | Icon pack engine exists, color source does not | `IconPacksActivity` |
 | AI FX glow / rainbow | OpexGram's glow sits on its "Ask AI" chat message; this fork answers in bottom sheets, so the effect has nothing to attach to yet | AI chat UI |

@@ -39,7 +39,7 @@ public class HundredGramConfig {
     public static int deletedMarkColor = DELETED_MARK_COLOR_THEME;
     public static float avatarCorners = 28.0f;
     public static boolean md3SwitchStyle;
-    public static boolean newSliderStyle = true;
+    public static boolean newSliderStyle;
     public static boolean squareFab;
     public static boolean inlineMath = true;
     public static boolean bottomNavHideContactsTab;
@@ -92,9 +92,9 @@ public class HundredGramConfig {
     // Web AdBlock (EasyList & cosmetic filters)
     public static boolean enableAdBlock = true;
 
-    public static boolean replyBackground = true;
-    public static boolean replyColors = true;
-    public static boolean replyEmoji = true;
+    public static boolean replyBackground;
+    public static boolean replyColors;
+    public static boolean replyEmoji;
 
     public static final int STICKER_SHAPE_DEFAULT = 0;
     public static final int STICKER_SHAPE_ROUNDED = 1;
@@ -144,7 +144,7 @@ public class HundredGramConfig {
 
     // Multi-action swipe system (exteraGram)
     public static String swipeActions = "2,6,3,4,9,5,8";
-    public static boolean swipeActionsLoop = true;
+    public static boolean swipeActionsLoop;
     public static boolean swipeActionsReversed = false;
 
     public static int doubleTapAction;
@@ -170,13 +170,13 @@ public class HundredGramConfig {
     public static boolean hideStoriesBar;
     public static boolean showSecondsInTime;
     public static boolean showWeekdayInDate;
-    public static boolean forwardTime = true;
+    public static boolean forwardTime;
     public static int selectionSpeed = 4; // 2..8, 4 = stock animation speed
     public static boolean selectionNoLimit;
     public static int mediaGlowLevel; // 0 off, 1 low, 2 medium, 3 high
-    public static boolean thanosDeleteEffect = true;
+    public static boolean thanosDeleteEffect;
     public static boolean showRealName = false;
-    public static boolean chatPageUpButton = true;
+    public static boolean chatPageUpButton;
     public static boolean hideStoriesProfile;
     public static boolean hideStoriesPosting;
     public static boolean pinnedDownloads;
@@ -193,7 +193,7 @@ public class HundredGramConfig {
     public static final java.util.HashSet<Long> lockedChats = new java.util.HashSet<>();
 
     // Haptics
-    public static boolean hapticsEnabled = true;
+    public static boolean hapticsEnabled;
     public static int hapticStrength = 100; // percent, 10..200
 
     // Folder swipe
@@ -505,7 +505,7 @@ public class HundredGramConfig {
             deletedMarkColor = preferences.getInt("deletedMarkColor", DELETED_MARK_COLOR_THEME);
             avatarCorners = preferences.getFloat("avatarCorners", 28.0f);
             md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
-            newSliderStyle = preferences.getBoolean("newSliderStyle", true);
+            newSliderStyle = preferences.getBoolean("newSliderStyle", false);
             squareFab = preferences.getBoolean("squareFab", false);
             inlineMath = preferences.getBoolean("inlineMath", true);
             bottomNavHideContactsTab = preferences.getBoolean("bottomNavHideContactsTab", false);
@@ -543,9 +543,9 @@ public class HundredGramConfig {
             customSavePath = preferences.getString("customSavePath", "");
             if (customSavePath == null) customSavePath = "";
 
-            replyBackground = preferences.getBoolean("replyBackground", true);
-            replyColors = preferences.getBoolean("replyColors", true);
-            replyEmoji = preferences.getBoolean("replyEmoji", true);
+            replyBackground = preferences.getBoolean("replyBackground", false);
+            replyColors = preferences.getBoolean("replyColors", false);
+            replyEmoji = preferences.getBoolean("replyEmoji", false);
 
             stickerShape = preferences.getInt("stickerShape", STICKER_SHAPE_DEFAULT);
 
@@ -561,7 +561,7 @@ public class HundredGramConfig {
             doubleTapActionOutOwner = preferences.getInt("doubleTapActionOutOwner", DOUBLE_TAP_REACTION);
             chatMessageSwipeAction = preferences.getInt("chatMessageSwipeAction", SWIPE_ACTION_REPLY);
             swipeActions = preferences.getString("swipeActions", "2,6,3,4,9,5,8");
-            swipeActionsLoop = preferences.getBoolean("swipeActionsLoop", true);
+            swipeActionsLoop = preferences.getBoolean("swipeActionsLoop", false);
             swipeActionsReversed = preferences.getBoolean("swipeActionsReversed", false);
             showSaveMessageButton = preferences.getBoolean("showSaveMessageButton", true);
             showDetailsButton = preferences.getBoolean("showDetailsButton", true);
@@ -785,13 +785,13 @@ public class HundredGramConfig {
             hideStoriesBar = preferences.getBoolean("hideStoriesBar", false);
             showSecondsInTime = preferences.getBoolean("showSecondsInTime", false);
             showWeekdayInDate = preferences.getBoolean("showWeekdayInDate", false);
-            forwardTime = preferences.getBoolean("forwardTime", true);
+            forwardTime = preferences.getBoolean("forwardTime", false);
             selectionSpeed = preferences.getInt("selectionSpeed", 4);
             selectionNoLimit = preferences.getBoolean("selectionNoLimit", false);
             mediaGlowLevel = preferences.getInt("mediaGlowLevel", 0);
-            thanosDeleteEffect = preferences.getBoolean("thanosDeleteEffect", true);
+            thanosDeleteEffect = preferences.getBoolean("thanosDeleteEffect", false);
             showRealName = preferences.getBoolean("showRealName", false);
-        chatPageUpButton = preferences.getBoolean("chatPageUpButton", true);
+        chatPageUpButton = preferences.getBoolean("chatPageUpButton", false);
         hideStoriesProfile = preferences.getBoolean("hideStoriesProfile", false);
         hideStoriesPosting = preferences.getBoolean("hideStoriesPosting", false);
         pinnedDownloads = preferences.getBoolean("pinnedDownloads", false);
@@ -812,7 +812,7 @@ public class HundredGramConfig {
             } catch (NumberFormatException ignore) {
             }
         }
-        hapticsEnabled = preferences.getBoolean("hapticsEnabled", true);
+        hapticsEnabled = preferences.getBoolean("hapticsEnabled", false);
         hapticStrength = Math.max(10, Math.min(200, preferences.getInt("hapticStrength", 100)));
         folderSwipe = preferences.getBoolean("folderSwipe", false);
         folderSwipeShrink = Math.max(2, Math.min(20, preferences.getInt("folderSwipeShrink", 8)));
