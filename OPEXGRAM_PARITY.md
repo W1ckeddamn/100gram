@@ -109,17 +109,46 @@ All six have rows in `HundredGramSubSettingsActivity` and entries in `HundredGra
 | AI config / fact check | `HundredGramAiClient` / `FactCheckController` |
 | HTML/JSON/MD/TXT chat export | `HundredGramChatExporter` |
 
+## Batch 11 — Visuals (Phase 4)
+
+| OpexGram setting | 100gram implementation | Commit |
+|---|---|:---:|
+| Expressive chat input | `HundredGramConfig.chatBoxStyle` (0 = Classic, 1 = Floating Capsule, 2 = Floating with separate Send button) in `ChatActivityEnterView` | `a5e541068` |
+| Glass message bubbles | `HundredGramConfig.glassMessages`, `glassMessagesTransparency` (10..90%), `glassMessagesBorder` in `MessageDrawable` | `a5e541068` |
+| Sticker quote generator | `HundredGramConfig.stickerQuotes` + `HundredGramQuoteStickerAlert` (export to 512px WEBP sticker) in `ChatActivity` | `a5e541068` |
+
+## Batch 12 — MD3 Suite & Sliders (Phases 1 & 2)
+
+| OpexGram setting | 100gram implementation | Commit |
+|---|---|:---:|
+| Material Design 3 Suite | `HundredGramConfig.md3MasterEnabled`, `md3ChatList`, `md3Sections`, `md3Controls`, `md3Menus`, `md3NavigationStyle`, `md3MediaLoader` | `0459f1b50` |
+| MD3 Sliders Engine | `HundredGramConfig.newSliderStyle` in `SeekBarView` (10dp track, capsule thumb, gap, snap points) | `0459f1b50` |
+| Sticker pack owner | `HundredGramConfig.stickerPackOwner` (author ID calculation, clickable author profile in `StickersAlert`) | `0459f1b50` |
+| Secret view TTL | `HundredGramConfig.secretViewTTL` (burn-timer & read receipt bypass + FLAG_SECURE unlock) | `0459f1b50` |
+| Social link fixers | `HundredGramConfig.socialLinkFixer` (fxtwitter, fixupx, ddinstagram, vxtiktok, phixiv) | `0459f1b50` |
+
+## Batch 13 — Media & Player (Phase 5)
+
+| OpexGram setting | 100gram implementation | Commit |
+|---|---|:---:|
+| Song lyrics in player | `HundredGramConfig.lyricsInPlayer` + `HundredGramLyricsHelper` (ID3 + LRCLIB) + `HundredGramLyricsBottomSheet` | `4821a0375` |
+| MD3 Audio Player | `HundredGramConfig.md3AudioPlayer` (rounded artwork, accent circle play/pause) in `AudioPlayerAlert` | `4821a0375` |
+| Slowmode queue | `HundredGramConfig.slowmodeQueue` + `HundredGramSlowmodeController` (FIFO queue + countdown + auto-dispatch) | `4821a0375` |
+
+## Batch 14 — Custom User Badges & Remote Sync
+
+| Feature | 100gram implementation | Commit |
+|---|---|:---:|
+| Custom User Badges | `HundredGramConfig.customBadgesEnabled` + `HundredGramBadgesController` + `HundredGramBadgeEditorBottomSheet` + `HundredGramBadgeAlert` + UI hooks | `06605a865` |
+| Remote Badges Sync | GitHub raw sync (`badgesSyncUrl`, `badgesAutoSync`), Lead Dev owner role (`1211607237L`), admin management, export to clipboard | `69f03668a` |
+
 ## Missing — feasible, next batches
 
 | Feature | Why it is not done yet | Rough touch points |
 |---|---|---|
-| Chat box styles (Telegram / Expressive, motion, contrast) | OpexGram renders the field with its own `lc.u` class: several spring-animated capsule rects, per-element colors and a contrast alpha. Porting it means porting that renderer, not a few paddings | `ChatActivityEnterView`, new renderer class |
-| Glass message bubbles + transparency + border + chat edge blur | Big renderer change; upstream `LiquidGlassEffect` exists but is not wired to bubbles | `ChatMessageCell.drawBackground`, blur3 |
-| Quotes | OpexGram renders selected messages into a sticker bitmap (background, mask, hide names/media/time, anonymity). Needs a renderer plus a menu action | `ChatActivity` menu, new renderer |
-| Material Design 3 (MD3) style | OpexGram has `md3ChatList`, `md3Sections`, `md3Controls`, `md3Menus`, `md3NavigationStyle`, `md3ProfileTabs`, `md3Player`, `md3MediaLoader`. Needs global/modular toggles and style adaptation | `SharedConfig`, `Theme`, `ActionBar`, components |
-| Folder menu style / segments | Partially covered by tab title style | `DialogsActivity`, `MainTabsActivity` |
-| Icon color source (monet / rainbow) | Icon pack engine exists, color source does not | `IconPacksActivity` |
-| AI FX glow / rainbow | OpexGram's glow sits on its "Ask AI" chat message; this fork answers in bottom sheets, so the effect has nothing to attach to yet | AI chat UI |
+| 12 Vector Badges Icon Pack | In progress (vector assets catalog for badges) | `TMessagesProj/src/main/res/drawable/badge_*.xml` |
+| Icon color source (monet / rainbow) | Icon pack engine exists, dynamic color source does not | `IconPacksActivity` |
+| AI FX glow / rainbow | OpexGram's glow sits on its "Ask AI" chat message; this fork answers in bottom sheets | AI chat UI |
 | Bulk gifts / scheduled gifts | Needs new TL flows and gift picker UI | `StarGiftSheet`, `ApiWrap` |
 
 ## Not implementable client-side

@@ -9,6 +9,7 @@ import sys
 import subprocess
 import sqlite3
 import json
+import re
 from datetime import datetime, timezone
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
@@ -161,38 +162,83 @@ def build_markdown(git_info, opencode_info, antigravity_info):
         lines.append(c)
     lines.extend([
         "```",
-        "",
+        ""
+    ])
+    lines.extend([
         "---",
         "",
-        "## 5. Current Handoff Point (From OpenCode)",
+        "## 5. Current Focus & Handoff Point",
         ""
     ])
     
     if opencode_info and "session_id" in opencode_info:
         lines.extend([
-            f"- **Active Session:** `{opencode_info['session_id']}` ({opencode_info['title']})",
+            f"- **Active OpenCode Session:** `{opencode_info['session_id']}` ({opencode_info['title']})",
             f"- **Last Updated:** {opencode_info['updated']}",
             f"- **Last Request:** \"{opencode_info['last_prompt']}\"",
-            "- **Investigation:** Material Design 3 (MD3) style toggles in `SharedConfig.java` (`md3ChatList`, `md3Sections`, `md3Controls`, `md3Menus`, `md3NavigationStyle`, `md3MediaLoader`).",
+            "- **Active Focus:** Custom User Badges (`HundredGramBadgesController`), remote GitHub JSON sync (`badges.json`), Lead Dev role (ID `1211607237L`), and 12-icon VectorDrawable expansion.",
             ""
         ])
     else:
-        lines.extend(["No active OpenCode session detected.\n"])
-        
+        lines.extend([
+            "- **Active Focus:** Custom User Badges (`HundredGramBadgesController`), remote GitHub JSON sync (`badges.json`), Lead Dev role (ID `1211607237L`), and 12-icon VectorDrawable expansion.",
+            ""
+        ])
+
+    all_commits = subprocess.check_output(["git", "-C", REPO_ROOT, "log", "--oneline"], text=True).splitlines()
+    tracked_features = [
+        {"name": "MD3 Theme & Toggles", "pattern": r"md3 suite|md3 theme", "keys": "`HundredGramConfig.md3*`, `Theme.java`", "category": "UI"},
+        {"name": "Sliders Engine (MD3 SeekBar)", "pattern": r"slider", "keys": "`HundredGramConfig.newSliderStyle`, `SeekBarView`", "category": "UI"},
+        {"name": "Sticker Owner & TTL Secret View", "pattern": r"ttl secret|sticker owner", "keys": "`HundredGramConfig.secretViewTTL`, `StickersAlert`", "category": "Chats"},
+        {"name": "Social Link Fixers", "pattern": r"social link", "keys": "`HundredGramConfig.socialLinkFixer`, `ChatActivity`", "category": "Chats"},
+        {"name": "Glass Message Bubbles", "pattern": r"glass bubbles", "keys": "`HundredGramConfig.glassMessages*`, `MessageDrawable`", "category": "Visuals"},
+        {"name": "Expressive Chat Input", "pattern": r"expressive input", "keys": "`HundredGramConfig.chatBoxStyle`, `ChatActivityEnterView`", "category": "Visuals"},
+        {"name": "Sticker Quote Generator", "pattern": r"sticker quotes", "keys": "`HundredGramConfig.stickerQuotes`, `HundredGramQuoteStickerAlert`", "category": "Visuals"},
+        {"name": "Song Lyrics (ID3 + LRCLIB)", "pattern": r"song lyrics", "keys": "`HundredGramConfig.lyricsInPlayer`, `HundredGramLyricsHelper`", "category": "Media"},
+        {"name": "MD3 Audio Player", "pattern": r"md3 audio player", "keys": "`HundredGramConfig.md3AudioPlayer`, `AudioPlayerAlert`", "category": "Media"},
+        {"name": "Slowmode Queue", "pattern": r"slowmode queue", "keys": "`HundredGramConfig.slowmodeQueue`, `HundredGramSlowmodeController`", "category": "Chats"},
+        {"name": "Custom User Badges & Remote Sync", "pattern": r"custom (user )?badges|badges sync", "keys": "`HundredGramConfig.customBadgesEnabled`, `HundredGramBadgesController`", "category": "Badges"},
+        {"name": "12 Vector Badges Icon Pack", "pattern": r"vector badge", "keys": "12 VectorDrawable XML assets (`badge_*.xml`)", "category": "Assets", "status": "🟡 In Progress"},
+        {"name": "Scheduled / Bulk Gifts", "pattern": r"bulk gift", "keys": "`StarGiftSheet.java`, TL send flows", "category": "Gifts", "status": "⏳ Backlog"},
+        {"name": "Icon Color Source (Monet / Rainbow)", "pattern": r"icon color source", "keys": "`IconPacksActivity`", "category": "Theming", "status": "⏳ Backlog"},
+        {"name": "AI Chat FX Glow", "pattern": r"ai glow|ai fx", "keys": "Visual glow shader on AI responses", "category": "AI", "status": "⏳ Backlog"},
+    ]
+
     lines.extend([
         "---",
         "",
-        "## 6. Remaining Feature Backlog (From OpexGram)",
+        "## 6. Feature Status & Roadmap Parity (Dynamic from Git)",
         "",
-        "| Feature | Status / Priority | Key References |",
-        "|---|---|---|",
-        "| **MD3 Theme & Toggles** | Next in line | `SharedConfig.md3*`, `Theme.java` |",
-        "| **Expressive Chat Input** | Backlog | `ChatActivityEnterView`, renderer `lc.u` |",
-        "| **Glass Message Bubbles** | Backlog | `ChatMessageCell.drawBackground`, blur effects |",
-        "| **Sticker Quote Generator** | Backlog | Selected messages → sticker bitmap |",
-        "| **Scheduled / Bulk Gifts** | Backlog | `GiftSheet.java`, TL send flows |",
+        "### 🟢 Implemented Features",
         "",
-        "> Full parity matrix available in [`OPEXGRAM_PARITY.md`](file:///D:/100gram/OPEXGRAM_PARITY.md).",
+        "| Feature | Category | Commit | Key References |",
+        "|---|---|:---:|---|"
+    ])
+
+    backlog_items = []
+    for f in tracked_features:
+        matched_commit = None
+        for c in all_commits:
+            if re.search(f["pattern"], c, re.IGNORECASE):
+                matched_commit = c.split(" ", 1)[0]
+                break
+        if matched_commit:
+            lines.append(f"| **{f['name']}** | {f['category']} | `{matched_commit}` | {f['keys']} |")
+        else:
+            status = f.get("status", "⏳ Backlog")
+            backlog_items.append(f"| **{f['name']}** | {f['category']} | {status} | {f['keys']} |")
+
+    lines.extend([
+        "",
+        "### ⏳ Remaining Backlog & Active Work",
+        "",
+        "| Feature | Category | Status / Priority | Key References |",
+        "|---|---|---|---|"
+    ])
+    lines.extend(backlog_items)
+    lines.extend([
+        "",
+        "> Full parity matrix available in [`OPEXGRAM_PARITY.md`](file:///D:/100gram/OPEXGRAM_PARITY.md) and [`ROADMAP_PLAN.md`](file:///C:/Users/wicked/.gemini/antigravity-cli/brain/c62ff3ad-d3c3-41c1-99af-c5f825ca711a/ROADMAP_PLAN.md).",
         "",
         "---",
         "",

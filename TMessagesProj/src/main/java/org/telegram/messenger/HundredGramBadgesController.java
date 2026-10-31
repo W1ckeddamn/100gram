@@ -42,6 +42,18 @@ public class HundredGramBadgesController {
     public static final int ICON_FIRE = 4;
     public static final int ICON_DEV = 5;
     public static final int ICON_CUSTOM_EMOJI = 6;
+    public static final int ICON_DIAMOND = 7;
+    public static final int ICON_ROCKET = 8;
+    public static final int ICON_TROPHY = 9;
+    public static final int ICON_HEART = 10;
+    public static final int ICON_TARGET = 11;
+    public static final int ICON_COFFEE = 12;
+    public static final int ICON_GAMEPAD = 13;
+    public static final int ICON_SKULL = 14;
+    public static final int ICON_WAND = 15;
+    public static final int ICON_ROBOT = 16;
+    public static final int ICON_GLASSES = 17;
+    public static final int ICON_MUSIC = 18;
 
     private static volatile HundredGramBadgesController instance;
 
@@ -417,31 +429,52 @@ public class HundredGramBadgesController {
         }
     }
 
+    public static int getIconResId(int iconType) {
+        switch (iconType) {
+            case ICON_STAR:
+                return R.drawable.msg_premium_liststar;
+            case ICON_SHIELD:
+                return R.drawable.outline_shield_check;
+            case ICON_VERIFIED:
+                return R.drawable.verified_check;
+            case ICON_FIRE:
+                return R.drawable.filled_fire;
+            case ICON_DEV:
+                return R.drawable.msg_admins;
+            case ICON_DIAMOND:
+                return R.drawable.badge_diamond;
+            case ICON_ROCKET:
+                return R.drawable.badge_rocket;
+            case ICON_TROPHY:
+                return R.drawable.badge_trophy;
+            case ICON_HEART:
+                return R.drawable.badge_heart;
+            case ICON_TARGET:
+                return R.drawable.badge_target;
+            case ICON_COFFEE:
+                return R.drawable.badge_coffee;
+            case ICON_GAMEPAD:
+                return R.drawable.badge_gamepad;
+            case ICON_SKULL:
+                return R.drawable.badge_skull;
+            case ICON_WAND:
+                return R.drawable.badge_wand;
+            case ICON_ROBOT:
+                return R.drawable.badge_robot;
+            case ICON_GLASSES:
+                return R.drawable.badge_glasses;
+            case ICON_MUSIC:
+                return R.drawable.badge_music;
+            case ICON_CROWN:
+            default:
+                return R.drawable.filled_rating_crown;
+        }
+    }
+
     public Drawable getBadgeDrawable(Badge badge, int defaultColor) {
         if (badge == null) return null;
         Context context = ApplicationLoader.applicationContext;
-        int resId;
-        switch (badge.iconType) {
-            case ICON_STAR:
-                resId = R.drawable.msg_premium_liststar;
-                break;
-            case ICON_SHIELD:
-                resId = R.drawable.outline_shield_check;
-                break;
-            case ICON_VERIFIED:
-                resId = R.drawable.verified_check;
-                break;
-            case ICON_FIRE:
-                resId = R.drawable.filled_fire;
-                break;
-            case ICON_DEV:
-                resId = R.drawable.msg_admins;
-                break;
-            case ICON_CROWN:
-            default:
-                resId = R.drawable.filled_rating_crown;
-                break;
-        }
+        int resId = getIconResId(badge.iconType);
 
         Drawable d = ContextCompat.getDrawable(context, resId);
         if (d != null) {
@@ -468,6 +501,30 @@ public class HundredGramBadgesController {
                 return "⚡ Разработчик";
             case ICON_CUSTOM_EMOJI:
                 return "🎨 Telegram Emoji";
+            case ICON_DIAMOND:
+                return LocaleController.getString("BadgeIconDiamond", R.string.BadgeIconDiamond);
+            case ICON_ROCKET:
+                return LocaleController.getString("BadgeIconRocket", R.string.BadgeIconRocket);
+            case ICON_TROPHY:
+                return LocaleController.getString("BadgeIconTrophy", R.string.BadgeIconTrophy);
+            case ICON_HEART:
+                return LocaleController.getString("BadgeIconHeart", R.string.BadgeIconHeart);
+            case ICON_TARGET:
+                return LocaleController.getString("BadgeIconTarget", R.string.BadgeIconTarget);
+            case ICON_COFFEE:
+                return LocaleController.getString("BadgeIconCoffee", R.string.BadgeIconCoffee);
+            case ICON_GAMEPAD:
+                return LocaleController.getString("BadgeIconGamepad", R.string.BadgeIconGamepad);
+            case ICON_SKULL:
+                return LocaleController.getString("BadgeIconSkull", R.string.BadgeIconSkull);
+            case ICON_WAND:
+                return LocaleController.getString("BadgeIconWand", R.string.BadgeIconWand);
+            case ICON_ROBOT:
+                return LocaleController.getString("BadgeIconRobot", R.string.BadgeIconRobot);
+            case ICON_GLASSES:
+                return LocaleController.getString("BadgeIconGlasses", R.string.BadgeIconGlasses);
+            case ICON_MUSIC:
+                return LocaleController.getString("BadgeIconMusic", R.string.BadgeIconMusic);
             default:
                 return "Бейдж";
         }

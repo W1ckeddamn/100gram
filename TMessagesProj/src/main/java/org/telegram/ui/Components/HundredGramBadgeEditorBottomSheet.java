@@ -63,7 +63,19 @@ public class HundredGramBadgeEditorBottomSheet extends BottomSheet {
             HundredGramBadgesController.ICON_SHIELD,
             HundredGramBadgesController.ICON_VERIFIED,
             HundredGramBadgesController.ICON_FIRE,
-            HundredGramBadgesController.ICON_DEV
+            HundredGramBadgesController.ICON_DEV,
+            HundredGramBadgesController.ICON_DIAMOND,
+            HundredGramBadgesController.ICON_ROCKET,
+            HundredGramBadgesController.ICON_TROPHY,
+            HundredGramBadgesController.ICON_HEART,
+            HundredGramBadgesController.ICON_TARGET,
+            HundredGramBadgesController.ICON_COFFEE,
+            HundredGramBadgesController.ICON_GAMEPAD,
+            HundredGramBadgesController.ICON_SKULL,
+            HundredGramBadgesController.ICON_WAND,
+            HundredGramBadgesController.ICON_ROBOT,
+            HundredGramBadgesController.ICON_GLASSES,
+            HundredGramBadgesController.ICON_MUSIC
     };
 
     private final View[] iconViews = new View[ICON_TYPES.length];
@@ -270,28 +282,7 @@ public class HundredGramBadgeEditorBottomSheet extends BottomSheet {
     }
 
     private Drawable getPreviewIcon(Context context, int type) {
-        int resId;
-        switch (type) {
-            case HundredGramBadgesController.ICON_STAR:
-                resId = R.drawable.msg_premium_liststar;
-                break;
-            case HundredGramBadgesController.ICON_SHIELD:
-                resId = R.drawable.outline_shield_check;
-                break;
-            case HundredGramBadgesController.ICON_VERIFIED:
-                resId = R.drawable.verified_check;
-                break;
-            case HundredGramBadgesController.ICON_FIRE:
-                resId = R.drawable.filled_fire;
-                break;
-            case HundredGramBadgesController.ICON_DEV:
-                resId = R.drawable.msg_admins;
-                break;
-            case HundredGramBadgesController.ICON_CROWN:
-            default:
-                resId = R.drawable.filled_rating_crown;
-                break;
-        }
+        int resId = HundredGramBadgesController.getIconResId(type);
         Drawable d = ContextCompat.getDrawable(context, resId);
         if (d != null) {
             d = d.mutate();
