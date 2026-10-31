@@ -16,6 +16,7 @@ import static org.telegram.messenger.LocaleController.getString;
 import static org.telegram.ui.bots.AffiliateProgramFragment.percents;
 
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramSlowmodeController;
 import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.HundredGramContentFilterController;
 import org.telegram.messenger.HundredGramIpInfoController;
@@ -2635,6 +2636,26 @@ public class ChatActivity extends BaseFragment implements
                     otherIcon.setIconVisible(false);
                 }
             }
+        }
+
+        @Override
+        public void onSendSlowmodeQueued() {
+            if (chatActivityEnterView == null || !chatActivityEnterView.hasText()) {
+                return;
+            }
+            final CharSequence text = chatActivityEnterView.getFieldText();
+            final String textToSend = text != null ? text.toString() : "";
+            chatActivityEnterView.setFieldText("");
+            HundredGramSlowmodeController.getInstance(currentAccount).enqueue(ChatActivity.this, dialog_id, textToSend, () -> {
+                if (isFinishing()) {
+                    return;
+                }
+                SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(textToSend, dialog_id, replyingMessageObject, getThreadMessage(), null, false, null, null, null, true, 0, 0, null, false);
+                params.sendMessageChatArguments = getMessageChatSendParams();
+                params.monoForumPeer = getSendMonoForumPeerId();
+                params.suggestionParams = messageSuggestionParams;
+                getSendMessagesHelper().sendMessage(params);
+            });
         }
 
         @Override
@@ -35656,6 +35677,8 @@ public class ChatActivity extends BaseFragment implements
                             } else if (error.text != null) {
                                 AndroidUtilities.runOnUIThread(() -> {
                                     if (error.text.startsWith("SLOWMODE_WAIT_")) {
+                                        int wait = Utilities.parseInt(error.text);
+                                        HundredGramSlowmodeController.getInstance(currentAccount).handleSlowmodeWait(dialog_id, wait);
                                         AlertsCreator.showSimpleToast(ChatActivity.this, LocaleController.getString(R.string.SlowmodeSendError));
                                     } else if (error.text.equals("CHAT_SEND_MEDIA_FORBIDDEN")) {
                                         AlertsCreator.showSimpleToast(ChatActivity.this, LocaleController.getString(R.string.AttachMediaRestrictedForever));

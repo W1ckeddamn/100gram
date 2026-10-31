@@ -750,6 +750,27 @@ public class HundredGramSettingsSearchIndex {
                 R.drawable.msg_sticker, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 417,
                 HundredGramSubSettingsActivity.class,
                 "стикер", "цитата", "стикерпак", "карточка", "quote", "sticker");
+
+        addEntry(id++, "LyricsInPlayer", "Тексты песен",
+                "LyricsInPlayerDesc", "Извлекать и отображать тексты песен из ID3-тегов и LRCLIB в аудиоплеере",
+                "HundredGramCategoryMedia", "Медиа",
+                R.drawable.msg_text_outlined, HundredGramSubSettingsActivity.CATEGORY_MEDIA, 418,
+                HundredGramSubSettingsActivity.class,
+                "текст", "слова", "песня", "lyrics", "lrc", "музыка", "трек", "плеер");
+
+        addEntry(id++, "Md3AudioPlayer", "MD3 аудиоплеер",
+                "Md3AudioPlayerDesc", "Material You скругление обложки, акцентные кнопки и современный стиль в плеере",
+                "HundredGramCategoryMedia", "Медиа",
+                R.drawable.msg_media, HundredGramSubSettingsActivity.CATEGORY_MEDIA, 419,
+                HundredGramSubSettingsActivity.class,
+                "плеер", "музыка", "аудио", "md3", "player", "material", "обложка");
+
+        addEntry(id++, "SlowmodeQueue", "Очередь Slowmode",
+                "SlowmodeQueueDesc", "Ставить сообщения в очередь и отправлять автоматически по истечении таймера slowmode",
+                "HundredGramCategoryActions", "Действия",
+                R.drawable.input_schedule, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 420,
+                HundredGramSubSettingsActivity.class,
+                "слоумод", "очередь", "медленный режим", "таймер", "slowmode", "queue");
     }
 
     private void addEntry(int id, String titleKey, String defaultTitle,

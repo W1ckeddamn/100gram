@@ -348,6 +348,8 @@ public class ChatActivityEnterView extends FrameLayout implements
 
         void onUpdateSlowModeButton(View button, boolean show, CharSequence time);
 
+        default void onSendSlowmodeQueued() {}
+
         default boolean checkCanRemoveRestrictionsByBoosts() {
             return false;
         }
@@ -3678,6 +3680,10 @@ public class ChatActivityEnterView extends FrameLayout implements
         slowModeButton.setOnClickListener(v -> {
             if (delegate != null) {
                 if (delegate.checkCanRemoveRestrictionsByBoosts()) {
+                    return;
+                }
+                if (HundredGramConfig.slowmodeQueue && hasText()) {
+                    delegate.onSendSlowmodeQueued();
                     return;
                 }
                 delegate.onUpdateSlowModeButton(slowModeButton, true, slowModeButton.getText());

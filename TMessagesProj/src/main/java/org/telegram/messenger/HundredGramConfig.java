@@ -59,6 +59,11 @@ public class HundredGramConfig {
     public static boolean glassMessagesBorder;
     public static int chatBoxStyle = 0; // 0 = Classic, 1 = Expressive Floating Pill, 2 = Floating with Separated Action Buttons
     public static boolean stickerQuotes = true;
+
+    // Phase 5: Media & Player
+    public static boolean lyricsInPlayer = true;
+    public static boolean md3AudioPlayer;
+    public static boolean slowmodeQueue;
     public static boolean md3SwitchStyle;
     public static boolean newSliderStyle;
     public static boolean squareFab;
@@ -543,6 +548,9 @@ public class HundredGramConfig {
             glassMessagesBorder = preferences.getBoolean("glassMessagesBorder", false);
             chatBoxStyle = preferences.getInt("chatBoxStyle", 0);
             stickerQuotes = preferences.getBoolean("stickerQuotes", true);
+            lyricsInPlayer = preferences.getBoolean("lyricsInPlayer", true);
+            md3AudioPlayer = preferences.getBoolean("md3AudioPlayer", false);
+            slowmodeQueue = preferences.getBoolean("slowmodeQueue", false);
             md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
             newSliderStyle = preferences.getBoolean("newSliderStyle", false);
             squareFab = preferences.getBoolean("squareFab", false);
@@ -1211,6 +1219,22 @@ public class HundredGramConfig {
     public static void toggleStickerQuotes() {
         stickerQuotes = !stickerQuotes;
         save("stickerQuotes", stickerQuotes);
+    }
+
+    public static void toggleLyricsInPlayer() {
+        lyricsInPlayer = !lyricsInPlayer;
+        save("lyricsInPlayer", lyricsInPlayer);
+    }
+
+    public static void toggleMd3AudioPlayer() {
+        md3AudioPlayer = !md3AudioPlayer;
+        save("md3AudioPlayer", md3AudioPlayer);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleSlowmodeQueue() {
+        slowmodeQueue = !slowmodeQueue;
+        save("slowmodeQueue", slowmodeQueue);
     }
 
     public static void toggleMd3MediaLoaderWave() {
@@ -2522,6 +2546,9 @@ public class HundredGramConfig {
         glassMessagesBorder = false;
         chatBoxStyle = 0;
         stickerQuotes = true;
+        lyricsInPlayer = true;
+        md3AudioPlayer = false;
+        slowmodeQueue = false;
         configLoaded = false;
         loadConfig();
         postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);

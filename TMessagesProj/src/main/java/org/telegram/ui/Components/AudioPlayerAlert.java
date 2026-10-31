@@ -71,6 +71,8 @@ import androidx.media3.common.C;
 import com.google.android.gms.cast.framework.CastContext;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.HundredGramConfig;
+import org.telegram.ui.Components.HundredGramLyricsBottomSheet;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ContactsController;
@@ -963,8 +965,13 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         playButton.setScaleType(ImageView.ScaleType.CENTER);
         playButton.setImageDrawable(playPauseDrawable = new PlayPauseDrawable(28));
         playPauseDrawable.setPause(!MediaController.getInstance().isMessagePaused(), false);
-        playButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_player_button), PorterDuff.Mode.MULTIPLY));
-        playButton.setBackgroundDrawable(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1, dp(24)));
+        if (HundredGramConfig.md3AudioPlayer) {
+            playButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_windowBackgroundWhite), PorterDuff.Mode.SRC_IN));
+            playButton.setBackground(Theme.createRoundRectDrawable(dp(24), getThemedColor(Theme.key_player_progress)));
+        } else {
+            playButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_player_button), PorterDuff.Mode.MULTIPLY));
+            playButton.setBackgroundDrawable(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1, dp(24)));
+        }
         bottomView.addView(playButton, LayoutHelper.createFrame(48, 48, Gravity.LEFT | Gravity.TOP));
         playButton.setOnClickListener(v -> {
             if (MediaController.getInstance().isDownloadingCurrentMessage()) {
@@ -1114,6 +1121,9 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         optionsButton.setSubItemShown(7, false);
         optionsButton.addSubItem(15, R.drawable.msg_list, getString(R.string.Playlists));
         optionsButton.addSubItem(16, R.drawable.msg_add, getString(R.string.AddToPlaylist));
+        if (HundredGramConfig.lyricsInPlayer) {
+            optionsButton.addSubItem(20, R.drawable.msg_text_outlined, LocaleController.getString("LyricsInPlayer", R.string.LyricsInPlayer));
+        }
         optionsButton.setShowedFromBottom(true);
         optionsButton.setDelegate(this::onSubItemClick);
         optionsButton.setContentDescription(LocaleController.getString(R.string.AccDescrMoreOptions));
@@ -1817,7 +1827,16 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             showPlaylistsDialog();
         } else if (id == 16) {
             showAddToPlaylistDialog(messageObject);
+        } else if (id == 20) {
+            showLyricsDialog(messageObject);
         }
+    }
+
+    private void showLyricsDialog(MessageObject messageObject) {
+        if (messageObject == null) {
+            return;
+        }
+        new HundredGramLyricsBottomSheet(getContext(), currentAccount, messageObject, resourcesProvider).show();
     }
 
     private void showAlbumCover(boolean show, boolean animated) {
@@ -1826,6 +1845,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
                 return;
             }
             blurredView.setTag(1);
+            bigAlbumConver.setRoundRadius(dp(HundredGramConfig.md3AudioPlayer ? 24 : 12));
             bigAlbumConver.setImageBitmap(coverContainer.getImageReceiver().getBitmap());
             blurredAnimationInProgress = true;
             ScrimOptions.makeGlobalBlurBitmaps((bitmapBg, bitmapOptions) ->
@@ -3377,7 +3397,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
                         onImageUpdated(imageReceiver);
                     }
                 });
-                imageViews[i].setRoundRadius(dp(4));
+                imageViews[i].setRoundRadius(dp(HundredGramConfig.md3AudioPlayer ? 16 : 4));
                 if (i == 1) {
                     imageViews[i].setVisibility(GONE);
                 }

@@ -1788,4 +1788,16 @@
     <string name="QuoteShare">Share</string>
     <string name="QuoteStickerSent">Sticker sent!</string>
     <string name="QuoteStickerCopied">Quote copied to clipboard</string>
+    <!-- Phase 5: Media & Player -->
+    <string name="AudioPlayer">Audio Player</string>
+    <string name="LyricsInPlayer">Song Lyrics</string>
+    <string name="LyricsInPlayerDesc">Extract and display synchronized or plain song lyrics from ID3 tags and LRCLIB in audio player</string>
+    <string name="LyricsLoading">Loading lyrics…</string>
+    <string name="LyricsNotFound">No lyrics found for this track</string>
+    <string name="LyricsCopied">Lyrics copied to clipboard</string>
+    <string name="Md3AudioPlayer">MD3 Audio Player</string>
+    <string name="Md3AudioPlayerDesc">Material You rounded album art, accent buttons and modern styling in audio player</string>
+    <string name="SlowmodeQueue">Slowmode Queue</string>
+    <string name="SlowmodeQueueDesc">Queue messages and send them automatically when the slowmode timer expires</string>
+    <string name="SlowmodeQueued">Message queued in Slowmode (%s)</string>
 </resources>

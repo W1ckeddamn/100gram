@@ -1799,4 +1799,16 @@
     <string name="QuoteShare">Поделиться</string>
     <string name="QuoteStickerSent">Стикер отправлен!</string>
     <string name="QuoteStickerCopied">Цитата скопирована в буфер</string>
+    <!-- Phase 5: Media & Player -->
+    <string name="AudioPlayer">Аудиоплеер</string>
+    <string name="LyricsInPlayer">Тексты песен</string>
+    <string name="LyricsInPlayerDesc">Извлекать и отображать синхронизированные или обычные тексты песен из ID3-тегов и LRCLIB в аудиоплеере</string>
+    <string name="LyricsLoading">Загрузка текста песни…</string>
+    <string name="LyricsNotFound">Текст для этого трека не найден</string>
+    <string name="LyricsCopied">Текст песни скопирован в буфер обмена</string>
+    <string name="Md3AudioPlayer">MD3 аудиоплеер</string>
+    <string name="Md3AudioPlayerDesc">Material You скругление обложки, акцентные кнопки и современный стиль в плеере</string>
+    <string name="SlowmodeQueue">Очередь Slowmode</string>
+    <string name="SlowmodeQueueDesc">Ставить сообщения в очередь и отправлять их автоматически по истечении таймера медленного режима</string>
+    <string name="SlowmodeQueued">Сообщение поставлено в очередь Slowmode (%s)</string>
 </resources>

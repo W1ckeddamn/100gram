@@ -302,6 +302,9 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_GLASS_MESSAGES_TRANSPARENCY = 415;
     private static final int ITEM_GLASS_MESSAGES_BORDER = 416;
     private static final int ITEM_STICKER_QUOTES = 417;
+    private static final int ITEM_LYRICS_IN_PLAYER = 418;
+    private static final int ITEM_MD3_AUDIO_PLAYER = 419;
+    private static final int ITEM_SLOWMODE_QUEUE = 420;
 
     // Item IDs for Developer Mode
     private static final int ITEM_DEV_MODE = 100;
@@ -1115,6 +1118,11 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.showRealName));
         items.add(UItem.asShadow(LocaleController.getString("HundredGramShowRealNameInfo", R.string.HundredGramShowRealNameInfo)));
 
+        items.add(UItem.asHeader(LocaleController.getString("SlowmodeQueue", R.string.SlowmodeQueue)));
+        items.add(UItem.asCheck(ITEM_SLOWMODE_QUEUE, LocaleController.getString("SlowmodeQueue", R.string.SlowmodeQueue))
+                .setChecked(HundredGramConfig.slowmodeQueue));
+        items.add(UItem.asShadow(LocaleController.getString("SlowmodeQueueDesc", R.string.SlowmodeQueueDesc)));
+
         items.add(UItem.asButton(ITEM_DELETE_MY_MESSAGES, R.drawable.msg_chats_remove, LocaleController.getString("DeleteMyMessages", R.string.DeleteMyMessages)).red());
         items.add(UItem.asShadow(LocaleController.getString("DeleteMyMessagesInfo", R.string.DeleteMyMessagesInfo)));
 
@@ -1197,6 +1205,13 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_PAUSE_ON_MINIMIZE_ROUND, LocaleController.getString("PauseOnMinimizeRound", R.string.PauseOnMinimizeRound))
                 .setChecked(HundredGramConfig.pauseOnMinimizeRound));
         items.add(UItem.asShadow(LocaleController.getString("PauseOnMinimizeVideoInfo", R.string.PauseOnMinimizeVideoInfo)));
+
+        items.add(UItem.asHeader(LocaleController.getString("AudioPlayer", R.string.AudioPlayer)));
+        items.add(UItem.asCheck(ITEM_LYRICS_IN_PLAYER, LocaleController.getString("LyricsInPlayer", R.string.LyricsInPlayer))
+                .setChecked(HundredGramConfig.lyricsInPlayer));
+        items.add(UItem.asCheck(ITEM_MD3_AUDIO_PLAYER, LocaleController.getString("Md3AudioPlayer", R.string.Md3AudioPlayer))
+                .setChecked(HundredGramConfig.md3AudioPlayer));
+        items.add(UItem.asShadow(LocaleController.getString("LyricsInPlayerDesc", R.string.LyricsInPlayerDesc)));
 
         // Custom save path
         String savePathValue = android.text.TextUtils.isEmpty(HundredGramConfig.customSavePath)
@@ -2005,6 +2020,27 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.stickerQuotes);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.stickerQuotes);
+                }
+                break;
+            case ITEM_LYRICS_IN_PLAYER:
+                HundredGramConfig.toggleLyricsInPlayer();
+                item.setChecked(HundredGramConfig.lyricsInPlayer);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.lyricsInPlayer);
+                }
+                break;
+            case ITEM_MD3_AUDIO_PLAYER:
+                HundredGramConfig.toggleMd3AudioPlayer();
+                item.setChecked(HundredGramConfig.md3AudioPlayer);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.md3AudioPlayer);
+                }
+                break;
+            case ITEM_SLOWMODE_QUEUE:
+                HundredGramConfig.toggleSlowmodeQueue();
+                item.setChecked(HundredGramConfig.slowmodeQueue);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.slowmodeQueue);
                 }
                 break;
             case ITEM_SOCIAL_LINK_FIXER:
