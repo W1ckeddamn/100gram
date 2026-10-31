@@ -27,6 +27,7 @@ import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Cells.TextCheckCell;
 
 /**
  * BottomSheet для создания, редактирования и удаления кастомных бейджей пользователей.
@@ -43,6 +44,7 @@ public class HundredGramBadgeEditorBottomSheet extends BottomSheet {
 
     private int selectedIconType = HundredGramBadgesController.ICON_CROWN;
     private int selectedColor = 0; // 0 = default accent
+    private boolean isOfficial = false;
 
     private static final int[] PRESET_COLORS = new int[]{
             0,                  // Default
@@ -76,6 +78,9 @@ public class HundredGramBadgeEditorBottomSheet extends BottomSheet {
         if (existingBadge != null) {
             this.selectedIconType = existingBadge.iconType;
             this.selectedColor = existingBadge.color;
+            this.isOfficial = existingBadge.isOfficial;
+        } else {
+            this.isOfficial = HundredGramBadgesController.getInstance().isCurrentUserAdmin();
         }
 
         Context context = getContext();
@@ -196,6 +201,17 @@ public class HundredGramBadgeEditorBottomSheet extends BottomSheet {
         updateColorSelection();
         colorScroll.addView(colorRow);
         container.addView(colorScroll, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 24));
+
+        if (HundredGramBadgesController.getInstance().isCurrentUserAdmin()) {
+            TextCheckCell officialCell = new TextCheckCell(context);
+            officialCell.setTextAndCheck(LocaleController.getString("CustomBadgeIsOfficial", R.string.CustomBadgeIsOfficial), isOfficial, false);
+            officialCell.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(8), getThemedColor(Theme.key_windowBackgroundGray)));
+            officialCell.setOnClickListener(v -> {
+                isOfficial = !isOfficial;
+                officialCell.setChecked(isOfficial);
+            });
+            container.addView(officialCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 16));
+        }
 
         // Save Button
         TextView saveBtn = new TextView(context);
@@ -342,7 +358,8 @@ public class HundredGramBadgeEditorBottomSheet extends BottomSheet {
                 desc,
                 selectedIconType,
                 0,
-                selectedColor
+                selectedColor,
+                isOfficial
         );
 
         HundredGramBadgesController.getInstance().setBadge(b);

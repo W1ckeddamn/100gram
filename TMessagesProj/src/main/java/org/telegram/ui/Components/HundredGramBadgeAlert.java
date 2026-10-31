@@ -107,6 +107,22 @@ public class HundredGramBadgeAlert extends BottomSheet {
         titleView.setGravity(Gravity.CENTER);
         container.addView(titleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 6));
 
+        // Status tag (Official vs Personal)
+        TextView tagView = new TextView(context);
+        if (badge.isOfficial) {
+            tagView.setText("✓ " + LocaleController.getString("CustomBadgeOfficialTag", R.string.CustomBadgeOfficialTag));
+            tagView.setTextColor(0xFF3390EC);
+            tagView.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(12), 0x223390EC));
+        } else {
+            tagView.setText(LocaleController.getString("CustomBadgePersonalTag", R.string.CustomBadgePersonalTag));
+            tagView.setTextColor(getThemedColor(Theme.key_dialogTextGray2));
+            tagView.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(12), getThemedColor(Theme.key_windowBackgroundGray)));
+        }
+        tagView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
+        tagView.setPadding(AndroidUtilities.dp(10), AndroidUtilities.dp(4), AndroidUtilities.dp(10), AndroidUtilities.dp(4));
+        tagView.setTypeface(AndroidUtilities.bold());
+        container.addView(tagView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 0, 0, 12));
+
         // Badge Description
         if (!TextUtils.isEmpty(badge.description)) {
             TextView descView = new TextView(context);
@@ -170,18 +186,21 @@ public class HundredGramBadgeAlert extends BottomSheet {
         container.addView(userCard, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 20));
 
         // Edit button
-        TextView editBtn = new TextView(context);
-        editBtn.setText(LocaleController.getString("CustomBadgeEdit", R.string.CustomBadgeEdit));
-        editBtn.setTextColor(Color.WHITE);
-        editBtn.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
-        editBtn.setTypeface(AndroidUtilities.bold());
-        editBtn.setGravity(Gravity.CENTER);
-        editBtn.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(8), getThemedColor(Theme.key_featuredStickers_addButton), getThemedColor(Theme.key_featuredStickers_addButtonPressed)));
-        editBtn.setOnClickListener(v -> {
-            dismiss();
-            new HundredGramBadgeEditorBottomSheet(parentFragment, userId, badge).show();
-        });
-        container.addView(editBtn, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48, 0, 0, 0, 8));
+        boolean canEdit = HundredGramBadgesController.getInstance().isCurrentUserAdmin() || !badge.isOfficial;
+        if (canEdit) {
+            TextView editBtn = new TextView(context);
+            editBtn.setText(LocaleController.getString("CustomBadgeEdit", R.string.CustomBadgeEdit));
+            editBtn.setTextColor(Color.WHITE);
+            editBtn.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
+            editBtn.setTypeface(AndroidUtilities.bold());
+            editBtn.setGravity(Gravity.CENTER);
+            editBtn.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(8), getThemedColor(Theme.key_featuredStickers_addButton), getThemedColor(Theme.key_featuredStickers_addButtonPressed)));
+            editBtn.setOnClickListener(v -> {
+                dismiss();
+                new HundredGramBadgeEditorBottomSheet(parentFragment, userId, badge).show();
+            });
+            container.addView(editBtn, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48, 0, 0, 0, 8));
+        }
 
         setCustomView(container);
     }

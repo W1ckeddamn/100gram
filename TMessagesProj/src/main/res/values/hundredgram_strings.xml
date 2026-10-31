@@ -1840,4 +1840,24 @@
     <string name="CustomBadgeAssignSelf">Assign Developer Badge to Myself</string>
     <string name="CustomBadgeDevTitle">Developer</string>
     <string name="CustomBadgeDevDesc">100gram Lead Developer &amp; Architect</string>
+    <string name="CustomBadgeOfficialTag">100gram Official Badge</string>
+    <string name="CustomBadgePersonalTag">Personal Badge</string>
+    <string name="CustomBadgeIsOfficial">Make Official (visible to all users)</string>
+    <string name="CustomBadgeSyncNow">Sync with GitHub</string>
+    <string name="CustomBadgeSyncing">Syncing...</string>
+    <string name="CustomBadgeSyncSuccess">Badges successfully synced from GitHub</string>
+    <string name="CustomBadgeSyncError">Sync error: %s</string>
+    <string name="CustomBadgeLastSync">Last sync: %s</string>
+    <string name="CustomBadgeNeverSynced">Never synced</string>
+    <string name="CustomBadgeExportGithub">Copy badges.json for GitHub</string>
+    <string name="CustomBadgeExportCopied">badges.json copied to clipboard! Paste it into the repository root.</string>
+    <string name="CustomBadgeManageAdmins">Manage Badge Admins</string>
+    <string name="CustomBadgeAddAdmin">Add Admin</string>
+    <string name="CustomBadgeEnterAdminId">Enter the numeric Telegram User ID to grant badge issuing rights:</string>
+    <string name="CustomBadgeAdminAdded">Admin added</string>
+    <string name="CustomBadgeAdminRemoved">Admin removed</string>
+    <string name="CustomBadgeCannotRemoveOwner">Cannot remove primary developer (ID %d)</string>
+    <string name="CustomBadgeStatusDev">You are a 100gram Developer (full access)</string>
+    <string name="CustomBadgeStatusUser">Viewing official badges</string>
+    <string name="CustomBadgeRemoveAdminConfirm">Remove administrator rights from User ID %d?</string>
 </resources>

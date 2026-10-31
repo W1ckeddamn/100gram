@@ -1851,4 +1851,24 @@
     <string name="CustomBadgeAssignSelf">Выдать значок Разработчика себе</string>
     <string name="CustomBadgeDevTitle">Разработчик</string>
     <string name="CustomBadgeDevDesc">Ведущий разработчик и создатель 100gram</string>
+    <string name="CustomBadgeOfficialTag">Официальный значок 100gram</string>
+    <string name="CustomBadgePersonalTag">Личный значок</string>
+    <string name="CustomBadgeIsOfficial">Сделать официальным (для всех пользователей)</string>
+    <string name="CustomBadgeSyncNow">Синхронизировать с GitHub</string>
+    <string name="CustomBadgeSyncing">Синхронизация...</string>
+    <string name="CustomBadgeSyncSuccess">Значки успешно синхронизированы с GitHub</string>
+    <string name="CustomBadgeSyncError">Ошибка синхронизации: %s</string>
+    <string name="CustomBadgeLastSync">Последняя синхронизация: %s</string>
+    <string name="CustomBadgeNeverSynced">Ещё не синхронизировано</string>
+    <string name="CustomBadgeExportGithub">Скопировать badges.json для GitHub</string>
+    <string name="CustomBadgeExportCopied">Файл badges.json скопирован в буфер обмена! Вставьте его в корень репозитория.</string>
+    <string name="CustomBadgeManageAdmins">Управление администраторами бейджей</string>
+    <string name="CustomBadgeAddAdmin">Добавить администратора</string>
+    <string name="CustomBadgeEnterAdminId">Введите числовой Telegram ID пользователя, которому хотите дать права на выдачу бейджей:</string>
+    <string name="CustomBadgeAdminAdded">Администратор добавлен</string>
+    <string name="CustomBadgeAdminRemoved">Администратор удален</string>
+    <string name="CustomBadgeCannotRemoveOwner">Нельзя удалить главного разработчика (ID %d)</string>
+    <string name="CustomBadgeStatusDev">Вы являетесь разработчиком 100gram (полный доступ)</string>
+    <string name="CustomBadgeStatusUser">Режим просмотра официальных значков</string>
+    <string name="CustomBadgeRemoveAdminConfirm">Забрать права администратора бейджей у пользователя ID %d?</string>
 </resources>

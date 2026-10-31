@@ -65,6 +65,8 @@ public class HundredGramConfig {
     public static boolean md3AudioPlayer;
     public static boolean slowmodeQueue;
     public static boolean customBadgesEnabled = true;
+    public static String badgesSyncUrl = "https://raw.githubusercontent.com/W1ckeddamn/100gram/main/badges.json";
+    public static boolean badgesAutoSync = true;
     public static boolean md3SwitchStyle;
     public static boolean newSliderStyle;
     public static boolean squareFab;
@@ -553,6 +555,8 @@ public class HundredGramConfig {
             md3AudioPlayer = preferences.getBoolean("md3AudioPlayer", false);
             slowmodeQueue = preferences.getBoolean("slowmodeQueue", false);
             customBadgesEnabled = preferences.getBoolean("customBadgesEnabled", true);
+            badgesSyncUrl = preferences.getString("badgesSyncUrl", "https://raw.githubusercontent.com/W1ckeddamn/100gram/main/badges.json");
+            badgesAutoSync = preferences.getBoolean("badgesAutoSync", true);
             md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
             newSliderStyle = preferences.getBoolean("newSliderStyle", false);
             squareFab = preferences.getBoolean("squareFab", false);
@@ -1243,6 +1247,16 @@ public class HundredGramConfig {
         customBadgesEnabled = !customBadgesEnabled;
         save("customBadgesEnabled", customBadgesEnabled);
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void toggleBadgesAutoSync() {
+        badgesAutoSync = !badgesAutoSync;
+        save("badgesAutoSync", badgesAutoSync);
+    }
+
+    public static void setBadgesSyncUrl(String url) {
+        badgesSyncUrl = url != null ? url.trim() : "https://raw.githubusercontent.com/W1ckeddamn/100gram/main/badges.json";
+        saveString("badgesSyncUrl", badgesSyncUrl);
     }
 
     public static void toggleMd3MediaLoaderWave() {
@@ -2562,6 +2576,8 @@ public class HundredGramConfig {
         md3AudioPlayer = false;
         slowmodeQueue = false;
         customBadgesEnabled = true;
+        badgesSyncUrl = "https://raw.githubusercontent.com/W1ckeddamn/100gram/main/badges.json";
+        badgesAutoSync = true;
         configLoaded = false;
         loadConfig();
         postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);

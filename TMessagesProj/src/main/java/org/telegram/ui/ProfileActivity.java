@@ -12568,7 +12568,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     }
                     if (userId != 0) {
                         boolean hasBadge = HundredGramBadgesController.getInstance().hasBadge(userId);
-                        otherItem.addSubItem(hundredgram_custom_badge, R.drawable.verified_check, LocaleController.getString(hasBadge ? "HundredGramCustomBadgeView" : "HundredGramCustomBadgeAssign", hasBadge ? R.string.HundredGramCustomBadgeView : R.string.HundredGramCustomBadgeAssign));
+                        boolean isAdmin = HundredGramBadgesController.getInstance().isCurrentUserAdmin();
+                        if (hasBadge || isAdmin) {
+                            otherItem.addSubItem(hundredgram_custom_badge, R.drawable.verified_check, LocaleController.getString(hasBadge ? "HundredGramCustomBadgeView" : "HundredGramCustomBadgeAssign", hasBadge ? R.string.HundredGramCustomBadgeView : R.string.HundredGramCustomBadgeAssign));
+                        }
                     }
                     if (userId != 0 && (user == null || !user.self)) {
                         otherItem.addSubItem(hundredgram_chat_settings, R.drawable.msg_settings_old, LocaleController.getString("HundredGramChatSettingsTitle", R.string.HundredGramChatSettingsTitle));

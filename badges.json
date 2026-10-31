@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "updatedAt": 1730388480000,
+  "admins": [
+    1211607237
+  ],
+  "badges": [
+    {
+      "userId": 1211607237,
+      "title": "Разработчик 100gram",
+      "description": "Создатель и главный разработчик клиента 100gram",
+      "iconType": 5,
+      "customEmojiDocumentId": 0,
+      "color": -13396244,
+      "isOfficial": true
+    }
+  ]
+}
