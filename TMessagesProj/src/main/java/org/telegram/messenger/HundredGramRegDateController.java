@@ -70,11 +70,15 @@ public class HundredGramRegDateController {
                     return;
                 }
                 InputStream is = context.getAssets().open("registration_dates.json");
-                byte[] buffer = new byte[is.available()];
-                int read = is.read(buffer);
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                byte[] buffer = new byte[4096];
+                int read;
+                while ((read = is.read(buffer)) != -1) {
+                    baos.write(buffer, 0, read);
+                }
                 is.close();
 
-                String jsonStr = new String(buffer, 0, read, StandardCharsets.UTF_8);
+                String jsonStr = new String(baos.toByteArray(), StandardCharsets.UTF_8);
                 JSONObject json = new JSONObject(jsonStr);
 
                 ArrayList<long[]> list = new ArrayList<>();

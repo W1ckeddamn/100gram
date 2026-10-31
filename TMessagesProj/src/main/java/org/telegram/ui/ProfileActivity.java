@@ -4519,7 +4519,23 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 return;
             }
             listView.stopScroll();
-            if (position == affiliateRow) {
+            if (position == idDcRow) {
+                final String regDateInfo;
+                if (userId != 0) {
+                    regDateInfo = HundredGramRegDateController.getInstance(currentAccount).getUserRegistrationDate(userId);
+                } else if (chatId != 0) {
+                    TLRPC.Chat chat = getMessagesController().getChat(chatId);
+                    regDateInfo = HundredGramRegDateController.getInstance(currentAccount).getChatCreationDate(chat);
+                } else {
+                    regDateInfo = null;
+                }
+                if (regDateInfo != null) {
+                    BulletinFactory.of(ProfileActivity.this).createSimpleBulletin(
+                        getContext().getResources().getDrawable(R.drawable.msg_calendar2),
+                        AndroidUtilities.replaceTags(regDateInfo)
+                    ).show();
+                }
+            } else if (position == affiliateRow) {
                 TLRPC.User user = getMessagesController().getUser(userId);
                 if (userInfo != null && userInfo.starref_program != null) {
                     final long selfId = getUserConfig().getClientUserId();
@@ -14072,7 +14088,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         } else {
                             regDateInfo = null;
                         }
-                        detailCell.setTextAndValue(String.valueOf(id), dc == null ? "ID" : dc, true);
+                        detailCell.setTextAndValue(String.valueOf(id), HundredGramConfig.showIdAndDc == 2 && dc != null ? dc : "ID", true);
                         if (regDateInfo != null) {
                             android.graphics.drawable.Drawable calDrawable = getContext().getResources().getDrawable(R.drawable.msg_calendar2).mutate();
                             calDrawable.setColorFilter(new android.graphics.PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon, resourcesProvider), android.graphics.PorterDuff.Mode.MULTIPLY));
@@ -14143,7 +14159,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         drawable.setColorFilter(new PorterDuffColorFilter(dontApplyPeerColor(getThemedColor(Theme.key_actionBarDefaultIcon), false), PorterDuff.Mode.MULTIPLY));
                         detailCell.setImage(drawable, LocaleController.getString(R.string.GetQRCode));
                         detailCell.setImageClickListener(ProfileActivity.this::onTextDetailCellImageClicked);
-                    } else {
+                    } else if (position != idDcRow) {
                         detailCell.setImage(null);
                         detailCell.setImageClickListener(null);
                     }
