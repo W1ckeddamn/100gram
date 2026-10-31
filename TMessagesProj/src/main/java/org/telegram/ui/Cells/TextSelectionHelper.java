@@ -1719,7 +1719,7 @@ public abstract class TextSelectionHelper<Cell extends TextSelectionHelper.Selec
     }
 
     private void copyText() {
-        if (!isInSelectionMode()) {
+        if (!isInSelectionMode() || !canCopy()) {
             return;
         }
         if (!onCopyOverride()) {
@@ -2112,6 +2112,11 @@ public abstract class TextSelectionHelper<Cell extends TextSelectionHelper.Selec
             }
             selectedView = cell;
             selectedCellId = selectedView.getMessageObject().getId();
+            isRich = selectedView.getMessageObject().type == MessageObject.TYPE_ARTICLE && selectedView.getMessageObject().richLayout != null;
+            if (isRich) {
+                isDescription = false;
+                isFactCheck = false;
+            }
             selectionStart = start;
             selectionEnd = end;
             invalidate();

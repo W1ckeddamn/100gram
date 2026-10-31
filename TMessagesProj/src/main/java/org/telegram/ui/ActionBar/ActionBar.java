@@ -1474,13 +1474,15 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
 
         for (int i = 0; i < 2; i++) {
             if (titleTextView[0] != null && titleTextView[0].getVisibility() != GONE || subtitleTextView != null && subtitleTextView.getVisibility() != GONE) {
+                // A closing search field keeps filling the menu during its fade-out; don't squeeze the title for it.
+                int titleMenuWidth = menu != null ? menu.getMeasuredWidth() - (isSearchFieldVisible ? 0 : menu.getClosingSearchFieldWidth()) : 0;
                 int availableWidth;
                 if (centerTitle) {
-                    int rightBound = (menu != null && menu.getVisibility() != GONE ? menu.getMeasuredWidth() : 0) + dp(16) + titleRightMargin;
+                    int rightBound = (menu != null && menu.getVisibility() != GONE ? titleMenuWidth : 0) + dp(16) + titleRightMargin;
                     int maxSide = Math.max(textLeft, rightBound);
                     availableWidth = Math.max(0, width - 2 * maxSide);
                 } else {
-                    availableWidth = width - (menu != null ? menu.getMeasuredWidth() : 0) - dp(16) - textLeft - titleRightMargin;
+                    availableWidth = width - titleMenuWidth - dp(16) - textLeft - titleRightMargin;
                     availableWidth = Math.max(availableWidth, 0);
                 }
 
