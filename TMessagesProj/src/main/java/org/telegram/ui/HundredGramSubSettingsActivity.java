@@ -150,6 +150,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_FOLDER_SWIPE_SPRING = 385;
     private static final int ITEM_MESSAGE_MENU_ORDER = 392;
     private static final int ITEM_ADBLOCK = 350;
+    private static final int ITEM_BYPASS_CONTENT_PROTECTION = 351;
 
     // Item IDs for CATEGORY_INTERFACE
     private static final int ITEM_RELATIVE_LAST_SEEN = 30;
@@ -663,6 +664,11 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_ADBLOCK, LocaleController.getString("BlockAds", R.string.BlockAds))
                 .setChecked(HundredGramConfig.enableAdBlock));
         items.add(UItem.asShadow(LocaleController.getString("BlockAdsInfo", R.string.BlockAdsInfo)));
+
+        items.add(UItem.asHeader(LocaleController.getString("BypassContentProtection", R.string.BypassContentProtection)));
+        items.add(UItem.asCheck(ITEM_BYPASS_CONTENT_PROTECTION, LocaleController.getString("BypassContentProtection", R.string.BypassContentProtection))
+                .setChecked(HundredGramConfig.bypassContentProtection));
+        items.add(UItem.asShadow(LocaleController.getString("BypassContentProtectionInfo", R.string.BypassContentProtectionInfo)));
 
         items.add(UItem.asHeader(LocaleController.getString("LockHeader", R.string.LockHeader)));
         items.add(UItem.asCheck(ITEM_LOCK_ARCHIVE, LocaleController.getString("LockArchive", R.string.LockArchive))
@@ -1567,6 +1573,13 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.enableAdBlock);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.enableAdBlock);
+                }
+                break;
+            case ITEM_BYPASS_CONTENT_PROTECTION:
+                HundredGramConfig.toggleBypassContentProtection();
+                item.setChecked(HundredGramConfig.bypassContentProtection);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.bypassContentProtection);
                 }
                 break;
 

@@ -1067,7 +1067,7 @@ public class MessageObject {
         }
 
         public void layoutCode(String lng, int codeLength, boolean noforwards) {
-            hasCodeCopyButton = (HundredGramConfig.copyCodeButtonEnabled || codeLength >= 75) && !noforwards;
+            hasCodeCopyButton = (HundredGramConfig.copyCodeButtonEnabled || codeLength >= 75) && (!noforwards || HundredGramConfig.bypassContentProtection);
             if (hasCodeCopyButton) {
                 copyText = new Text(getString(R.string.CopyCode).toUpperCase(), SharedConfig.fontSize - 3, AndroidUtilities.bold());
                 copyIcon = ApplicationLoader.applicationContext.getResources().getDrawable(R.drawable.msg_copy).mutate();
@@ -11694,7 +11694,7 @@ public class MessageObject {
     }
 
     public boolean canForwardMessage() {
-        if (true) return true;
+        if (HundredGramConfig.bypassContentProtection) return true;
         if (isQuickReply()) return false;
         if (type == TYPE_GIFT_STARS || type == TYPE_GIFT_THEME_UPDATE || type == TYPE_SUGGEST_BIRTHDAY || type == TYPE_GIFT_OFFER || type == TYPE_SHARING_OFFER || type == TYPE_COMMUNITY_CHANGED) return false;
         return !(messageOwner instanceof TLRPC.TL_message_secret) && !needDrawBluredPreview() && !isLiveLocation() && type != MessageObject.TYPE_PHONE_CALL && !isSponsored() && !messageOwner.noforwards;

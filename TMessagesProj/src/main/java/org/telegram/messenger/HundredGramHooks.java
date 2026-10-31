@@ -57,6 +57,10 @@ public final class HundredGramHooks {
      * ЧАТЫ И UI (ChatActivity / DialogCell / ChatMessageCell)
      * ========================================================================= */
 
+    public static boolean isBypassContentProtection() {
+        return HundredGramConfig.bypassContentProtection;
+    }
+
     public static boolean isSecretChatScreenshotsAllowed() {
         return HundredGramConfig.isAllowScreenshotsInSecretChats();
     }

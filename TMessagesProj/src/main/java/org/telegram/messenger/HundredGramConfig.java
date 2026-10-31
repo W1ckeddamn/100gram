@@ -131,6 +131,7 @@ public class HundredGramConfig {
     public static int stickerShape = STICKER_SHAPE_DEFAULT;
 
     // Privacy & Profile
+    public static boolean bypassContentProtection = true;
     public static boolean hidePhoneNumber;
     public static boolean hideOtherPhoneNumbers;
     public static boolean hideUsername;
@@ -603,6 +604,7 @@ public class HundredGramConfig {
             stickerShape = preferences.getInt("stickerShape", STICKER_SHAPE_DEFAULT);
 
             // Privacy & Profile
+            bypassContentProtection = preferences.getBoolean("bypassContentProtection", true);
             hidePhoneNumber = preferences.getBoolean("hidePhoneNumber", false);
             hideOtherPhoneNumbers = preferences.getBoolean("hideOtherPhoneNumbers", false);
             hideUsername = preferences.getBoolean("hideUsername", false);
@@ -1311,6 +1313,18 @@ public class HundredGramConfig {
     public static void setMusicSourceDialogId(long dialogId) {
         musicSourceDialogId = dialogId;
         saveLong("musicSourceDialogId", musicSourceDialogId);
+    }
+
+    public static void toggleBypassContentProtection() {
+        bypassContentProtection = !bypassContentProtection;
+        save("bypassContentProtection", bypassContentProtection);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+    }
+
+    public static void setBypassContentProtection(boolean enabled) {
+        bypassContentProtection = enabled;
+        save("bypassContentProtection", bypassContentProtection);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 
     public static void toggleHidePhoneNumber() {
@@ -2571,6 +2585,7 @@ public class HundredGramConfig {
         glassMessagesTransparency = 30;
         glassMessagesBorder = false;
         chatBoxStyle = 0;
+        bypassContentProtection = true;
         stickerQuotes = true;
         lyricsInPlayer = true;
         md3AudioPlayer = false;

@@ -1889,4 +1889,6 @@
     <string name="CustomBadgeStatusDev">Вы являетесь разработчиком 100gram (полный доступ)</string>
     <string name="CustomBadgeStatusUser">Режим просмотра официальных значков</string>
     <string name="CustomBadgeRemoveAdminConfirm">Забрать права администратора бейджей у пользователя ID %d?</string>
+    <string name="BypassContentProtection">Обход защиты контента</string>
+    <string name="BypassContentProtectionInfo">Разрешает копирование текста, снятие скриншотов и сохранение фото и видео в чатах и каналах с запретом на копирование</string>
 </resources>

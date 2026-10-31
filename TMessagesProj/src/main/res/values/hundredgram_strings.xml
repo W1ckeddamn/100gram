@@ -1878,4 +1878,6 @@
     <string name="CustomBadgeStatusDev">You are a 100gram Developer (full access)</string>
     <string name="CustomBadgeStatusUser">Viewing official badges</string>
     <string name="CustomBadgeRemoveAdminConfirm">Remove administrator rights from User ID %d?</string>
+    <string name="BypassContentProtection">Bypass content protection</string>
+    <string name="BypassContentProtectionInfo">Allows copying text, taking screenshots, and saving media to gallery in chats and channels with copy restrictions</string>
 </resources>

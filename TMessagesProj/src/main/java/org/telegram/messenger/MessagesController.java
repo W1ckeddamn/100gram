@@ -6665,7 +6665,9 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isChatNoForwards(TLRPC.Chat chat) {
-        if (true) return false;
+        if (HundredGramConfig.bypassContentProtection) {
+            return false;
+        }
         if (chat == null) {
             return false;
         }
@@ -6675,8 +6677,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 return migratedTo.noforwards;
             }
         }
-        return false;
-//        return chat.noforwards;
+        return chat.noforwards;
     }
 
     public boolean isChatNoForwards(long chatId) {
@@ -6692,6 +6693,9 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public boolean isUserNoForwards(TLRPC.UserFull userFull) {
+        if (HundredGramConfig.bypassContentProtection) {
+            return false;
+        }
         if (userFull == null) {
             return false;
         }

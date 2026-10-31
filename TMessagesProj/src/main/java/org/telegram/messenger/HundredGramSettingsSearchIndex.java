@@ -530,6 +530,13 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "реклама", "адблок", "adblock", "спонсорские", "блокировка");
 
+        addEntry(id++, "BypassContentProtection", "Обход защиты контента (копирование и сохранение)",
+                null, "Разрешает копирование текста, сохранение медиа и снятие скриншотов в защищенных чатах",
+                "HundredGramCategoryPrivacy", "Конфиденциальность",
+                R.drawable.msg_permissions, HundredGramSubSettingsActivity.CATEGORY_PRIVACY, 351,
+                HundredGramSubSettingsActivity.class,
+                "защита", "копирование", "скриншот", "запрет", "noforwards", "protect", "copy");
+
         // 6. Сеть и буст (Network Boost)
         addEntry(id++, "NetworkBoostTitle", "Буст скорости загрузки и сети",
                 "NetworkBoostSubtitle", "Многопоточная параллельная загрузка файлов и ускорение выгрузки",
