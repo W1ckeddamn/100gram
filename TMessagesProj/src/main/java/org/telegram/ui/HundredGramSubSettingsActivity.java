@@ -443,8 +443,6 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 fillStreamerItems(items);
                 break;
         }
-        items.add(UItem.asButton(ITEM_RESET_ALL, LocaleController.getString("ResetAllSettings", R.string.ResetAllSettings)).red());
-        items.add(UItem.asShadow(LocaleController.getString("ResetAllSettingsInfo", R.string.ResetAllSettingsInfo)));
     }
 
     private String getSavePresetName(int preset) {

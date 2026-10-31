@@ -33,6 +33,7 @@ import java.util.ArrayList;
 
 public class HundredGramCameraActivity extends BaseFragment {
 
+    private static final int ITEM_AUTO_TUNE = 99;
     private static final int ITEM_CAMERA_ENGINE = 1;
     private static final int ITEM_PERFORMANCE_MODE = 2;
     private static final int ITEM_QUALITY = 3;
@@ -90,91 +91,6 @@ public class HundredGramCameraActivity extends BaseFragment {
         return fragmentView = contentView;
     }
 
-    private View createBadgeView(Context context, String text, boolean supported) {
-        TextView badge = new TextView(context);
-        badge.setText(text);
-        badge.setTextSize(12);
-        badge.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        int color = supported ? Color.parseColor("#4CAF50") : Color.parseColor("#9E9E9E");
-        badge.setTextColor(color);
-        badge.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(6),
-                supported ? Color.parseColor("#1A4CAF50") : Color.parseColor("#15000000")));
-        badge.setPadding(AndroidUtilities.dp(6), AndroidUtilities.dp(4), AndroidUtilities.dp(8), AndroidUtilities.dp(4));
-        Drawable icon = ContextCompat.getDrawable(context, supported ? R.drawable.msg_check_s : R.drawable.msg_close);
-        if (icon != null) {
-            icon = icon.mutate();
-            icon.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
-            icon.setBounds(0, 0, AndroidUtilities.dp(12), AndroidUtilities.dp(12));
-            badge.setCompoundDrawables(icon, null, null, null);
-            badge.setCompoundDrawablePadding(AndroidUtilities.dp(4));
-        }
-        return badge;
-    }
-
-    private View createCapabilitiesCard(Context context) {
-        LinearLayout card = new LinearLayout(context);
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(16), Theme.getColor(Theme.key_windowBackgroundWhite)));
-        card.setPadding(AndroidUtilities.dp(16), AndroidUtilities.dp(16), AndroidUtilities.dp(16), AndroidUtilities.dp(16));
-
-        TextView title = new TextView(context);
-        title.setText(LocaleController.getString("CameraDiagnostics", R.string.CameraDiagnostics));
-        title.setTextSize(15);
-        title.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        title.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-        card.addView(title, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 10));
-
-        // Badges grid
-        LinearLayout row1 = new LinearLayout(context);
-        row1.setOrientation(LinearLayout.HORIZONTAL);
-        row1.addView(createBadgeView(context, "CameraX", cameraReport == null || cameraReport.cameraXSupported));
-        View space1 = new View(context);
-        row1.addView(space1, LayoutHelper.createLinear(8, 0));
-        row1.addView(createBadgeView(context, "4K UHD (2160p)", cameraReport != null && cameraReport.can4K));
-        View space2 = new View(context);
-        row1.addView(space2, LayoutHelper.createLinear(8, 0));
-        row1.addView(createBadgeView(context, "60 FPS", cameraReport != null && cameraReport.can60Fps));
-        card.addView(row1, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 8));
-
-        LinearLayout row2 = new LinearLayout(context);
-        row2.setOrientation(LinearLayout.HORIZONTAL);
-        row2.addView(createBadgeView(context, LocaleController.getString("CameraBadgeWideAngle", R.string.CameraBadgeWideAngle), cameraReport != null && cameraReport.wideAngleAvailable));
-        View space3 = new View(context);
-        row2.addView(space3, LayoutHelper.createLinear(8, 0));
-        row2.addView(createBadgeView(context, "OIS / EIS", cameraReport != null && cameraReport.stabilizationAvailable));
-        View space4 = new View(context);
-        row2.addView(space4, LayoutHelper.createLinear(8, 0));
-        row2.addView(createBadgeView(context, "HDR", cameraReport != null && cameraReport.hdrAvailable));
-        card.addView(row2, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 14));
-
-        // Auto-tune button
-        FrameLayout btnLayout = new FrameLayout(context);
-        btnLayout.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(10), Theme.getColor(Theme.key_featuredStickers_addButton), Theme.getColor(Theme.key_featuredStickers_addButtonPressed)));
-        btnLayout.setPadding(AndroidUtilities.dp(12), AndroidUtilities.dp(8), AndroidUtilities.dp(12), AndroidUtilities.dp(8));
-        TextView btnText = new TextView(context);
-        btnText.setText(LocaleController.getString("CameraAutoTune", R.string.CameraAutoTune));
-        btnText.setTextSize(13);
-        btnText.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        btnText.setTextColor(Color.WHITE);
-        btnText.setGravity(Gravity.CENTER);
-        Drawable tuneIcon = ContextCompat.getDrawable(context, R.drawable.msg_customize);
-        if (tuneIcon != null) {
-            tuneIcon = tuneIcon.mutate();
-            tuneIcon.setColorFilter(new PorterDuffColorFilter(Color.WHITE, PorterDuff.Mode.SRC_IN));
-            tuneIcon.setBounds(0, 0, AndroidUtilities.dp(16), AndroidUtilities.dp(16));
-            btnText.setCompoundDrawables(tuneIcon, null, null, null);
-            btnText.setCompoundDrawablePadding(AndroidUtilities.dp(6));
-        }
-        btnLayout.addView(btnText, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER));
-        btnLayout.setOnClickListener(v -> autoTuneSettings());
-        card.addView(btnLayout, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-
-        FrameLayout container = new FrameLayout(context);
-        container.setPadding(AndroidUtilities.dp(14), AndroidUtilities.dp(12), AndroidUtilities.dp(14), AndroidUtilities.dp(6));
-        container.addView(card, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-        return container;
-    }
-
     private void autoTuneSettings() {
         HundredGramConfig.setCameraEngine(HundredGramConfig.CAMERA_ENGINE_CAMERAX);
         HundredGramConfig.cameraPerformanceMode = false;
@@ -197,8 +113,21 @@ public class HundredGramCameraActivity extends BaseFragment {
     }
 
     private void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
-        // Capabilities diagnostic card
-        items.add(UItem.asCustom(createCapabilitiesCard(getContext())));
+        // Capabilities diagnostic section
+        items.add(UItem.asHeader(LocaleController.getString("CameraDiagnostics", R.string.CameraDiagnostics)));
+
+        String yes = "✓";
+        String no = "—";
+
+        items.add(UItem.asButton(0, "CameraX", (cameraReport == null || cameraReport.cameraXSupported) ? yes : no));
+        items.add(UItem.asButton(0, "4K UHD (2160p)", (cameraReport != null && cameraReport.can4K) ? yes : no));
+        items.add(UItem.asButton(0, "60 FPS", (cameraReport != null && cameraReport.can60Fps) ? yes : no));
+        items.add(UItem.asButton(0, LocaleController.getString("CameraBadgeWideAngle", R.string.CameraBadgeWideAngle), (cameraReport != null && cameraReport.wideAngleAvailable) ? yes : no));
+        items.add(UItem.asButton(0, "OIS / EIS", (cameraReport != null && cameraReport.stabilizationAvailable) ? yes : no));
+        items.add(UItem.asButton(0, "HDR", (cameraReport != null && cameraReport.hdrAvailable) ? yes : no));
+
+        items.add(UItem.asButton(ITEM_AUTO_TUNE, R.drawable.msg_customize, LocaleController.getString("CameraAutoTune", R.string.CameraAutoTune)));
+        items.add(UItem.asShadow(null));
 
         // Camera Engine Selector
         items.add(UItem.asHeader(LocaleController.getString("CameraEngineChoose", R.string.CameraEngineChoose)));
@@ -351,6 +280,10 @@ public class HundredGramCameraActivity extends BaseFragment {
     }
 
     private void onClick(UItem item, View view, int position, float x, float y) {
+        if (item.id == ITEM_AUTO_TUNE) {
+            autoTuneSettings();
+            return;
+        }
         switch (item.id) {
             case ITEM_CAMERA_ENGINE:
                 showCameraEngineDialog();

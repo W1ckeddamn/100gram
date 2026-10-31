@@ -1,9 +1,9 @@
 # 100gram Project State & Handoff
 
-> **Generated:** 2026-10-31 18:56 UTC  
+> **Generated:** 2026-10-31 20:11 UTC  
 > **Branch:** `main`  
-> **Head Commit:** `fa58c15af` (sync(upstream): merge Telegram Android 13.1.1 (7237))  
-> **Working Tree:** `Clean`
+> **Head Commit:** `81b8b114d` (feat(privacy): add bypass content protection toggle with full 6-point contract)  
+> **Working Tree:** `DIRTY (3 changes)`
 
 ---
 
@@ -45,6 +45,8 @@ Antigravity sessions established the core architectural foundations of 100gram:
 ## 4. Recent Commits (Last 10)
 
 ```text
+81b8b114d feat(privacy): add bypass content protection toggle with full 6-point contract
+67c4eaf01 chore(docs): sync PROJECT_STATE.md with Telegram 13.1.1 merge
 fa58c15af sync(upstream): merge Telegram Android 13.1.1 (7237)
 57f5475fc chore(docs): sync PROJECT_STATE.md
 ea3ffd0f6 fix(profile): fix registration date icon being overwritten to null and support row tap
@@ -53,8 +55,6 @@ ea3ffd0f6 fix(profile): fix registration date icon being overwritten to null and
 3dbde83dd docs: archive stale handover/features, move dev scripts to Tools, add docs index
 364504bbc docs: update PROJECT_STATE.md with clean tree
 f9978124a chore: clean project root, organize docs into docs/ subfolders, and add 6 additional vector badges (18 total)
-6cd3d0977 docs: update PROJECT_STATE.md with dynamic feature tracking and 12-icon pack commit
-7ad190da0 feat: Add 12 custom vector badges, update dynamic roadmap parity and sync script
 ```
 
 ---
