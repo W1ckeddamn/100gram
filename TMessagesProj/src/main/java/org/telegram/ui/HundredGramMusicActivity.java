@@ -689,6 +689,7 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
                     return;
                 }
                 HundredGramPlaylistManager.getInstance(currentAccount).playPlaylist(playlist, 0);
+                showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
                 BulletinFactory.of(this).createSimpleBulletin(R.raw.contact_check, playlist.getTitle()).show();
             });
 
@@ -707,6 +708,7 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
         ItemOptions options = ItemOptions.makeOptions(this, anchor);
         options.add(R.drawable.player, LocaleController.getString("Music", R.string.Music), () -> {
             HundredGramPlaylistManager.getInstance(currentAccount).playPlaylist(playlist, 0);
+            showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
         });
         options.add(R.drawable.msg_edit, LocaleController.getString("RenamePlaylist", R.string.RenamePlaylist), () -> {
             showRenamePlaylistDialog(playlist);

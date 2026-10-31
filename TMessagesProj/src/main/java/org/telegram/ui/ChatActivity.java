@@ -4884,7 +4884,7 @@ public class ChatActivity extends BaseFragment implements
             });
             getConnectionsManager().bindRequestToGuid(req, classGuid);
         } else {
-            actionBar.addView(avatarContainer, 0, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT, !inPreviewMode ? 52 : 0, 0, !inPreviewMode ? 52 : 0, 0));
+            actionBar.addView(avatarContainer, 0, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT, hasMainTabs ? 8 : (!inPreviewMode ? 52 : 0), 0, hasMainTabs ? 144 : (!inPreviewMode ? 52 : 0), 0));
             actionBar.createMenu().bringToFront();
         }
         actionBar.setOnActionModeFactorChangeListener(() -> {
@@ -11806,7 +11806,8 @@ public class ChatActivity extends BaseFragment implements
         if (sideControlsButtonsLayout != null) {
             float baseTranslationY2;
             if (isFeedSearch() || hasMainTabs) {
-                baseTranslationY2 = -AndroidUtilities.navigationBarHeight - dp(DialogsActivity.MAIN_TABS_HEIGHT_WITH_MARGINS + 12);
+                int navBar = (int) Math.max(AndroidUtilities.navigationBarHeight, windowInsetsStateHolder.getAnimatedMaxBottomInset());
+                baseTranslationY2 = -navBar - dp(DialogsActivity.MAIN_TABS_HEIGHT_WITH_MARGINS + 16);
             } else {
                 baseTranslationY2 = -windowInsetsStateHolder.getAnimatedMaxBottomInset()
                     - chatInputViewsContainer.getInputBubbleHeight()
@@ -12947,7 +12948,8 @@ public class ChatActivity extends BaseFragment implements
 
         final float paddingBottom;
         if (isFeedSearch()) {
-            paddingBottom = AndroidUtilities.navigationBarHeight + (hasMainTabs ? dp(DialogsActivity.MAIN_TABS_HEIGHT_WITH_MARGINS + 8) : dp(16));
+            int navBar = (int) Math.max(AndroidUtilities.navigationBarHeight, windowInsetsStateHolder.getAnimatedMaxBottomInset());
+            paddingBottom = navBar + (hasMainTabs ? dp(DialogsActivity.MAIN_TABS_HEIGHT_WITH_MARGINS + 24) : dp(16));
         } else if (isInsideContainer && parentChatActivity == null) {
             paddingBottom = AndroidUtilities.navigationBarHeight + (hasMainTabs ? dp(DialogsActivity.MAIN_TABS_HEIGHT_WITH_MARGINS) : 0);
         } else {
@@ -19862,7 +19864,8 @@ public class ChatActivity extends BaseFragment implements
     }
 
     private void checkActionBarMenu(boolean animated) {
-        if (currentEncryptedChat != null && !(currentEncryptedChat instanceof TLRPC.TL_encryptedChat) ||
+        if (isFeedSearch() || (currentEncryptedChat == null && currentChat == null && currentUser == null) ||
+                currentEncryptedChat != null && !(currentEncryptedChat instanceof TLRPC.TL_encryptedChat) ||
                 currentChat != null && (chatMode != 0 || threadMessageId != 0 || chatInfo == null || chatInfo.ttl_period == 0) ||
                 currentUser != null && (UserObject.isDeleted(currentUser) || currentEncryptedChat == null && (userInfo == null || userInfo.ttl_period == 0))) {
             if (timeItem2 != null) {

@@ -177,7 +177,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_THANOS_DELETE_EFFECT = 305;
     private static final int ITEM_PILL_STACK_ENABLED = 96;
     private static final int ITEM_PILL_STACK_SETTINGS = 193;
-    private static final int ITEM_AVATAR_CORNERS_PREVIEW = 195;
+    private static final int ITEM_AVATAR_CORNERS_PREVIEW = 421;
     private static final int ITEM_MD3_SWITCH_STYLE = 196;
     private static final int ITEM_BOTTOM_NAV_HIDE_CALLS = 197;
     private static final int ITEM_BOTTOM_NAV_HIDE_CONTACTS = 198;

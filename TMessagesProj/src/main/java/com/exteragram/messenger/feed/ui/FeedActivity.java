@@ -546,9 +546,11 @@ public class FeedActivity extends BaseFragment implements NotificationCenter.Not
         ViewGroup.LayoutParams layoutParams = chatAvatarContainer.getLayoutParams();
         if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
             ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) layoutParams;
-            int margin = this.hasMainTabs ? AndroidUtilities.dp(16) : AndroidUtilities.dp(56);
-            if (marginLayoutParams.leftMargin != margin) {
+            int margin = this.hasMainTabs ? AndroidUtilities.dp(8) : AndroidUtilities.dp(46);
+            int rightMargin = AndroidUtilities.dp(144);
+            if (marginLayoutParams.leftMargin != margin || marginLayoutParams.rightMargin != rightMargin) {
                 marginLayoutParams.leftMargin = margin;
+                marginLayoutParams.rightMargin = rightMargin;
                 chatAvatarContainer.setLayoutParams(marginLayoutParams);
             }
         }

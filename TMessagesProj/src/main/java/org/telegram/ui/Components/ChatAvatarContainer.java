@@ -1388,10 +1388,15 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
     }
 
     public void setFeedAvatar() {
+        hideTimeItem(false);
+        setCommunityItemVisible(false);
+        if (timeItem != null) {
+            timeItem.setVisibility(GONE);
+        }
         this.avatarDrawable.setInfo(UserConfig.getInstance(this.currentAccount).getClientUserId());
         this.avatarDrawable.setAvatarType(AvatarDrawable.AVATAR_TYPE_SAVED);
-        if (Theme.avatarDrawables != null && Theme.avatarDrawables.length > 25 && Theme.avatarDrawables[25] != null) {
-            this.avatarDrawable.setCustomIcon(Theme.avatarDrawables[25]);
+        if (Theme.avatarDrawables != null && Theme.avatarDrawables.length > 5 && Theme.avatarDrawables[5] != null) {
+            this.avatarDrawable.setCustomIcon(Theme.avatarDrawables[5]);
         }
         if (this.avatarImageView != null) {
             this.avatarImageView.setRoundRadius(AndroidUtilities.dp(21));

@@ -3074,30 +3074,39 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         final HundredGramPlaylistManager manager = HundredGramPlaylistManager.getInstance(currentAccount);
         final java.util.List<HundredGramPlaylistManager.CustomPlaylist> list = manager.getPlaylists();
 
-        ItemOptions options = ItemOptions.makeOptions(container, resourcesProvider, actionBar);
-        options.add(R.drawable.msg_add, getString(R.string.NewPlaylist), () -> {
-            showCreatePlaylistDialog(null);
-        });
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(getContext(), resourcesProvider);
+        builder.setTitle(getString(R.string.Playlists));
 
-        if (list.isEmpty()) {
-            options.addGap();
-            options.add(0, getString(R.string.NoPlaylists), null);
-        } else {
-            options.addGap();
-            for (final HundredGramPlaylistManager.CustomPlaylist pl : list) {
-                options.add(R.drawable.msg_tone_add, pl.getTitle() + " (" + pl.getTrackCount() + ")", () -> {
-                    if (pl.getTrackCount() > 0) {
-                        manager.playPlaylist(pl, 0);
-                        dismiss();
-                    } else {
-                        BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
-                            .createSimpleBulletin(R.raw.info, getString(R.string.NoPlaylists))
-                            .show();
-                    }
-                });
-            }
+        CharSequence[] items = new CharSequence[list.size() + 1];
+        items[0] = "+ " + getString(R.string.NewPlaylist);
+        for (int i = 0; i < list.size(); i++) {
+            items[i + 1] = list.get(i).getTitle() + " (" + list.get(i).getTrackCount() + ")";
         }
-        options.show();
+
+        builder.setItems(items, (dialog, which) -> {
+            if (which == 0) {
+                showCreatePlaylistDialog(null);
+            } else {
+                HundredGramPlaylistManager.CustomPlaylist pl = list.get(which - 1);
+                if (pl.getTrackCount() > 0) {
+                    manager.playPlaylist(pl, 0);
+                    playlist.clear();
+                    playlist.addAll(pl.getMessageObjects(currentAccount));
+                    if (listAdapter != null) {
+                        listAdapter.notifyDataSetChanged();
+                    }
+                    BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
+                        .createSimpleBulletin(R.raw.contact_check, pl.getTitle())
+                        .show();
+                } else {
+                    BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
+                        .createSimpleBulletin(R.raw.info, getString(R.string.NoPlaylists))
+                        .show();
+                }
+            }
+        });
+        builder.setNegativeButton(getString(R.string.Cancel), null);
+        builder.show();
     }
 
     private void showAddToPlaylistDialog(final MessageObject messageObject) {
@@ -3105,29 +3114,34 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         final HundredGramPlaylistManager manager = HundredGramPlaylistManager.getInstance(currentAccount);
         final java.util.List<HundredGramPlaylistManager.CustomPlaylist> list = manager.getPlaylists();
 
-        ItemOptions options = ItemOptions.makeOptions(container, resourcesProvider, containerView);
-        options.add(R.drawable.msg_add, getString(R.string.NewPlaylist), () -> {
-            showCreatePlaylistDialog(messageObject);
-        });
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(getContext(), resourcesProvider);
+        builder.setTitle(getString(R.string.AddToPlaylist));
 
-        if (!list.isEmpty()) {
-            options.addGap();
-            for (final HundredGramPlaylistManager.CustomPlaylist pl : list) {
-                options.add(R.drawable.msg_tone_add, pl.getTitle(), () -> {
-                    boolean added = manager.addTrackToPlaylist(pl.getId(), messageObject);
-                    if (added) {
-                        BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
-                            .createSimpleBulletin(R.raw.saved_messages, String.format(getString(R.string.TrackAddedToPlaylist), pl.getTitle()))
-                            .show();
-                    } else {
-                        BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
-                            .createSimpleBulletin(R.raw.info, getString(R.string.TrackAlreadyInPlaylist))
-                            .show();
-                    }
-                });
-            }
+        CharSequence[] items = new CharSequence[list.size() + 1];
+        items[0] = "+ " + getString(R.string.NewPlaylist);
+        for (int i = 0; i < list.size(); i++) {
+            items[i + 1] = list.get(i).getTitle() + " (" + list.get(i).getTrackCount() + ")";
         }
-        options.show();
+
+        builder.setItems(items, (dialog, which) -> {
+            if (which == 0) {
+                showCreatePlaylistDialog(messageObject);
+            } else {
+                HundredGramPlaylistManager.CustomPlaylist pl = list.get(which - 1);
+                boolean added = manager.addTrackToPlaylist(pl.getId(), messageObject);
+                if (added) {
+                    BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
+                        .createSimpleBulletin(R.raw.saved_messages, String.format(getString(R.string.TrackAddedToPlaylist), pl.getTitle()))
+                        .show();
+                } else {
+                    BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
+                        .createSimpleBulletin(R.raw.info, getString(R.string.TrackAlreadyInPlaylist))
+                        .show();
+                }
+            }
+        });
+        builder.setNegativeButton(getString(R.string.Cancel), null);
+        builder.show();
     }
 
     private void showCreatePlaylistDialog(final MessageObject initialTrack) {

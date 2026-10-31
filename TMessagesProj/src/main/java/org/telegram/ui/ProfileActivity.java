@@ -2629,6 +2629,43 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         }
     }
 
+    private void playSavedMusic() {
+        if (userInfo != null && userInfo.saved_music != null) {
+            if (savedMusicList == null) {
+                if (MediaController.getInstance().currentSavedMusicList != null &&
+                    MediaController.getInstance().currentSavedMusicList.currentAccount == currentAccount &&
+                    MediaController.getInstance().currentSavedMusicList.dialogId == getDialogId()) {
+                    savedMusicList = MediaController.getInstance().currentSavedMusicList;
+                } else {
+                    savedMusicList = new MessagesController.SavedMusicList(currentAccount, getDialogId());
+                    savedMusicList.setup(userInfo.saved_music);
+                }
+            }
+            if (!savedMusicList.list.isEmpty()) {
+                boolean sameList = false;
+                if (MediaController.getInstance().currentSavedMusicList != savedMusicList ||
+                    !MediaController.getInstance().isPlayingMessage(savedMusicList.list.get(0))) {
+                    MediaController.getInstance().cleanup();
+                } else {
+                    sameList = true;
+                }
+                MediaController.getInstance().currentSavedMusicList = savedMusicList;
+                MediaController.getInstance().getPlaylist().clear();
+                MediaController.getInstance().getPlaylist().addAll(savedMusicList.list);
+                if (!sameList) {
+                    MediaController.getInstance().playMessage(savedMusicList.list.get(0));
+                }
+                showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
+                return;
+            }
+        }
+        Bundle args = new Bundle();
+        args.putLong("dialog_id", userId);
+        args.putInt("start_from", SharedMediaLayout.TAB_AUDIO);
+        MediaActivity fragment = new MediaActivity(args, null);
+        presentFragment(fragment);
+    }
+
     @Override
     public View createView(Context context) {
         Theme.createProfileResources(context);
@@ -4014,37 +4051,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             if (userInfo != null && userInfo.saved_music != null) {
                 musicView.setMusicDocument(userInfo.saved_music);
             }
-            musicView.setOnClickListener(v -> {
-                if (savedMusicList == null) {
-                    if (
-                        MediaController.getInstance().currentSavedMusicList != null &&
-                        MediaController.getInstance().currentSavedMusicList.currentAccount == currentAccount &&
-                        MediaController.getInstance().currentSavedMusicList.dialogId == getDialogId()) {
-                        savedMusicList = MediaController.getInstance().currentSavedMusicList;
-                    } else {
-                        savedMusicList = new MessagesController.SavedMusicList(currentAccount, getDialogId());
-                        if (userInfo != null && userInfo.saved_music != null) {
-                            savedMusicList.setup(userInfo.saved_music);
-                        }
-                    }
-                }
-                if (!savedMusicList.list.isEmpty()) {
-                    boolean sameList = false;
-                    if (
-                        MediaController.getInstance().currentSavedMusicList != savedMusicList ||
-                        !MediaController.getInstance().isPlayingMessage(savedMusicList.list.get(0))
-                    ) {
-                        MediaController.getInstance().cleanup();
-                    } else {
-                        sameList = true;
-                    }
-                    MediaController.getInstance().currentSavedMusicList = savedMusicList;
-                    MediaController.getInstance().getPlaylist().clear();
-                    MediaController.getInstance().getPlaylist().addAll(savedMusicList.list);
-                    if (!sameList) MediaController.getInstance().playMessage(savedMusicList.list.get(0));
-                    showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
-                }
-            });
+            musicView.setOnClickListener(v -> playSavedMusic());
 
             actionsView = new ProfileActionsView(context, dp(74));
             setActionsMode();
@@ -13627,13 +13634,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     NowPlayingCard card = new NowPlayingCard(mContext, resourcesProvider) {
                         @Override
                         public void onSavedMusicClick() {
-                            if (userInfo != null && userInfo.saved_music != null) {
-                                Bundle args = new Bundle();
-                                args.putLong("dialog_id", userId);
-                                args.putInt("start_from", SharedMediaLayout.TAB_SAVED_MESSAGES);
-                                MediaActivity fragment = new MediaActivity(args, null);
-                                presentFragment(fragment);
-                            }
+                            playSavedMusic();
                         }
                     };
                     view = card;
