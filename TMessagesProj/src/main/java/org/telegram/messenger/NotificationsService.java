@@ -104,7 +104,9 @@ public class NotificationsService extends Service {
 
             Notification notification = builder.build();
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= 34) {
+                startForeground(ID_KEEPALIVE_NOTIFICATION, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(ID_KEEPALIVE_NOTIFICATION, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
             } else {
                 startForeground(ID_KEEPALIVE_NOTIFICATION, notification);
@@ -151,7 +153,13 @@ public class NotificationsService extends Service {
                         flags |= PendingIntent.FLAG_IMMUTABLE;
                     }
                     PendingIntent pi = PendingIntent.getService(getApplicationContext(), 1002, restartIntent, flags);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        if (am.canScheduleExactAlarms()) {
+                            am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1500, pi);
+                        } else {
+                            am.setAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1500, pi);
+                        }
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         am.setExactAndAllowWhileIdle(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1500, pi);
                     } else {
                         am.set(android.app.AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1500, pi);

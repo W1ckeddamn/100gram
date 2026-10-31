@@ -361,12 +361,29 @@ public class HundredGramActivitySimulator {
         PendingIntent pi = PendingIntent.getBroadcast(context, requestCode, intent, flags);
 
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (am.canScheduleExactAlarms()) {
+                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+                } else {
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+                }
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                 am.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
             } else {
                 am.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+            }
+        } catch (SecurityException se) {
+            FileLog.e(se);
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+                } else {
+                    am.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi);
+                }
+            } catch (Throwable t) {
+                FileLog.e(t);
             }
         } catch (Throwable e) {
             FileLog.e(e);

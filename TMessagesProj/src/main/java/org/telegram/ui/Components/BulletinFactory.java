@@ -353,6 +353,18 @@ public final class BulletinFactory {
     }
 
     public Bulletin createSimpleBulletinWithIconSize(int iconRawId, CharSequence text, int iconSize) {
+        if (iconRawId != 0) {
+            try {
+                android.content.Context context = getContext();
+                if (context != null) {
+                    String type = context.getResources().getResourceTypeName(iconRawId);
+                    if ("drawable".equals(type) || "mipmap".equals(type)) {
+                        return createSimpleBulletin(androidx.core.content.ContextCompat.getDrawable(context, iconRawId), text);
+                    }
+                }
+            } catch (Throwable ignore) {
+            }
+        }
         final Bulletin.LottieLayout layout = new Bulletin.LottieLayout(getContext(), resourcesProvider);
         layout.setAnimation(iconRawId, iconSize, iconSize);
         layout.textView.setText(text);

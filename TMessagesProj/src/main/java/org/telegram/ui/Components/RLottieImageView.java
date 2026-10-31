@@ -72,7 +72,28 @@ public class RLottieImageView extends ImageView {
     }
 
     public void setAnimation(int resId, int w, int h, int[] colorReplacement) {
-        setAnimation(new RLottieDrawable(resId, AndroidUtilities.dp(w), AndroidUtilities.dp(h), false, colorReplacement));
+        if (resId != 0) {
+            try {
+                android.content.Context context = getContext();
+                if (context != null) {
+                    String type = context.getResources().getResourceTypeName(resId);
+                    if ("drawable".equals(type) || "mipmap".equals(type)) {
+                        setImageResource(resId);
+                        return;
+                    }
+                }
+            } catch (Throwable ignore) {
+            }
+        }
+        try {
+            setAnimation(new RLottieDrawable(resId, AndroidUtilities.dp(w), AndroidUtilities.dp(h), false, colorReplacement));
+        } catch (Throwable e) {
+            org.telegram.messenger.FileLog.e(e);
+            try {
+                setImageResource(resId);
+            } catch (Throwable ignore) {
+            }
+        }
     }
 
     public void setOnAnimationEndListener(Runnable r) {
