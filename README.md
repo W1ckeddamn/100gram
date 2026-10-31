@@ -118,13 +118,14 @@ When pulling upstream updates (`git merge upstream/master`), Git automatically p
 |-- docs/                            Documentation, guides, plans and donor audits
 |   |-- exteragram/                  exteraGram audit, functionality and settings breakdown
 |   |-- guides/                      Platform build guides and setup instructions
-|   -- plans/                       Architectural and redesign plans
+|   |-- plans/                       Architectural and redesign plans
+|   `-- archive/                     Outdated docs kept for history (handover, feature registry)
+|-- Tools/                           Dev scripts (apkdiff, apkfrombundle, sync-upstream)
 |-- badges.json                      Official user badges registry for GitHub remote sync
 |-- CHANGELOG.md                     Detailed version change log
-|-- FEATURES.md                      Comprehensive feature documentation
 |-- OPEXGRAM_PARITY.md               OpexGram feature parity tracking matrix
 |-- PROJECT_STATE.md                 Dynamic cross-agent handoff & git state
--- ROADMAP_PLAN.md                  Phased implementation roadmap
+`-- ROADMAP_PLAN.md                  Phased implementation roadmap
 ```
 
 ---

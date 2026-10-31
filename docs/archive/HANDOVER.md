@@ -1,3 +1,6 @@
+> ⚠️ **Архив (устарело).** Документ описывает состояние проекта на 29.09.2026 (Telegram 12.10.5, ветка `graher_12.92.1`) и больше не поддерживается.
+> Актуальное состояние: [`PROJECT_STATE.md`](../../PROJECT_STATE.md), [`CHANGELOG.md`](../../CHANGELOG.md), [`README.md`](../../README.md).
+
 # 100gram (Telegraher) — Руководство по передаче проекта (Handover Guide)
 
 > **Для нового разработчика / сопровождающего проекта**  
@@ -33,48 +36,48 @@
 Все кастомные функции форка изолированы и аккуратно встроены в ядро Telegram через контроллеры и хуки:
 
 ### 3.1. Центральная конфигурация
-- **[`HundredGramConfig.java`](TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java)**
+- **[`HundredGramConfig.java`](../../TMessagesProj/src/main/java/org/telegram/messenger/HundredGramConfig.java)**
   - Хранит все флаги и настройки в `SharedPreferences ("hundredgram_config")`.
   - Предоставляет методы `loadConfig()`, `save()`, `saveInt()`, `saveFloat()`.
   - Синхронизирует системные параметры Telegram (например, `SharedConfig.useCamera2Force`, `SharedConfig.roundCamera16to9`).
 
 ### 3.2. Пользовательский интерфейс и экраны настроек
-- **[`HundredGramSettingsActivity.java`](TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java)**: главный экран настроек форка с категоризацией, поиском и бейджами.
-- **[`HundredGramCameraActivity.java`](TMessagesProj/src/main/java/org/telegram/ui/HundredGramCameraActivity.java)**: расширенные настройки камеры (диагностика возможностей сенсора, CameraX, выбор разрешения, 60 FPS, квадратные видеосообщения, битрейт, формат сенсора).
-- **[`HundredGramSubSettingsActivity.java`](TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java)**: подэкраны детальных настроек (Сейф медиа, Приватность, Интерфейс, Автоматизация).
-- **[`HundredGramVaultViewerActivity.java`](TMessagesProj/src/main/java/org/telegram/ui/HundredGramVaultViewerActivity.java)**: чистый интерфейс просмотра сохраненных медиафайлов Сейфа с поиском, чипами фильтрации (`[Все] [Архивные] [Личные] [Группы]`) и контекстным меню.
-- **[`HundredGramRulesActivity.java`](TMessagesProj/src/main/java/org/telegram/ui/HundredGramRulesActivity.java)**: конструктор правил автоматизации сообщений.
+- **[`HundredGramSettingsActivity.java`](../../TMessagesProj/src/main/java/org/telegram/ui/HundredGramSettingsActivity.java)**: главный экран настроек форка с категоризацией, поиском и бейджами.
+- **[`HundredGramCameraActivity.java`](../../TMessagesProj/src/main/java/org/telegram/ui/HundredGramCameraActivity.java)**: расширенные настройки камеры (диагностика возможностей сенсора, CameraX, выбор разрешения, 60 FPS, квадратные видеосообщения, битрейт, формат сенсора).
+- **[`HundredGramSubSettingsActivity.java`](../../TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java)**: подэкраны детальных настроек (Сейф медиа, Приватность, Интерфейс, Автоматизация).
+- **[`HundredGramVaultViewerActivity.java`](../../TMessagesProj/src/main/java/org/telegram/ui/HundredGramVaultViewerActivity.java)**: чистый интерфейс просмотра сохраненных медиафайлов Сейфа с поиском, чипами фильтрации (`[Все] [Архивные] [Личные] [Группы]`) и контекстным меню.
+- **`HundredGramRulesActivity.java`**: конструктор правил автоматизации сообщений.
 
 ---
 
 ### 3.3. Ключевые системы и их реализация
 
 #### ⚡ Сетевой ускоритель (Network Boost)
-- **Контроллер**: [`HundredGramNetworkBoostController.java`](TMessagesProj/src/main/java/org/telegram/messenger/HundredGramNetworkBoostController.java)
+- **Контроллер**: `HundredGramNetworkBoostController.java`
 - **Хуки**:
-  - [`FileLoadOperation.java`](TMessagesProj/src/main/java/org/telegram/messenger/FileLoadOperation.java): параллельная загрузка до 8 потоков MTProto для скачивания больших файлов.
-  - [`FileUploadOperation.java`](TMessagesProj/src/main/java/org/telegram/messenger/FileUploadOperation.java): параллельная выгрузка чанков с адаптивным режимом по размеру файла (<10 МБ, 10–100 МБ, >100 МБ).
+  - [`FileLoadOperation.java`](../../TMessagesProj/src/main/java/org/telegram/messenger/FileLoadOperation.java): параллельная загрузка до 8 потоков MTProto для скачивания больших файлов.
+  - [`FileUploadOperation.java`](../../TMessagesProj/src/main/java/org/telegram/messenger/FileUploadOperation.java): параллельная выгрузка чанков с адаптивным режимом по размеру файла (<10 МБ, 10–100 МБ, >100 МБ).
 - **Мониторинг**: встроенный спидометр в реальном времени, подсчет активных сокетов и встроенный тест скорости/пинга до DC Telegram.
 
 #### 📷 Advanced Camera & Video Notes Engine
 - **Поддерживаемые движки**:
   1. `CAMERA_ENGINE_SYSTEM (0)`: системная логика Telegram;
-  2. `CAMERA_ENGINE_CAMERAX (1)`: Google Jetpack CameraX ([`CameraXUtils.java`](TMessagesProj/src/main/java/org/telegram/messenger/camera/camerax/CameraXUtils.java)) с поддержкой 60 FPS, ультраширокоугольного объектива (0.6x) и плавного зум-слайдера;
+  2. `CAMERA_ENGINE_CAMERAX (1)`: Google Jetpack CameraX ([`CameraXUtils.java`](../../TMessagesProj/src/main/java/org/telegram/messenger/camera/camerax/CameraXUtils.java)) с поддержкой 60 FPS, ультраширокоугольного объектива (0.6x) и плавного зум-слайдера;
   3. `CAMERA_ENGINE_CAMERA2 (2)`: принудительный Camera2 API;
   4. `CAMERA_ENGINE_CAMERA1_LEGACY (3)`: устаревший Camera1 API для слабых и старых чипсетов.
 - **Квадратные видеосообщения («Квадратные кружочки»)**:
-  - Видоискатель ([`InstantCameraView.java`](TMessagesProj/src/main/java/org/telegram/ui/Components/InstantCameraView.java)): переключение контура на `outline.setRoundRect(..., AndroidUtilities.dp(16))`.
-  - Отображение в чате ([`ChatMessageCell.java`](TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java)): маска `photoImage.setRoundRadius(AndroidUtilities.dp(16))`.
+  - Видоискатель ([`InstantCameraView.java`](../../TMessagesProj/src/main/java/org/telegram/ui/Components/InstantCameraView.java)): переключение контура на `outline.setRoundRect(..., AndroidUtilities.dp(16))`.
+  - Отображение в чате ([`ChatMessageCell.java`](../../TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java)): маска `photoImage.setRoundRadius(AndroidUtilities.dp(16))`.
 - **Отключение фонового размытия при записи**:
-  - [`ChatActivity.java`](TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java#L46585): скрытие `roundVideoRecordBackground` во время записи кружка.
+  - [`ChatActivity.java`](../../TMessagesProj/src/main/java/org/telegram/ui/ChatActivity.java#L46585): скрытие `roundVideoRecordBackground` во время записи кружка.
 - **Ступенчатый битрейт**:
   - Пресеты: Авто, 750 Кбит/с, 1.2 Мбит/с, 2.0 Мбит/с, 3.0 Мбит/с передаются в кодек видео `MediaFormat.KEY_BIT_RATE` в `TextureMovieEncoder`.
 - **Формат сенсора (16:9 vs 4:3)**:
   - `HundredGramConfig.cameraRoundSensor16to9` управляет `SharedConfig.roundCamera16to9` для корректного отображения без искажений на сенсорах 4:3.
 
 #### 🗄️ Сейф медиа (Media Vault) и Фоновый архиватор
-- **Контроллер**: [`HundredGramVaultController.java`](TMessagesProj/src/main/java/org/telegram/messenger/HundredGramVaultController.java)
-- **Фоновый архиватор**: [`HundredGramBackgroundArchiver.java`](TMessagesProj/src/main/java/org/telegram/messenger/HundredGramBackgroundArchiver.java)
+- **Контроллер**: `HundredGramVaultController.java`
+- **Фоновый архиватор**: [`HundredGramBackgroundArchiver.java`](../../TMessagesProj/src/main/java/org/telegram/messenger/HundredGramBackgroundArchiver.java)
 - **Возможности**:
   - Сканирует локальную базу SQLite Telegram (`SELECT did, folder_id FROM dialogs`) для охвата 100% диалогов устройства, включая архивные папки.
   - Автоскачивание медиа (фото, видео, голосовые, документы) с фильтрацией по объему (до N МБ) и типу сети (Wi-Fi/любая).
@@ -82,8 +85,8 @@
 
 #### 🎭 Режим стримера (Streamer Mode)
 - **Защита экрана**: установка флага окна `WindowManager.LayoutParams.FLAG_SECURE` — делает экран полностью черным в Discord, OBS, при захвате экрана и блокирует системные скриншоты.
-- **Маскирование текста**: в [`DialogCell.java`](TMessagesProj/src/main/java/org/telegram/ui/Cells/DialogCell.java) мгновенно заменяет текст на `••••••••••`.
-- **Защита профиля**: в [`SettingsActivity.java`](TMessagesProj/src/main/java/org/telegram/ui/SettingsActivity.java) скрывает аватарку, номер, юзернейм и подставляет фейковое имя стримера.
+- **Маскирование текста**: в [`DialogCell.java`](../../TMessagesProj/src/main/java/org/telegram/ui/Cells/DialogCell.java) мгновенно заменяет текст на `••••••••••`.
+- **Защита профиля**: в [`SettingsActivity.java`](../../TMessagesProj/src/main/java/org/telegram/ui/SettingsActivity.java) скрывает аватарку, номер, юзернейм и подставляет фейковое имя стримера.
 
 #### 👻 Режим невидимки (Ghost Mode)
 - **Нечиталка**: перехват исходящих пакетов прочтения сообщений в `MessagesController.java` (`sendReadMessages`).
@@ -91,11 +94,11 @@
 - **Скрытие набора текста**: подавление статусов тайпинга и записи аудио/видео.
 
 #### 🤖 Автоматизация (Automation Engine)
-- **Контроллер**: [`AutomationController.java`](TMessagesProj/src/main/java/org/telegram/messenger/AutomationController.java)
+- **Контроллер**: `AutomationController.java`
 - Правила по ключевым словам и типам медиа: автосохранение в «Избранное», сохранение в галерею смартфона, автопересылка в целевой чат.
 
 #### 🛰️ Keep-Alive Foreground Service
-- **Сервис**: [`HundredGramKeepAliveService.java`](TMessagesProj/src/main/java/org/telegram/messenger/HundredGramKeepAliveService.java)
+- **Сервис**: `HundredGramKeepAliveService.java`
 - Предотвращает засыпание процессов приложения на агрессивных прошивках (Xiaomi MIUI/HyperOS, Huawei EMUI, Samsung OneUI).
 
 ---

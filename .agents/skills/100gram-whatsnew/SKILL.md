@@ -84,7 +84,7 @@ items.add(UItem.asShadow(null));
 ---
 
 ### Шаг 4. Реестр возможностей (`FEATURES.md`)
-Файл: [`FEATURES.md`](file:///D:/100gram/FEATURES.md)
+Файл: [`FEATURES.md`](file:///D:/100gram/docs/archive/FEATURES.md)
 
 Если была добавлена полноценная пользовательская фича или раздел настроек, добавь новую пронумерованную секцию в конец файла:
 

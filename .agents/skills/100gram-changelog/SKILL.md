@@ -21,7 +21,7 @@ description: >-
    - Добавь лаконичную запись в [`CHANGELOG.md`](file:///D:/100gram/CHANGELOG.md) в секцию `[Unreleased]`.
 2. **Если добавлена новая функция, настройка или UI-переключатель:**
    - Добавь пункт в [`CHANGELOG.md`](file:///D:/100gram/CHANGELOG.md) в секцию `[Unreleased] -> ### Added`.
-   - Зарегистрируй функцию в каталоге [`FEATURES.md`](file:///D:/100gram/FEATURES.md) с указанием ключа конфигурации (`HundredGramConfig`), пути в меню настроек и ключевых классов.
+   - Зарегистрируй функцию в каталоге [`FEATURES.md`](file:///D:/100gram/docs/archive/FEATURES.md) с указанием ключа конфигурации (`HundredGramConfig`), пути в меню настроек и ключевых классов.
    - **Добавь информацию о функции во внутриклиентский экран обновлений** [`HundredGramWhatsNewActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramWhatsNewActivity.java) в актуальную версию.
 3. **Если вырезан сторонний сервис, реклама или трекер:**
    - Добавь пункт в [`CHANGELOG.md`](file:///D:/100gram/CHANGELOG.md) в секцию `[Unreleased] -> ### Removed` или `### Security`.
@@ -73,7 +73,7 @@ description: >-
 
 ## 3. Стандарт ведения реестра функций `FEATURES.md`
 
-[`FEATURES.md`](file:///D:/100gram/FEATURES.md) является полной спецификацией всех кастомных возможностей форка 100gram.
+[`FEATURES.md`](file:///D:/100gram/docs/archive/FEATURES.md) является полной спецификацией всех кастомных возможностей форка 100gram.
 
 При добавлении новой фичи добавь запись следующего формата:
 
@@ -172,7 +172,7 @@ powershell -ExecutionPolicy Bypass -File .agents/skills/100gram-changelog/script
 
 - [ ] Внесены ли изменения в [`CHANGELOG.md`](file:///D:/100gram/CHANGELOG.md) в секцию `[Unreleased]`?
 - [ ] Использованы ли корректные теги подсистем (`[UI]`, `[Camera]`, `[Tracker]`, `[Vault]`, `[Core]`)?
-- [ ] Если добавлен новый тумблер или экран — внесен ли он в [`FEATURES.md`](file:///D:/100gram/FEATURES.md)?
+- [ ] Если добавлен новый тумблер или экран — внесен ли он в [`FEATURES.md`](file:///D:/100gram/docs/archive/FEATURES.md)?
 - [ ] Если добавлены пользовательские функции — обновлен ли экран [`HundredGramWhatsNewActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramWhatsNewActivity.java) по регламенту [`100gram-whatsnew`](file:///D:/100gram/.agents/skills/100gram-whatsnew/SKILL.md)?
 - [ ] Сохранены ли ссылки на автора `@w1ckeddamn` и репозиторий `https://github.com/W1ckeddamn/100gram`?
 - [ ] Проверена ли компиляция проекта через `compileAfatDebugJavaWithJavac`?
