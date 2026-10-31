@@ -1,8 +1,8 @@
 # 100gram Project State & Handoff
 
-> **Generated:** 2026-10-31 16:54 UTC  
+> **Generated:** 2026-10-31 17:38 UTC  
 > **Branch:** `main`  
-> **Head Commit:** `1b2f92679` (fix(ui): resolve feed avatar notch, header offsets, now playing redirect, avatar preview collision, and player playlists)  
+> **Head Commit:** `ea3ffd0f6` (fix(profile): fix registration date icon being overwritten to null and support row tap)  
 > **Working Tree:** `Clean`
 
 ---
@@ -45,6 +45,8 @@ Antigravity sessions established the core architectural foundations of 100gram:
 ## 4. Recent Commits (Last 10)
 
 ```text
+ea3ffd0f6 fix(profile): fix registration date icon being overwritten to null and support row tap
+35fccfb02 docs: sync PROJECT_STATE.md with latest bug fixes
 1b2f92679 fix(ui): resolve feed avatar notch, header offsets, now playing redirect, avatar preview collision, and player playlists
 3dbde83dd docs: archive stale handover/features, move dev scripts to Tools, add docs index
 364504bbc docs: update PROJECT_STATE.md with clean tree
@@ -53,8 +55,6 @@ f9978124a chore: clean project root, organize docs into docs/ subfolders, and ad
 7ad190da0 feat: Add 12 custom vector badges, update dynamic roadmap parity and sync script
 69f03668a feat: Add remote GitHub badges sync, owner ID 1211607237 role access and admin management
 06605a865 feat: Add Custom User Badges with icon, title, description and management UI
-4821a0375 feat(media): implement song lyrics, md3 audio player, and slowmode queue (Phase 5)
-a5e541068 feat(visuals): implement Phase 4 - glass bubbles, expressive input box, and sticker quotes
 ```
 
 ---
