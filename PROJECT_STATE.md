@@ -2,8 +2,8 @@
 
 > **Generated:** 2026-10-31 16:15 UTC  
 > **Branch:** `main`  
-> **Head Commit:** `6cd3d0977` (docs: update PROJECT_STATE.md with dynamic feature tracking and 12-icon pack commit)  
-> **Working Tree:** `DIRTY (31 changes)`
+> **Head Commit:** `f9978124a` (chore: clean project root, organize docs into docs/ subfolders, and add 6 additional vector badges (18 total))  
+> **Working Tree:** `Clean`
 
 ---
 
@@ -45,6 +45,7 @@ Antigravity sessions established the core architectural foundations of 100gram:
 ## 4. Recent Commits (Last 10)
 
 ```text
+f9978124a chore: clean project root, organize docs into docs/ subfolders, and add 6 additional vector badges (18 total)
 6cd3d0977 docs: update PROJECT_STATE.md with dynamic feature tracking and 12-icon pack commit
 7ad190da0 feat: Add 12 custom vector badges, update dynamic roadmap parity and sync script
 69f03668a feat: Add remote GitHub badges sync, owner ID 1211607237 role access and admin management
@@ -54,7 +55,6 @@ a5e541068 feat(visuals): implement Phase 4 - glass bubbles, expressive input box
 0459f1b50 feat: complete Roadmap Phases 1, 2, and 3 (MD3 Suite, Sliders Engine, Sticker Owner, TTL Secret View, Social Link Fixers)
 eb607d491 docs: sync project state for interactive round video crop
 03b25261c feat(media): interactive circular crop for round video messages with 6-point contract
-04f4ba316 docs: update PROJECT_STATE.md
 ```
 
 ---
@@ -62,7 +62,7 @@ eb607d491 docs: sync project state for interactive round video crop
 ## 5. Current Focus & Handoff Point
 
 - **Active OpenCode Session:** `ses_e816b9ef8ffeMVX1FeSi525T7i` (Opexgram 13.1.1 beta10 features)
-- **Last Updated:** 2026-10-31 18:15:19
+- **Last Updated:** 2026-10-31 18:15:37
 - **Last Request:** "давай переработай все тогда и своих добавь может есть идеи"
 - **Active Focus:** Custom User Badges (`HundredGramBadgesController`), remote GitHub JSON sync (`badges.json`), Lead Dev role (ID `1211607237L`), and 12-icon VectorDrawable expansion.
 
@@ -85,7 +85,7 @@ eb607d491 docs: sync project state for interactive round video crop
 | **MD3 Audio Player** | Media | `4821a0375` | `HundredGramConfig.md3AudioPlayer`, `AudioPlayerAlert` |
 | **Slowmode Queue** | Chats | `4821a0375` | `HundredGramConfig.slowmodeQueue`, `HundredGramSlowmodeController` |
 | **Custom User Badges & Remote Sync** | Badges | `69f03668a` | `HundredGramConfig.customBadgesEnabled`, `HundredGramBadgesController` |
-| **12 Vector Badges Icon Pack** | Assets | `7ad190da0` | 12 VectorDrawable XML assets (`badge_*.xml`) |
+| **12 Vector Badges Icon Pack** | Assets | `f9978124a` | 12 VectorDrawable XML assets (`badge_*.xml`) |
 
 ### ⏳ Remaining Backlog & Active Work
 
