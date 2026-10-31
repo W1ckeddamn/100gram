@@ -115,9 +115,16 @@ When pulling upstream updates (`git merge upstream/master`), Git automatically p
 |   `-- src/main/res/                Resources, styles, drawables, localizations
 |-- TMessagesProj_AppStandalone/     Standalone APK build module (no Google Play Services)
 |-- .agents/skills/                  Agent engineering guides and architectural rules
+|-- docs/                            Documentation, guides, plans and donor audits
+|   |-- exteragram/                  exteraGram audit, functionality and settings breakdown
+|   |-- guides/                      Platform build guides and setup instructions
+|   -- plans/                       Architectural and redesign plans
+|-- badges.json                      Official user badges registry for GitHub remote sync
 |-- CHANGELOG.md                     Detailed version change log
 |-- FEATURES.md                      Comprehensive feature documentation
-`-- HANDOVER.md                      Technical handover guide
+|-- OPEXGRAM_PARITY.md               OpexGram feature parity tracking matrix
+|-- PROJECT_STATE.md                 Dynamic cross-agent handoff & git state
+-- ROADMAP_PLAN.md                  Phased implementation roadmap
 ```
 
 ---

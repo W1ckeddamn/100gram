@@ -1840,6 +1840,12 @@
     <string name="BadgeIconRobot">Robot</string>
     <string name="BadgeIconGlasses">Agent Glasses</string>
     <string name="BadgeIconMusic">Music Note</string>
+    <string name="BadgeIconBolt">Lightning Bolt</string>
+    <string name="BadgeIconBook">Book / Scholar</string>
+    <string name="BadgeIconCode">Developer Code</string>
+    <string name="BadgeIconGhost">Ghost / Stealth</string>
+    <string name="BadgeIconInfinity">Infinity</string>
+    <string name="BadgeIconPuzzle">Puzzle Piece</string>
     <string name="CustomBadgeColor">Badge Color</string>
     <string name="CustomBadgeSaved">Badge saved</string>
     <string name="CustomBadgeDeleted">Badge deleted</string>

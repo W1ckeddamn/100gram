@@ -1851,6 +1851,12 @@
     <string name="BadgeIconRobot">Робот</string>
     <string name="BadgeIconGlasses">Очки агента</string>
     <string name="BadgeIconMusic">Нота</string>
+    <string name="BadgeIconBolt">Молния</string>
+    <string name="BadgeIconBook">Книга</string>
+    <string name="BadgeIconCode">Код / Разработчик</string>
+    <string name="BadgeIconGhost">Призрак / Стелс</string>
+    <string name="BadgeIconInfinity">Бесконечность</string>
+    <string name="BadgeIconPuzzle">Пазл / Моддер</string>
     <string name="CustomBadgeColor">Цвет значка</string>
     <string name="CustomBadgeSaved">Значок сохранен</string>
     <string name="CustomBadgeDeleted">Значок удален</string>

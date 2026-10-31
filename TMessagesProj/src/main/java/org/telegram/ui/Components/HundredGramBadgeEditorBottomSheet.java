@@ -75,7 +75,13 @@ public class HundredGramBadgeEditorBottomSheet extends BottomSheet {
             HundredGramBadgesController.ICON_WAND,
             HundredGramBadgesController.ICON_ROBOT,
             HundredGramBadgesController.ICON_GLASSES,
-            HundredGramBadgesController.ICON_MUSIC
+            HundredGramBadgesController.ICON_MUSIC,
+            HundredGramBadgesController.ICON_BOLT,
+            HundredGramBadgesController.ICON_BOOK,
+            HundredGramBadgesController.ICON_CODE,
+            HundredGramBadgesController.ICON_GHOST,
+            HundredGramBadgesController.ICON_INFINITY,
+            HundredGramBadgesController.ICON_PUZZLE
     };
 
     private final View[] iconViews = new View[ICON_TYPES.length];

@@ -54,6 +54,12 @@ public class HundredGramBadgesController {
     public static final int ICON_ROBOT = 16;
     public static final int ICON_GLASSES = 17;
     public static final int ICON_MUSIC = 18;
+    public static final int ICON_BOLT = 19;
+    public static final int ICON_CODE = 20;
+    public static final int ICON_GHOST = 21;
+    public static final int ICON_PUZZLE = 22;
+    public static final int ICON_BOOK = 23;
+    public static final int ICON_INFINITY = 24;
 
     private static volatile HundredGramBadgesController instance;
 
@@ -465,6 +471,18 @@ public class HundredGramBadgesController {
                 return R.drawable.badge_glasses;
             case ICON_MUSIC:
                 return R.drawable.badge_music;
+            case ICON_BOLT:
+                return R.drawable.badge_bolt;
+            case ICON_CODE:
+                return R.drawable.badge_code;
+            case ICON_GHOST:
+                return R.drawable.badge_ghost;
+            case ICON_PUZZLE:
+                return R.drawable.badge_puzzle;
+            case ICON_BOOK:
+                return R.drawable.badge_book;
+            case ICON_INFINITY:
+                return R.drawable.badge_infinity;
             case ICON_CROWN:
             default:
                 return R.drawable.filled_rating_crown;
@@ -525,6 +543,18 @@ public class HundredGramBadgesController {
                 return LocaleController.getString("BadgeIconGlasses", R.string.BadgeIconGlasses);
             case ICON_MUSIC:
                 return LocaleController.getString("BadgeIconMusic", R.string.BadgeIconMusic);
+            case ICON_BOLT:
+                return LocaleController.getString("BadgeIconBolt", R.string.BadgeIconBolt);
+            case ICON_CODE:
+                return LocaleController.getString("BadgeIconCode", R.string.BadgeIconCode);
+            case ICON_GHOST:
+                return LocaleController.getString("BadgeIconGhost", R.string.BadgeIconGhost);
+            case ICON_PUZZLE:
+                return LocaleController.getString("BadgeIconPuzzle", R.string.BadgeIconPuzzle);
+            case ICON_BOOK:
+                return LocaleController.getString("BadgeIconBook", R.string.BadgeIconBook);
+            case ICON_INFINITY:
+                return LocaleController.getString("BadgeIconInfinity", R.string.BadgeIconInfinity);
             default:
                 return "Бейдж";
         }
