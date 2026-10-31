@@ -16,7 +16,9 @@ import static org.telegram.messenger.LocaleController.getString;
 import static org.telegram.ui.bots.AffiliateProgramFragment.percents;
 
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.messenger.HundredGramBadgesController;
 import org.telegram.messenger.HundredGramSlowmodeController;
+import org.telegram.ui.Components.HundredGramBadgeAlert;
 import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.HundredGramContentFilterController;
 import org.telegram.messenger.HundredGramIpInfoController;
@@ -41273,6 +41275,10 @@ public class ChatActivity extends BaseFragment implements
         @Override
         public void didPressUserStatus(ChatMessageCell cell, TLRPC.User user, TLRPC.Document document, String giftSlug) {
             if (cell == null) {
+                return;
+            }
+            if (user != null && HundredGramConfig.customBadgesEnabled && HundredGramBadgesController.getInstance().hasBadge(user.id)) {
+                HundredGramBadgeAlert.showAlert(ChatActivity.this, user.id);
                 return;
             }
             if (!TextUtils.isEmpty(giftSlug)) {

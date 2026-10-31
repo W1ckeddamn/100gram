@@ -155,6 +155,9 @@ import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.HundredGramUtils;
 import org.telegram.messenger.HundredGramActivityTracker;
 import org.telegram.messenger.HundredGramAvatarHistory;
+import org.telegram.messenger.HundredGramBadgesController;
+import org.telegram.ui.Components.HundredGramBadgeAlert;
+import org.telegram.ui.Components.HundredGramBadgeEditorBottomSheet;
 import org.telegram.messenger.HundredGramProfileLogger;
 import org.telegram.messenger.HundredGramRegDateController;
 import org.telegram.messenger.HundredGramJoinDate;
@@ -621,6 +624,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private final static int hundredgram_avatar_history = 123;
     private final static int hundredgram_profile_history = 124;
     private final static int hundredgram_shadowban = 125;
+    private final static int hundredgram_custom_badge = 126;
 
     private Rect rect = new Rect();
 
@@ -2902,6 +2906,14 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         ).show();
                         if (otherItem != null) {
                             otherItem.setSubItemText(hundredgram_notify_online, LocaleController.getString(tracked ? "DisableNotifyUserOnline" : "EnableNotifyUserOnline", tracked ? R.string.DisableNotifyUserOnline : R.string.EnableNotifyUserOnline));
+                        }
+                    }
+                } else if (id == hundredgram_custom_badge) {
+                    if (userId != 0) {
+                        if (HundredGramBadgesController.getInstance().hasBadge(userId)) {
+                            HundredGramBadgeAlert.showAlert(ProfileActivity.this, userId);
+                        } else {
+                            new HundredGramBadgeEditorBottomSheet(ProfileActivity.this, userId, null).show();
                         }
                     }
                 } else if (id == hundredgram_user_activity) {
@@ -11811,7 +11823,19 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         nameTextView[a].setRightDrawable2(null);
                         nameTextViewRightDrawable2ContentDescription = null;
                     }
-                    if (user != null/* && !getMessagesController().premiumFeaturesBlocked()*/ && !MessagesController.isSupportUser(user) && DialogObject.getEmojiStatusDocumentId(user.emoji_status) != 0) {
+                    if (user != null && HundredGramConfig.customBadgesEnabled && HundredGramBadgesController.getInstance().hasBadge(user.id)) {
+                        rightIconIsStatus = true;
+                        rightIconIsPremium = false;
+                        HundredGramBadgesController.Badge b = HundredGramBadgesController.getInstance().getBadge(user.id);
+                        if (b != null && b.iconType == HundredGramBadgesController.ICON_CUSTOM_EMOJI && b.customEmojiDocumentId != 0) {
+                            TLRPC.TL_emojiStatusCollectible st = new TLRPC.TL_emojiStatusCollectible();
+                            st.document_id = b.customEmojiDocumentId;
+                            nameTextView[a].setRightDrawable(getEmojiStatusDrawable(st, false, false, a));
+                        } else if (b != null) {
+                            nameTextView[a].setRightDrawable(HundredGramBadgesController.getInstance().getBadgeDrawable(b, 0));
+                        }
+                        nameTextViewRightDrawableContentDescription = b != null ? b.title : null;
+                    } else if (user != null/* && !getMessagesController().premiumFeaturesBlocked()*/ && !MessagesController.isSupportUser(user) && DialogObject.getEmojiStatusDocumentId(user.emoji_status) != 0) {
                         rightIconIsStatus = true;
                         rightIconIsPremium = false;
                         nameTextView[a].setRightDrawable(getEmojiStatusDrawable(user.emoji_status, false, false, a));
@@ -11833,7 +11857,18 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     } else {
                         nameTextView[a].setRightDrawable2(null);
                     }
-                    if (/*!getMessagesController().premiumFeaturesBlocked() && */user != null && !MessagesController.isSupportUser(user) && DialogObject.getEmojiStatusDocumentId(user.emoji_status) != 0) {
+                    if (user != null && HundredGramConfig.customBadgesEnabled && HundredGramBadgesController.getInstance().hasBadge(user.id)) {
+                        rightIconIsStatus = true;
+                        rightIconIsPremium = false;
+                        HundredGramBadgesController.Badge b = HundredGramBadgesController.getInstance().getBadge(user.id);
+                        if (b != null && b.iconType == HundredGramBadgesController.ICON_CUSTOM_EMOJI && b.customEmojiDocumentId != 0) {
+                            TLRPC.TL_emojiStatusCollectible st = new TLRPC.TL_emojiStatusCollectible();
+                            st.document_id = b.customEmojiDocumentId;
+                            nameTextView[a].setRightDrawable(getEmojiStatusDrawable(st, true, true, a));
+                        } else if (b != null) {
+                            nameTextView[a].setRightDrawable(HundredGramBadgesController.getInstance().getBadgeDrawable(b, 0));
+                        }
+                    } else if (/*!getMessagesController().premiumFeaturesBlocked() && */user != null && !MessagesController.isSupportUser(user) && DialogObject.getEmojiStatusDocumentId(user.emoji_status) != 0) {
                         rightIconIsStatus = true;
                         rightIconIsPremium = false;
                         nameTextView[a].setRightDrawable(getEmojiStatusDrawable(user.emoji_status, true, true, a));
@@ -11855,12 +11890,15 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 if (a == 1 && (rightIconIsStatus || rightIconIsPremium)) {
                     nameTextView[a].setRightDrawableOutside(true);
                 }
-                if (user.self && getMessagesController().isPremiumUser(user)) {
+                if (user != null && HundredGramConfig.customBadgesEnabled && HundredGramBadgesController.getInstance().hasBadge(user.id)) {
+                    nameTextView[a].setRightDrawableOnClick(v -> {
+                        HundredGramBadgeAlert.showAlert(ProfileActivity.this, user.id);
+                    });
+                } else if (user.self && getMessagesController().isPremiumUser(user)) {
                     nameTextView[a].setRightDrawableOnClick(v -> {
                         showStatusSelect();
                     });
-                }
-                if (!user.self && getMessagesController().isPremiumUser(user)) {
+                } else if (!user.self && getMessagesController().isPremiumUser(user)) {
                     final SimpleTextView textView = nameTextView[a];
                     nameTextView[a].setRightDrawableOnClick(v -> {
                         if (user.emoji_status instanceof TLRPC.TL_emojiStatusCollectible) {
@@ -12527,6 +12565,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         } else {
                             otherItem.addSubItem(hundredgram_user_activity, R.drawable.msg_calendar2, LocaleController.getString("HundredGramMyActivityLog", R.string.HundredGramMyActivityLog));
                         }
+                    }
+                    if (userId != 0) {
+                        boolean hasBadge = HundredGramBadgesController.getInstance().hasBadge(userId);
+                        otherItem.addSubItem(hundredgram_custom_badge, R.drawable.verified_check, LocaleController.getString(hasBadge ? "HundredGramCustomBadgeView" : "HundredGramCustomBadgeAssign", hasBadge ? R.string.HundredGramCustomBadgeView : R.string.HundredGramCustomBadgeAssign));
                     }
                     if (userId != 0 && (user == null || !user.self)) {
                         otherItem.addSubItem(hundredgram_chat_settings, R.drawable.msg_settings_old, LocaleController.getString("HundredGramChatSettingsTitle", R.string.HundredGramChatSettingsTitle));

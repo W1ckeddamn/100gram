@@ -117,6 +117,7 @@ import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.HundredGramBadgesController;
 import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.HundredGramDebugLog;
 import org.telegram.messenger.FlagSecureReason;
@@ -19967,6 +19968,19 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
 
     private Object getAuthorStatus() {
         if (currentUser != null) {
+            if (HundredGramConfig.customBadgesEnabled && HundredGramBadgesController.getInstance().hasBadge(currentUser.id)) {
+                HundredGramBadgesController.Badge b = HundredGramBadgesController.getInstance().getBadge(currentUser.id);
+                if (b != null) {
+                    if (b.iconType == HundredGramBadgesController.ICON_CUSTOM_EMOJI && b.customEmojiDocumentId != 0) {
+                        return b.customEmojiDocumentId;
+                    } else {
+                        Drawable d = HundredGramBadgesController.getInstance().getBadgeDrawable(b, 0);
+                        if (d != null) {
+                            return d;
+                        }
+                    }
+                }
+            }
             Long emojiStatusId = UserObject.getEmojiStatusDocumentId(currentUser);
             if (emojiStatusId != null) {
                 if (currentUser.emoji_status instanceof TLRPC.TL_emojiStatusCollectible) {
@@ -19981,6 +19995,19 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 long did = DialogObject.getPeerDialogId(currentMessageObject.messageOwner.from_id);
                 if (did >= 0) {
                     TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(did);
+                    if (user != null && HundredGramConfig.customBadgesEnabled && HundredGramBadgesController.getInstance().hasBadge(user.id)) {
+                        HundredGramBadgesController.Badge b = HundredGramBadgesController.getInstance().getBadge(user.id);
+                        if (b != null) {
+                            if (b.iconType == HundredGramBadgesController.ICON_CUSTOM_EMOJI && b.customEmojiDocumentId != 0) {
+                                return b.customEmojiDocumentId;
+                            } else {
+                                Drawable d = HundredGramBadgesController.getInstance().getBadgeDrawable(b, 0);
+                                if (d != null) {
+                                    return d;
+                                }
+                            }
+                        }
+                    }
                     if (user != null && user.emoji_status instanceof TLRPC.TL_emojiStatusCollectible) {
                         nameStatusSlug = ((TLRPC.TL_emojiStatusCollectible) user.emoji_status).slug;
                     }

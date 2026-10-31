@@ -16,7 +16,9 @@ import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.HundredGramActivitySimulator;
+import org.telegram.messenger.HundredGramBadgesController;
 import org.telegram.messenger.HundredGramConfig;
+import org.telegram.ui.HundredGramBadgesActivity;
 import org.telegram.messenger.HundredGramContentFilterController;
 import org.telegram.messenger.HundredGramHaptics;
 import org.telegram.messenger.MessagesController;
@@ -218,6 +220,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_DELETED_MARK_COLOR = 298;
     private static final int ITEM_DELETED_MESSAGES_TRANSPARENT = 296;
     private static final int ITEM_CONTENT_FILTER = 297;
+    private static final int ITEM_CUSTOM_BADGES_ENABLED = 395;
+    private static final int ITEM_CUSTOM_BADGES_MANAGE = 396;
 
     // Item IDs for CATEGORY_ACTIONS
     private static final int ITEM_DOUBLE_TAP_INCOMING = 50;
@@ -985,6 +989,14 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asButton(ITEM_CONTENT_FILTER, R.drawable.menu_tag_filter,
                 LocaleController.getString("ContentFilterTitle", R.string.ContentFilterTitle),
                 HundredGramContentFilterController.isFilterEnabled() ? LocaleController.getString("Enabled", R.string.Enabled) : LocaleController.getString("Disabled", R.string.Disabled)));
+        items.add(UItem.asCheck(ITEM_CUSTOM_BADGES_ENABLED, LocaleController.getString("HundredGramCustomBadges", R.string.HundredGramCustomBadges))
+                .setChecked(HundredGramConfig.customBadgesEnabled));
+        if (HundredGramConfig.customBadgesEnabled) {
+            int badgeCount = HundredGramBadgesController.getInstance().getAllBadges().size();
+            String sub = badgeCount > 0 ? String.valueOf(badgeCount) : LocaleController.getString("HundredGramBadgesNone", R.string.HundredGramBadgesNone);
+            items.add(UItem.asButton(ITEM_CUSTOM_BADGES_MANAGE, R.drawable.verified_check, LocaleController.getString("HundredGramManageBadges", R.string.HundredGramManageBadges), sub));
+        }
+        items.add(UItem.asShadow(LocaleController.getString("HundredGramCustomBadgesInfo", R.string.HundredGramCustomBadgesInfo)));
         items.add(UItem.asCheck(ITEM_HIDE_ACTION_BAR_STATUS, LocaleController.getString("HideActionBarStatus", R.string.HideActionBarStatus))
                 .setChecked(HundredGramConfig.hideActionBarStatus));
         items.add(UItem.asCheck(ITEM_HIDE_SEND_AS_PEER, LocaleController.getString("HideSendAsPeer", R.string.HideSendAsPeer))
@@ -2250,6 +2262,19 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                     messageBubblePreviewCell.update();
                 }
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
+                break;
+            case ITEM_CUSTOM_BADGES_ENABLED:
+                HundredGramConfig.toggleCustomBadgesEnabled();
+                item.setChecked(HundredGramConfig.customBadgesEnabled);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.customBadgesEnabled);
+                }
+                if (listView != null && listView.adapter != null) {
+                    listView.adapter.update(true);
+                }
+                break;
+            case ITEM_CUSTOM_BADGES_MANAGE:
+                presentFragment(new HundredGramBadgesActivity());
                 break;
             case ITEM_HIDE_ACTION_BAR_STATUS:
                 HundredGramConfig.toggleHideActionBarStatus();

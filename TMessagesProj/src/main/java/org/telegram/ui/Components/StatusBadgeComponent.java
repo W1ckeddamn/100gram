@@ -5,6 +5,8 @@ import android.view.View;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.DialogObject;
+import org.telegram.messenger.HundredGramBadgesController;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
@@ -33,6 +35,21 @@ public class StatusBadgeComponent {
     }
 
     public Drawable updateDrawable(TLRPC.User user, TLRPC.Chat chat, int colorFilter, boolean animated) {
+        if (HundredGramConfig.customBadgesEnabled) {
+            long peerId = user != null ? user.id : (chat != null ? -chat.id : 0);
+            if (peerId != 0 && HundredGramBadgesController.getInstance().hasBadge(peerId)) {
+                HundredGramBadgesController.Badge badge = HundredGramBadgesController.getInstance().getBadge(peerId);
+                if (badge != null) {
+                    if (badge.iconType == HundredGramBadgesController.ICON_CUSTOM_EMOJI && badge.customEmojiDocumentId != 0) {
+                        statusDrawable.set(badge.customEmojiDocumentId, animated);
+                    } else {
+                        statusDrawable.set(HundredGramBadgesController.getInstance().getBadgeDrawable(badge, colorFilter), animated);
+                    }
+                    statusDrawable.setColor(badge.color != 0 ? badge.color : (colorFilter != 0 ? colorFilter : null));
+                    return statusDrawable;
+                }
+            }
+        }
         if (chat != null && chat.verified) {
             statusDrawable.set(verifiedDrawable = (verifiedDrawable == null ? new CombinedDrawable(Theme.dialogs_verifiedDrawable, Theme.dialogs_verifiedCheckDrawable) : verifiedDrawable), animated);
             statusDrawable.setColor(null);

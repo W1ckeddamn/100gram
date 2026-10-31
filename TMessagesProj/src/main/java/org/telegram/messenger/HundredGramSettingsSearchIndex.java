@@ -771,6 +771,20 @@ public class HundredGramSettingsSearchIndex {
                 R.drawable.input_schedule, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 420,
                 HundredGramSubSettingsActivity.class,
                 "слоумод", "очередь", "медленный режим", "таймер", "slowmode", "queue");
+
+        addEntry(id++, "HundredGramCustomBadges", "Кастомные значки пользователей",
+                "HundredGramCustomBadgesInfo", "Локальные значки пользователей с иконкой возле ника, описанием и заголовком",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.verified_check, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 395,
+                HundredGramSubSettingsActivity.class,
+                "значок", "бейдж", "иконка", "badge", "badges", "кастомные бейджи", "статус", "вериф");
+
+        addEntry(id++, "HundredGramManageBadges", "Управление значками",
+                "HundredGramManageBadgesDesc", "Просмотр, создание и редактирование кастомных значков для пользователей",
+                "HundredGramCategoryInterface", "Интерфейс",
+                R.drawable.verified_check, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 396,
+                org.telegram.ui.HundredGramBadgesActivity.class,
+                "значки", "бейджи", "управление значками", "badges", "custom badge");
     }
 
     private void addEntry(int id, String titleKey, String defaultTitle,

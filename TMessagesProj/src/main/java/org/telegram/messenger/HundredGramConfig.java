@@ -64,6 +64,7 @@ public class HundredGramConfig {
     public static boolean lyricsInPlayer = true;
     public static boolean md3AudioPlayer;
     public static boolean slowmodeQueue;
+    public static boolean customBadgesEnabled = true;
     public static boolean md3SwitchStyle;
     public static boolean newSliderStyle;
     public static boolean squareFab;
@@ -551,6 +552,7 @@ public class HundredGramConfig {
             lyricsInPlayer = preferences.getBoolean("lyricsInPlayer", true);
             md3AudioPlayer = preferences.getBoolean("md3AudioPlayer", false);
             slowmodeQueue = preferences.getBoolean("slowmodeQueue", false);
+            customBadgesEnabled = preferences.getBoolean("customBadgesEnabled", true);
             md3SwitchStyle = preferences.getBoolean("md3SwitchStyle", false);
             newSliderStyle = preferences.getBoolean("newSliderStyle", false);
             squareFab = preferences.getBoolean("squareFab", false);
@@ -1235,6 +1237,12 @@ public class HundredGramConfig {
     public static void toggleSlowmodeQueue() {
         slowmodeQueue = !slowmodeQueue;
         save("slowmodeQueue", slowmodeQueue);
+    }
+
+    public static void toggleCustomBadgesEnabled() {
+        customBadgesEnabled = !customBadgesEnabled;
+        save("customBadgesEnabled", customBadgesEnabled);
+        postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 
     public static void toggleMd3MediaLoaderWave() {
@@ -2070,6 +2078,10 @@ public class HundredGramConfig {
                 .apply();
     }
 
+    public static SharedPreferences getPreferences() {
+        return ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE);
+    }
+
     public static void save(String key, boolean val) {
         if (ApplicationLoader.applicationContext != null) {
             ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE)
@@ -2549,6 +2561,7 @@ public class HundredGramConfig {
         lyricsInPlayer = true;
         md3AudioPlayer = false;
         slowmodeQueue = false;
+        customBadgesEnabled = true;
         configLoaded = false;
         loadConfig();
         postNotificationToAllAccounts(NotificationCenter.didUpdateConfig);

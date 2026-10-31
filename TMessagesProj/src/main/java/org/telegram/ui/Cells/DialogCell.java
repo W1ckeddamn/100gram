@@ -69,6 +69,8 @@ import org.telegram.messenger.ChatThemeController;
 import org.telegram.utils.code.highlight.CodeHighlighting;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.DialogObject;
+import org.telegram.messenger.HundredGramBadgesController;
+import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLoader;
@@ -1582,7 +1584,20 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                             drawBotVerified = !forbidVerified && !UserObject.isUserSelf(user) && user.bot_verification_icon != 0;
                         }
                         drawPremium = MessagesController.getInstance(currentAccount).isPremiumUser(user) && UserConfig.getInstance(currentAccount).clientUserId != user.id && user.id != 0;
-                        if (drawPremium) {
+                        if (user != null && HundredGramConfig.customBadgesEnabled && HundredGramBadgesController.getInstance().hasBadge(user.id)) {
+                            HundredGramBadgesController.Badge b = HundredGramBadgesController.getInstance().getBadge(user.id);
+                            if (b != null) {
+                                drawPremium = true;
+                                emojiStatus.center = LocaleController.isRTL;
+                                nameLayoutEllipsizeByGradient = true;
+                                if (b.iconType == HundredGramBadgesController.ICON_CUSTOM_EMOJI && b.customEmojiDocumentId != 0) {
+                                    emojiStatus.set(b.customEmojiDocumentId, false);
+                                } else {
+                                    emojiStatus.set(HundredGramBadgesController.getInstance().getBadgeDrawable(b, 0), false);
+                                }
+                                emojiStatus.setParticles(false, false);
+                            }
+                        } else if (drawPremium) {
                             Long emojiStatusId = UserObject.getEmojiStatusDocumentId(user);
                             emojiStatus.center = LocaleController.isRTL;
                             if (emojiStatusId != null) {
@@ -3471,7 +3486,16 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     long dialogBotVerificationIcon = 0;
                     if (user != null) {
                         user = MessagesController.getInstance(currentAccount).getUser(user.id);
-                        if (user != null && DialogObject.getEmojiStatusDocumentId(user.emoji_status) != 0) {
+                        if (user != null && HundredGramConfig.customBadgesEnabled && HundredGramBadgesController.getInstance().hasBadge(user.id)) {
+                            HundredGramBadgesController.Badge b = HundredGramBadgesController.getInstance().getBadge(user.id);
+                            nameLayoutEllipsizeByGradient = true;
+                            if (b != null && b.iconType == HundredGramBadgesController.ICON_CUSTOM_EMOJI && b.customEmojiDocumentId != 0) {
+                                emojiStatus.set(b.customEmojiDocumentId, animated);
+                            } else if (b != null) {
+                                emojiStatus.set(HundredGramBadgesController.getInstance().getBadgeDrawable(b, 0), animated);
+                            }
+                            emojiStatus.setParticles(false, animated);
+                        } else if (user != null && DialogObject.getEmojiStatusDocumentId(user.emoji_status) != 0) {
                             nameLayoutEllipsizeByGradient = true;
                             emojiStatus.set(DialogObject.getEmojiStatusDocumentId(user.emoji_status), animated);
                             emojiStatus.setParticles(DialogObject.isEmojiStatusCollectible(user.emoji_status), animated);
