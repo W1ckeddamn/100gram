@@ -1,8 +1,8 @@
 # 100gram Project State & Handoff
 
-> **Generated:** 2026-10-31 17:38 UTC  
+> **Generated:** 2026-10-31 18:56 UTC  
 > **Branch:** `main`  
-> **Head Commit:** `ea3ffd0f6` (fix(profile): fix registration date icon being overwritten to null and support row tap)  
+> **Head Commit:** `fa58c15af` (sync(upstream): merge Telegram Android 13.1.1 (7237))  
 > **Working Tree:** `Clean`
 
 ---
@@ -45,6 +45,8 @@ Antigravity sessions established the core architectural foundations of 100gram:
 ## 4. Recent Commits (Last 10)
 
 ```text
+fa58c15af sync(upstream): merge Telegram Android 13.1.1 (7237)
+57f5475fc chore(docs): sync PROJECT_STATE.md
 ea3ffd0f6 fix(profile): fix registration date icon being overwritten to null and support row tap
 35fccfb02 docs: sync PROJECT_STATE.md with latest bug fixes
 1b2f92679 fix(ui): resolve feed avatar notch, header offsets, now playing redirect, avatar preview collision, and player playlists
@@ -53,8 +55,6 @@ ea3ffd0f6 fix(profile): fix registration date icon being overwritten to null and
 f9978124a chore: clean project root, organize docs into docs/ subfolders, and add 6 additional vector badges (18 total)
 6cd3d0977 docs: update PROJECT_STATE.md with dynamic feature tracking and 12-icon pack commit
 7ad190da0 feat: Add 12 custom vector badges, update dynamic roadmap parity and sync script
-69f03668a feat: Add remote GitHub badges sync, owner ID 1211607237 role access and admin management
-06605a865 feat: Add Custom User Badges with icon, title, description and management UI
 ```
 
 ---
