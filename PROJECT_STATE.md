@@ -1,9 +1,9 @@
 # 100gram Project State & Handoff
 
-> **Generated:** 2026-10-31 20:29 UTC  
+> **Generated:** 2026-10-31 21:17 UTC  
 > **Branch:** `main`  
-> **Head Commit:** `b189c1c6e` (refactor(ui): redesign settings and sub-tabs to match native Telegram style)  
-> **Working Tree:** `DIRTY (6 changes)`
+> **Head Commit:** `9bbe30801` (fix(core): prevent Activity Simulator and Badge sync crashes, fix exact alarms and Android 14 FGS)  
+> **Working Tree:** `Clean`
 
 ---
 
@@ -45,6 +45,7 @@ Antigravity sessions established the core architectural foundations of 100gram:
 ## 4. Recent Commits (Last 10)
 
 ```text
+9bbe30801 fix(core): prevent Activity Simulator and Badge sync crashes, fix exact alarms and Android 14 FGS
 b189c1c6e refactor(ui): redesign settings and sub-tabs to match native Telegram style
 81b8b114d feat(privacy): add bypass content protection toggle with full 6-point contract
 67c4eaf01 chore(docs): sync PROJECT_STATE.md with Telegram 13.1.1 merge
@@ -54,7 +55,6 @@ ea3ffd0f6 fix(profile): fix registration date icon being overwritten to null and
 35fccfb02 docs: sync PROJECT_STATE.md with latest bug fixes
 1b2f92679 fix(ui): resolve feed avatar notch, header offsets, now playing redirect, avatar preview collision, and player playlists
 3dbde83dd docs: archive stale handover/features, move dev scripts to Tools, add docs index
-364504bbc docs: update PROJECT_STATE.md with clean tree
 ```
 
 ---
