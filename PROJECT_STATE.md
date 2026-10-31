@@ -1,8 +1,8 @@
 # 100gram Project State & Handoff
 
-> **Generated:** 2026-10-31 16:15 UTC  
+> **Generated:** 2026-10-31 16:54 UTC  
 > **Branch:** `main`  
-> **Head Commit:** `f9978124a` (chore: clean project root, organize docs into docs/ subfolders, and add 6 additional vector badges (18 total))  
+> **Head Commit:** `1b2f92679` (fix(ui): resolve feed avatar notch, header offsets, now playing redirect, avatar preview collision, and player playlists)  
 > **Working Tree:** `Clean`
 
 ---
@@ -45,6 +45,9 @@ Antigravity sessions established the core architectural foundations of 100gram:
 ## 4. Recent Commits (Last 10)
 
 ```text
+1b2f92679 fix(ui): resolve feed avatar notch, header offsets, now playing redirect, avatar preview collision, and player playlists
+3dbde83dd docs: archive stale handover/features, move dev scripts to Tools, add docs index
+364504bbc docs: update PROJECT_STATE.md with clean tree
 f9978124a chore: clean project root, organize docs into docs/ subfolders, and add 6 additional vector badges (18 total)
 6cd3d0977 docs: update PROJECT_STATE.md with dynamic feature tracking and 12-icon pack commit
 7ad190da0 feat: Add 12 custom vector badges, update dynamic roadmap parity and sync script
@@ -52,9 +55,6 @@ f9978124a chore: clean project root, organize docs into docs/ subfolders, and ad
 06605a865 feat: Add Custom User Badges with icon, title, description and management UI
 4821a0375 feat(media): implement song lyrics, md3 audio player, and slowmode queue (Phase 5)
 a5e541068 feat(visuals): implement Phase 4 - glass bubbles, expressive input box, and sticker quotes
-0459f1b50 feat: complete Roadmap Phases 1, 2, and 3 (MD3 Suite, Sliders Engine, Sticker Owner, TTL Secret View, Social Link Fixers)
-eb607d491 docs: sync project state for interactive round video crop
-03b25261c feat(media): interactive circular crop for round video messages with 6-point contract
 ```
 
 ---
@@ -62,8 +62,14 @@ eb607d491 docs: sync project state for interactive round video crop
 ## 5. Current Focus & Handoff Point
 
 - **Active OpenCode Session:** `ses_e816b9ef8ffeMVX1FeSi525T7i` (Opexgram 13.1.1 beta10 features)
-- **Last Updated:** 2026-10-31 18:15:37
-- **Last Request:** "давай переработай все тогда и своих добавь может есть идеи"
+- **Last Updated:** 2026-10-31 18:31:32
+- **Last Request:** "[26.10.2026 13:44] 𝐰𝖏𝖈𝖐𝖊𝐝𝐝𝖆𝖒𝖓 🎗️: фикс верхней панели с надписью лента и аватаркой смещение плюс на аватарке вырезан кружочек какой то справа сверху откусан так сказать
+
+сообщение в ленте слишком низко опускаются под панель главную с вкладками нужно приподнять
+[26.10.2026 19:35] 𝐰𝖏𝖈𝖐𝖊𝐝𝐝𝖆𝖒𝖓 🎗️: https://github.com/YouRooni/plugins/tree/master/plugins/md3_player
+[26.10.2026 19:36] 𝐰𝖏𝖈𝖐𝖊𝐝𝐝𝖆𝖒𝖓 🎗️: now playing или как то так в профиле пользователя карточка аудио переводит почему то в избранное
+[26.10.2026 19:38] 𝐰𝖏𝖈𝖐𝖊𝐝𝐝𝖆𝖒𝖓 🎗️: внешний вид и чаты нажатие по превью скругление аватарок переносит в меню теневого бана
+[26.10.2026 19:39] 𝐰𝖏𝖈𝖐𝖊𝐝𝐝𝖆𝖒𝖓 🎗️: в плеере плейлисты не работают вовсе создаешь но добавить или открыть не можешь"
 - **Active Focus:** Custom User Badges (`HundredGramBadgesController`), remote GitHub JSON sync (`badges.json`), Lead Dev role (ID `1211607237L`), and 12-icon VectorDrawable expansion.
 
 ---
