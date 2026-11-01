@@ -1218,6 +1218,16 @@ public class HundredGramConfig {
         postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_REORDER);
     }
 
+    public static int getChatBoxStyle() {
+        if (chatBoxStyle > 0) {
+            return chatBoxStyle;
+        }
+        if (md3Controls || md3MasterEnabled) {
+            return 1;
+        }
+        return 0;
+    }
+
     public static void setChatBoxStyle(int style) {
         chatBoxStyle = style;
         save("chatBoxStyle", chatBoxStyle);

@@ -4870,11 +4870,12 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (!shouldDrawBackground) {
             return;
         }
-        if (org.telegram.messenger.HundredGramConfig.chatBoxStyle > 0) {
+        int effectiveChatBoxStyle = org.telegram.messenger.HundredGramConfig.getChatBoxStyle();
+        if (effectiveChatBoxStyle > 0) {
             int panelColor = getThemedColor(Theme.key_chat_messagePanelBackground);
             backgroundPaint.setColor(panelColor);
             float radius = AndroidUtilities.dp(22);
-            if (org.telegram.messenger.HundredGramConfig.chatBoxStyle == 1) {
+            if (effectiveChatBoxStyle == 1) {
                 int left = AndroidUtilities.dp(8);
                 int right = getMeasuredWidth() - AndroidUtilities.dp(8);
                 int top = textFieldContainer != null ? textFieldContainer.getTop() : animatedTop;
@@ -4883,7 +4884,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                     AndroidUtilities.rectTmp.set(left, top, right, bottom);
                     canvas.drawRoundRect(AndroidUtilities.rectTmp, radius, radius, backgroundPaint);
                 }
-            } else if (org.telegram.messenger.HundredGramConfig.chatBoxStyle == 2) {
+            } else if (effectiveChatBoxStyle == 2) {
                 int left = AndroidUtilities.dp(8);
                 int right = getMeasuredWidth() - AndroidUtilities.dp(62);
                 int top = textFieldContainer != null ? textFieldContainer.getTop() : animatedTop;
@@ -15996,7 +15997,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (textFieldContainer == null || messageEditTextContainer == null || sendButtonContainer == null) {
             return;
         }
-        int style = org.telegram.messenger.HundredGramConfig.chatBoxStyle;
+        int style = org.telegram.messenger.HundredGramConfig.getChatBoxStyle();
         if (style == 1) {
             MarginLayoutParams tfLp = (MarginLayoutParams) textFieldContainer.getLayoutParams();
             if (tfLp != null) {
@@ -16006,7 +16007,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
             MarginLayoutParams editLp = (MarginLayoutParams) messageEditTextContainer.getLayoutParams();
             if (editLp != null) {
-                editLp.rightMargin = DEFAULT_HEIGHT;
+                editLp.rightMargin = dp(DEFAULT_HEIGHT);
             }
             MarginLayoutParams sendLp = (MarginLayoutParams) sendButtonContainer.getLayoutParams();
             if (sendLp != null) {
@@ -16021,11 +16022,11 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
             MarginLayoutParams editLp = (MarginLayoutParams) messageEditTextContainer.getLayoutParams();
             if (editLp != null) {
-                editLp.rightMargin = dp(54);
+                editLp.rightMargin = dp(56);
             }
             MarginLayoutParams sendLp = (MarginLayoutParams) sendButtonContainer.getLayoutParams();
             if (sendLp != null) {
-                sendLp.rightMargin = 0;
+                sendLp.rightMargin = dp(2);
             }
         } else {
             MarginLayoutParams tfLp = (MarginLayoutParams) textFieldContainer.getLayoutParams();
@@ -16036,7 +16037,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
             MarginLayoutParams editLp = (MarginLayoutParams) messageEditTextContainer.getLayoutParams();
             if (editLp != null) {
-                editLp.rightMargin = DEFAULT_HEIGHT;
+                editLp.rightMargin = dp(DEFAULT_HEIGHT);
             }
             MarginLayoutParams sendLp = (MarginLayoutParams) sendButtonContainer.getLayoutParams();
             if (sendLp != null) {

@@ -419,7 +419,11 @@ public class ActionBarMenuSubItem extends FrameLayout {
     }
 
     public void updateBackground() {
-        setBackground(Theme.createRadSelectorDrawable(selectorColor, top ? selectorRad : 0, bottom ? selectorRad : 0));
+        int rad = selectorRad;
+        if ((org.telegram.messenger.HundredGramConfig.md3Menus || org.telegram.messenger.HundredGramConfig.md3MasterEnabled) && rad < 12) {
+            rad = 12;
+        }
+        setBackground(Theme.createRadSelectorDrawable(selectorColor, top ? rad : 0, bottom ? rad : 0));
     }
 
     private int getThemedColor(int key) {

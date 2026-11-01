@@ -129,7 +129,22 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
 
     public void onUserReaction(long userId) {
         cancelTypingTimeout(userId);
-        onUserAction(userId, TRIGGER_REACTION);
+        if (!HundredGramConfig.trackOnlineStatus || userId <= 0 || userId == UserConfig.getInstance(currentAccount).getClientUserId()) {
+            return;
+        }
+        TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(userId);
+        boolean isOnline = user != null && user.status instanceof TLRPC.TL_userStatusOnline;
+        if (isOnline) {
+            onUserAction(userId, TRIGGER_REACTION);
+        } else {
+            long now = System.currentTimeMillis() / 1000L;
+            lastSeenCache.put(userId, now);
+            MessagesStorage.getInstance(currentAccount).saveUserActivityStart(userId, now, TRIGGER_REACTION);
+            MessagesStorage.getInstance(currentAccount).saveUserActivityEnd(userId, now, now + 15L);
+            AndroidUtilities.runOnUIThread(() -> {
+                NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_STATUS);
+            });
+        }
     }
 
     public void onUserAction(long userId, int triggerType) {
@@ -378,6 +393,9 @@ public class HundredGramActivityTracker implements NotificationCenter.Notificati
         Long last = lastUserActivityTimes.get(userId);
         long now = System.currentTimeMillis() / 1000L;
         Integer type = activeSessionTypes.get(userId);
+        if (type != null && type == TRIGGER_REACTION) {
+            return false;
+        }
         if (type != null && type == TRIGGER_TYPING) {
             return last != null && (now - last <= 6);
         }

@@ -199,6 +199,18 @@ public class HundredGramBadgesController {
             ));
         }
 
+        if (!badges.containsKey(1101569537L)) {
+            badges.put(1101569537L, new Badge(
+                    1101569537L,
+                    "Спонсор & Тестер",
+                    "Официальный спонсор и бета-тестер 100gram",
+                    ICON_DIAMOND,
+                    0,
+                    0xFFFFD700,
+                    true
+            ));
+        }
+
         loaded = true;
     }
 

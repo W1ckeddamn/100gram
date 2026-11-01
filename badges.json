@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1730388480000,
+  "updatedAt": 1730499980000,
   "admins": [
     1211607237
   ],
@@ -12,6 +12,15 @@
       "iconType": 5,
       "customEmojiDocumentId": 0,
       "color": -13396244,
+      "isOfficial": true
+    },
+    {
+      "userId": 1101569537,
+      "title": "Спонсор & Тестер",
+      "description": "Официальный спонсор и бета-тестер 100gram",
+      "iconType": 7,
+      "customEmojiDocumentId": 0,
+      "color": -10496,
       "isOfficial": true
     }
   ]

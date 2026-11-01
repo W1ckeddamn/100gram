@@ -638,6 +638,8 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             }
         };
         seekBarView.setLineWidth(4);
+        seekBarView.setMediaExpressive(HundredGramConfig.md3AudioPlayer);
+        seekBarView.setWaving(!MediaController.getInstance().isMessagePaused());
         seekBarView.setDelegate(new SeekBarView.SeekBarViewDelegate() {
             @Override
             public void onSeekBarDrag(boolean stop, float progress) {
@@ -663,7 +665,8 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             }
         });
         seekBarView.setReportChanges(true);
-        playerLayout.addView(seekBarView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 38 + 6, Gravity.TOP | Gravity.LEFT, 5, 67, 5, 0));
+        float marginSides = HundredGramConfig.md3AudioPlayer ? 8 : 5;
+        playerLayout.addView(seekBarView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, (HundredGramConfig.md3AudioPlayer ? 30 : 38) + 6, Gravity.TOP | Gravity.LEFT, marginSides, HundredGramConfig.md3AudioPlayer ? 66 : 67, marginSides, 0));
 
         seekBarBufferSpring = new SpringAnimation(new FloatValueHolder(0))
                 .setSpring(new SpringForce()
@@ -957,7 +960,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         prevButton.setLayerColor("Triangle 3", iconColor);
         prevButton.setLayerColor("Triangle 4", iconColor);
         prevButton.setLayerColor("Rectangle 4", iconColor);
-        prevButton.setBackgroundDrawable(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1, dp(22)));
+        prevButton.setBackground(iconButtonBackground());
         bottomView.addView(prevButton, LayoutHelper.createFrame(48, 48, Gravity.LEFT | Gravity.TOP));
         prevButton.setContentDescription(LocaleController.getString(R.string.AccDescrPrevious));
 
@@ -966,7 +969,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         playButton.setImageDrawable(playPauseDrawable = new PlayPauseDrawable(28));
         playPauseDrawable.setPause(!MediaController.getInstance().isMessagePaused(), false);
         if (HundredGramConfig.md3AudioPlayer) {
-            playButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_windowBackgroundWhite), PorterDuff.Mode.SRC_IN));
+            playButton.setColorFilter(new PorterDuffColorFilter(playIconColor(), PorterDuff.Mode.SRC_IN));
             playButton.setBackground(Theme.createRoundRectDrawable(dp(24), getThemedColor(Theme.key_player_progress)));
         } else {
             playButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_player_button), PorterDuff.Mode.MULTIPLY));
@@ -1082,7 +1085,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         nextButton.setLayerColor("Triangle 4", iconColor);
         nextButton.setLayerColor("Rectangle 4", iconColor);
         nextButton.setRotation(180f);
-        nextButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1, dp(22)));
+        nextButton.setBackground(iconButtonBackground());
         bottomView.addView(nextButton, LayoutHelper.createFrame(48, 48, Gravity.LEFT | Gravity.TOP));
         nextButton.setContentDescription(LocaleController.getString(R.string.Next));
 
@@ -2331,12 +2334,16 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             updateProgress(messageObject, !sameMessageObject);
             updateCover(messageObject, !sameMessageObject);
 
-            if (MediaController.getInstance().isMessagePaused()) {
+            boolean isPaused = MediaController.getInstance().isMessagePaused();
+            if (isPaused) {
                 playPauseDrawable.setPause(false);
                 playButton.setContentDescription(LocaleController.getString(R.string.AccActionPlay));
             } else {
                 playPauseDrawable.setPause(true);
                 playButton.setContentDescription(LocaleController.getString(R.string.AccActionPause));
+            }
+            if (seekBarView != null) {
+                seekBarView.setWaving(!isPaused);
             }
             String title = messageObject.getMusicTitle();
             String author = messageObject.getMusicAuthor();
@@ -2757,15 +2764,18 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         themeDescriptions.add(new ThemeDescription(prevButton, 0, null, new RLottieDrawable[]{prevButton.getAnimatedDrawable()}, "Triangle 3", Theme.key_player_button));
         themeDescriptions.add(new ThemeDescription(prevButton, 0, null, new RLottieDrawable[]{prevButton.getAnimatedDrawable()}, "Triangle 4", Theme.key_player_button));
         themeDescriptions.add(new ThemeDescription(prevButton, 0, null, new RLottieDrawable[]{prevButton.getAnimatedDrawable()}, "Rectangle 4", Theme.key_player_button));
-        themeDescriptions.add(new ThemeDescription(prevButton, ThemeDescription.FLAG_IMAGECOLOR | ThemeDescription.FLAG_USEBACKGROUNDDRAWABLE, null, null, null, null, Theme.key_listSelector));
-
-        themeDescriptions.add(new ThemeDescription(playButton, ThemeDescription.FLAG_IMAGECOLOR, null, null, null, null, Theme.key_player_button));
-        themeDescriptions.add(new ThemeDescription(playButton, ThemeDescription.FLAG_IMAGECOLOR | ThemeDescription.FLAG_USEBACKGROUNDDRAWABLE, null, null, null, null, Theme.key_listSelector));
+        if (!HundredGramConfig.md3AudioPlayer) {
+            themeDescriptions.add(new ThemeDescription(prevButton, ThemeDescription.FLAG_IMAGECOLOR | ThemeDescription.FLAG_USEBACKGROUNDDRAWABLE, null, null, null, null, Theme.key_listSelector));
+            themeDescriptions.add(new ThemeDescription(playButton, ThemeDescription.FLAG_IMAGECOLOR, null, null, null, null, Theme.key_player_button));
+            themeDescriptions.add(new ThemeDescription(playButton, ThemeDescription.FLAG_IMAGECOLOR | ThemeDescription.FLAG_USEBACKGROUNDDRAWABLE, null, null, null, null, Theme.key_listSelector));
+        }
 
         themeDescriptions.add(new ThemeDescription(nextButton, 0, null, new RLottieDrawable[]{nextButton.getAnimatedDrawable()}, "Triangle 3", Theme.key_player_button));
         themeDescriptions.add(new ThemeDescription(nextButton, 0, null, new RLottieDrawable[]{nextButton.getAnimatedDrawable()}, "Triangle 4", Theme.key_player_button));
         themeDescriptions.add(new ThemeDescription(nextButton, 0, null, new RLottieDrawable[]{nextButton.getAnimatedDrawable()}, "Rectangle 4", Theme.key_player_button));
-        themeDescriptions.add(new ThemeDescription(nextButton, ThemeDescription.FLAG_IMAGECOLOR | ThemeDescription.FLAG_USEBACKGROUNDDRAWABLE, null, null, null, null, Theme.key_listSelector));
+        if (!HundredGramConfig.md3AudioPlayer) {
+            themeDescriptions.add(new ThemeDescription(nextButton, ThemeDescription.FLAG_IMAGECOLOR | ThemeDescription.FLAG_USEBACKGROUNDDRAWABLE, null, null, null, null, Theme.key_listSelector));
+        }
 
         themeDescriptions.add(new ThemeDescription(playerLayout, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_player_background));
 
@@ -3767,5 +3777,19 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             authorTextView.setCustomPaddingRight((int) animation.getAnimatedValue());
         });
         rightPaddingAnimator.start();
+    }
+
+    private Drawable iconButtonBackground() {
+        if (!HundredGramConfig.md3AudioPlayer) {
+            return Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1, dp(22));
+        }
+        return Theme.createSimpleSelectorCircleDrawable(dp(48), getThemedColor(Theme.key_player_progressBackground), getThemedColor(Theme.key_listSelector));
+    }
+
+    private int playIconColor() {
+        if (HundredGramConfig.md3AudioPlayer) {
+            return AndroidUtilities.computePerceivedBrightness(getThemedColor(Theme.key_player_progress)) > 0.721f ? 0xff000000 : 0xffffffff;
+        }
+        return getThemedColor(Theme.key_player_button);
     }
 }

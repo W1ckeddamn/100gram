@@ -78,6 +78,14 @@ public class SeekBarView extends FrameLayout {
     private int separatorsCount;
     private int lineWidthDp = 3;
 
+    private boolean md3Allowed = true;
+    private boolean mediaExpressive;
+    private boolean waving;
+    private Paint wavePaint;
+    private Path wavePath;
+    private final AnimatedFloat waveAmplitude = new AnimatedFloat(this, 0L, 350L, CubicBezierInterpolator.DEFAULT);
+    private final AnimatedFloat thinExpandAnimated = new AnimatedFloat(this, 0L, 200L, CubicBezierInterpolator.EASE_OUT_QUINT);
+
     private boolean twoSided;
     private final Theme.ResourcesProvider resourcesProvider;
     private final AudioPlayerAlert.ClippingTextViewSwitcher textViewSwitcher;
@@ -446,7 +454,12 @@ public class SeekBarView extends FrameLayout {
             float step = (getMeasuredWidth() - selectorWidth) / ((float) delegate.getStepsCount() - 1f);
             thumbX = (int) (Math.round((thumbX) / step) * step);
         }
-        if (HundredGramConfig.newSliderStyle && !twoSided) {
+        if (expressive()) {
+            drawExpressive(canvas, thumbX);
+            drawTimestampLabel(canvas);
+            return;
+        }
+        if (md3()) {
             drawMd3(canvas, thumbX);
             drawTimestampLabel(canvas);
             return;
@@ -661,6 +674,138 @@ public class SeekBarView extends FrameLayout {
         });
     }
 
+    public void setMediaExpressive(boolean value) {
+        this.mediaExpressive = value;
+        invalidate();
+    }
+
+    public void setMd3(boolean value) {
+        this.md3Allowed = value;
+        invalidate();
+    }
+
+    public void setWaving(boolean value) {
+        if (this.waving != value) {
+            this.waving = value;
+            invalidate();
+        }
+    }
+
+    private boolean expressive() {
+        if (!mediaExpressive) {
+            return false;
+        }
+        return (HundredGramConfig.md3AudioPlayer || HundredGramConfig.newSliderStyle) && !twoSided;
+    }
+
+    private boolean md3() {
+        if (twoSided || !md3Allowed) {
+            return false;
+        }
+        return HundredGramConfig.newSliderStyle || HundredGramConfig.md3Controls || HundredGramConfig.md3MasterEnabled;
+    }
+
+    private void drawWave(Canvas canvas, float startX, float endX, float centerY, float trackHeight, float amplitude, float wavelength) {
+        if (wavePaint == null) {
+            wavePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            wavePaint.setStyle(Paint.Style.STROKE);
+            wavePaint.setStrokeCap(Paint.Cap.ROUND);
+            wavePaint.setStrokeJoin(Paint.Join.ROUND);
+            wavePath = new Path();
+        }
+        wavePaint.setColor(outerPaint1.getColor());
+        wavePaint.setAlpha(outerPaint1.getAlpha());
+        wavePaint.setStrokeWidth(trackHeight);
+        float halfTrack = trackHeight / 2.0f;
+        float actualStart = startX + halfTrack;
+        float phase = HundredGramSliderHelper.calculateWavePhase(SystemClock.elapsedRealtime(), AndroidUtilities.dpf2(10.0f), wavelength);
+        HundredGramSliderHelper.generateWavePath(wavePath, actualStart, Math.max(actualStart, endX - halfTrack), centerY, amplitude, wavelength, phase);
+        canvas.drawPath(wavePath, wavePaint);
+    }
+
+    private void drawExpressive(Canvas canvas, int thumbX) {
+        int scrubberIdx = 1;
+        float left = selectorWidth / 2.0f;
+        float right = getMeasuredWidth() - (selectorWidth / 2.0f);
+        float centerY = getMeasuredHeight() / 2.0f;
+
+        float trackHeightDp = HundredGramSliderHelper.EXPRESSIVE_TRACK_HEIGHTS[scrubberIdx];
+        float trackHeight = Math.min(AndroidUtilities.dpf2(trackHeightDp), getMeasuredHeight());
+
+        float handleIdleDp = HundredGramSliderHelper.EXPRESSIVE_HANDLE_WIDTH_IDLE[scrubberIdx];
+        float handlePressedDp = HundredGramSliderHelper.EXPRESSIVE_HANDLE_WIDTH_PRESSED[scrubberIdx];
+        float thumbWidth = AndroidUtilities.dpf2(AndroidUtilities.lerp(handleIdleDp, handlePressedDp, pressedAnimated.set(pressed ? 1.0f : 0.0f)));
+
+        float handleHeightDp = HundredGramSliderHelper.EXPRESSIVE_HANDLE_HEIGHTS[scrubberIdx];
+        boolean isCircle = handleHeightDp <= 0.0f;
+        float thumbHeight = Math.min(isCircle ? thumbWidth : AndroidUtilities.dpf2(handleHeightDp), getMeasuredHeight());
+
+        float gap = AndroidUtilities.dpf2(HundredGramSliderHelper.EXPRESSIVE_GAPS[scrubberIdx]);
+        float thumbCenter = (selectorWidth / 2.0f) + thumbX;
+        float halfTrack = trackHeight / 2.0f;
+        float trackTop = centerY - halfTrack;
+        float trackBottom = centerY + halfTrack;
+
+        float halfThumbWidth = thumbWidth / 2.0f;
+        float thumbRight = thumbCenter + halfThumbWidth;
+        float inactiveTrackLeft = thumbRight + gap;
+        float activeTrackRight = isCircle ? thumbCenter : ((thumbCenter - halfThumbWidth) - gap);
+
+        // Inactive track (right)
+        innerPaint1.setColor(getThemedColor(Theme.key_player_progressBackground));
+        if (inactiveTrackLeft < right) {
+            rect.set(inactiveTrackLeft, trackTop, right, trackBottom);
+            drawProgressBar(canvas, rect, innerPaint1);
+        }
+
+        // Buffered progress
+        float buffered = bufferedProgress;
+        if (buffered > 0.0f) {
+            float bufferedX = left + buffered * (right - left);
+            if (bufferedX > inactiveTrackLeft) {
+                innerPaint1.setColor(getThemedColor(Theme.key_player_progressCachedBackground));
+                rect.set(inactiveTrackLeft, trackTop, Math.min(bufferedX, right), trackBottom);
+                drawProgressBar(canvas, rect, innerPaint1);
+            }
+        }
+
+        float maxAmplitude = Math.max(0.0f, (getMeasuredHeight() - trackHeight) / 2.0f);
+        boolean hasTimestamps = timestamps != null && !timestamps.isEmpty();
+        float waveAmp = Math.min(AndroidUtilities.dpf2(HundredGramSliderHelper.EXPRESSIVE_WAVE_AMPLITUDES[scrubberIdx]), maxAmplitude)
+                * waveAmplitude.set((!waving || pressed || hasTimestamps) ? 0.0f : 1.0f);
+
+        // Active track (left)
+        if (activeTrackRight <= left) {
+            // Nothing on left
+        } else if (waveAmp > 0.5f) {
+            drawWave(canvas, left, activeTrackRight, centerY, trackHeight, waveAmp, AndroidUtilities.dpf2(HundredGramSliderHelper.EXPRESSIVE_WAVE_LENGTHS[scrubberIdx]));
+            postInvalidateOnAnimation();
+        } else {
+            rect.set(left, trackTop, activeTrackRight, trackBottom);
+            drawProgressBar(canvas, rect, outerPaint1);
+        }
+
+        // End stop dot
+        float endDotRadius = AndroidUtilities.dpf2(HundredGramSliderHelper.EXPRESSIVE_END_DOTS[scrubberIdx]) / 2.0f;
+        if (endDotRadius > 0.0f) {
+            float endDotX = (right - gap) - endDotRadius;
+            if (endDotX - endDotRadius > inactiveTrackLeft) {
+                canvas.drawCircle(endDotX, centerY, endDotRadius, outerPaint1);
+            }
+        }
+
+        // Thumb handle
+        if (handleIdleDp > 0.0f) {
+            if (isCircle) {
+                canvas.drawCircle(thumbCenter, centerY, halfThumbWidth, outerPaint1);
+            } else {
+                float halfH = thumbHeight / 2.0f;
+                rect.set(thumbCenter - halfThumbWidth, centerY - halfH, thumbRight, centerY + halfH);
+                canvas.drawRoundRect(rect, halfThumbWidth, halfThumbWidth, outerPaint1);
+            }
+        }
+    }
+
     private void drawMd3(Canvas canvas, int thumbX) {
         float left = selectorWidth / 2.0f;
         float right = getMeasuredWidth() - (selectorWidth / 2.0f);
@@ -717,6 +862,13 @@ public class SeekBarView extends FrameLayout {
             }
         }
 
+        // End stop dot
+        float stopRadius = AndroidUtilities.dpf2(3.0f) / 2.0f;
+        float endDotX = (right - gap) - stopRadius;
+        if (endDotX - stopRadius > inactiveTrackLeft) {
+            canvas.drawCircle(endDotX, centerY, stopRadius, outerPaint1);
+        }
+
         // Stop dots for discrete steps
         if (separatorsCount > 1) {
             float dotRadius = AndroidUtilities.dpf2(3.0f) / 2.0f;
@@ -752,8 +904,7 @@ public class SeekBarView extends FrameLayout {
         if (timestamps != null && !timestamps.isEmpty()) {
             drawProgressBar(canvas, trackRect, paint);
         } else {
-            float radius = trackRect.height() / 2.0f;
-            canvas.drawRoundRect(trackRect, radius, radius, paint);
+            HundredGramSliderHelper.drawTrack(canvas, trackRect, left, right, false, paint);
         }
     }
 

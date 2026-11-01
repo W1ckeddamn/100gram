@@ -4,6 +4,8 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.HundredGramActivityTracker;
@@ -166,7 +168,9 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
         long dayStart = cal.getTimeInMillis() / 1000L;
         long todayDuration = HundredGramActivityTracker.getInstance(currentAccount).getTodayTotalOnlineTime(userId);
         int todaySessions = 0;
-        boolean isActiveNow = HundredGramActivityTracker.getInstance(currentAccount).isSessionActive(userId);
+        TLRPC.User targetUser = self ? UserConfig.getInstance(currentAccount).getCurrentUser() : MessagesController.getInstance(currentAccount).getUser(userId);
+        boolean isUserOnline = self ? !ApplicationLoader.mainInterfacePaused : (targetUser != null && targetUser.status instanceof TLRPC.TL_userStatusOnline);
+        boolean isActiveNow = isUserOnline && HundredGramActivityTracker.getInstance(currentAccount).isSessionActive(userId);
 
         for (int a = 0; a < entries.size(); a++) {
             HundredGramActivityTracker.ActivityEntry entry = entries.get(a);
@@ -214,11 +218,11 @@ public class HundredGramUserActivityBottomSheet extends BottomSheetWithRecyclerL
             String timeStartFormatted = LocaleController.formatDateTime(entry.timeStart, false);
             String title = timeStartFormatted + " • " + triggerLabel;
             String value;
-            if (isActiveNow && a == 0) {
+            if (isActiveNow && a == 0 && entry.triggerType != HundredGramActivityTracker.TRIGGER_REACTION) {
                 long activeDur = Math.max(1L, now - entry.timeStart);
                 value = LocaleController.getString("Online", R.string.Online) + " (" + formatSessionDuration(activeDur) + ")";
             } else {
-                long dur = entry.timeEnd > entry.timeStart ? (entry.timeEnd - entry.timeStart) : 30L;
+                long dur = entry.timeEnd > entry.timeStart ? (entry.timeEnd - entry.timeStart) : 15L;
                 value = formatSessionDuration(dur);
             }
 
