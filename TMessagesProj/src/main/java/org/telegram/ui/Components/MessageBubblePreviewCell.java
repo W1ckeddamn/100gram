@@ -1,230 +1,67 @@
 package org.telegram.ui.Components;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
-import android.view.View;
-import android.widget.FrameLayout;
-
-import androidx.core.content.ContextCompat;
+import android.widget.LinearLayout;
 
 import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.HundredGramConfig;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.R;
+import org.telegram.messenger.UserConfig;
+import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Cells.ChatMessageCell;
 
-@SuppressLint("ViewConstructor")
-public class MessageBubblePreviewCell extends FrameLayout {
-
-    private final Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint inBubblePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint outBubblePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint timePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint tailPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-    private final RectF inBubbleRect = new RectF();
-    private final RectF outBubbleRect = new RectF();
-    private final Path inTailPath = new Path();
-    private final Path outTailPath = new Path();
-
-    private final View previewArea;
+/** Settings preview rendered by the same message cells as a chat. */
+public class MessageBubblePreviewCell extends LinearLayout {
+    private final ChatMessageCell[] cells = new ChatMessageCell[2];
+    private final MessageObject[] messages = new MessageObject[2];
 
     public MessageBubblePreviewCell(Context context) {
         super(context);
-        setWillNotDraw(false);
-        setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-
-        textPaint.setTextSize(AndroidUtilities.dp(14.5f));
-        timePaint.setTextSize(AndroidUtilities.dp(11f));
-
-        previewArea = new View(context) {
-            @Override
-            protected void onDraw(Canvas canvas) {
-                drawBubbles(canvas);
+        setOrientation(VERTICAL);
+        setPadding(0, AndroidUtilities.dp(8), 0, AndroidUtilities.dp(8));
+        int account = UserConfig.selectedAccount;
+        for (int i = 0; i < cells.length; i++) {
+            boolean outgoing = i == 1;
+            TLRPC.TL_message message = new TLRPC.TL_message();
+            message.message = LocaleController.getString(outgoing ? R.string.BubblePreviewOutText : R.string.BubblePreviewInText);
+            message.date = (int) (System.currentTimeMillis() / 1000) - 60;
+            message.dialog_id = 1;
+            message.flags = 257;
+            message.id = i + 1;
+            message.media = new TLRPC.TL_messageMediaEmpty();
+            message.out = outgoing;
+            message.peer_id = new TLRPC.TL_peerUser();
+            message.from_id = new TLRPC.TL_peerUser();
+            if (outgoing) {
+                message.from_id.user_id = UserConfig.getInstance(account).getClientUserId();
+                message.edit_date = message.date;
+                message.flags |= 32768;
+            } else {
+                message.flags |= TLRPC.MESSAGE_FLAG_HAS_VIEWS;
+                message.views = 42;
+                message.forwards = 14;
+                message.peer_id.user_id = UserConfig.getInstance(account).getClientUserId();
             }
-        };
-        previewArea.setWillNotDraw(false);
-        addView(previewArea, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 150, 48, 16, 10, 16, 10));
+            messages[i] = new MessageObject(account, message, true, false);
+            messages[i].eventId = 1;
+            ChatMessageCell cell = new ChatMessageCell(context, account, false, null, null);
+            cell.isChat = false;
+            cell.setFullyDraw(true);
+            cells[i] = cell;
+            addView(cell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+        }
+        update();
     }
 
     public void update() {
-        setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-        if (previewArea != null) {
-            previewArea.invalidate();
-        }
-        invalidate();
-    }
-
-    private void drawBubbles(Canvas canvas) {
-        int width = previewArea.getWidth();
-        int height = previewArea.getHeight();
-        if (width <= 0 || height <= 0) return;
-
-
-        // Outer container background
-        int containerBg = Theme.getColor(Theme.key_chat_wallpaper);
-        bgPaint.setColor(containerBg);
-        RectF containerRect = AndroidUtilities.rectTmp;
-        containerRect.set(0, 0, width, height);
-        canvas.drawRoundRect(containerRect, AndroidUtilities.dp(14), AndroidUtilities.dp(14), bgPaint);
-
-        boolean hideTail = HundredGramConfig.removeMessageTail;
-        boolean replaceEdited = HundredGramConfig.replaceEditedWithIcon;
-        boolean showSeconds = HundredGramConfig.showSecondsInTime;
-        boolean showForwards = HundredGramConfig.showForwardsCount;
-
-        // In bubble colors & rect
-        int inBg = Theme.getColor(Theme.key_chat_inBubble);
-        inBubblePaint.setColor(inBg);
-
-        float inLeft = AndroidUtilities.dp(hideTail ? 14 : 20);
-        float inTop = AndroidUtilities.dp(14);
-        float inWidth = Math.min(width * 0.72f, AndroidUtilities.dp(240));
-        float inHeight = AndroidUtilities.dp(52);
-        inBubbleRect.set(inLeft, inTop, inLeft + inWidth, inTop + inHeight);
-
-        float radius = AndroidUtilities.dp(14);
-        canvas.drawRoundRect(inBubbleRect, radius, radius, inBubblePaint);
-
-        // Draw In Tail if not hidden
-        if (!hideTail) {
-            tailPaint.setColor(inBg);
-            inTailPath.reset();
-            inTailPath.moveTo(inLeft, inTop + inHeight - AndroidUtilities.dp(14));
-            inTailPath.lineTo(inLeft - AndroidUtilities.dp(8), inTop + inHeight);
-            inTailPath.lineTo(inLeft + AndroidUtilities.dp(10), inTop + inHeight);
-            inTailPath.close();
-            canvas.drawPath(inTailPath, tailPaint);
-        }
-
-        // Draw In Text
-        textPaint.setColor(Theme.getColor(Theme.key_chat_messageTextIn));
-        timePaint.setColor(Theme.getColor(Theme.key_chat_inTimeText));
-
-        String inText = LocaleController.getString("BubblePreviewInText", R.string.BubblePreviewInText);
-        canvas.save();
-        canvas.clipRect(inLeft, inTop, inLeft + inWidth - AndroidUtilities.dp(8), inTop + inHeight);
-        canvas.drawText(inText, inLeft + AndroidUtilities.dp(12), inTop + AndroidUtilities.dp(24), textPaint);
-        canvas.restore();
-
-        String inTime = showSeconds ? "12:45:15" : "12:45";
-        float inTimeW = timePaint.measureText(inTime);
-        float inRightEdge = inLeft + inWidth - AndroidUtilities.dp(12);
-
-        if (showForwards) {
-            String fwdCount = "14";
-            float fwdW = timePaint.measureText(fwdCount);
-            String bullet = " • ";
-            float bulletW = timePaint.measureText(bullet);
-            Drawable fwdIcon = ContextCompat.getDrawable(getContext(), R.drawable.msg_reply_small);
-            int iconW = AndroidUtilities.dp(10);
-            int iconH = AndroidUtilities.dp(9);
-            float totalW = inTimeW + bulletW + iconW + AndroidUtilities.dp(3) + fwdW;
-            float startX = inRightEdge - totalW;
-
-            // Draw time
-            canvas.drawText(inTime, startX, inTop + inHeight - AndroidUtilities.dp(8), timePaint);
-            startX += inTimeW;
-
-            // Draw bullet
-            canvas.drawText(bullet, startX, inTop + inHeight - AndroidUtilities.dp(8), timePaint);
-            startX += bulletW;
-
-            // Draw forward icon (mirrored horizontally)
-            if (fwdIcon != null) {
-                fwdIcon = fwdIcon.mutate();
-                fwdIcon.setColorFilter(new PorterDuffColorFilter(timePaint.getColor(), PorterDuff.Mode.SRC_IN));
-                int iconLeft = (int) startX;
-                int iconTop = (int) (inTop + inHeight - AndroidUtilities.dp(17));
-                fwdIcon.setBounds(iconLeft, iconTop, iconLeft + iconW, iconTop + iconH);
-                canvas.save();
-                canvas.scale(-1.0f, 1.0f, iconLeft + iconW / 2.0f, 0.0f);
-                fwdIcon.draw(canvas);
-                canvas.restore();
-            }
-            startX += iconW + AndroidUtilities.dp(3);
-
-            // Draw count
-            canvas.drawText(fwdCount, startX, inTop + inHeight - AndroidUtilities.dp(8), timePaint);
-        } else {
-            canvas.drawText(inTime, inRightEdge - inTimeW, inTop + inHeight - AndroidUtilities.dp(8), timePaint);
-        }
-
-        // Out bubble colors & rect
-        int outBg = Theme.getColor(Theme.key_chat_outBubble);
-        outBubblePaint.setColor(outBg);
-
-        float outWidth = Math.min(width * 0.76f, AndroidUtilities.dp(250));
-        float outRight = width - AndroidUtilities.dp(hideTail ? 14 : 20);
-        float outLeft = outRight - outWidth;
-        float outTop = inTop + inHeight + AndroidUtilities.dp(10);
-        float outHeight = AndroidUtilities.dp(52);
-        outBubbleRect.set(outLeft, outTop, outRight, outTop + outHeight);
-
-        canvas.drawRoundRect(outBubbleRect, radius, radius, outBubblePaint);
-
-        // Draw Out Tail if not hidden
-        if (!hideTail) {
-            tailPaint.setColor(outBg);
-            outTailPath.reset();
-            outTailPath.moveTo(outRight, outTop + outHeight - AndroidUtilities.dp(14));
-            outTailPath.lineTo(outRight + AndroidUtilities.dp(8), outTop + outHeight);
-            outTailPath.lineTo(outRight - AndroidUtilities.dp(10), outTop + outHeight);
-            outTailPath.close();
-            canvas.drawPath(outTailPath, tailPaint);
-        }
-
-        // Draw Out Text
-        int outTextColor = Theme.getColor(Theme.key_chat_messageTextOut);
-        textPaint.setColor(outTextColor);
-        timePaint.setColor(Theme.getColor(Theme.key_chat_outTimeText));
-
-        String outText = hideTail ? LocaleController.getString("BubblePreviewOutFlat", R.string.BubblePreviewOutFlat) : LocaleController.getString("BubblePreviewOutText", R.string.BubblePreviewOutText);
-        canvas.save();
-        canvas.clipRect(outLeft, outTop, outRight - AndroidUtilities.dp(8), outTop + outHeight);
-        canvas.drawText(outText, outLeft + AndroidUtilities.dp(12), outTop + AndroidUtilities.dp(24), textPaint);
-        canvas.restore();
-
-        String outTime = showSeconds ? "12:45:32" : "12:45";
-        float timeW = timePaint.measureText(outTime);
-        float metaRight = outRight - AndroidUtilities.dp(12);
-
-        // Checkmark status (read)
-        Drawable checkmark = ContextCompat.getDrawable(getContext(), R.drawable.msg_check_s);
-        if (checkmark != null) {
-            int checkW = AndroidUtilities.dp(12);
-            int checkH = AndroidUtilities.dp(10);
-            checkmark.setBounds((int) (metaRight - checkW), (int) (outTop + outHeight - AndroidUtilities.dp(18)), (int) metaRight, (int) (outTop + outHeight - AndroidUtilities.dp(8)));
-            checkmark.setTint(Theme.getColor(Theme.key_chat_outSentCheck));
-            checkmark.draw(canvas);
-            metaRight -= checkW + AndroidUtilities.dp(4);
-        }
-
-        // Draw time
-        canvas.drawText(outTime, metaRight - timeW, outTop + outHeight - AndroidUtilities.dp(8), timePaint);
-        metaRight -= timeW + AndroidUtilities.dp(6);
-
-        // Draw edited mark (icon or text)
-        if (replaceEdited) {
-            Drawable pencil = ContextCompat.getDrawable(getContext(), R.drawable.msg_edit);
-            if (pencil != null) {
-                int pencilSize = AndroidUtilities.dp(11);
-                pencil.setBounds((int) (metaRight - pencilSize), (int) (outTop + outHeight - AndroidUtilities.dp(18)), (int) metaRight, (int) (outTop + outHeight - AndroidUtilities.dp(7)));
-                pencil.setTint(timePaint.getColor());
-                pencil.draw(canvas);
-            }
-        } else {
-            String editedText = LocaleController.getString("BubblePreviewEdited", R.string.BubblePreviewEdited);
-            canvas.drawText(editedText, metaRight - timePaint.measureText(editedText), outTop + outHeight - AndroidUtilities.dp(8), timePaint);
+        setBackgroundColor(Theme.getColor(Theme.key_chat_wallpaper));
+        for (int i = 0; i < cells.length; i++) {
+            messages[i].forceUpdate = true;
+            cells[i].setMessageObject(messages[i], null, false, false, false);
+            cells[i].requestLayout();
+            cells[i].invalidate();
         }
     }
 }

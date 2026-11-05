@@ -89,7 +89,7 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
         items.add(UItem.asCustom(createFeatureCard(context,
                 R.drawable.msg_media,
                 LocaleController.getString("WhatsNewPreviewFixes", R.string.WhatsNewPreviewFixes),
-                LocaleController.getString("WhatsNewPreviewFixesDesc", R.string.WhatsNewPreviewFixesDesc),
+                LocaleController.getString("WhatsNewNativePreviewDesc", R.string.WhatsNewNativePreviewDesc),
                 LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
                 true,
                 v -> presentFragment(new HundredGramSubSettingsActivity(HundredGramSubSettingsActivity.CATEGORY_INTERFACE))

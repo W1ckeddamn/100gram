@@ -1268,6 +1268,11 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         }
 
         private boolean twoLines;
+        private boolean flexibleHeight;
+
+        public void setFlexibleHeight(boolean flexibleHeight) {
+            this.flexibleHeight = flexibleHeight;
+        }
 
         public void set(
             int iconColorTop, int iconColorBottom, int icon,
@@ -1296,10 +1301,16 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            super.onMeasure(
-                MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(dp(mini ? 44 : twoLines ? 60 : 50), MeasureSpec.EXACTLY)
-            );
+            if (flexibleHeight) {
+                setMinimumHeight(dp(mini ? 44 : twoLines ? 60 : 50));
+                setPadding(0, dp(8), 0, dp(8));
+                super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
+            } else {
+                super.onMeasure(
+                    MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),
+                    MeasureSpec.makeMeasureSpec(dp(mini ? 44 : twoLines ? 60 : 50), MeasureSpec.EXACTLY)
+                );
+            }
         }
 
         public static class Background extends Drawable {

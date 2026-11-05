@@ -1181,7 +1181,7 @@
     <string name="SwipeActionPreviewTitle">Смахните влево для проверки</string>
     <string name="SwipeActionPreviewSub">Текущее действие: %1$s</string>
     <string name="BubblePreviewInText">100gram — новый стиль баблов 🔥</string>
-    <string name="BubblePreviewOutText">С хвостиком сообщения</string>
+    <string name="BubblePreviewOutText">Пример сообщения</string>
     <string name="BubblePreviewOutFlat">Чистый вид без хвостиков!</string>
     <string name="BubblePreviewEdited">изменено</string>
     <string name="HundredGramVaultCardTitle">Медиа-сейф 100gram</string>
@@ -1895,4 +1895,5 @@
     <string name="WhatsNewMaterialSettingsDesc">Включите «Секции и блоки MD3» в разделе «Интерфейс», чтобы сильнее скруглить разделы настроек.</string>
     <string name="WhatsNewPreviewFixes">Улучшены превью настроек</string>
     <string name="WhatsNewPreviewFixesDesc">Превью сообщений учитывает тему, а примеры стикеров и GIF обновляются надёжнее.</string>
+    <string name="WhatsNewNativePreviewDesc">Превью сообщений использует настоящие ячейки чата, а описания категорий помещаются свободнее.</string>
 </resources>

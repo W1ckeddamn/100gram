@@ -32,6 +32,37 @@ import java.util.List;
 
 public class HundredGramSettingsActivity extends BaseFragment {
 
+    public static class FlexibleSettingCellFactory extends UItem.UItemFactory<SettingCell> {
+        static { setup(new FlexibleSettingCellFactory()); }
+
+        @Override
+        public SettingCell createView(Context context, org.telegram.ui.Components.RecyclerListView listView, int currentAccount, int classGuid, Theme.ResourcesProvider resourcesProvider) {
+            SettingCell cell = new SettingCell(context, resourcesProvider);
+            cell.setFlexibleHeight(true);
+            return cell;
+        }
+
+        @Override
+        public void bindView(View view, UItem item, boolean divider, UniversalAdapter adapter, UniversalRecyclerView listView) {
+            ((SettingCell) view).set((int) item.longValue, (int) (item.longValue >>> 32), item.iconResId, item.text, item.subtext, item.textValue);
+        }
+
+        public static UItem of(int id, int top, int bottom, int icon, CharSequence title, CharSequence subtitle) {
+            return of(id, top, bottom, icon, title, subtitle, null);
+        }
+
+        public static UItem of(int id, int top, int bottom, int icon, CharSequence title, CharSequence subtitle, CharSequence value) {
+            UItem item = UItem.ofFactory(FlexibleSettingCellFactory.class);
+            item.id = id;
+            item.iconResId = icon;
+            item.text = title;
+            item.subtext = subtitle;
+            item.textValue = value;
+            item.longValue = ((long) bottom << 32) | (top & 0xffffffffL);
+            return item;
+        }
+    }
+
     private static final int SEARCH_BUTTON_ID = 100;
 
     private static final int ITEM_CATEGORY_VAULT = 1;
@@ -221,7 +252,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
                         int iconRes = match.entry.categoryIcon != 0 ? match.entry.categoryIcon : R.drawable.msg_settings;
                         String path = "100gram › " + match.entry.getCategoryTitle();
 
-                        UItem item = SettingCell.Factory.of(
+                        UItem item = FlexibleSettingCellFactory.of(
                                 ITEM_SEARCH_RESULT_OFFSET + i,
                                 colors.top,
                                 colors.bottom,
@@ -257,7 +288,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 break;
         }
 
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_INTERFACE,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_INTERFACE,
                 IconBackgroundColors.BLUE_LIGHT.top, IconBackgroundColors.BLUE_LIGHT.bottom,
                 R.drawable.msg_discussion,
                 LocaleController.getString("HundredGramCategoryInterface", R.string.HundredGramCategoryInterface),
@@ -265,7 +296,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 transitionBadge));
 
         String iconPackBadge = HundredGramConfig.iconPacksEnabled ? HundredGramConfig.selectedIconPack : LocaleController.getString("NotificationsOff", R.string.NotificationsOff);
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_ICON_PACKS,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_ICON_PACKS,
                 IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom,
                 R.drawable.msg_theme,
                 LocaleController.getString("HundredGramIconPacks", R.string.HundredGramIconPacks),
@@ -273,7 +304,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 iconPackBadge));
 
         String pillStackBadge = HundredGramConfig.pillStackEnabled ? LocaleController.getString("NotificationsOn", R.string.NotificationsOn) : LocaleController.getString("NotificationsOff", R.string.NotificationsOff);
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_PILL_STACK,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_PILL_STACK,
                 IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom,
                 R.drawable.weather_cloudy,
                 LocaleController.getString("PillStackPills", R.string.PillStackPills),
@@ -287,27 +318,27 @@ public class HundredGramSettingsActivity extends BaseFragment {
         // ==========================================
         items.add(UItem.asHeader(LocaleController.getString("HundredGramSectionChatsMedia", R.string.HundredGramSectionChatsMedia)));
 
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_ACTIONS,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_ACTIONS,
                 IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom,
                 R.drawable.msg_actions,
                 LocaleController.getString("HundredGramCategoryActions", R.string.HundredGramCategoryActions),
                 LocaleController.getString("HundredGramCategoryActionsSub", R.string.HundredGramCategoryActionsSub)));
 
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_MEDIA,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_MEDIA,
                 IconBackgroundColors.ORANGE_DEEP.top, IconBackgroundColors.ORANGE_DEEP.bottom,
                 R.drawable.msg_media,
                 LocaleController.getString("HundredGramCategoryMediaQuality", R.string.HundredGramCategoryMediaQuality),
                 LocaleController.getString("HundredGramCategoryMediaQualitySub", R.string.HundredGramCategoryMediaQualitySub)));
 
         String cameraBadge = HundredGramConfig.cameraXEnabled ? "CameraX" : "Legacy";
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_CAMERAX,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_CAMERAX,
                 IconBackgroundColors.RED.top, IconBackgroundColors.RED.bottom,
                 R.drawable.msg_camera,
                 LocaleController.getString("CameraEngineTitle", R.string.CameraEngineTitle),
                 LocaleController.getString("CameraEngineSub", R.string.CameraEngineSub),
                 cameraBadge));
 
-        items.add(SettingCell.Factory.of(ITEM_CHANNELS_FEED,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CHANNELS_FEED,
                 IconBackgroundColors.CYAN.top, IconBackgroundColors.CYAN.bottom,
                 R.drawable.msg_channel,
                 LocaleController.getString("FeedTitle", R.string.FeedTitle),
@@ -327,7 +358,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
         if (HundredGramConfig.ghostHideReadDate) ghostCount++;
         String ghostBadge = ghostCount > 0 ? ghostCount + " active" : LocaleController.getString("NotificationsOff", R.string.NotificationsOff);
 
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_GHOST,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_GHOST,
                 IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom,
                 R.drawable.msg_secret,
                 LocaleController.getString("HundredGramCategoryGhost", R.string.HundredGramCategoryGhost),
@@ -336,7 +367,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
 
         int shadowbanCount = org.telegram.messenger.HundredGramShadowbanController.getShadowBannedCount();
         String privacyBadge = shadowbanCount > 0 ? LocaleController.formatPluralString("ShadowbanUsersCount", shadowbanCount, shadowbanCount) : null;
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_PRIVACY,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_PRIVACY,
                 IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom,
                 R.drawable.msg_permissions,
                 LocaleController.getString("HundredGramCategoryPrivacy", R.string.HundredGramCategoryPrivacy),
@@ -344,7 +375,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 privacyBadge));
 
         String streamerBadge = HundredGramConfig.streamerMode ? LocaleController.getString("NotificationsOn", R.string.NotificationsOn) : LocaleController.getString("NotificationsOff", R.string.NotificationsOff);
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_STREAMER,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_STREAMER,
                 IconBackgroundColors.RED.top, IconBackgroundColors.RED.bottom,
                 R.drawable.msg_channel,
                 LocaleController.getString("HundredGramCategoryStreamer", R.string.HundredGramCategoryStreamer),
@@ -361,20 +392,20 @@ public class HundredGramSettingsActivity extends BaseFragment {
         long vaultSize = HundredGramVaultManager.getInstance(currentAccount).getVaultTotalSize();
         String vaultSizeStr = vaultSize > 0 ? AndroidUtilities.formatFileSize(vaultSize) : null;
 
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_VAULT,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_VAULT,
                 IconBackgroundColors.BLUE_DEEP.top, IconBackgroundColors.BLUE_DEEP.bottom,
                 R.drawable.msg_download,
                 LocaleController.getString("HundredGramCategoryVault", R.string.HundredGramCategoryVault),
                 LocaleController.getString("HundredGramCategoryVaultSub", R.string.HundredGramCategoryVaultSub),
                 vaultSizeStr));
 
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_NETWORK,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_NETWORK,
                 IconBackgroundColors.CYAN.top, IconBackgroundColors.CYAN.bottom,
                 R.drawable.msg_stats,
                 LocaleController.getString("NetworkBoostTitle", R.string.NetworkBoostTitle),
                 LocaleController.getString("NetworkBoostSub", R.string.NetworkBoostSub)));
 
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_BACKUP,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_BACKUP,
                 IconBackgroundColors.BLUE_ALT.top, IconBackgroundColors.BLUE_ALT.bottom,
                 R.drawable.msg_archive,
                 LocaleController.getString("HundredGramBackupTitle", R.string.HundredGramBackupTitle),
@@ -391,7 +422,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
         String aiBadge = org.telegram.messenger.ai.HundredGramAiConfig.isAiEnabled()
                 ? org.telegram.messenger.ai.HundredGramAiConfig.getSelectedService().getName()
                 : LocaleController.getString("NotificationsOff", R.string.NotificationsOff);
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_AI,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_AI,
                 IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom,
                 R.drawable.msg_bot,
                 LocaleController.getString("AiSettingsTitle", R.string.AiSettingsTitle),
@@ -399,7 +430,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
                 aiBadge));
 
         String servicesBadge = org.telegram.messenger.translator.HundredGramTranslator.getInstance().getProviderName(HundredGramConfig.translationProvider);
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_SERVICES,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_SERVICES,
                 IconBackgroundColors.BLUE_LIGHT.top, IconBackgroundColors.BLUE_LIGHT.bottom,
                 R.drawable.msg_translate,
                 LocaleController.getString("ServicesSettingsTitle", R.string.ServicesSettingsTitle),
@@ -408,7 +439,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
 
         int pluginsCount = org.telegram.messenger.plugins.PluginsController.getInstance().getPlugins().size();
         String pluginsBadge = HundredGramConfig.pluginsEngine ? String.valueOf(pluginsCount) : LocaleController.getString("NotificationsOff", R.string.NotificationsOff);
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_PLUGINS,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_PLUGINS,
                 IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom,
                 R.drawable.msg_bot,
                 LocaleController.getString("Plugins", R.string.Plugins),
@@ -417,14 +448,14 @@ public class HundredGramSettingsActivity extends BaseFragment {
 
         int trackedCount = HundredGramConfig.trackedOnlineUsers.size();
         String trackedBadge = trackedCount > 0 ? trackedCount + " users" : null;
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_TRACKER,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_TRACKER,
                 IconBackgroundColors.GRAY.top, IconBackgroundColors.GRAY.bottom,
                 R.drawable.msg_usersearch,
                 LocaleController.getString("HundredGramCategoryTracker", R.string.HundredGramCategoryTracker),
                 LocaleController.getString("HundredGramCategoryTrackerSub", R.string.HundredGramCategoryTrackerSub),
                 trackedBadge));
 
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_AUTOMATION,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_AUTOMATION,
                 IconBackgroundColors.ORANGE_DEEP.top, IconBackgroundColors.ORANGE_DEEP.bottom,
                 R.drawable.msg_bot,
                 LocaleController.getString("AutomationTitle", R.string.AutomationTitle),
@@ -432,7 +463,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
 
         boolean simRunning = HundredGramActivitySimulator.getInstance(currentAccount).isRunning();
         String simBadge = simRunning ? LocaleController.getString("ActivitySimulatorActiveBadge", R.string.ActivitySimulatorActiveBadge) : null;
-        items.add(SettingCell.Factory.of(ITEM_CATEGORY_SIMULATOR,
+        items.add(FlexibleSettingCellFactory.of(ITEM_CATEGORY_SIMULATOR,
                 IconBackgroundColors.BLUE.top, IconBackgroundColors.BLUE.bottom,
                 R.drawable.msg_usersearch,
                 LocaleController.getString("ActivitySimulatorTitle", R.string.ActivitySimulatorTitle),
@@ -446,21 +477,21 @@ public class HundredGramSettingsActivity extends BaseFragment {
         // ==========================================
         items.add(UItem.asHeader(LocaleController.getString("HundredGramAboutSection", R.string.HundredGramAboutSection)));
 
-        items.add(SettingCell.Factory.of(ITEM_WHATS_NEW,
+        items.add(FlexibleSettingCellFactory.of(ITEM_WHATS_NEW,
                 IconBackgroundColors.PURPLE.top, IconBackgroundColors.PURPLE.bottom,
                 R.drawable.msg_info,
                 LocaleController.getString("HundredGramWhatsNew", R.string.HundredGramWhatsNew),
                 LocaleController.getString("HundredGramWhatsNewSub", R.string.HundredGramWhatsNewSub),
                 "v1.3"));
 
-        items.add(SettingCell.Factory.of(ITEM_AUTHOR,
+        items.add(FlexibleSettingCellFactory.of(ITEM_AUTHOR,
                 IconBackgroundColors.BLUE_DEEP.top, IconBackgroundColors.BLUE_DEEP.bottom,
                 R.drawable.msg_openprofile,
                 LocaleController.getString("HundredGramAuthor", R.string.HundredGramAuthor),
                 LocaleController.getString("HundredGramAuthorSub", R.string.HundredGramAuthorSub),
                 "@w1ckeddamn"));
 
-        items.add(SettingCell.Factory.of(ITEM_GITHUB,
+        items.add(FlexibleSettingCellFactory.of(ITEM_GITHUB,
                 IconBackgroundColors.GRAY.top, IconBackgroundColors.GRAY.bottom,
                 R.drawable.msg_link,
                 LocaleController.getString("HundredGramGitHub", R.string.HundredGramGitHub),

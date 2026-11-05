@@ -1172,7 +1172,7 @@
     <string name="SwipeActionPreviewTitle">Swipe left to test</string>
     <string name="SwipeActionPreviewSub">Current action: %1$s</string>
     <string name="BubblePreviewInText">100gram — new bubble design 🔥</string>
-    <string name="BubblePreviewOutText">With message tail</string>
+    <string name="BubblePreviewOutText">This is a preview message</string>
     <string name="BubblePreviewOutFlat">Clean flat look without tails!</string>
     <string name="BubblePreviewEdited">edited</string>
     <string name="HundredGramVaultCardTitle">100gram Media Vault</string>
@@ -1884,4 +1884,5 @@
     <string name="WhatsNewMaterialSettingsDesc">Enable MD3 Settings Containers in Interface to use more rounded settings sections.</string>
     <string name="WhatsNewPreviewFixes">Improved settings previews</string>
     <string name="WhatsNewPreviewFixesDesc">Message previews follow your theme, and sticker and GIF previews refresh more reliably.</string>
+    <string name="WhatsNewNativePreviewDesc">Message settings now use real chat cells; category descriptions have more room.</string>
 </resources>
