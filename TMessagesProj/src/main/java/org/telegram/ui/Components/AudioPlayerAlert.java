@@ -3098,10 +3098,8 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
                 showCreatePlaylistDialog(null);
             } else {
                 HundredGramPlaylistManager.CustomPlaylist pl = list.get(which - 1);
-                if (pl.getTrackCount() > 0) {
-                    manager.playPlaylist(pl, 0);
-                    playlist.clear();
-                    playlist.addAll(pl.getMessageObjects(currentAccount));
+                if (pl.getTrackCount() > 0 && manager.playPlaylist(pl, 0)) {
+                    playlist = MediaController.getInstance().getPlaylist();
                     if (listAdapter != null) {
                         listAdapter.notifyDataSetChanged();
                     }
@@ -3110,7 +3108,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
                         .show();
                 } else {
                     BulletinFactory.of((FrameLayout) containerView, resourcesProvider)
-                        .createSimpleBulletin(R.raw.info, getString(R.string.NoPlaylists))
+                        .createSimpleBulletin(R.raw.info, getString(R.string.PlaylistUnavailable))
                         .show();
                 }
             }

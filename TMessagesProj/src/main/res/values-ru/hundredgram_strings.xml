@@ -1901,4 +1901,11 @@
     <string name="WhatsNewNativeMediaPreviewDesc">Превью сообщений, стикеров и GIF использует настоящие ячейки чата, а описания категорий помещаются свободнее.</string>
     <string name="DeletedMessagePreviewText">Пример сохранённого удалённого сообщения</string>
     <string name="WhatsNewAuditFixesDesc">Настраивайте значок удалённых сообщений с предпросмотром; резервные копии точнее восстанавливают типы настроек.</string>
+    <string name="PlaylistTracks">Посмотреть треки</string>
+    <string name="PlaylistEmpty">В плейлисте пока нет треков. Добавьте музыку из плеера.</string>
+    <string name="PlaylistPlayTrack">Воспроизвести трек</string>
+    <string name="PlaylistRemoveTrack">Убрать из плейлиста</string>
+    <string name="WhatsNewPlaylistFixTitle">Управление плейлистами</string>
+    <string name="WhatsNewPlaylistFixDesc">Просматривайте и удаляйте треки, запускайте выбранный трек без добавления посторонней музыки.</string>
+    <string name="PlaylistUnavailable">В плейлисте нет доступных для воспроизведения треков.</string>
 </resources>

@@ -1077,6 +1077,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     public MessagesController.SavedMusicList currentSavedMusicList;
     private ArrayList<MessageObject> playlist = new ArrayList<>();
     private HashMap<Integer, MessageObject> playlistMap = new HashMap<>();
+    private boolean hundredGramCustomPlaylist;
     private ArrayList<MessageObject> shuffledPlaylist = new ArrayList<>();
     private int currentPlaylistNum;
     private boolean forceLoopCurrentPlaylist;
@@ -1732,6 +1733,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     }
 
     private void clearPlaylist() {
+        hundredGramCustomPlaylist = false;
         currentSavedMusicList = null;
         playlist.clear();
         playlistMap.clear();
@@ -1922,6 +1924,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 cleanupPlayer(false, true);
             }
         } else if (id == NotificationCenter.musicDidLoad) {
+            if (hundredGramCustomPlaylist) return;
             long did = (Long) args[0];
             if (playingMessageObject != null && playingMessageObject.isMusic() && playingMessageObject.getDialogId() == did && !playingMessageObject.scheduled) {
                 ArrayList<MessageObject> arrayListBegin = (ArrayList<MessageObject>) args[1];
@@ -1945,6 +1948,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 playlistClassGuid = ConnectionsManager.generateClassGuid();
             }
         } else if (id == NotificationCenter.mediaDidLoad) {
+            if (hundredGramCustomPlaylist) return;
             int guid = (Integer) args[3];
             if (guid == playlistClassGuid && playingMessageObject != null) {
                 long did = (Long) args[0];
@@ -2899,6 +2903,27 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         }
     }
 
+    /** Starts a fixed user playlist without loading or sorting music from a chat. */
+    public boolean setHundredGramPlaylist(ArrayList<MessageObject> tracks, MessageObject current) {
+        if (tracks == null || current == null || !current.isMusic() || !tracks.contains(current)) return false;
+        playMusicAgain = !playlist.isEmpty();
+        clearPlaylist();
+        hundredGramCustomPlaylist = true;
+        forceLoopCurrentPlaylist = false;
+        // The normal player advances backwards through its list by default.
+        for (int i = tracks.size() - 1; i >= 0; i--) {
+            MessageObject track = tracks.get(i);
+            if (track != null && track.isMusic()) {
+                playlist.add(track);
+                playlistMap.put(track.getId(), track);
+            }
+        }
+        currentPlaylistNum = playlist.indexOf(current);
+        if (currentPlaylistNum < 0) return false;
+        if (SharedConfig.shuffleMusic) buildShuffledPlayList();
+        return playMessage(current);
+    }
+
     public boolean setPlaylist(ArrayList<MessageObject> messageObjects, MessageObject current, long mergeDialogId, PlaylistGlobalSearchParams globalSearchParams) {
         return setPlaylist(messageObjects, current, mergeDialogId, true, globalSearchParams);
     }
@@ -2908,7 +2933,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     }
 
     public boolean setPlaylist(ArrayList<MessageObject> messageObjects, MessageObject current, long mergeDialogId, boolean loadMusic, PlaylistGlobalSearchParams params) {
-        if (playingMessageObject == current) {
+        if (!hundredGramCustomPlaylist && playingMessageObject == current) {
             int newIdx = playlist.indexOf(current);
             if (newIdx >= 0) {
                 currentPlaylistNum = newIdx;

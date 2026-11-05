@@ -54,6 +54,7 @@ public class HundredGramPlaylistManager {
                     SerializedData data = new SerializedData(bytes);
                     TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
                     if (message != null) {
+                        message.readAttachPath(data, UserConfig.getInstance(account).getClientUserId());
                         MessageObject msgObj = new MessageObject(account, message, false, false);
                         list.add(msgObj);
                     }
@@ -263,11 +264,34 @@ public class HundredGramPlaylistManager {
         return false;
     }
 
-    public synchronized void playPlaylist(CustomPlaylist playlist, int startIndex) {
-        if (playlist == null) return;
+    public synchronized boolean playPlaylist(CustomPlaylist playlist, int startIndex) {
+        if (playlist == null) return false;
         List<MessageObject> objects = playlist.getMessageObjects(currentAccount);
-        if (objects.isEmpty()) return;
+        if (objects.isEmpty()) return false;
         int idx = Math.max(0, Math.min(startIndex, objects.size() - 1));
-        MediaController.getInstance().setPlaylist(new ArrayList<>(objects), objects.get(idx), 0L);
+        return MediaController.getInstance().setHundredGramPlaylist(new ArrayList<>(objects), objects.get(idx));
+    }
+
+    public synchronized boolean removeTrackFromPlaylist(String playlistId, MessageObject track) {
+        CustomPlaylist playlist = getPlaylist(playlistId);
+        if (playlist == null || track == null || track.getDocument() == null) return false;
+        long documentId = track.getDocument().id;
+        synchronized (playlist) {
+            for (int i = 0; i < playlist.serializedTracks.size(); i++) {
+                try {
+                    byte[] bytes = Base64.decode(playlist.serializedTracks.get(i), Base64.NO_WRAP);
+                    SerializedData data = new SerializedData(bytes);
+                    TLRPC.Message message = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
+                    if (message != null && message.media != null && message.media.document != null && message.media.document.id == documentId) {
+                        playlist.serializedTracks.remove(i);
+                        save();
+                        return true;
+                    }
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+            }
+        }
+        return false;
     }
 }

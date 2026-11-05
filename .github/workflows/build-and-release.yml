@@ -121,7 +121,7 @@ jobs:
             exit 1
           fi
 
-          VERSION="${{ github.ref_name }}"
+          VERSION="${GITHUB_REF_NAME//\//-}"
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             TARGET_NAME="100gram-${VERSION}.apk"

@@ -87,6 +87,16 @@ public class HundredGramWhatsNewActivity extends BaseFragment {
         items.add(UItem.asHeader(LocaleController.getString("WhatsNewCurrentVersion", R.string.WhatsNewCurrentVersion)));
 
         items.add(UItem.asCustom(createFeatureCard(context,
+                R.drawable.files_music,
+                LocaleController.getString("WhatsNewPlaylistFixTitle", R.string.WhatsNewPlaylistFixTitle),
+                LocaleController.getString("WhatsNewPlaylistFixDesc", R.string.WhatsNewPlaylistFixDesc),
+                LocaleController.getString("WhatsNewNew", R.string.WhatsNewNew),
+                true,
+                null
+        )));
+        items.add(UItem.asShadow(null));
+
+        items.add(UItem.asCustom(createFeatureCard(context,
                 R.drawable.msg_media,
                 LocaleController.getString("WhatsNewPreviewFixes", R.string.WhatsNewPreviewFixes),
                 LocaleController.getString("WhatsNewAuditFixesDesc", R.string.WhatsNewAuditFixesDesc),

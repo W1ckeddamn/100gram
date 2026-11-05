@@ -1890,4 +1890,11 @@
     <string name="WhatsNewNativeMediaPreviewDesc">Message, sticker and GIF previews now use real chat cells; category descriptions have more room.</string>
     <string name="DeletedMessagePreviewText">Example of a preserved deleted message</string>
     <string name="WhatsNewAuditFixesDesc">Preview deleted-message markers in settings and restore backed-up preference types more reliably.</string>
+    <string name="PlaylistTracks">View tracks</string>
+    <string name="PlaylistEmpty">This playlist has no tracks yet. Add music from the player.</string>
+    <string name="PlaylistPlayTrack">Play track</string>
+    <string name="PlaylistRemoveTrack">Remove from playlist</string>
+    <string name="WhatsNewPlaylistFixTitle">Playlist management</string>
+    <string name="WhatsNewPlaylistFixDesc">View and remove tracks from playlists, and play the selected track without adding unrelated music.</string>
+    <string name="PlaylistUnavailable">This playlist has no playable tracks.</string>
 </resources>

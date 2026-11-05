@@ -681,6 +681,13 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
             title.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
             pillContent.addView(title, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
+            ImageView menuButton = new ImageView(context);
+            menuButton.setImageResource(R.drawable.ic_ab_other);
+            menuButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_windowBackgroundWhiteGrayIcon), PorterDuff.Mode.SRC_IN));
+            menuButton.setContentDescription(LocaleController.getString("AccDescrMoreOptions", R.string.AccDescrMoreOptions));
+            menuButton.setOnClickListener(v -> showPlaylistOptions(v, playlist));
+            pillContent.addView(menuButton, LayoutHelper.createLinear(32, 32, 4, 0, 0, 0));
+
             pill.addView(pillContent);
 
             pill.setOnClickListener(v -> {
@@ -688,9 +695,11 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
                     BulletinFactory.of(this).createSimpleBulletin(R.raw.info, LocaleController.getString("NoPlaylists", R.string.NoPlaylists)).show();
                     return;
                 }
-                HundredGramPlaylistManager.getInstance(currentAccount).playPlaylist(playlist, 0);
-                showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
-                BulletinFactory.of(this).createSimpleBulletin(R.raw.contact_check, playlist.getTitle()).show();
+                if (HundredGramPlaylistManager.getInstance(currentAccount).playPlaylist(playlist, 0)) {
+                    showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
+                } else {
+                    BulletinFactory.of(this).createSimpleBulletin(R.raw.info, LocaleController.getString("PlaylistUnavailable", R.string.PlaylistUnavailable)).show();
+                }
             });
 
             pill.setOnLongClickListener(v -> {
@@ -706,9 +715,13 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
     private void showPlaylistOptions(View anchor, final HundredGramPlaylistManager.CustomPlaylist playlist) {
         if (getParentActivity() == null) return;
         ItemOptions options = ItemOptions.makeOptions(this, anchor);
+        options.add(R.drawable.msg_list, LocaleController.getString("PlaylistTracks", R.string.PlaylistTracks), () -> showPlaylistTracks(playlist));
         options.add(R.drawable.player, LocaleController.getString("Music", R.string.Music), () -> {
-            HundredGramPlaylistManager.getInstance(currentAccount).playPlaylist(playlist, 0);
-            showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
+            if (HundredGramPlaylistManager.getInstance(currentAccount).playPlaylist(playlist, 0)) {
+                showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
+            } else {
+                BulletinFactory.of(this).createSimpleBulletin(R.raw.info, LocaleController.getString("PlaylistUnavailable", R.string.PlaylistUnavailable)).show();
+            }
         });
         options.add(R.drawable.msg_edit, LocaleController.getString("RenamePlaylist", R.string.RenamePlaylist), () -> {
             showRenamePlaylistDialog(playlist);
@@ -725,6 +738,53 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
             showDialog(b.create());
         });
         options.show();
+    }
+
+    private void showPlaylistTracks(final HundredGramPlaylistManager.CustomPlaylist playlist) {
+        if (getParentActivity() == null || playlist == null) return;
+        final List<MessageObject> tracks = playlist.getMessageObjects(currentAccount);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), getResourceProvider());
+        builder.setTitle(playlist.getTitle());
+        if (tracks.isEmpty()) {
+            builder.setMessage(LocaleController.getString("PlaylistEmpty", R.string.PlaylistEmpty));
+        } else {
+            CharSequence[] names = new CharSequence[tracks.size()];
+            for (int i = 0; i < tracks.size(); i++) {
+                MessageObject track = tracks.get(i);
+                names[i] = track.getMusicTitle() + " — " + track.getMusicAuthor();
+            }
+            builder.setItems(names, (dialog, which) -> showPlaylistTrackActions(playlist, tracks.get(which)));
+        }
+        builder.setNegativeButton(LocaleController.getString("Close", R.string.Close), null);
+        showDialog(builder.create());
+    }
+
+    private void showPlaylistTrackActions(final HundredGramPlaylistManager.CustomPlaylist playlist, final MessageObject track) {
+        if (getParentActivity() == null) return;
+        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), getResourceProvider());
+        builder.setTitle(track.getMusicTitle());
+        builder.setItems(new CharSequence[]{LocaleController.getString("PlaylistPlayTrack", R.string.PlaylistPlayTrack),
+                LocaleController.getString("PlaylistRemoveTrack", R.string.PlaylistRemoveTrack)}, (dialog, which) -> {
+            HundredGramPlaylistManager manager = HundredGramPlaylistManager.getInstance(currentAccount);
+            if (which == 0) {
+                List<MessageObject> current = playlist.getMessageObjects(currentAccount);
+                int index = -1;
+                for (int i = 0; i < current.size(); i++) {
+                    if (current.get(i).getDocument() != null && track.getDocument() != null && current.get(i).getDocument().id == track.getDocument().id) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index >= 0 && manager.playPlaylist(playlist, index)) {
+                    showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));
+                }
+            } else if (manager.removeTrackFromPlaylist(playlist.getId(), track)) {
+                refreshPlaylistsList();
+                showPlaylistTracks(playlist);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+        showDialog(builder.create());
     }
 
     private void showRenamePlaylistDialog(final HundredGramPlaylistManager.CustomPlaylist playlist) {
