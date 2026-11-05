@@ -169,7 +169,7 @@ public class HundredGramBackupManager {
                 }
                 // Schema 1 did not preserve numeric types. These long-valued keys must
                 // remain long even when the JSON number fits in an integer.
-                boolean legacyLong = "musicSourceDialogId".equals(key) || "backgroundArchiverActivationTime".equals(key);
+                boolean legacyLong = "musicSourceDialogId".equals(key) || key.startsWith("musicSourceDialogId_") || "backgroundArchiverActivationTime".equals(key);
                 if (val instanceof Number && ("long".equals(type) || existing instanceof Long || (type.isEmpty() && legacyLong))) {
                     editor.putLong(key, ((Number) val).longValue());
                 } else if (val instanceof Number && ("float".equals(type) || existing instanceof Float)) {

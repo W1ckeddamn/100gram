@@ -257,7 +257,7 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
     }
 
     private long getActiveDialogId() {
-        long did = HundredGramConfig.musicSourceDialogId;
+        long did = HundredGramConfig.getMusicSourceDialogId(currentAccount);
         if (did != 0) {
             return did;
         }
@@ -437,7 +437,7 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
 
     private void updateSourceTitle() {
         if (sourceTitle == null) return;
-        long did = HundredGramConfig.musicSourceDialogId;
+        long did = HundredGramConfig.getMusicSourceDialogId(currentAccount);
         String name;
         if (did == 0 || did == UserConfig.getInstance(currentAccount).getClientUserId()) {
             name = LocaleController.getString("SavedMessages", R.string.SavedMessages);
@@ -455,7 +455,7 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
         if (getParentActivity() == null) return;
         ItemOptions options = ItemOptions.makeOptions(this, sourceTitle != null ? sourceTitle : fragmentView);
         options.add(R.drawable.msg_saved, LocaleController.getString("SavedMessages", R.string.SavedMessages), () -> {
-            HundredGramConfig.setMusicSourceDialogId(0L);
+            HundredGramConfig.setMusicSourceDialogId(currentAccount, 0L);
             long myId = UserConfig.getInstance(currentAccount).getClientUserId();
             setupSharedMediaLayout(getContext(), contentLayout, myId);
             updateSourceTitle();
@@ -468,7 +468,7 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
             activity.setDelegate((dialogsActivity, dids, message, param, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment) -> {
                 if (dids != null && !dids.isEmpty()) {
                     long did = dids.get(0).dialogId;
-                    HundredGramConfig.setMusicSourceDialogId(did);
+                    HundredGramConfig.setMusicSourceDialogId(currentAccount, did);
                     setupSharedMediaLayout(getContext(), contentLayout, did);
                     updateSourceTitle();
                 }

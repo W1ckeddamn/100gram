@@ -75,7 +75,6 @@ public class HundredGramConfig {
     public static boolean bottomNavHideSettingsTab;
     public static boolean bottomNavArchiveTab;
     public static boolean bottomNavMusicTab;
-    public static long musicSourceDialogId;
 
     // Batch 2: Dialogs, Media & Chat Controls
     public static boolean senderMiniAvatars;
@@ -573,7 +572,6 @@ public class HundredGramConfig {
             bottomNavHideSettingsTab = preferences.getBoolean("bottomNavHideSettingsTab", false);
             bottomNavArchiveTab = preferences.getBoolean("bottomNavArchiveTab", false);
             bottomNavMusicTab = preferences.getBoolean("bottomNavMusicTab", false);
-            musicSourceDialogId = preferences.getLong("musicSourceDialogId", 0L);
             senderMiniAvatars = preferences.getBoolean("senderMiniAvatars", false);
             pauseOnMinimizeVideo = preferences.getBoolean("pauseOnMinimizeVideo", false);
             pauseOnMinimizeVoice = preferences.getBoolean("pauseOnMinimizeVoice", false);
@@ -1327,9 +1325,26 @@ public class HundredGramConfig {
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.feedTabVisibleToggled);
     }
 
-    public static void setMusicSourceDialogId(long dialogId) {
-        musicSourceDialogId = dialogId;
-        saveLong("musicSourceDialogId", musicSourceDialogId);
+    public static long getMusicSourceDialogId(int account) {
+        if (ApplicationLoader.applicationContext == null) return 0L;
+        synchronized (sync) {
+            SharedPreferences prefs = ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE);
+            String key = "musicSourceDialogId_" + account;
+            if (prefs.contains("musicSourceDialogId")) {
+                // The old source was global; assign it only to the first account that opens music.
+                long legacy = prefs.getLong("musicSourceDialogId", 0L);
+                if (!prefs.contains(key)) {
+                    prefs.edit().putLong(key, legacy).remove("musicSourceDialogId").apply();
+                    return legacy;
+                }
+                prefs.edit().remove("musicSourceDialogId").apply();
+            }
+            return prefs.getLong(key, 0L);
+        }
+    }
+
+    public static void setMusicSourceDialogId(int account, long dialogId) {
+        saveLong("musicSourceDialogId_" + account, dialogId);
     }
 
     public static void toggleBypassContentProtection() {
