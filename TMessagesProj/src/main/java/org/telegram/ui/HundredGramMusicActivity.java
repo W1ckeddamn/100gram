@@ -681,12 +681,14 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
             title.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
             pillContent.addView(title, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
-            ImageView menuButton = new ImageView(context);
-            menuButton.setImageResource(R.drawable.ic_ab_other);
-            menuButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_windowBackgroundWhiteGrayIcon), PorterDuff.Mode.SRC_IN));
-            menuButton.setContentDescription(LocaleController.getString("AccDescrMoreOptions", R.string.AccDescrMoreOptions));
-            menuButton.setOnClickListener(v -> showPlaylistOptions(v, playlist));
-            pillContent.addView(menuButton, LayoutHelper.createLinear(32, 32, 4, 0, 0, 0));
+            if (HundredGramConfig.playlistTrackManagement) {
+                ImageView menuButton = new ImageView(context);
+                menuButton.setImageResource(R.drawable.ic_ab_other);
+                menuButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_windowBackgroundWhiteGrayIcon), PorterDuff.Mode.SRC_IN));
+                menuButton.setContentDescription(LocaleController.getString("AccDescrMoreOptions", R.string.AccDescrMoreOptions));
+                menuButton.setOnClickListener(v -> showPlaylistOptions(v, playlist));
+                pillContent.addView(menuButton, LayoutHelper.createLinear(32, 32, 4, 0, 0, 0));
+            }
 
             pill.addView(pillContent);
 
@@ -715,7 +717,9 @@ public class HundredGramMusicActivity extends BaseFragment implements Notificati
     private void showPlaylistOptions(View anchor, final HundredGramPlaylistManager.CustomPlaylist playlist) {
         if (getParentActivity() == null) return;
         ItemOptions options = ItemOptions.makeOptions(this, anchor);
-        options.add(R.drawable.msg_list, LocaleController.getString("PlaylistTracks", R.string.PlaylistTracks), () -> showPlaylistTracks(playlist));
+        if (HundredGramConfig.playlistTrackManagement) {
+            options.add(R.drawable.msg_list, LocaleController.getString("PlaylistTracks", R.string.PlaylistTracks), () -> showPlaylistTracks(playlist));
+        }
         options.add(R.drawable.player, LocaleController.getString("Music", R.string.Music), () -> {
             if (HundredGramPlaylistManager.getInstance(currentAccount).playPlaylist(playlist, 0)) {
                 showDialog(new AudioPlayerAlert(getContext(), getResourceProvider()));

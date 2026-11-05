@@ -309,6 +309,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private static final int ITEM_STICKER_QUOTES = 417;
     private static final int ITEM_LYRICS_IN_PLAYER = 418;
     private static final int ITEM_MD3_AUDIO_PLAYER = 419;
+    private static final int ITEM_PLAYLIST_MANAGEMENT = 422;
     private static final int ITEM_SLOWMODE_QUEUE = 420;
 
     // Item IDs for Developer Mode
@@ -1249,6 +1250,8 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 .setChecked(HundredGramConfig.lyricsInPlayer));
         items.add(UItem.asCheck(ITEM_MD3_AUDIO_PLAYER, LocaleController.getString("Md3AudioPlayer", R.string.Md3AudioPlayer))
                 .setChecked(HundredGramConfig.md3AudioPlayer));
+        items.add(UItem.asCheck(ITEM_PLAYLIST_MANAGEMENT, LocaleController.getString("PlaylistManagement", R.string.PlaylistManagement))
+                .setChecked(HundredGramConfig.playlistTrackManagement));
         items.add(UItem.asShadow(LocaleController.getString("LyricsInPlayerDesc", R.string.LyricsInPlayerDesc)));
 
         // Custom save path
@@ -2074,6 +2077,13 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 item.setChecked(HundredGramConfig.lyricsInPlayer);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.lyricsInPlayer);
+                }
+                break;
+            case ITEM_PLAYLIST_MANAGEMENT:
+                HundredGramConfig.togglePlaylistTrackManagement();
+                item.setChecked(HundredGramConfig.playlistTrackManagement);
+                if (view instanceof TextCheckCell) {
+                    ((TextCheckCell) view).setChecked(HundredGramConfig.playlistTrackManagement);
                 }
                 break;
             case ITEM_MD3_AUDIO_PLAYER:

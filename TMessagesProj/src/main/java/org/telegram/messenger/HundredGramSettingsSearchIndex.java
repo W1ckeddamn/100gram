@@ -765,6 +765,13 @@ public class HundredGramSettingsSearchIndex {
                 HundredGramSubSettingsActivity.class,
                 "текст", "слова", "песня", "lyrics", "lrc", "музыка", "трек", "плеер");
 
+        addEntry(id++, "PlaylistManagement", "Управление треками плейлистов",
+                "PlaylistManagementInfo", "Просмотр, запуск и удаление отдельных треков плейлиста",
+                "HundredGramCategoryMedia", "Медиа",
+                R.drawable.files_music, HundredGramSubSettingsActivity.CATEGORY_MEDIA, 422,
+                HundredGramSubSettingsActivity.class,
+                "плейлист", "музыка", "трек", "playlist", "tracks", "music");
+
         addEntry(id++, "Md3AudioPlayer", "MD3 аудиоплеер",
                 "Md3AudioPlayerDesc", "Material You скругление обложки, акцентные кнопки и современный стиль в плеере",
                 "HundredGramCategoryMedia", "Медиа",

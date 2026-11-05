@@ -1906,6 +1906,8 @@
     <string name="PlaylistPlayTrack">Воспроизвести трек</string>
     <string name="PlaylistRemoveTrack">Убрать из плейлиста</string>
     <string name="WhatsNewPlaylistFixTitle">Управление плейлистами</string>
-    <string name="WhatsNewPlaylistFixDesc">Просматривайте и удаляйте треки, запускайте выбранный трек без добавления посторонней музыки.</string>
+    <string name="WhatsNewPlaylistFixDesc">Включите управление треками в настройках медиа 100gram, чтобы просматривать, запускать и удалять треки плейлистов.</string>
     <string name="PlaylistUnavailable">В плейлисте нет доступных для воспроизведения треков.</string>
+    <string name="PlaylistManagement">Управление треками плейлистов</string>
+    <string name="PlaylistManagementInfo">Показывать список треков плейлиста и действия для воспроизведения или удаления.</string>
 </resources>

@@ -63,6 +63,7 @@ public class HundredGramConfig {
     // Phase 5: Media & Player
     public static boolean lyricsInPlayer = true;
     public static boolean md3AudioPlayer;
+    public static boolean playlistTrackManagement;
     public static boolean slowmodeQueue;
     public static boolean customBadgesEnabled = true;
     public static String badgesSyncUrl = "https://raw.githubusercontent.com/W1ckeddamn/100gram/main/badges.json";
@@ -560,6 +561,7 @@ public class HundredGramConfig {
             stickerQuotes = preferences.getBoolean("stickerQuotes", true);
             lyricsInPlayer = preferences.getBoolean("lyricsInPlayer", true);
             md3AudioPlayer = preferences.getBoolean("md3AudioPlayer", false);
+            playlistTrackManagement = preferences.getBoolean("playlistTrackManagement", false);
             slowmodeQueue = preferences.getBoolean("slowmodeQueue", false);
             customBadgesEnabled = preferences.getBoolean("customBadgesEnabled", true);
             badgesSyncUrl = preferences.getString("badgesSyncUrl", "https://raw.githubusercontent.com/W1ckeddamn/100gram/main/badges.json");
@@ -1247,6 +1249,11 @@ public class HundredGramConfig {
     public static void toggleLyricsInPlayer() {
         lyricsInPlayer = !lyricsInPlayer;
         save("lyricsInPlayer", lyricsInPlayer);
+    }
+
+    public static void togglePlaylistTrackManagement() {
+        playlistTrackManagement = !playlistTrackManagement;
+        save("playlistTrackManagement", playlistTrackManagement);
     }
 
     public static void toggleMd3AudioPlayer() {
@@ -2621,6 +2628,7 @@ public class HundredGramConfig {
         stickerQuotes = true;
         lyricsInPlayer = true;
         md3AudioPlayer = false;
+        playlistTrackManagement = false;
         slowmodeQueue = false;
         customBadgesEnabled = true;
         badgesSyncUrl = "https://raw.githubusercontent.com/W1ckeddamn/100gram/main/badges.json";

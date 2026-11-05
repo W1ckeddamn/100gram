@@ -1895,6 +1895,8 @@
     <string name="PlaylistPlayTrack">Play track</string>
     <string name="PlaylistRemoveTrack">Remove from playlist</string>
     <string name="WhatsNewPlaylistFixTitle">Playlist management</string>
-    <string name="WhatsNewPlaylistFixDesc">View and remove tracks from playlists, and play the selected track without adding unrelated music.</string>
+    <string name="WhatsNewPlaylistFixDesc">Enable track management in 100gram media settings to view, play and remove playlist tracks.</string>
     <string name="PlaylistUnavailable">This playlist has no playable tracks.</string>
+    <string name="PlaylistManagement">Manage playlist tracks</string>
+    <string name="PlaylistManagementInfo">Show playlist track lists and controls for playing or removing individual tracks.</string>
 </resources>
