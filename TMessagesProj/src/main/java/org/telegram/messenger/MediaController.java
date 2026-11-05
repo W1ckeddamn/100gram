@@ -2906,22 +2906,27 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
     /** Starts a fixed user playlist without loading or sorting music from a chat. */
     public boolean setHundredGramPlaylist(ArrayList<MessageObject> tracks, MessageObject current) {
         if (tracks == null || current == null || !current.isMusic() || !tracks.contains(current)) return false;
+        MessageObject selected = current;
+        if ((audioPlayer != null || videoPlayer != null) && playingMessageObject != null
+                && playingMessageObject.currentAccount == current.currentAccount && isSamePlayingMessage(current)) {
+            selected = playingMessageObject;
+        }
         playMusicAgain = !playlist.isEmpty();
         clearPlaylist();
         hundredGramCustomPlaylist = true;
         forceLoopCurrentPlaylist = false;
         // The normal player advances backwards through its list by default.
         for (int i = tracks.size() - 1; i >= 0; i--) {
-            MessageObject track = tracks.get(i);
+            MessageObject track = tracks.get(i) == current ? selected : tracks.get(i);
             if (track != null && track.isMusic()) {
                 playlist.add(track);
                 playlistMap.put(track.getId(), track);
             }
         }
-        currentPlaylistNum = playlist.indexOf(current);
+        currentPlaylistNum = playlist.indexOf(selected);
         if (currentPlaylistNum < 0) return false;
         if (SharedConfig.shuffleMusic) buildShuffledPlayList();
-        return playMessage(current);
+        return playMessage(selected);
     }
 
     public boolean setPlaylist(ArrayList<MessageObject> messageObjects, MessageObject current, long mergeDialogId, PlaylistGlobalSearchParams globalSearchParams) {
