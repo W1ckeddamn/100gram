@@ -130,84 +130,84 @@ public class HundredGramSettingsSearchIndex {
         addEntry(id++, "GhostOnline", "Призрачный режим (онлайн)",
                 "GhostOnlineInfo", "Скрывать статус «В сети» и не отправлять статус присутствия",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 1,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 78,
                 HundredGramSubSettingsActivity.class,
                 "призрак", "онлайн", "ghost", "online", "невидимка", "статус", "присутствие");
 
         addEntry(id++, "SendOfflineAfterOnline", "Отправлять «Не в сети» после сообщений",
                 null, "Мгновенно переводить аккаунт в офлайн после отправки сообщений",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 184,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 237,
                 HundredGramSubSettingsActivity.class,
                 "офлайн", "offline", "призрак", "сообщение");
 
         addEntry(id++, "GhostTyping", "Скрывать «Печатает…»",
                 null, "Не отправлять собеседнику статус набора текста или записи голосового",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 2,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 74,
                 HundredGramSubSettingsActivity.class,
                 "печатает", "typing", "набор", "текст", "голос", "запись");
 
         addEntry(id++, "GhostUploadProgress", "Скрывать выгрузку файлов",
                 null, "Не показывать индикатор отправки медиа и документов",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 185,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 238,
                 HundredGramSubSettingsActivity.class,
                 "выгрузка", "upload", "прогресс", "файл", "отправка");
 
         addEntry(id++, "GhostReadMessages", "Не читать входящие сообщения",
                 "GhostReadMessagesInfo", "Оставлять сообщения непрочитанными для собеседника",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 3,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 70,
                 HundredGramSubSettingsActivity.class,
                 "прочитано", "галочки", "read", "непрочитано", "шпион");
 
         addEntry(id++, "GhostReadOnReply", "Читать при ответе",
                 null, "Автоматически помечать сообщение прочитанным при ответе на него",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 4,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 71,
                 HundredGramSubSettingsActivity.class,
                 "ответ", "reply", "прочтение");
 
         addEntry(id++, "GhostReadMediaContents", "Не читать медиа",
                 null, "Не отмечать голосовые сообщения и кругляшки как прослушанные",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 5,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 72,
                 HundredGramSubSettingsActivity.class,
                 "кругляшки", "голосовые", "прослушано", "voice", "round");
 
         addEntry(id++, "GhostShowMarkAsRead", "Кнопка «Прочитать» в контекстном меню",
                 null, "Добавляет кнопку ручной отметки сообщения прочитанным",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 6,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 73,
                 HundredGramSubSettingsActivity.class,
                 "пометить", "прочитано", "кнопка", "меню");
 
         addEntry(id++, "TrackReadDate", "Точное время прочтения сообщений",
                 null, "Показывает точную дату и время, когда собеседник открыл ваше сообщение",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 7,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 236,
                 HundredGramSubSettingsActivity.class,
                 "время", "прочтение", "шпион", "date", "read", "spy");
 
         addEntry(id++, "GhostHideReadDate", "Скрывать время прочтения для других",
                 null, "Не отправлять другим точное время прочтения сообщений в группах",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 183,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 79,
                 HundredGramSubSettingsActivity.class,
                 "скрыть", "время", "прочтение", "группы");
 
         addEntry(id++, "GhostStoriesMode", "Режим просмотра историй",
                 "GhostStoriesModeInfo", "Анонимный просмотр историй без попадания в список просмотров",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 8,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 75,
                 HundredGramSubSettingsActivity.class,
                 "истории", "stories", "анонимно", "инкогнито", "сторис");
 
         addEntry(id++, "UnlockStorySaving", "Скачивание историй в галерею",
                 null, "Разрешить сохранение чужих историй на устройство",
                 "HundredGramCategoryGhost", "Призрачный режим",
-                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 9,
+                R.drawable.msg_secret, HundredGramSubSettingsActivity.CATEGORY_GHOST, 76,
                 HundredGramSubSettingsActivity.class,
                 "скачать", "сохранить", "истории", "stories", "галерея");
 
@@ -237,49 +237,49 @@ public class HundredGramSettingsSearchIndex {
         addEntry(id++, "SaveAntiDeleteText", "Архиватор удаленных сообщений (Anti-Delete)",
                 "SaveTypesHeaderInfo", "Сохранять текст удаленных сообщений с пометкой об удалении",
                 "HundredGramCategoryVault", "Хранилище и медиа",
-                R.drawable.msg_archive, HundredGramSubSettingsActivity.CATEGORY_VAULT, 202,
+                R.drawable.msg_archive, HundredGramSubSettingsActivity.CATEGORY_VAULT, 276,
                 HundredGramSubSettingsActivity.class,
                 "удаленные", "антиделит", "anti-delete", "сообщения", "хранилище", "сохранение", "текст");
 
         addEntry(id++, "SaveEditHistory", "История редактирования сообщений",
                 null, "Сохранять все промежуточные версии отредактированных сообщений",
                 "HundredGramCategoryVault", "Хранилище и медиа",
-                R.drawable.msg_archive, HundredGramSubSettingsActivity.CATEGORY_VAULT, 203,
+                R.drawable.msg_archive, HundredGramSubSettingsActivity.CATEGORY_VAULT, 277,
                 HundredGramSubSettingsActivity.class,
                 "редактирование", "история", "версии", "edit", "history", "правки");
 
         addEntry(id++, "SaveMediaPhotos", "Сохранять удаленные фото",
                 null, "Автоматическое сохранение удаленных фотографий в хранилище",
                 "HundredGramCategoryVault", "Хранилище и медиа",
-                R.drawable.msg_media, HundredGramSubSettingsActivity.CATEGORY_VAULT, 204,
+                R.drawable.msg_media, HundredGramSubSettingsActivity.CATEGORY_VAULT, 278,
                 HundredGramSubSettingsActivity.class,
                 "фото", "картинки", "photo", "медиа", "удаленные");
 
         addEntry(id++, "SaveMediaVoiceRounds", "Сохранять голосовые и кругляшки",
                 null, "Сохранение удаленных голосовых сообщений и видеосообщений в Vault",
                 "HundredGramCategoryVault", "Хранилище и медиа",
-                R.drawable.msg_camera, HundredGramSubSettingsActivity.CATEGORY_VAULT, 205,
+                R.drawable.msg_camera, HundredGramSubSettingsActivity.CATEGORY_VAULT, 279,
                 HundredGramSubSettingsActivity.class,
                 "голосовые", "кругляшки", "voice", "round", "видеосообщения");
 
         addEntry(id++, "SaveMediaVideos", "Сохранять видеофайлы",
                 null, "Сохранение удаленных видео в защищенное хранилище",
                 "HundredGramCategoryVault", "Хранилище и медиа",
-                R.drawable.msg_media, HundredGramSubSettingsActivity.CATEGORY_VAULT, 206,
+                R.drawable.msg_media, HundredGramSubSettingsActivity.CATEGORY_VAULT, 280,
                 HundredGramSubSettingsActivity.class,
                 "видео", "video", "ролики");
 
         addEntry(id++, "SaveMediaFiles", "Сохранять файлы и документы",
                 null, "Сохранение документов, архивов и других файлов",
                 "HundredGramCategoryVault", "Хранилище и медиа",
-                R.drawable.msg_download, HundredGramSubSettingsActivity.CATEGORY_VAULT, 207,
+                R.drawable.msg_download, HundredGramSubSettingsActivity.CATEGORY_VAULT, 281,
                 HundredGramSubSettingsActivity.class,
                 "файлы", "документы", "архивы", "document", "files");
 
         addEntry(id++, "HundredGramMediaVaultLimit", "Лимит размера автозагрузки в хранилище",
                 "HundredGramMediaVaultInfo", "Максимальный размер сохраняемого файла (включая режим «Без ограничений»)",
                 "HundredGramCategoryVault", "Хранилище и медиа",
-                R.drawable.msg_archive, HundredGramSubSettingsActivity.CATEGORY_VAULT, 1,
+                R.drawable.msg_archive, HundredGramSubSettingsActivity.CATEGORY_VAULT, 2,
                 HundredGramSubSettingsActivity.class,
                 "лимит", "размер", "мегабайт", "без ограничений", "unlimited", "максимальный");
 
@@ -293,7 +293,7 @@ public class HundredGramSettingsSearchIndex {
         addEntry(id++, "HundredGramVaultExportAllZip", "Экспорт хранилища в ZIP",
                 null, "Выгрузка всех сохраненных сообщений и файлов в архив",
                 "HundredGramCategoryVault", "Хранилище и медиа",
-                R.drawable.msg_share, HundredGramSubSettingsActivity.CATEGORY_VAULT, 190,
+                R.drawable.msg_share, HundredGramSubSettingsActivity.CATEGORY_VAULT, 231,
                 HundredGramSubSettingsActivity.class,
                 "экспорт", "zip", "архив", "бэкап", "выгрузка");
 
@@ -420,7 +420,7 @@ public class HundredGramSettingsSearchIndex {
         addEntry(id++, "ChatPageUpButton", "Кнопка «страница вверх»",
                 null, "Кнопка для перехода на 100 сообщений назад в чате",
                 "HundredGramCategoryInterface", "Интерфейс",
-                R.drawable.pagedown, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 0,
+                R.drawable.pagedown, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 265,
                 HundredGramSubSettingsActivity.class,
                 "страница", "вверх", "page", "up", "100", "сообщений");
 
@@ -434,21 +434,21 @@ public class HundredGramSettingsSearchIndex {
         addEntry(id++, "HideStoriesProfile", "Скрыть истории в профилях",
                 null, "Убрать кольцо историй с аватарок в профилях",
                 "HundredGramCategoryInterface", "Интерфейс",
-                R.drawable.msg_stories_archive, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 0,
+                R.drawable.msg_stories_archive, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 267,
                 HundredGramSubSettingsActivity.class,
                 "истории", "профиль", "stories", "profile", "скрыть");
 
         addEntry(id++, "HideStoriesPosting", "Скрыть публикацию историй",
                 null, "Убрать кнопки добавления и публикации историй",
                 "HundredGramCategoryInterface", "Интерфейс",
-                R.drawable.msg_stories_add, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 0,
+                R.drawable.msg_stories_add, HundredGramSubSettingsActivity.CATEGORY_INTERFACE, 268,
                 HundredGramSubSettingsActivity.class,
                 "истории", "публикация", "stories", "posting", "скрыть");
 
         addEntry(id++, "DeleteMyMessages", "Удалить мои сообщения",
                 null, "Удалить все ваши сообщения в выбранных чатах",
                 "HundredGramCategoryActions", "Действия",
-                R.drawable.msg_chats_remove, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 0,
+                R.drawable.msg_chats_remove, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 269,
                 HundredGramSubSettingsActivity.class,
                 "удалить", "мои", "сообщения", "delete", "my", "messages");
 
@@ -462,7 +462,7 @@ public class HundredGramSettingsSearchIndex {
         addEntry(id++, "Haptics", "Вибрация",
                 null, "Сила вибрации и эффект для каждого действия",
                 "HundredGramCategoryActions", "Действия",
-                R.drawable.msg_settings, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 0,
+                R.drawable.msg_settings, HundredGramSubSettingsActivity.CATEGORY_ACTIONS, 306,
                 HundredGramSubSettingsActivity.class,
                 "вибрация", "вибро", "haptics", "vibration", "тактильный");
 
@@ -634,7 +634,7 @@ public class HundredGramSettingsSearchIndex {
         addEntry(id++, "StreamerMode", "Режим стримера",
                 "StreamerModeInfo", "Скрытие баланса звезд, телефонного номера, ID и подмена имени во время трансляций",
                 "HundredGramCategoryStreamer", "Режим стримера",
-                R.drawable.msg_channel, HundredGramSubSettingsActivity.CATEGORY_STREAMER, 1,
+                R.drawable.msg_channel, HundredGramSubSettingsActivity.CATEGORY_STREAMER, 80,
                 HundredGramSubSettingsActivity.class,
                 "стример", "streamer", "трансляция", "скрыть баланс", "фейковое имя");
 

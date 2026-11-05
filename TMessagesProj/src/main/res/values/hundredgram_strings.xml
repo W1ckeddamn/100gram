@@ -1888,4 +1888,6 @@
     <string name="MediaPreviewNoSticker">No recent stickers yet. Send a sticker to see it here.</string>
     <string name="MediaPreviewNoGif">No recent GIFs yet. Send a GIF to see it here.</string>
     <string name="WhatsNewNativeMediaPreviewDesc">Message, sticker and GIF previews now use real chat cells; category descriptions have more room.</string>
+    <string name="DeletedMessagePreviewText">Example of a preserved deleted message</string>
+    <string name="WhatsNewAuditFixesDesc">Preview deleted-message markers in settings and restore backed-up preference types more reliably.</string>
 </resources>

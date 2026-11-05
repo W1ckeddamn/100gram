@@ -58,18 +58,29 @@ public class HundredGramBackupManager {
 
             JSONObject root = new JSONObject();
             root.put("app", "100gram");
-            root.put("schema_version", 1);
+            root.put("schema_version", 2);
             root.put("export_timestamp", System.currentTimeMillis());
 
             JSONObject configObj = new JSONObject();
+            JSONObject typesObj = new JSONObject();
             for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
                 String key = entry.getKey();
                 Object val = entry.getValue();
-                if (key != null && val != null) {
+                if (key == null || val == null) continue;
+                if (val instanceof Set) {
+                    configObj.put(key, new JSONArray((Set<?>) val));
+                    typesObj.put(key, "string_set");
+                } else {
                     configObj.put(key, val);
+                    if (val instanceof Long) typesObj.put(key, "long");
+                    else if (val instanceof Integer) typesObj.put(key, "int");
+                    else if (val instanceof Float) typesObj.put(key, "float");
+                    else if (val instanceof Boolean) typesObj.put(key, "boolean");
+                    else if (val instanceof String) typesObj.put(key, "string");
                 }
             }
             root.put("config", configObj);
+            root.put("types", typesObj);
 
             File cacheDir = context.getExternalCacheDir();
             if (cacheDir == null) {
@@ -141,31 +152,49 @@ public class HundredGramBackupManager {
             SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Activity.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
 
+            JSONObject typesObj = root.optJSONObject("types");
+            Map<String, ?> currentValues = prefs.getAll();
             Iterator<String> keys = configObj.keys();
             while (keys.hasNext()) {
                 String key = keys.next();
                 Object val = configObj.get(key);
-                if (val instanceof Boolean) {
-                    editor.putBoolean(key, (Boolean) val);
-                } else if (val instanceof Integer) {
-                    editor.putInt(key, (Integer) val);
-                } else if (val instanceof Long) {
-                    editor.putLong(key, (Long) val);
-                } else if (val instanceof Double || val instanceof Float) {
+                String type = typesObj != null ? typesObj.optString(key, "") : "";
+                Object existing = currentValues.get(key);
+                if (existing != null) {
+                    boolean compatible = (existing instanceof Number && val instanceof Number)
+                            || (existing instanceof Boolean && val instanceof Boolean)
+                            || (existing instanceof String && val instanceof String)
+                            || (existing instanceof Set && val instanceof JSONArray);
+                    if (!compatible) return false;
+                }
+                // Schema 1 did not preserve numeric types. These long-valued keys must
+                // remain long even when the JSON number fits in an integer.
+                boolean legacyLong = "musicSourceDialogId".equals(key) || "backgroundArchiverActivationTime".equals(key);
+                if (val instanceof Number && ("long".equals(type) || existing instanceof Long || (type.isEmpty() && legacyLong))) {
+                    editor.putLong(key, ((Number) val).longValue());
+                } else if (val instanceof Number && ("float".equals(type) || existing instanceof Float)) {
                     editor.putFloat(key, ((Number) val).floatValue());
-                } else if (val instanceof String) {
+                } else if (val instanceof Boolean && (type.isEmpty() || "boolean".equals(type))) {
+                    editor.putBoolean(key, (Boolean) val);
+                } else if (val instanceof Integer && (type.isEmpty() || "int".equals(type))) {
+                    editor.putInt(key, (Integer) val);
+                } else if (val instanceof Long && type.isEmpty()) {
+                    editor.putLong(key, (Long) val);
+                } else if ((val instanceof Double || val instanceof Float) && type.isEmpty()) {
+                    editor.putFloat(key, ((Number) val).floatValue());
+                } else if (val instanceof String && (type.isEmpty() || "string".equals(type))) {
                     editor.putString(key, (String) val);
-                } else if (val instanceof JSONArray) {
-                    // string sets (e.g. pinnedPlugins) are exported as arrays
+                } else if (val instanceof JSONArray && (type.isEmpty() || "string_set".equals(type))) {
                     JSONArray arr = (JSONArray) val;
                     Set<String> set = new HashSet<>();
                     for (int i = 0; i < arr.length(); i++) {
-                        Object item = arr.opt(i);
-                        if (item != null) {
-                            set.add(item.toString());
-                        }
+                        Object item = arr.get(i);
+                        if (!(item instanceof String)) return false;
+                        set.add((String) item);
                     }
                     editor.putStringSet(key, set);
+                } else {
+                    return false;
                 }
             }
             editor.apply();

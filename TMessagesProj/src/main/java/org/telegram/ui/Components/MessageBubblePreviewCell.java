@@ -14,18 +14,24 @@ import org.telegram.ui.Cells.ChatMessageCell;
 
 /** Settings preview rendered by the same message cells as a chat. */
 public class MessageBubblePreviewCell extends LinearLayout {
-    private final ChatMessageCell[] cells = new ChatMessageCell[2];
-    private final MessageObject[] messages = new MessageObject[2];
+    private final ChatMessageCell[] cells;
+    private final MessageObject[] messages;
 
     public MessageBubblePreviewCell(Context context) {
+        this(context, false);
+    }
+
+    public MessageBubblePreviewCell(Context context, final boolean deletedPreview) {
         super(context);
+        cells = new ChatMessageCell[deletedPreview ? 1 : 2];
+        messages = new MessageObject[cells.length];
         setOrientation(VERTICAL);
         setPadding(0, AndroidUtilities.dp(8), 0, AndroidUtilities.dp(8));
         int account = UserConfig.selectedAccount;
         for (int i = 0; i < cells.length; i++) {
             boolean outgoing = i == 1;
             TLRPC.TL_message message = new TLRPC.TL_message();
-            message.message = LocaleController.getString(outgoing ? R.string.BubblePreviewOutText : R.string.BubblePreviewInText);
+            message.message = LocaleController.getString(deletedPreview ? R.string.DeletedMessagePreviewText : outgoing ? R.string.BubblePreviewOutText : R.string.BubblePreviewInText);
             message.date = (int) (System.currentTimeMillis() / 1000) - 60;
             message.dialog_id = 1;
             message.flags = 257;
@@ -44,7 +50,12 @@ public class MessageBubblePreviewCell extends LinearLayout {
                 message.forwards = 14;
                 message.peer_id.user_id = UserConfig.getInstance(account).getClientUserId();
             }
-            messages[i] = new MessageObject(account, message, true, false);
+            messages[i] = new MessageObject(account, message, true, false) {
+                @Override
+                public boolean isDeleted() {
+                    return deletedPreview || super.isDeleted();
+                }
+            };
             messages[i].eventId = 1;
             ChatMessageCell cell = new ChatMessageCell(context, account, false, null, null);
             cell.isChat = false;

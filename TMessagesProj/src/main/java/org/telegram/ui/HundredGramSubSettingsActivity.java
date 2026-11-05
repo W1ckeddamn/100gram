@@ -320,6 +320,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     private UniversalRecyclerView listView;
     private AvatarCornersPreviewCell avatarCornersPreviewCell;
     private MessageBubblePreviewCell messageBubblePreviewCell;
+    private MessageBubblePreviewCell deletedMessagePreviewCell;
     private SwipeActionsPreviewCell swipeActionsPreviewCell;
     private StickerSizePreviewCell stickerSizePreviewCell;
     private int highlightItemId;
@@ -329,14 +330,15 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
     }
 
     public HundredGramSubSettingsActivity(int category, int highlightItemId) {
-        super(createArgs(category));
+        super(createArgs(category, highlightItemId));
         this.category = category;
         this.highlightItemId = highlightItemId;
     }
 
-    private static Bundle createArgs(int category) {
+    private static Bundle createArgs(int category, int highlightItemId) {
         Bundle args = new Bundle();
         args.putInt("category", category);
+        args.putInt("highlightItemId", highlightItemId);
         return args;
     }
 
@@ -351,9 +353,17 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         super.onTransitionAnimationEnd(isOpen, backward);
         if (isOpen && !backward && highlightItemId != 0 && listView != null && listView.adapter != null) {
             UniversalAdapter adapter = listView.adapter;
+            int targetId = highlightItemId;
+            if (category == CATEGORY_GHOST) {
+                if (targetId == ITEM_SEND_OFFLINE_AFTER_ONLINE && !HundredGramConfig.ghostOnline) {
+                    targetId = ITEM_GHOST_ONLINE;
+                } else if ((targetId == ITEM_GHOST_READ_ON_REPLY || targetId == ITEM_GHOST_READ_MEDIA_CONTENTS || targetId == ITEM_GHOST_SHOW_MARK_AS_READ) && !HundredGramConfig.ghostReadMessages) {
+                    targetId = ITEM_GHOST_READ_MESSAGES;
+                }
+            }
             for (int i = 0; i < adapter.getItemCount(); i++) {
                 UItem item = adapter.getItem(i);
-                if (item != null && item.id == highlightItemId) {
+                if (item != null && item.id == targetId) {
                     final int position = i;
                     AndroidUtilities.runOnUIThread(() -> {
                         if (listView != null) {
@@ -987,6 +997,12 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         items.add(UItem.asCheck(ITEM_HIGHLIGHT_DELETED, LocaleController.getString("HundredGramHighlightDeleted", R.string.HundredGramHighlightDeleted))
                 .setChecked(HundredGramConfig.highlightDeletedMessages));
         if (HundredGramConfig.highlightDeletedMessages) {
+            if (deletedMessagePreviewCell == null) {
+                deletedMessagePreviewCell = new MessageBubblePreviewCell(getParentActivity(), true);
+            } else {
+                deletedMessagePreviewCell.update();
+            }
+            items.add(UItem.asCustom(deletedMessagePreviewCell));
             items.add(UItem.asButton(ITEM_DELETED_MARK_ICON, LocaleController.getString("DeletedMarkIcon", R.string.DeletedMarkIcon), getDeletedMarkIconTitle(HundredGramConfig.deletedMarkIcon)));
             items.add(UItem.asButton(ITEM_DELETED_MARK_COLOR, LocaleController.getString("DeletedMarkColor", R.string.DeletedMarkColor), getDeletedMarkColorTitle(HundredGramConfig.deletedMarkColor)));
             items.add(UItem.asCheck(ITEM_THANOS_DELETE_EFFECT, LocaleController.getString("ThanosDeleteEffect", R.string.ThanosDeleteEffect))

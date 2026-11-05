@@ -1899,4 +1899,6 @@
     <string name="MediaPreviewNoSticker">Недавних стикеров пока нет. Отправьте стикер, чтобы увидеть его здесь.</string>
     <string name="MediaPreviewNoGif">Недавних GIF пока нет. Отправьте GIF, чтобы увидеть его здесь.</string>
     <string name="WhatsNewNativeMediaPreviewDesc">Превью сообщений, стикеров и GIF использует настоящие ячейки чата, а описания категорий помещаются свободнее.</string>
+    <string name="DeletedMessagePreviewText">Пример сохранённого удалённого сообщения</string>
+    <string name="WhatsNewAuditFixesDesc">Настраивайте значок удалённых сообщений с предпросмотром; резервные копии точнее восстанавливают типы настроек.</string>
 </resources>
