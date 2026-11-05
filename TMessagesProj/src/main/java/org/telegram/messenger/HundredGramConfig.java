@@ -1337,16 +1337,24 @@ public class HundredGramConfig {
         synchronized (sync) {
             SharedPreferences prefs = ApplicationLoader.applicationContext.getSharedPreferences("hundredgram_config", Activity.MODE_PRIVATE);
             String key = "musicSourceDialogId_" + account;
-            if (prefs.contains("musicSourceDialogId")) {
+            Map<String, ?> values = prefs.getAll();
+            if (values.containsKey("musicSourceDialogId")) {
                 // The old source was global; assign it only to the first account that opens music.
-                long legacy = prefs.getLong("musicSourceDialogId", 0L);
-                if (!prefs.contains(key)) {
+                Object oldValue = values.get("musicSourceDialogId");
+                long legacy = oldValue instanceof Number ? ((Number) oldValue).longValue() : 0L;
+                if (!values.containsKey(key)) {
                     prefs.edit().putLong(key, legacy).remove("musicSourceDialogId").apply();
                     return legacy;
                 }
                 prefs.edit().remove("musicSourceDialogId").apply();
             }
-            return prefs.getLong(key, 0L);
+            Object value = values.get(key);
+            if (value instanceof Number) {
+                long dialogId = ((Number) value).longValue();
+                if (!(value instanceof Long)) prefs.edit().putLong(key, dialogId).apply();
+                return dialogId;
+            }
+            return 0L;
         }
     }
 
