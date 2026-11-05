@@ -315,10 +315,28 @@ public class StickerSizePreviewCell extends LinearLayout {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        loadRecentMedia();
         update();
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (stickerScaleAnimator != null) {
+            stickerScaleAnimator.cancel();
+        }
+        if (gifScaleAnimator != null) {
+            gifScaleAnimator.cancel();
+        }
+    }
+
     public void update() {
+        if (stickerScaleAnimator != null) {
+            stickerScaleAnimator.cancel();
+        }
+        if (gifScaleAnimator != null) {
+            gifScaleAnimator.cancel();
+        }
         currentStickerScale = HundredGramConfig.getStickerScale();
         currentGifScale = HundredGramConfig.getGifScale();
         updateValueLabels();

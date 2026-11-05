@@ -1893,4 +1893,6 @@
     <string name="BypassContentProtectionInfo">Разрешает копирование текста, снятие скриншотов и сохранение фото и видео в чатах и каналах с запретом на копирование</string>
     <string name="WhatsNewMaterialSettings">Настройки в стиле Material</string>
     <string name="WhatsNewMaterialSettingsDesc">Включите «Секции и блоки MD3» в разделе «Интерфейс», чтобы сильнее скруглить разделы настроек.</string>
+    <string name="WhatsNewPreviewFixes">Улучшены превью настроек</string>
+    <string name="WhatsNewPreviewFixesDesc">Превью сообщений учитывает тему, а примеры стикеров и GIF обновляются надёжнее.</string>
 </resources>

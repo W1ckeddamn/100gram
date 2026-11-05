@@ -1882,4 +1882,6 @@
     <string name="BypassContentProtectionInfo">Allows copying text, taking screenshots, and saving media to gallery in chats and channels with copy restrictions</string>
     <string name="WhatsNewMaterialSettings">Material settings</string>
     <string name="WhatsNewMaterialSettingsDesc">Enable MD3 Settings Containers in Interface to use more rounded settings sections.</string>
+    <string name="WhatsNewPreviewFixes">Improved settings previews</string>
+    <string name="WhatsNewPreviewFixesDesc">Message previews follow your theme, and sticker and GIF previews refresh more reliably.</string>
 </resources>

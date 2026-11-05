@@ -57,6 +57,7 @@ public class MessageBubblePreviewCell extends FrameLayout {
     }
 
     public void update() {
+        setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
         if (previewArea != null) {
             previewArea.invalidate();
         }
@@ -68,10 +69,9 @@ public class MessageBubblePreviewCell extends FrameLayout {
         int height = previewArea.getHeight();
         if (width <= 0 || height <= 0) return;
 
-        boolean isDark = Theme.isCurrentThemeDark();
 
         // Outer container background
-        int containerBg = isDark ? 0xFF17212B : 0xFFE4ECF4;
+        int containerBg = Theme.getColor(Theme.key_chat_wallpaper);
         bgPaint.setColor(containerBg);
         RectF containerRect = AndroidUtilities.rectTmp;
         containerRect.set(0, 0, width, height);
@@ -83,7 +83,7 @@ public class MessageBubblePreviewCell extends FrameLayout {
         boolean showForwards = HundredGramConfig.showForwardsCount;
 
         // In bubble colors & rect
-        int inBg = isDark ? 0xFF242F3D : 0xFFFFFFFF;
+        int inBg = Theme.getColor(Theme.key_chat_inBubble);
         inBubblePaint.setColor(inBg);
 
         float inLeft = AndroidUtilities.dp(hideTail ? 14 : 20);
@@ -107,11 +107,14 @@ public class MessageBubblePreviewCell extends FrameLayout {
         }
 
         // Draw In Text
-        textPaint.setColor(isDark ? 0xFFFFFFFF : 0xFF000000);
-        timePaint.setColor(isDark ? 0x99FFFFFF : 0x88000000);
+        textPaint.setColor(Theme.getColor(Theme.key_chat_messageTextIn));
+        timePaint.setColor(Theme.getColor(Theme.key_chat_inTimeText));
 
         String inText = LocaleController.getString("BubblePreviewInText", R.string.BubblePreviewInText);
+        canvas.save();
+        canvas.clipRect(inLeft, inTop, inLeft + inWidth - AndroidUtilities.dp(8), inTop + inHeight);
         canvas.drawText(inText, inLeft + AndroidUtilities.dp(12), inTop + AndroidUtilities.dp(24), textPaint);
+        canvas.restore();
 
         String inTime = showSeconds ? "12:45:15" : "12:45";
         float inTimeW = timePaint.measureText(inTime);
@@ -157,7 +160,7 @@ public class MessageBubblePreviewCell extends FrameLayout {
         }
 
         // Out bubble colors & rect
-        int outBg = isDark ? 0xFF2B5278 : 0xFFEEFFDE;
+        int outBg = Theme.getColor(Theme.key_chat_outBubble);
         outBubblePaint.setColor(outBg);
 
         float outWidth = Math.min(width * 0.76f, AndroidUtilities.dp(250));
@@ -181,12 +184,15 @@ public class MessageBubblePreviewCell extends FrameLayout {
         }
 
         // Draw Out Text
-        int outTextColor = isDark ? 0xFFFFFFFF : 0xFF000000;
+        int outTextColor = Theme.getColor(Theme.key_chat_messageTextOut);
         textPaint.setColor(outTextColor);
-        timePaint.setColor(isDark ? 0xAAFFFFFF : 0x88000000);
+        timePaint.setColor(Theme.getColor(Theme.key_chat_outTimeText));
 
         String outText = hideTail ? LocaleController.getString("BubblePreviewOutFlat", R.string.BubblePreviewOutFlat) : LocaleController.getString("BubblePreviewOutText", R.string.BubblePreviewOutText);
+        canvas.save();
+        canvas.clipRect(outLeft, outTop, outRight - AndroidUtilities.dp(8), outTop + outHeight);
         canvas.drawText(outText, outLeft + AndroidUtilities.dp(12), outTop + AndroidUtilities.dp(24), textPaint);
+        canvas.restore();
 
         String outTime = showSeconds ? "12:45:32" : "12:45";
         float timeW = timePaint.measureText(outTime);
@@ -198,7 +204,7 @@ public class MessageBubblePreviewCell extends FrameLayout {
             int checkW = AndroidUtilities.dp(12);
             int checkH = AndroidUtilities.dp(10);
             checkmark.setBounds((int) (metaRight - checkW), (int) (outTop + outHeight - AndroidUtilities.dp(18)), (int) metaRight, (int) (outTop + outHeight - AndroidUtilities.dp(8)));
-            checkmark.setTint(isDark ? 0xFF64B5F6 : 0xFF4CAF50);
+            checkmark.setTint(Theme.getColor(Theme.key_chat_outSentCheck));
             checkmark.draw(canvas);
             metaRight -= checkW + AndroidUtilities.dp(4);
         }
@@ -213,7 +219,7 @@ public class MessageBubblePreviewCell extends FrameLayout {
             if (pencil != null) {
                 int pencilSize = AndroidUtilities.dp(11);
                 pencil.setBounds((int) (metaRight - pencilSize), (int) (outTop + outHeight - AndroidUtilities.dp(18)), (int) metaRight, (int) (outTop + outHeight - AndroidUtilities.dp(7)));
-                pencil.setTint(isDark ? 0xAAFFFFFF : 0x88000000);
+                pencil.setTint(timePaint.getColor());
                 pencil.draw(canvas);
             }
         } else {
