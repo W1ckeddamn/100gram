@@ -508,6 +508,13 @@ public class HundredGramConfig {
         loadConfig();
     }
 
+    public static void reloadConfig() {
+        synchronized (sync) {
+            configLoaded = false;
+            loadConfig();
+        }
+    }
+
     public static void loadConfig() {
         synchronized (sync) {
             if (configLoaded) {

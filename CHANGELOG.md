@@ -8,6 +8,11 @@
 
 ## [Unreleased]
 
+### Fixed
+- [UI] Переключатель секций MD3 теперь применяет скруглённые карточки и отступы на экранах настроек 100gram.
+- [Core] Восстановление и сброс резервной копии теперь перечитывают настройки в память сразу после изменения.
+
+
 - [UI] Материальный стиль слайдеров («Новый стиль слайдеров»), перенесённый из exteraGram:
   - Реализован собственный виджет [`MaterialSlider.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/MaterialSlider.java): толстая скруглённая дорожка 8dp и тонкий вертикальный бегунок 3×24dp — как в exteraGram, но без зависимости `com.google.android.material`.
   - [`AltSeekbar.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AltSeekbar.java) научился переключать стиль на лету (`updateSliderStyle()`), превью аватарок в настройках обновляется сразу ([`AvatarCornersPreviewCell.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AvatarCornersPreviewCell.java)).

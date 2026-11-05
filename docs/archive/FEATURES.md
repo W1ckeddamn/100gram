@@ -1457,3 +1457,11 @@
   * **Ключ конфигурации:** `HundredGramConfig.newSliderStyle` (`boolean`).
   * **Ключевые классы:** [`MaterialSlider.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/MaterialSlider.java), [`AltSeekbar.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/Components/AltSeekbar.java), [`HundredGramSubSettingsActivity.java`](file:///D:/100gram/TMessagesProj/src/main/java/org/telegram/ui/HundredGramSubSettingsActivity.java).
   * **Статус:** В релизе.
+
+
+### Секции настроек Material 3
+- **Описание:** Более скруглённые блоки с увеличенными отступами на главном экране и в подразделах настроек 100gram.
+- **Где включается:** Настройки 100gram → Интерфейс → Секции и блоки MD3 (или общий переключатель MD3).
+- **Ключ конфигурации:** `HundredGramConfig.md3Sections`.
+- **Ключевые классы:** `HundredGramSettingsActivity`, `HundredGramSubSettingsActivity`.
+- **Статус:** В разработке.

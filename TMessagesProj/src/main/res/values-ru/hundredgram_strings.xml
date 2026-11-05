@@ -1891,4 +1891,6 @@
     <string name="CustomBadgeRemoveAdminConfirm">Забрать права администратора бейджей у пользователя ID %d?</string>
     <string name="BypassContentProtection">Обход защиты контента</string>
     <string name="BypassContentProtectionInfo">Разрешает копирование текста, снятие скриншотов и сохранение фото и видео в чатах и каналах с запретом на копирование</string>
+    <string name="WhatsNewMaterialSettings">Настройки в стиле Material</string>
+    <string name="WhatsNewMaterialSettingsDesc">Включите «Секции и блоки MD3» в разделе «Интерфейс», чтобы сильнее скруглить разделы настроек.</string>
 </resources>

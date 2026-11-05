@@ -115,7 +115,7 @@ public class HundredGramSettingsActivity extends BaseFragment {
         contentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
 
         listView = new UniversalRecyclerView(this, this::fillItems, this::onClick, null);
-        listView.setSections();
+        updateSectionStyle();
         listView.adapter.setApplyBackground(false);
         contentView.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
 
@@ -127,8 +127,15 @@ public class HundredGramSettingsActivity extends BaseFragment {
     public void onResume() {
         super.onResume();
         if (listView != null && listView.adapter != null) {
+            updateSectionStyle();
             listView.adapter.update(true);
         }
+    }
+
+    private void updateSectionStyle() {
+        boolean material = HundredGramConfig.md3Sections || HundredGramConfig.md3MasterEnabled;
+        listView.setSections(AndroidUtilities.dp(material ? 16 : 12), AndroidUtilities.dp(material ? 28 : 16), false);
+        listView.invalidate();
     }
 
     private IconBackgroundColors getCategoryColors(HundredGramSettingsSearchIndex.Entry entry) {

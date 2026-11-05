@@ -385,12 +385,18 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
         contentView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundGray));
 
         listView = new UniversalRecyclerView(this, this::fillItems, this::onClick, null);
-        listView.setSections();
+        updateSectionStyle();
         listView.adapter.setApplyBackground(false);
         contentView.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         actionBar.setAdaptiveBackground(listView);
 
         return fragmentView = contentView;
+    }
+
+    private void updateSectionStyle() {
+        boolean material = HundredGramConfig.md3Sections || HundredGramConfig.md3MasterEnabled;
+        listView.setSections(AndroidUtilities.dp(material ? 16 : 12), AndroidUtilities.dp(material ? 28 : 16), false);
+        listView.invalidate();
     }
 
     private String getCategoryTitle() {
@@ -1942,6 +1948,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
             case ITEM_MD3_MASTER:
                 HundredGramConfig.toggleMd3Master();
+                updateSectionStyle();
                 item.setChecked(HundredGramConfig.md3MasterEnabled);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.md3MasterEnabled);
@@ -1959,6 +1966,7 @@ public class HundredGramSubSettingsActivity extends BaseFragment {
                 break;
             case ITEM_MD3_SECTIONS:
                 HundredGramConfig.toggleMd3Sections();
+                updateSectionStyle();
                 item.setChecked(HundredGramConfig.md3Sections);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(HundredGramConfig.md3Sections);

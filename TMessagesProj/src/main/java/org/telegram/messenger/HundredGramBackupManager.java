@@ -171,7 +171,7 @@ public class HundredGramBackupManager {
             editor.apply();
 
             // Перезагружаем конфигурацию в память
-            HundredGramConfig.loadConfig();
+            HundredGramConfig.reloadConfig();
 
             // Уведомляем интерфейс об изменениях
             NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.didUpdateIconPack);
@@ -194,7 +194,7 @@ public class HundredGramBackupManager {
         }
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Activity.MODE_PRIVATE);
         prefs.edit().clear().apply();
-        HundredGramConfig.loadConfig();
+        HundredGramConfig.reloadConfig();
         HundredGramConfig.postNotificationToAllAccounts(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_ALL);
     }
 }
