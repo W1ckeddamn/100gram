@@ -1885,4 +1885,7 @@
     <string name="WhatsNewPreviewFixes">Improved settings previews</string>
     <string name="WhatsNewPreviewFixesDesc">Message previews follow your theme, and sticker and GIF previews refresh more reliably.</string>
     <string name="WhatsNewNativePreviewDesc">Message settings now use real chat cells; category descriptions have more room.</string>
+    <string name="MediaPreviewNoSticker">No recent stickers yet. Send a sticker to see it here.</string>
+    <string name="MediaPreviewNoGif">No recent GIFs yet. Send a GIF to see it here.</string>
+    <string name="WhatsNewNativeMediaPreviewDesc">Message, sticker and GIF previews now use real chat cells; category descriptions have more room.</string>
 </resources>

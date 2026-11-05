@@ -1896,4 +1896,7 @@
     <string name="WhatsNewPreviewFixes">Улучшены превью настроек</string>
     <string name="WhatsNewPreviewFixesDesc">Превью сообщений учитывает тему, а примеры стикеров и GIF обновляются надёжнее.</string>
     <string name="WhatsNewNativePreviewDesc">Превью сообщений использует настоящие ячейки чата, а описания категорий помещаются свободнее.</string>
+    <string name="MediaPreviewNoSticker">Недавних стикеров пока нет. Отправьте стикер, чтобы увидеть его здесь.</string>
+    <string name="MediaPreviewNoGif">Недавних GIF пока нет. Отправьте GIF, чтобы увидеть его здесь.</string>
+    <string name="WhatsNewNativeMediaPreviewDesc">Превью сообщений, стикеров и GIF использует настоящие ячейки чата, а описания категорий помещаются свободнее.</string>
 </resources>
